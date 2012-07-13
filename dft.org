@@ -1,3 +1,4 @@
+# -*- org-export-babel-evaluate: nil -*-
 #+TITLE:     Modeling materials using density functional theory
 #+AUTHOR:    John Kitchin
 #+EMAIL:     jkitchin@cmu.edu
@@ -5,7 +6,7 @@
 #+DESCRIPTION:
 #+KEYWORDS:
 #+LANGUAGE:  en
-#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   H:6 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
 #+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
 #+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
 #+EXPORT_SELECT_TAGS: export
@@ -14,10 +15,10 @@
 #+LINK_HOME:
 #+XSLT:
 
-https://wiki.fysik.dtu.dk/ase/
-
 * Introduction to this book
-This book serves two purposes: 1) to provide worked examples of using DFT to model materials properties, and 2) to provide references to more advanced treatments of these topics in the literature. It is not a definitive reference on density functional theory. Along the way to learning how to perform the calculations, you will learn how to analyze the data, make plots, and how to interpret the results. This book makes heavy use of many computational tools including:
+This book serves two purposes: 1) to provide worked examples of using DFT to model materials properties, and 2) to provide references to more advanced treatments of these topics in the literature. It is not a definitive reference on density functional theory. Along the way to learning how to perform the calculations, you will learn how to analyze the data, make plots, and how to interpret the results. This book is very much "recipe" oriented, with the intention of giving you enough information and knowledge to start your research. In that sense, many of the computations are not publication quality with respect to convergence of calculation parameters.
+
+This book makes heavy use of many computational tools including:
 
 - [[http://python.org/][Python]]
   - [[http://docs.python.org/modindex.html][Module index]]
@@ -31,6 +32,8 @@ This book serves two purposes: 1) to provide worked examples of using DFT to mod
     navigation, syntax highlighting, as well as the ability to
     interact with the tables and code. The book is also available in
     pdf.
+- [[http://github.org][git]]
+  This book is available at https://github.com/jkitchin/dft-book
 
 - [[https://bitbucket.org/jkitchin/jasp][jasp]]
 jasp is a sophisticated wrapper to the :mod:ase.calculators.vasp python interface to the VASP calculator. It was written by me to facilitate writing this book, and to develop the best possible way to run DFT calculations. The best way to learn to use jasp is from this book. jasp is currently available at https://bitbucket.org/jkitchin/jasp.
@@ -297,31 +300,31 @@ Simple properties do not require a DFT calculation. They are typically only func
 If you want the x,y,z coordinates of the atoms, use the func:ase.Atoms.get_positions. If you are interested in the fractional coordinates, use func:ase.Atoms.get_scaled_positions.
 
 #+BEGIN_SRC python :results output :exports both
-  from ase import Atoms
-  from ase.data.molecules import molecule
-  from ase.io import write
+from ase import Atoms
+from ase.data.molecules import molecule
+from ase.io import write
 
-  atoms = molecule('C6H6')
+atoms = molecule('C6H6')
 
-  # access properties on each atom
-  print ' #  sym   p_x     p_y     p_z'
-  print '------------------------------'
-  for i,atom in enumerate(atoms):
-      print '%3i%3s%8.2f%8.2f%8.2f' % (i,atom.symbol,atom.x,atom.y,atom.z)
+# access properties on each atom
+print ' #  sym   p_x     p_y     p_z'
+print '------------------------------'
+for i,atom in enumerate(atoms):
+  print '%3i%3s%8.2f%8.2f%8.2f' % (i,atom.symbol,atom.x,atom.y,atom.z)
 
-  # get all properties in arrays
-  sym = atoms.get_chemical_symbols()
-  pos = atoms.get_positions()
-  num = atoms.get_atomic_numbers()
+# get all properties in arrays
+sym = atoms.get_chemical_symbols()
+pos = atoms.get_positions()
+num = atoms.get_atomic_numbers()
 
-  atom_indices = range(len(atoms))
+atom_indices = range(len(atoms))
 
-  print
-  print '  # sym   at#     p_x     p_y     p_z'
-  print '-------------------------------------'
-  for i,s,n,p in zip(atom_indices,sym,num,pos):
-      px,py,pz = p
-      print '%3i%3s%6i%10.2f%8.2f%8.2f' % (i,s,n,px,py,pz)
+print
+print '  # sym   at#     p_x     p_y     p_z'
+print '-------------------------------------'
+for i,s,n,p in zip(atom_indices,sym,num,pos):
+  px,py,pz = p
+  print '%3i%3s%6i%10.2f%8.2f%8.2f' % (i,s,n,px,py,pz)
 #+END_SRC
 
 #+RESULTS:
@@ -357,6 +360,8 @@ If you want the x,y,z coordinates of the atoms, use the func:ase.Atoms.get_posit
  11  H     1     -2.15    1.24    0.00
 #+end_example
 
+
+
 *** Molecular weight and molecular formula
 We can quickly compute the molecular weight of a molecule with this little recipe.
 
@@ -379,7 +384,7 @@ We can quickly compute the molecular weight of a molecule with this little recip
 *** Center of mass
 The center of mass is a helpful quantity to have for a variety of computations, including translating atoms for a rotation, etc...  Here is an example of getting the center of mass from an Atoms object using func:ase.Atoms.get_center_of_mass.
 
-COM = \frac{\sum m_i \cdot r_i}{\sum m_i}
+COM = $\frac{\sum m_i \cdot r_i}{\sum m_i}$
 
 #+BEGIN_SRC python :results output :exports both
   from ase import Atoms
@@ -497,7 +502,7 @@ It is a common to compute bond lengths. The Atoms object contains a func:ase.Ato
 :  3   H
 : 1.01679344636
 
-Bond angles are a little trickier. We can use some simple trigonometry: $a \cdot b = |a||b| \cos(\theta)$, so we can calculate the angle as $\theta = \acos\(\frac{a \cdot b}{|a||b|}$, we just have to define our two vectors $a$ and $b$. We compute these vectors as the difference in positions of two atoms. For example, here we compute the angle H-N-H in an ammonia molecule. This is the angle between N-H1 and N-H2. In the next example, we utilize functions in numpy to perform the calculations, specifically the arccos function, the [[shell:pydoc numpy.dot][dot]] function, and [[shell:pydoc numpy.linalg.norm][norm]] functions.
+Bond angles are a little trickier. We can use some simple trigonometry: $a \cdot b = |a||b| \cos(\theta)$, so we can calculate the angle as $\theta = \arccos\left(\frac{a \cdot b}{|a||b|}\right)$, we just have to define our two vectors $a$ and $b$. We compute these vectors as the difference in positions of two atoms. For example, here we compute the angle H-N-H in an ammonia molecule. This is the angle between N-H1 and N-H2. In the next example, we utilize functions in numpy to perform the calculations, specifically the arccos function, the [[shell:pydoc numpy.dot][dot]] function, and [[shell:pydoc numpy.linalg.norm][norm]] functions.
 
 #+BEGIN_SRC python :results output :exports both
   from ase import Atoms
@@ -578,11 +583,10 @@ energy and the forces on the atoms. To get these, we have to define a
 calculator and attach it to an mod:ase.Atoms object so that
 it knows how to get the data, and then a DFT calculation must be run.
 
-It is straightforward to create a calculator that uses Dacapo to
-calculate everything. You just create an instance of
-mod:ase.calculators.jacapo.Jacapo as in this example. Jacapo is
-a python interface to Dacapo that also interacts with ase3. Here is an
-example of getting the energy and forces from a CO molecule. The forces in this case are very high,indicating that this geometry is not close to the ground state geometry. Note that the forces are only along the x-axis, which is along the molecular axis.
+Here is an example of getting the energy and forces from a CO
+molecule. The forces in this case are very high,indicating that this
+geometry is not close to the ground state geometry. Note that the
+forces are only along the x-axis, which is along the molecular axis.
 
 #+BEGIN_SRC python :results output :exports both
 #!/usr/bin/env python
@@ -773,7 +777,7 @@ with jasp('molecules/co-qn',
 
 ** Vibrational frequencies
 Vasp has built-in capability for performing vibrational calculations.
-#+BEGIN_SRC python :results output org :exports both
+#+BEGIN_SRC python :results output  :exports both
 #adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
 from ase import Atoms, Atom
 from jasp import *
@@ -799,13 +803,10 @@ with jasp('molecules/h2o_vib',
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_ORG
--14.227388
-[[ 0.006474 -0.021573 -0.001509]
- [-0.012948  0.        0.003019]
- [ 0.006474  0.021573 -0.001509]]
-[3836.1533119999999, 3722.659114, 1583.004226, 35.646208999999999, 21.378951000000001, (2.4811570000000001+0j), (94.092513999999994+0j), (96.601394999999997+0j), (122.151211+0j)]
-#+END_ORG
+: [[ 0.006474 -0.021573 -0.001509]
+:  [-0.012948  0.        0.003019]
+:  [ 0.006474  0.021573 -0.001509]]
+: [3836.1533119999999, 3722.659114, 1583.004226, 35.646208999999999, 21.378951000000001, (2.4811570000000001+0j), (94.092513999999994+0j), (96.601394999999997+0j), (122.151211+0j)]
 
 Note we get 9 frequencies here. Water has 3 atoms, with three degrees of freedom each. Three of those degrees of freedom are translations, and three are rotations. That leaves 3N-6 = 3 degrees of vibrational freedom. The modes of water vibration are (with our calculated values in parentheses):
 
@@ -914,7 +915,7 @@ Free energy components at T = 298.15 K and P = 101325.0 Pa:
 ** Simulated infrared spectra
 At http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02 there is a recipe for computing the Infrared vibrational spectroscopy intensities in Vasp. We are going to do that for water here. First, we will relax a water molecule.
 
-#+BEGIN_SRC python :results output org :exports both
+#+BEGIN_SRC python :results output :exports both
 from ase import Atoms, Atom
 from jasp import *
 
@@ -936,11 +937,9 @@ with jasp('molecules/h2o_relax',
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_ORG
-[[ 0.00033  -0.000422  0.      ]
- [-0.00066   0.        0.      ]
- [ 0.00033   0.000422  0.      ]]
-#+END_ORG
+: [[ 0.00033  -0.000422  0.      ]
+:  [-0.00066   0.        0.      ]
+:  [ 0.00033   0.000422  0.      ]]
 
 Next, we instruct Vasp to compute the vibrational modes using density functional perturbation theory with IBRION=7. Note, this is different than in [[Vibrational frequencies]] where finite differences were used.
 
@@ -1128,7 +1127,7 @@ The interpretation of these results is that the mode at 3713 cm^{-1} would be ne
 
 *** TODO Shell scripts are rough. One day I should rewrite this in python.
 
-* TODO Clusters
+* TODO Clusters                                                    :noexport:
 * TODO Bulk systems
 ** Defining and visualizing bulk systems
 ** TODO Determining bulk structures
@@ -1357,10 +1356,25 @@ plt.savefig('images/pd-xrd.png')
 
 [[./images/pd-xrd.png]]
 
+** TODO Magnetism
 * TODO Surfaces
 ** Surface structures
 ** Surface relaxation
 ** Surface energy
+
+The easiest way to calculate surface energies is from this equation:
+
+$\sigma = \frac{1}{2}(E_{slab} - \frac{N_{slab}}{N_{bulk}} E_{bulk})$
+
+where $E_{slab}$ is the total energy of a symmetric slab (i.e. one with inversion symmetry, and where both sides of the slab have been relaxed), $E_{bulk}$ is the total energy of a bulk unit cell, $N_{slab}$ is the number of atoms in the slab, and $N_{bulk}$ is the number of atoms in the bulk unit cell. One should be sure that the bulk energy is fully converged with respect to $k$-points, and that the slab energy is also converged with respect to $k$-points. The energies should be compared at the same cutoff energies. The idea is then to increase the thickness of the slab until the surface energy $\sigma$ converges.
+
+Unfortunately, this approach does not always work. The bulk system is treated subtly different than the slab system, particularly in the $z$-direction where the vacuum is (where typically only one k-point is used in slabs). Consequently, the $k$-point sampling is not equivalent in the two systems, and one can in general expect some errors due to this, with the best case being cancellation of the errors due to total $k$-point convergence. In the worst case, one can get a linear divergence in the surface energy with slab thickness \cite{PhysRevB.49.1679}
+
+A variation of this method that usually results in better $k$-point error cancellation is to calculate the bulk unit cell energy using the slab unit cell with no vacuum space, with the same k-point mesh in the x and y directions, but with increased k-points in the $z$-direction. Thus, the bulk system and slab system have the same Brillouin zone in at least two dimensions. This maximizes the cancellation of $k$-point errors, but still does not guarantee convergence of the surface energy, as discussed in \cite{PhysRevB.49.16798,0953-8984-10-4-017}.
+
+For quick estimates of the surface energy, one of the methods described above is likely sufficient. The advantage of these methods is the small number of calculations required to obtain the estimate, one needs only a bulk calculation (which must be done anyhow to get the bulk lattice constant to create the slab), and a slab calculation that is sufficiently thick to get the estimate. Additional calculations are only required to test the convergence of the surface energy.
+
+
 #+BEGIN_SRC sh
 inkscape images/surface-construction.svg
 #+END_SRC
@@ -1372,14 +1386,28 @@ convert images/surface-construction.svg images/surface-construction.png
 #+caption: Schematic figure illustrating the calculation of a surface energy.
 [[./images/surface-construction.png]]
 
+An alternative method for calculating surface energies that does not involve an explicit bulk calculation follows Ref. \cite{0953-8984-10-4-017}. The method follows from equation (ref{eq:se}) where for a N-atom slab, in the limit of N \rightarrow \infty,
 
-quantum size effects? A. Kiejna, J. Peisert and P. Scharoch, Surf. Sci. 432 (1999) 54
+$E_{slab} \approx 2\sigma + \frac{N_{slab}}{N_{bulk}} E_{bulk}$
+
+Then, we can estimate E_{bulk} by plotting the total energy of the slab as a function of the slab thickness.
+
+$\sigma = \lim{N \rightarrow \infty} \frac{1}{2}(E_{slab}^N - N \Delta E_N)$
+
+where $\Delta E_N = E_{slab}^N - E_{slab}^{N-1}$.
+
+#quantum size effects? A. Kiejna, J. Peisert and P. Scharoch, Surf. Sci. 432 (1999) 54
 
 #+RESULTS:
 
-* Atomistic thermodynamics
-* TODO Recipes
-** Modifying Atoms by deleting atoms
+** TODO Dipole correction
+* TODO Atomistic thermodynamics
+* TODO Advanced electronic structure methods
+** DFT+U
+** Hybrid functionals
+* Appendices
+** Recipes
+*** Modifying Atoms by deleting atoms
 Sometimes it is convenient to create an Atoms object by deleting atoms from an existing object. Here is a recipe to delete all the hydrogen atoms in a molecule. The idea is to make a list of indices of which atoms to delete using list comprehension, then use list deletion to delete those indices.
 
 #+BEGIN_SRC python :results output
@@ -1399,8 +1427,8 @@ Sometimes it is convenient to create an Atoms object by deleting atoms from an e
 : [3, 4, 5, 6, 7, 8]
 : Atoms(symbols='C2O', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False, False, False])
 
-* Computational geometry
-** Changing coordinate systems
+** Computational geometry
+*** Changing coordinate systems
 Let A, B, C be the unit cell vectors
 1) A = A1 x + A2 y + A3 z
 2) B = B1 x + B2 y + B3 z
@@ -1429,13 +1457,13 @@ transpose(A) s = p
 
 and we need to solve for s as:
 
-s = (A.T)^-1 p
+$s = (A^T)^{-1} \cdot p$
 
 p must be a column vector, so we will have to transpose the positions
 provided by the atoms class, and then transpose the final result to
 get the positions back into row-vector form:
 
-s = ((A.T)^-1 p.T).T
+$s = ((A^T)^{-1} p^T)^T$
 
 Here we implement that in code:
 
@@ -1556,7 +1584,7 @@ unit cell in terms of the primitive basis
 #+end_example
 
 
-** Simple distances, angles
+*** Simple distances, angles
 Scientific.Geometry contains several useful functions for
 performing vector algebra including computing lengths and angles.
 
@@ -1590,7 +1618,7 @@ print 'numpy A .cross. B      = ',np.cross(A,B) #you can use Vectors in numpy
 : Scientific A .cross. B =  [-1.0, 0.0, 1.0]
 : numpy A .cross. B      =  [-1.  0.  1.]
 
-** Unit cell properties
+*** Unit cell properties
 The volume of a unit cell can be calculated from $V = (a_1 \times a_2)
 \cdot a_3$ where $a_1$, $a_2$ and $a_3$ are the unit cell vectors. It
 is more convenient, however, to simply evaluate that equation as the
@@ -1632,7 +1660,7 @@ print atoms.get_volume()
 : 20.0
 : 20.0
 
-** d-spacing
+*** d-spacing
 If you like to set up the vacuum in your slab calculations in terms of
 equivalent layers of atoms, you need to calculate the d-spacing for
 the hkl plane you are using. The script below shows several ways to
@@ -1740,7 +1768,7 @@ print d
 :
 : 2.30940107676
 
-** Center of mass
+*** Center of mass
 The center of mass is a convenient origin for many rotations, and
 moment of inertia calculations. The center of mass is computed from:
 
@@ -1748,7 +1776,7 @@ moment of inertia calculations. The center of mass is computed from:
 
 There is a convenience function for this: :func:`ase.atoms.get_center_of_mass`
 
-** Moments of inertia
+*** Moments of inertia
 Moments of inertia are used in the rotational partition function in
 statistical mechanics. There is a convenience function for this:
 :func:`ase.atoms.get_moments_of_inertia`. Here are examples of using
@@ -1800,4 +1828,4 @@ spherical rotors Ia = Ib = Ic
 
 * References
 \bibliographystyle{plain}
-\bibliographystyle{dft}
+\bibliography{dft}
