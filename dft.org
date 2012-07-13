@@ -1,0 +1,1542 @@
+#+TITLE:     Modeling materials using density functional theory
+#+AUTHOR:    John Kitchin
+#+EMAIL:     jkitchin@cmu.edu
+#+DATE:      2012-07-11 Wed
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:
+#+LINK_HOME:
+#+XSLT:
+
+https://wiki.fysik.dtu.dk/ase/
+
+* Introduction to this book
+This book serves two purposes: 1) to provide worked examples of using DFT to model materials properties, and 2) to provide references to more advanced treatments of these topics in the literature. Along the way to learning how to perform the calculations, you will learn how to analyze the data, make plots, and how to interpret the results. This book makes heavy use of many computational tools including:
+
+- [[http://python.org/][Python]]
+  - [[http://docs.python.org/modindex.html][Module index]]
+- [[https://wiki.fysik.dtu.dk/ase/][Atomic Simulation Environment (ase)]]
+- [[http://numpy.scipy.org/][numpy]]
+- [[http://www.scipy.org/][scipy]]
+- [[http://matplotlib.sourceforge.net/][matplotlib]]
+- [[http://www.gnu.org/software/emacs/][emacs]]
+  - [[http://orgmode.org][org-mode]]
+- jasp
+jasp is a sophisticated wrapper to the :mod:ase.calculators.vasp python interface to the VASP calculator. It was written by me to facilitate writing this book, and to develop the best possible way to run DFT calculations.
+
+jasp is currently available at https://bitbucket.org/jkitchin/jasp.
+
+The DFT code used primarily in this book is [[http://cms.mpi.univie.ac.at/vasp/guide/vasp.html][Vasp]].
+
+* Introduction to DFT
+
+* Molecules
+In this chapter we consider how to construct models of molecules, how to manipulate them, and how to calculate many properties of molecules.
+** Defining and visualizing molecules
+We start by learning how to define a molecule and visualize it.
+
+*** Predefined molecules
+ASE defines a number of molecular geometries in the molecules
+database.  Data for the G2 database are from Raghavachari, Redfern,
+and Pople, J. Chem. Phys. Vol. 106, 1063 (1997).  See
+http://chemistry.anl.gov/compmat/comptherm.htm for the original files.
+
+All numbers are experimental values, except for coordinates, which are
+MP2(full)/6-31G(d) optimized geometries. Here is a list of all the species available in mod:ase.data.g2
+#+BEGIN_SRC python :results output
+  from ase.data import g2
+  print g2.data.keys()
+#+END_SRC
+
+#+RESULTS:
+: ['isobutene', 'CH3CH2OH', 'CH3COOH', 'COF2', 'CH3NO2', 'CF3CN', 'CH3OH', 'CCH', 'CH3CH2NH2', 'PH3', 'Si2H6', 'O3', 'O2', 'BCl3', 'CH2_s1A1d', 'Be', 'H2CCl2', 'C3H9C', 'C3H9N', 'CH3CH2OCH3', 'BF3', 'CH3', 'CH4', 'S2', 'C2H6CHOH', 'SiH2_s1A1d', 'H3CNH2', 'CH3O', 'H', 'BeH', 'P', 'C3H4_C3v', 'C2F4', 'OH', 'methylenecyclopropane', 'F2O', 'SiCl4', 'HCF3', 'HCCl3', 'C3H7', 'CH3CH2O', 'AlF3', 'CH2NHCH2', 'SiH2_s3B1d', 'H2CF2', 'SiF4', 'H2CCO', 'PH2', 'OCS', 'HF', 'NO2', 'SH2', 'C3H4_C2v', 'H2O2', 'CH3CH2Cl', 'isobutane', 'CH3COF', 'HCOOH', 'CH3ONO', 'C5H8', '2-butyne', 'SH', 'NF3', 'HOCl', 'CS2', 'P2', 'C', 'CH3S', 'O', 'C4H4S', 'S', 'C3H7Cl', 'H2CCHCl', 'C2H6', 'CH3CHO', 'C2H4', 'HCN', 'C2H2', 'C2Cl4', 'bicyclobutane', 'H2', 'C6H6', 'N2H4', 'C4H4NH', 'H2CCHCN', 'H2CCHF', 'cyclobutane', 'HCl', 'CH3OCH3', 'Li2', 'Na', 'CH3SiH3', 'NaCl', 'CH3CH2SH', 'OCHCHO', 'SiH4', 'C2H5', 'SiH3', 'NH', 'ClO', 'AlCl3', 'CCl4', 'NO', 'C2H3', 'ClF', 'HCO', 'CH3CONH2', 'CH2SCH2', 'CH3COCH3', 'C3H4_D2d', 'CH', 'CO', 'CN', 'F', 'CH3COCl', 'N', 'CH3Cl', 'Si', 'C3H8', 'CS', 'N2', 'Cl2', 'NCCN', 'F2', 'CO2', 'Cl', 'CH2OCH2', 'H2O', 'CH3CO', 'SO', 'HCOOCH3', 'butadiene', 'ClF3', 'Li', 'PF3', 'B', 'CH3SH', 'CF4', 'C3H6_Cs', 'C2H6NH', 'N2O', 'LiF', 'H2COH', 'cyclobutene', 'LiH', 'SiO', 'Si2', 'C2H6SO', 'C5H5N', 'trans-butane', 'Na2', 'C4H4O', 'SO2', 'NH3', 'NH2', 'CH2_s3B1d', 'ClNO', 'C3H6_D3h', 'Al', 'CH3SCH3', 'H2CO', 'CH3CN']
+
+Some other databases include the mod:ase.data.s22 for weakly interacting dimers and complexes, and mod:ase.data.extra_molecules which has a few extras like biphenyl and C60.
+
+Here is an example of getting the geometry of an acetonitrile molecule and writing an image to a file. Note that the default unit cell is a $1 \AA \times 1 \AA \times 1 \AA$ cubic cell. That is too small to use if your calculator uses periodic boundary conditions. We center the atoms in the unit cell and add vacuum on each side. We will add 6 $\AA$ of vacuum on each side. In the write command we use the option show_unit_cell=2 to draw the unit cell boundaries
+
+#+BEGIN_SRC python :results output
+  from ase import Atoms
+  from ase.data.molecules import molecule
+  from ase.io import write
+
+  c60 = molecule('CH3CN')
+
+  c60.center(vacuum=6)
+  print c60.get_cell()
+
+  write('molecules/ch3cn.png', c60, show_unit_cell=2)
+#+END_SRC
+
+#+RESULTS:
+: [[ 13.775328   0.         0.      ]
+:  [  0.        13.537479   0.      ]
+:  [  0.         0.        15.014576]]
+
+file:molecules/ch3cn.png
+
+
+It is possible to rotate the atoms with func:ase.io.write if you wanted to see pictures from another angle. In the next example we rotate 45 degrees about the x-axis, then 45 degrees about the y-axis. Note that this only affects the image, not the actual coordinates
+
+#+BEGIN_SRC python :results output
+  from ase import Atoms
+  from ase.data.molecules import molecule
+  from ase.io import write
+
+  atoms = molecule('CH3CN')
+
+  atoms.center(vacuum=6)
+  print atoms.get_cell()
+
+  write('molecules/ch3cn-rotated.png', atoms,
+        show_unit_cell=2,rotation='45x,45y,0z')
+#+END_SRC
+
+#+RESULTS:
+: [[ 13.775328   0.         0.      ]
+:  [  0.        13.537479   0.      ]
+:  [  0.         0.        15.014576]]
+
+file:molecules/ch3cn-rotated.png
+
+If you actually want to rotate the coordinates, there is a nice way to do that to, with the func:ase.Atoms.rotate method. Actually there are some subtelties in rotation. One rotates the molecule an angle (in radians) around a vector, but you have to choose whether the center of mass should be fixed or not. You also must decide whether the unit cell should be rotated or not. In the next example you can see the coordinates have changed due to the rotations.
+
+#+BEGIN_SRC python :results output
+  from ase import Atoms
+  from ase.data.molecules import molecule
+  from ase.io import write
+  from numpy import pi
+
+  # ammonia
+  atoms = molecule('CH3CN')
+  p1 = atoms.get_positions()
+
+  atoms.rotate('x', pi/4, center='COM', rotate_cell=False)
+  atoms.rotate('y', pi/4, center='COM', rotate_cell=False)
+
+  write('molecules/ch3cn-rotated-2.png',atoms,show_unit_cell=2)
+  p2 = atoms.get_positions()
+  print p2 - p1
+#+END_SRC
+
+#+RESULTS:
+: [[-0.65009456  0.91937255  0.65009456]
+:  [ 0.08030744 -0.11357187 -0.08030744]
+:  [ 0.66947344 -0.94677841 -0.66947344]
+:  [-0.32532156  0.88463727  1.35030756]
+:  [-1.35405183  1.33495444 -0.04610517]
+:  [-0.8340703   1.33495444  1.2092413 ]]
+
+file:molecules/ch3cn-rotated-2.png
+
+Note in this last case the unit cell is oriented differently than the previous example, since we chose not to rotate the unit cell.
+
+*** Reading other data formats in
+   :PROPERTIES:
+   :ID:       o2b:ab5e549d-cc5d-48cb-85fa-0b1c4c332562
+   :POST_DATE: [2012-03-10 Sat 10:48]
+   :END:
+You can read xyz-coordinate files to create mod:ase.Atoms objects.  Here is
+what an xyz file might look like:
+
+#+include isobutane.xyz
+
+Note that the xyz format does not have unit cell information in it, so
+you will have to figure out a way to provide it. In this example, we
+center the atoms in a box with vacuum on all sides.
+
+#+BEGIN_SRC python
+  from ase.io.xyz import *
+  from ase.io import write
+  import numpy as np
+
+  atoms = read_xyz('molecules/isobutane.xyz')
+  atoms.center(vacuum=5)
+  write('molecules/isobutane_xyz.png', atoms, show_unit_cell=2)
+#+END_SRC
+
+#+RESULTS:
+: None
+
+file:molecules/isobutane_xyz.png
+
+*** From scratch
+    When there is no data file for the molecule you want, or no database to get it from, you have to define your atoms geometry by hand. Here is how that is done.
+
+#+BEGIN_SRC python :results output
+  from ase import Atoms, Atom
+  from ase.io import write
+
+  #method 1 - simple cubic unit cell
+  atoms = Atoms([Atom('C',[0., 0.,0.]),
+                 Atom('O',[1.1,0.,0.])],
+                cell=(10,10,10))
+
+  print 'V = %1.0f Ang^3' % atoms.get_volume()
+
+  write('molecules/simple-cubic-cell.png',atoms,show_unit_cell=2)
+#+END_SRC
+
+#+RESULTS:
+: V = 1000 Ang^3
+
+file:molecules/simple-cubic-cell.png
+
+There are two inconvenient features of the simple cubic cell:
+
+1. Since the CO atom is at the corner, its electron density is spread over the 8 corners of the box, which is not convenient for visualization later.
+2. Due to the geometry of the cube, you need fairly large cubes to decouple the molecule from its images. Here, the CO molecule has 6 images due to periodic boundary conditions that are 10 angstroms away. The volume of the unit cell is 1000 $\AA^3$.
+
+The first problem is easy to solve by centering the atoms in the unit cell. The second problem can be solved by using an fcc lattice. Below we show the result, where we have guessed values for $b$ until the CO molecules are on average 10 angstroms apart. Note the final volume is only about 715 $\AA^3$, which is smaller than the cube. This will result in less computational time to compute properties.
+
+#+BEGIN_SRC python :results output
+  from ase import Atoms, Atom
+  from ase.io import write
+
+  b = 7.1
+  atoms2 = Atoms([Atom('C',[0., 0.,0.]),
+                  Atom('O',[1.1,0.,0.])],
+                 cell=[[b, b, 0.],
+                       [b, 0., b],
+                       [0., b, b]])
+  print 'V = %1.1f Ang^3' % atoms2.get_volume()
+
+  atoms2.center() #translate atoms to center of unit cell
+  write('molecules/fcc-cell.png',atoms2,show_unit_cell=2)
+#+END_SRC
+
+#+RESULTS:
+: V = 715.8 Ang^3
+
+file:molecules/fcc-cell.png
+
+At this point you might ask "How do you know the distance to the neighboring image?" The =ag= viewer lets you compute this graphically, but we can use code to determine this too. All we have to do is figure out the length of each lattice vector. We use the numpy module to compute the distance of a vector as the square root of the sum of squared elements.
+
+#+BEGIN_SRC python :results output
+  from ase import Atoms, Atom
+  import numpy as np
+
+  b = 7.1
+  atoms2 = Atoms([Atom('C',[0., 0.,0.]),
+                  Atom('O',[1.1,0.,0.])],
+                  cell=[[b, b, 0.],
+                        [b, 0., b],
+                        [0., b, b]])
+
+  # get unit cell vectors and their lengths
+  (a1, a2, a3) = atoms2.get_cell()
+  print '|a1| = %1.2f Ang' % np.sum(a1**2)**0.5
+  print '|a2| = %1.2f Ang' % np.sum(a2**2)**0.5
+  print '|a3| = %1.2f Ang' % np.sum(a3**2)**0.5
+
+#+END_SRC
+
+#+RESULTS:
+: |a1| = 10.04 Ang
+: |a2| = 10.04 Ang
+: |a3| = 10.04 Ang
+**
+
+*** Combining Atoms objects
+It is frequently useful to combine two Atoms objects, e.g. for computing reaction barriers, or other types of interactions. in ase, we simply add two Atoms objects together. Here is an example of getting an ammonia and oxygen molecule in the same unit cell.
+#+BEGIN_SRC python :results output
+  from ase import Atoms
+  from ase.data.molecules import molecule
+  from ase.io import write
+
+  atoms1 = molecule('NH3')
+
+  atoms2 = molecule('O2')
+  atoms2.translate([3,0,0])
+
+  bothatoms = atoms1 + atoms2
+  bothatoms.center(5)
+
+  write('molecules/bothatoms.png', bothatoms, show_unit_cell=2, rotation='90x')
+#+END_SRC
+
+#+RESULTS:
+
+file:molecules/bothatoms.png
+
+** Simple properties
+Simple properties do not require a DFT calculation. They are typically only functions of the atom types and geometries.
+*** Getting cartesian positions
+If you want the x,y,z coordinates of the atoms, use the func:ase.Atoms.get_positions. If you are interested in the fractional coordinates, use func:ase.Atoms.get_scaled_positions.
+
+#+BEGIN_SRC python :results output
+  from ase import Atoms
+  from ase.data.molecules import molecule
+  from ase.io import write
+
+  atoms = molecule('C6H6')
+
+  # access properties on each atom
+  print ' #  sym   p_x     p_y     p_z'
+  print '------------------------------'
+  for i,atom in enumerate(atoms):
+      print '%3i%3s%8.2f%8.2f%8.2f' % (i,atom.symbol,atom.x,atom.y,atom.z)
+
+  # get all properties in arrays
+  sym = atoms.get_chemical_symbols()
+  pos = atoms.get_positions()
+  num = atoms.get_atomic_numbers()
+
+  atom_indices = range(len(atoms))
+
+  print
+  print '  # sym   at#     p_x     p_y     p_z'
+  print '-------------------------------------'
+  for i,s,n,p in zip(atom_indices,sym,num,pos):
+      px,py,pz = p
+      print '%3i%3s%6i%10.2f%8.2f%8.2f' % (i,s,n,px,py,pz)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+ #  sym   p_x     p_y     p_z
+------------------------------
+  0  C    0.00    1.40    0.00
+  1  C    1.21    0.70    0.00
+  2  C    1.21   -0.70    0.00
+  3  C    0.00   -1.40    0.00
+  4  C   -1.21   -0.70    0.00
+  5  C   -1.21    0.70    0.00
+  6  H    0.00    2.48    0.00
+  7  H    2.15    1.24    0.00
+  8  H    2.15   -1.24    0.00
+  9  H    0.00   -2.48    0.00
+ 10  H   -2.15   -1.24    0.00
+ 11  H   -2.15    1.24    0.00
+
+  # sym   at#     p_x     p_y     p_z
+-------------------------------------
+  0  C     6      0.00    1.40    0.00
+  1  C     6      1.21    0.70    0.00
+  2  C     6      1.21   -0.70    0.00
+  3  C     6      0.00   -1.40    0.00
+  4  C     6     -1.21   -0.70    0.00
+  5  C     6     -1.21    0.70    0.00
+  6  H     1      0.00    2.48    0.00
+  7  H     1      2.15    1.24    0.00
+  8  H     1      2.15   -1.24    0.00
+  9  H     1      0.00   -2.48    0.00
+ 10  H     1     -2.15   -1.24    0.00
+ 11  H     1     -2.15    1.24    0.00
+#+end_example
+
+*** Molecular weight and molecular formula
+We can quickly compute the molecular weight of a molecule with this little recipe.
+
+#+BEGIN_SRC python :results output
+  from ase import Atoms
+  from ase.data.molecules import molecule
+
+  atoms = molecule('C6H6')
+  masses = atoms.get_masses()
+
+  molecular_weight = sum(masses)
+
+  print 'The molecular weight of %s is %f' % (atoms.get_chemical_symbols(reduce=True),
+                                              molecular_weight)
+#+END_SRC
+
+#+RESULTS:
+: The molecular weight of C6H6 is 78.113640
+
+*** Center of mass
+The center of mass is a helpful quantity to have for a variety of computations, including translating atoms for a rotation, etc...  Here is an example of getting the center of mass from an Atoms object using func:ase.Atoms.get_center_of_mass.
+
+COM = \frac{\sum m_i \cdot r_i}{\sum m_i}
+
+#+BEGIN_SRC python :results output
+  from ase import Atoms
+  from ase.structure import molecule
+  from ase.io import write
+
+  # ammonia
+  atoms = molecule('NH3')
+
+  print atoms.get_center_of_mass()  # cartesian coordinates
+
+  # compute the center of mass by hand
+  from ase.data import atomic_masses
+  import numpy as np
+  pos = atoms.positions
+  masses = atoms.get_masses()
+
+  COM = np.array([0., 0., 0.])
+  for m,p in zip(masses, pos):
+      COM += m*p
+  COM /= sum(masses)
+
+  print COM
+
+  # one-line linear algebra definition of COM
+  print np.dot(masses, pos)/np.sum(masses)
+#+END_SRC
+
+#+RESULTS:
+: [  0.00000000e+00   5.91843349e-08   4.75457009e-02]
+: [  0.00000000e+00   5.91843349e-08   4.75457009e-02]
+: [  0.00000000e+00   5.91843349e-08   4.75457009e-02]
+
+*** Moments of inertia
+
+func:ase.Atoms.get_moments_of_inertia
+
+#+BEGIN_SRC python :results output
+  from ase import *
+  from ase.structure import molecule
+  from ase.units import *
+
+  print 'linear rotors: I = [Ia Ia 0]'
+  atoms = molecule('CO2')
+  print '  CO2 moments of inertia: ',atoms.get_moments_of_inertia()
+  print
+
+  print 'symmetric rotors (IA = Ib) < Ic'
+  atoms = molecule('NH3')
+  print '  NH3 moments of inertia: ' ,atoms.get_moments_of_inertia()
+
+  atoms = molecule('C6H6')
+  print '  C6H6 moments of inertia: ' ,atoms.get_moments_of_inertia()
+  print
+
+  print 'symmetric rotors (IA = Ib) > Ic'
+  atoms = molecule('CH3Cl')
+  print 'CHCl3 moments of inertia: ',atoms.get_moments_of_inertia()
+  print
+
+  print 'spherical rotors Ia = Ib = Ic'
+  atoms = molecule('CH4')
+  print '  CH4 moments of inertia: ' ,atoms.get_moments_of_inertia()
+  print
+
+  print 'unsymmetric rotors Ia != Ib != Ic'
+  atoms = molecule('C3H7Cl')
+  print '  C3H7Cl moments of inertia: ' ,atoms.get_moments_of_inertia()
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+linear rotors: I = [Ia Ia 0]
+  CO2 moments of inertia:  [  0.          44.45384271  44.45384271]
+
+symmetric rotors (IA = Ib) < Ic
+  NH3 moments of inertia:  [ 1.71012426  1.71012548  2.67031768]
+  C6H6 moments of inertia:  [  88.77914641   88.77916799  177.5583144 ]
+
+symmetric rotors (IA = Ib) > Ic
+CHCl3 moments of inertia:  [  3.20372189  37.97009644  37.97009837]
+
+spherical rotors Ia = Ib = Ic
+  CH4 moments of inertia:  [ 3.19145621  3.19145621  3.19145621]
+
+unsymmetric rotors Ia != Ib != Ic
+  CHFClBr moments of inertia:  [  19.41351508  213.18961963  223.16255537]
+#+end_example
+
+mod:ase.structure.molecule
+#+RESULTS:
+
+*** Computing bond lengths and angles
+It is a common to compute bond lengths. The Atoms object contains a func:ase.Atoms.get_distance method to make this easy. You have to specify the indices of the two atoms you want the distance between. Don't forget the indices start at 0.
+
+#+BEGIN_SRC python :results output
+  from ase import Atoms
+  from ase.structure import molecule
+  from ase.io import write
+
+  # ammonia
+  atoms = molecule('NH3')
+
+  for i, atom in enumerate(atoms):
+      print '%2i %3s' % (i,atom.symbol)
+
+  # N-H bond length
+  print atoms.get_distance(0,1)
+#+END_SRC
+
+#+RESULTS:
+:  0   N
+:  1   H
+:  2   H
+:  3   H
+: 1.01679344636
+
+Bond angles are a little trickier. We can use some simple trigonometry: $a \cdot b = |a||b| \cos(\theta)$, so we can calculate the angle as $\theta = \acos\(\frac{a \cdot b}{|a||b|}$, we just have to define our two vectors $a$ and $b$. We compute these vectors as the difference in positions of two atoms. For example, here we compute the angle H-N-H in an ammonia molecule. This is the angle between N-H1 and N-H2. In the next example, we utilize functions in numpy to perform the calculations, specifically the arccos function, the [[shell:pydoc numpy.dot][dot]] function, and [[shell:pydoc numpy.linalg.norm][norm]] functions.
+
+#+BEGIN_SRC python :results output
+  from ase import Atoms
+  from ase.structure import molecule
+  from ase.io import write
+
+  # ammonia
+  atoms = molecule('NH3')
+
+  for i, atom in enumerate(atoms):
+      print '%2i %3s' % (i,atom.symbol)
+
+  a = atoms.positions[0] - atoms.positions[1]
+  b = atoms.positions[0] - atoms.positions[2]
+
+  from numpy import arccos, dot, pi
+  from numpy.linalg import norm
+
+  theta_rad = arccos(dot(a,b)/(norm(a)*norm(b))) # in radians
+
+  print 'theta = %1.1f degrees' % (theta_rad*180./pi)
+#+END_SRC
+
+#+RESULTS:
+:  0   N
+:  1   H
+:  2   H
+:  3   H
+: theta = 106.3 degrees
+
+Alternatively you could use the func:ase.Atoms.get_angle. Note we want the angle between atoms 1-0-2 to get the H-N-H angle.
+
+#+BEGIN_SRC python :results output
+  from ase import Atoms
+  from ase.data.molecules import molecule
+  from numpy import pi
+  # ammonia
+  atoms = molecule('NH3')
+
+  print atoms.get_angle([1,0,2])*180./pi
+#+END_SRC
+
+#+RESULTS:
+: 106.334624232
+
+
+**** Dihedral angles
+There is support in ase for computing [[http://en.wikipedia.org/wiki/Dihedral_angle][dihedral angles]]. Lets illustrate that for ethane. We will compute the dihedral angle between atoms 5, 1, 0, and 4. That is a H-C-C-H dihedral angle, and one can visually see (although not here) that these atoms have dihedral angle of 60 \circ.
+#+BEGIN_SRC python :results output
+  from ase import Atoms
+  from ase.structure import molecule
+  from ase.visualize import view
+  import numpy as np
+
+  atoms = molecule('C2H6')
+
+  for i, atom in enumerate(atoms):
+      print '%2i %3s' % (i,atom.symbol)
+
+  da = atoms.get_dihedral([5,1,0,4])*180./np.pi
+  print 'dihedral angle = %1.2f degrees' % da
+#+END_SRC
+
+#+RESULTS:
+:  0   C
+:  1   C
+:  2   H
+:  3   H
+:  4   H
+:  5   H
+:  6   H
+:  7   H
+: dihedral angle = 60.00 degrees
+
+*** Energy and forces
+Two of the most important quantities we are interested in is the total
+energy and the forces on the atoms. To get these, we have to define a
+calculator and attach it to an mod:ase.Atoms object so that
+it knows how to get the data, and then a DFT calculation must be run.
+
+It is straightforward to create a calculator that uses Dacapo to
+calculate everything. You just create an instance of
+mod:ase.calculators.jacapo.Jacapo as in this example. Jacapo is
+a python interface to Dacapo that also interacts with ase3. Here is an
+example of getting the energy and forces from a CO molecule. The forces in this case are very high,indicating that this geometry is not close to the ground state geometry. Note that the forces are only along the x-axis, which is along the molecular axis.
+
+#+BEGIN_SRC python :results output
+#!/usr/bin/env python
+import torque
+from ase import Atoms, Atom
+from ase.calculators.jacapo import Jacapo
+import numpy as np
+
+# this makes array printing a little more readable
+np.set_printoptions(precision=3,suppress=True)
+
+co = Atoms([Atom('C',[0,   0, 0]),
+            Atom('O',[1.2, 0, 0])],
+            cell=(6.,6.,6.))
+
+calc = Jacapo('molecules/co.nc',   #output filename
+              nbands=6,
+              pw=350,
+              ft=0.01,
+              atoms=co)
+
+print 'Total energy = ',co.get_potential_energy()
+print 'Forces = \n', co.get_forces()
+#+END_SRC
+
+#+RESULTS:
+: Total energy =  -591.081446318
+: Forces =
+: [[ 4.466 -0.     0.   ]
+:  [-4.5   -0.    -0.   ]]
+
+It does not look very different in Vasp. The total energies, and forces differ, because different pseudopotentials were used and different functionals were used (default functional for Dacapo is PW91).
+
+#+BEGIN_SRC python :results output
+#!/usr/bin/env python
+from ase import Atoms,Atom
+from jasp import *
+import numpy as np
+np.set_printoptions(precision=3,suppress=True)
+
+co = Atoms([Atom('C',[0,   0, 0]),
+            Atom('O',[1.2, 0, 0])],
+            cell=(6., 6., 6.))
+
+with jasp('molecules/simple-co', #output dir
+          xc='PBE',
+          nbands=6,
+          encut=350,
+          ismear=1,
+          sigma=0.01,
+          atoms=co):
+
+    print co.get_potential_energy()
+    print co.get_forces()
+#+END_SRC
+
+#+RESULTS:
+: -14.687906
+: [[ 5.095  0.     0.   ]
+:  [-5.095  0.     0.   ]]
+
+*** TODO The density of states
+*** TODO Visualizing electron density
+*** TODO Visualizing Kohn-Sham orbitals
+*** TODO Bader analysis
+*** TODO Dipole moments
+*** TODO Atom-projected density of states
+*** TODO Multicenter density of states
+** Geometry optimization
+*** Bond lengths
+**** Manual determination
+The equilibrium bond length of a CO molecule is approximately the bond length that minimizes the total energy. We can find that by computing the total energy as a function of bond length, and noting where the minimum is. Here is an example in vasp. There are a few features I would like to point out here. We want to compute 5 bond lengths, and each calculation is independent of all the others. :mod:jasp is setup to automatically handle jobs for you by submitting them to the queue.
+#+BEGIN_SRC python :results output :tangle ./molecules/co-manual.py
+#!/usr/bin/env python
+from ase import *
+from jasp import *
+import numpy as np
+np.set_printoptions(precision=3,suppress=True)
+
+bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
+energies = []
+
+ready = True # flag for when all calculations are done.
+for d in bond_lengths: #possible bond lengths
+
+    co = Atoms([Atom('C',[0,0,0]),
+                Atom('O',[d,0,0])],
+               cell=(6,6,6))
+
+    with jasp('molecules/co-{0}'.format(d), #output dir
+              xc='PBE',
+              nbands=6,
+              encut=350,
+              ismear=1,
+              sigma=0.01,
+              atoms=co):
+        try:
+            e = co.get_potential_energy()
+            energies.append(e)
+            print 'd = %1.2f ang' % d
+            print 'energy = %f eV' % e
+            print 'forces = (eV/ang)\n', co.get_forces()
+            print '' #blank line
+        except (VaspSubmitted, VaspQueued):
+            ready = False
+            pass
+
+if ready:
+    import matplotlib.pyplot as plt
+    plt.plot(bond_lengths, energies, 'bo-')
+    plt.xlabel('Bond length ($\AA$)')
+    plt.ylabel('Total energy (eV)')
+    plt.savefig('molecules/co-bondlengths.png')
+    print('[[./molecules/co-bondlengths.png]]')
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+d = 1.05 ang
+energy = -14.215189 eV
+forces = (eV/ang)
+[[-14.903   0.      0.   ]
+ [ 14.903   0.      0.   ]]
+
+d = 1.10 ang
+energy = -14.719882 eV
+forces = (eV/ang)
+[[-5.8  0.   0. ]
+ [ 5.8  0.   0. ]]
+
+d = 1.15 ang
+energy = -14.838448 eV
+forces = (eV/ang)
+[[ 0.645  0.     0.   ]
+ [-0.645  0.     0.   ]]
+
+d = 1.20 ang
+energy = -14.687906 eV
+forces = (eV/ang)
+[[ 5.095  0.     0.   ]
+ [-5.095  0.     0.   ]]
+
+d = 1.25 ang
+energy = -14.351675 eV
+forces = (eV/ang)
+[[ 8.141  0.     0.   ]
+ [-8.141  0.     0.   ]]
+
+[[./molecules/co-bondlengths.png]]
+#+end_example
+
+**** Automatic geometry optimization with vasp
+Vasp has built in geometry optimization using the IBRION and NSW tags. Here we compute the bond length for a CO molecule, letting Vasp do the geometry optimization for us.
+
+#+BEGIN_SRC python :results output
+#!/usr/bin/env python
+from ase import *
+from jasp import *
+import numpy as np
+
+co = Atoms([Atom('C',[0,0,0]),
+            Atom('O',[1.2,0,0])],
+            cell=(6,6,6))
+
+with jasp('molecules/co-qn',
+          xc='PBE',
+          nbands=6,
+          encut=350,
+          ismear=1,
+          sigma=0.01,
+          ibrion=2,
+          nsw=5,  # do at least 5 steps to relax
+          atoms=co) as calc:
+
+    print co.get_forces()
+
+    pos = co.get_positions()
+    d = ((pos[0] - pos[1])**2).sum()**0.5
+    print 'Bondlength = %1.2f angstroms' % d
+#+END_SRC
+
+#+RESULTS:
+: [[ 0.003307  0.        0.      ]
+:  [-0.003307  0.        0.      ]]
+: Bondlength = 1.14 angstroms
+
+
+
+** Vibrational frequencies
+Vasp has built-in capability for performing vibrational calculations.
+#+BEGIN_SRC python :results output org
+#adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
+from ase import Atoms, Atom
+from jasp import *
+
+atoms = Atoms([Atom('H',[0.5960812,  -0.7677068,   0.0000000]),
+               Atom('O',[0.0000000,   0.0000000,   0.0000000]),
+               Atom('H',[0.5960812,   0.7677068,   0.0000000])],
+               cell=(8,8,8))
+
+with jasp('molecules/h2o_vib',
+          xc='PBE',
+          encut=400,
+          ismear=0,# Gaussian smearing
+          ibrion=6,# finite differences with symmetry
+          nfree=2, # central differences (default)
+          potim=0.015,# default as well
+          ediff=1e-8,
+          nsw=1,
+          atoms=atoms) as calc:
+
+    print atoms.get_forces()
+    print calc.get_vibrational_frequencies()
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_ORG
+-14.227388
+[[ 0.006474 -0.021573 -0.001509]
+ [-0.012948  0.        0.003019]
+ [ 0.006474  0.021573 -0.001509]]
+[3836.1533119999999, 3722.659114, 1583.004226, 35.646208999999999, 21.378951000000001, (2.4811570000000001+0j), (94.092513999999994+0j), (96.601394999999997+0j), (122.151211+0j)]
+#+END_ORG
+
+Note we get 9 frequencies here. Water has 3 atoms, with three degrees of freedom each. Three of those degrees of freedom are translations, and three are rotations. That leaves 3N-6 = 3 degrees of vibrational freedom. The modes of water vibration are (with our calculated values in parentheses):
+
+1. a symmetric stretch at 3657 cm^{-1}   (3723)
+2. an asymmetric stretch at 3756 cm^{-1} (3836)
+3. and a bending mode at 1595 cm^{-1}    (1583)
+
+http://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=800#Electronic-Spec
+
+The results are not too far off, and more accurate frequencies may be possible using tighter tolerance on POTIM, or by using IBRION=7 or 8.
+
+Note: the calc.get_vibrational_frequencies() is only available in jasp (7/12/2012).
+
+
+
+
+
+
+** TODO Thermochemical properties of molecules
+** TODO Molecular reaction energies
+** TODO Molecular reaction barriers
+
+** TODO Simulated infrared spectra
+At http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02 there is a recipe for computing the Infrared vibrational spectroscopy intensities in Vasp. We are going to do that for water here. First, we will relax a water molecule.
+
+#+BEGIN_SRC python :results output org
+from ase import Atoms, Atom
+from jasp import *
+
+atoms = Atoms([Atom('H',[0.5960812,  -0.7677068,   0.0000000]),
+               Atom('O',[0.0000000,   0.0000000,   0.0000000]),
+               Atom('H',[0.5960812,   0.7677068,   0.0000000])],
+               cell=(8,8,8))
+
+with jasp('molecules/h2o_relax',
+          xc='PBE',
+          encut=400,
+          ismear=0,# Gaussian smearing
+          ibrion=2,
+          ediff=1e-8,
+          nsw=10,
+          atoms=atoms) as calc:
+
+    print atoms.get_forces()
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_ORG
+[[ 0.00033  -0.000422  0.      ]
+ [-0.00066   0.        0.      ]
+ [ 0.00033   0.000422  0.      ]]
+#+END_ORG
+
+Next, we instruct Vasp to compute the vibrational modes using density functional perturbation theory with IBRION=7. Note, this is different than in [[Vibrational frequencies]] where finite differences were used.
+
+#+BEGIN_SRC python
+from ase import Atoms, Atom
+from jasp import *
+
+#read in relaxed geometry
+with jasp('molecules/h2o_relax') as calc:
+    atoms = calc.get_atoms()
+
+# now define a new calculator
+with jasp('molecules/h2o_vib_dfpt',
+          xc='PBE',
+          encut=400,
+          ismear=0,# Gaussian smearing
+          ibrion=7, # switches on the DFPT vibrational analysis (with no symmetry constraints)
+          nfree=2,
+          potim=0.015,
+          lepsilon=True, # enables to calculate and to print the BEC tensors
+          lreal=False,
+          nsw=1,
+          nwrite=3, # affects OUTCAR verbosity: explicitly forces SQRT(mass)-divided eigenvectors to be printed
+          atoms=atoms) as calc:
+    calc.calculate(atoms)
+#+END_SRC
+
+#+RESULTS:
+
+To analyze the results, this shell script was provided to extract the results.
+#+BEGIN_SRC sh :results output :dir molecules/h2o_vib_dfpt
+#!/bin/bash
+# A utility for calculating the vibrational intensities from VASP output (OUTCAR)
+# (C) David Karhanek, 2011-03-25, ICIQ Tarragona, Spain (www.iciq.es)
+
+# extract Born effective charges tensors
+printf "..reading OUTCAR"
+BORN_NROWS=`grep NIONS OUTCAR | awk '{print $12*4+1}'`
+if [ `grep 'BORN' OUTCAR | wc -l` = 0 ] ; then \
+   printf " .. FAILED! Born effective charges missing! Bye! \n\n" ; exit 1 ; fi
+grep "in e, cummulative" -A $BORN_NROWS OUTCAR > born.txt
+
+# extract Eigenvectors and eigenvalues
+if [ `grep 'SQRT(mass)' OUTCAR | wc -l` != 1 ] ; then \
+   printf " .. FAILED! Restart VASP with NWRITE=3! Bye! \n\n" ; exit 1 ; fi
+EIG_NVIBS=`grep -A 2000 'SQRT(mass)' OUTCAR | grep 'cm-1' | wc -l`
+EIG_NIONS=`grep NIONS OUTCAR | awk '{print $12}'`
+EIG_NROWS=`echo "($EIG_NIONS+3)*$EIG_NVIBS+3" | bc`
+grep -A $(($EIG_NROWS+2)) 'SQRT(mass)' OUTCAR | tail -n $(($EIG_NROWS+1)) | sed 's/f\/i/fi /g' > eigenvectors.txt
+printf " ..done\n"
+
+# set up a new directory, split files - prepare for parsing
+printf "..splitting files"
+mkdir intensities ; mv born.txt eigenvectors.txt intensities/
+cd intensities/
+let NBORN_NROWS=BORN_NROWS-1
+let NEIG_NROWS=EIG_NROWS-3
+let NBORN_STEP=4
+let NEIG_STEP=EIG_NIONS+3
+tail -n $NBORN_NROWS born.txt > temp.born.txt
+tail -n $NEIG_NROWS eigenvectors.txt > temp.eige.txt
+mkdir inputs ; mv born.txt eigenvectors.txt inputs/
+split -a 3 -d -l $NEIG_STEP temp.eige.txt temp.ei.
+split -a 3 -d -l $NBORN_STEP temp.born.txt temp.bo.
+mkdir temps01 ; mv temp.born.txt temp.eige.txt temps01/
+for nu in `seq 1 $EIG_NVIBS` ; do
+ let nud=nu-1 ; ei=`printf "%03u" $nu` ; eid=`printf "%03u" $nud` ; mv temp.ei.$eid eigens.vib.$ei
+done
+for s in `seq 1 $EIG_NIONS` ; do
+ let sd=s-1 ; bo=`printf "%03u" $s` ; bod=`printf "%03u" $sd` ; mv temp.bo.$bod borncs.$bo
+done
+printf " ..done\n"
+
+# parse deviation vectors (eig)
+printf "..parsing eigenvectors"
+let sad=$EIG_NIONS+1
+for nu in `seq 1 $EIG_NVIBS` ; do
+ nuu=`printf "%03u" $nu`
+ tail -n $sad eigens.vib.$nuu | head -n $EIG_NIONS | awk '{print $4,$5,$6}' > e.vib.$nuu.allions
+ split -a 3 -d -l 1 e.vib.$nuu.allions temp.e.vib.$nuu.ion.
+ for s in `seq 1 $EIG_NIONS` ; do
+  let sd=s-1; bo=`printf "%03u" $s`; bod=`printf "%03u" $sd`; mv temp.e.vib.$nuu.ion.$bod e.vib.$nuu.ion.$bo
+ done
+done
+printf " ..done\n"
+
+# parse born effective charge matrices (born)
+printf "..parsing eff.charges"
+for s in `seq 1 $EIG_NIONS` ; do
+ ss=`printf "%03u" $s`
+ awk '{print $2,$3,$4}' borncs.$ss | tail -3 > bornch.$ss
+done
+mkdir temps02 ; mv eigens.* borncs.* temps02/
+printf " ..done\n"
+
+# parse matrices, multiply them and collect squares (giving intensities)
+printf "..multiplying matrices, summing "
+for nu in `seq 1 $EIG_NVIBS` ; do
+ nuu=`printf "%03u" $nu`
+ int=0.0
+ for alpha in 1 2 3 ;  do            # summing over alpha coordinates
+  sumpol=0.0
+  for s in `seq 1 $EIG_NIONS` ; do   # summing over atoms
+   ss=`printf "%03u" $s`
+   awk -v a="$alpha" '(NR==a){print}' bornch.$ss > z.ion.$ss.alpha.$alpha
+   # summing over beta coordinates and multiplying Z(s,alpha)*e(s) done by the following awk script
+   paste z.ion.$ss.alpha.$alpha  e.vib.$nuu.ion.$ss | \
+   awk '{pol=$1*$4+$2*$5+$3*$6; print $0,"  ",pol}' > matr-vib-${nuu}-alpha-${alpha}-ion-${ss}
+  done
+  sumpol=`cat matr-vib-${nuu}-alpha-${alpha}-ion-* | awk '{sum+=$7} END {print sum}'`
+  int=`echo "$int+($sumpol)^2" | sed 's/[eE]/*10^/g' |  bc -l`
+ done
+ freq=`awk '(NR==1){print $8}' temps02/eigens.vib.$nuu`
+ echo "$nuu $freq $int">> exact.res.txt
+ printf "."
+done
+printf " ..done\n"
+
+# format results, normalize intensities
+printf "..normalizing intensities"
+max=`awk '(NR==1){max=$3} $3>=max {max=$3} END {print max}' exact.res.txt`
+awk -v max="$max" '{printf "%03u %6.1f %5.3f\n",$1,$2,$3/max}' exact.res.txt > results.txt
+printf " ..done\n"
+
+# clean up, display results
+printf "..finalizing:\n"
+mkdir temps03; mv bornch.* e.vib.*.allions temps03/
+mkdir temps04; mv z.ion* e.vib.*.ion.* temps04/
+mkdir temps05; mv matr-* temps05/
+mkdir results; mv *res*txt results/
+let NMATRIX=$EIG_NVIBS**2
+printf "%5u atoms found\n%5u vibrations found\n%5u matrices evaluated" \
+       $EIG_NIONS $EIG_NVIBS $NMATRIX > results/statistics.txt
+  # fast switch to clean up all temporary files
+  rm -r temps*
+cat results/results.txt
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+..reading OUTCAR ..done
+..splitting files ..done
+..parsing eigenvectors ..done
+..parsing eff.charges ..done
+..multiplying matrices, summing ......... ..done
+..normalizing intensities ..done
+..finalizing:
+001 3827.3 0.227
+002 3713.0 0.006
+003 1587.2 0.312
+004  235.5 1.000
+005   19.1 0.006
+006    2.3 0.000
+007   16.6 0.005
+008   45.0 0.000
+009  136.1 0.345
+#+end_example
+
+
+Note the results above include the rotational and vibrational modes (modes 4-9). The following shell script (also from http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02) removes those, and recalculates the intensities.
+#+BEGIN_SRC sh :results output :dir molecules/h2o_vib_dfpt
+#!/bin/bash
+# reformat intensities, just normal modes: 3N -> (3N-6)
+printf "..reformatting and normalizing intensities"
+cd intensities/results/
+nlns=`wc -l exact.res.txt | awk '{print $1}' `; let bodylns=nlns-6
+head -n $bodylns exact.res.txt > temp.reform.res.txt
+max=`awk '(NR==1){max=$3} $3>=max {max=$3} END {print max}' temp.reform.res.txt`
+awk -v max="$max" '{print $1,$2,$3/max}' temp.reform.res.txt > exact.reform.res.txt
+awk -v max="$max" '{printf "%03u %6.1f %5.3f\n",$1,$2,$3/max}' temp.reform.res.txt > reform.res.txt
+printf " ..done\n..normal modes:\n"
+rm temp.reform.res.txt
+cat reform.res.txt
+cd ../..
+#+END_SRC
+
+#+RESULTS:
+: ..reformatting and normalizing intensities ..done
+: ..normal modes:
+: 001 3827.3 0.726
+: 002 3713.0 0.019
+: 003 1587.2 1.000
+
+
+* TODO Clusters
+* TODO Bulk systems
+** Defining and visualizing bulk systems
+** Determining bulk structures
+*** fcc/bcc
+*** hcp
+*** complex structures with internal degrees of freedom
+
+** Bulk reaction energies
+** Atom projected density of states
+#+BEGIN_SRC python :results output org
+from ase import Atoms, Atom
+from jasp import *
+import sys
+
+from pylab import *
+import numpy as np
+
+a = 3.9  # approximate lattice constant
+b = a / 2.
+bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
+             cell=[(0, b, b),
+                   (b, 0, b),
+                   (b, b, 0)])
+
+with jasp('bulk/pd-ados',
+          encut=300,
+          xc='PBE',
+          lreal=False,
+          rwigs=[1.5],  # wigner-seitz radii for ados
+          kpts=(8, 8, 8),
+          atoms=bulk) as calc:
+
+    # this runs the calculation
+    bulk.get_potential_energy()
+
+    # now get results
+    ados = VaspDos(efermi=calc.get_fermi_level())
+
+    energies = ados.energy
+    dos = ados.site_dos(0, 'd')
+
+    ind = (energies < 5) & (energies > -10)
+
+    energies = energies[ind]
+    dos = dos[ind]
+
+    Nstates = np.trapz(dos, energies)
+    occupied = energies <= 0.0
+    N_occupied_states = np.trapz(dos[occupied], energies[occupied])
+    ed = np.trapz(energies * dos, energies) / np.trapz(dos, energies)
+    wd2 = np.trapz(energies**2 * dos, energies) / np.trapz(dos, energies)
+
+    print 'Total # states = %1.2f' % Nstates
+    print '# occupied states = %1.2f' % N_occupied_states
+    print 'd-band center = %1.2f eV' % ed
+    print 'd-band width  = %1.2f eV' % np.sqrt(wd2)
+
+    # plot the d-band
+    plot(energies, dos, label='$d$-orbitals')
+
+    # plot the occupied states in shaded gray
+    fill_between(x=energies[occupied],
+                 y1=dos[occupied],
+                 y2=zeros(dos[occupied].shape),
+                 color='gray')
+
+    xlabel('$E - E_f$ (eV)')
+    ylabel('DOS (arbitrary units)')
+    savefig('bulk/pd-ados.png')
+    print '[[./bulk/pd-ados.png]]'
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_ORG
+#+END_ORG
+
+** Band structures
+** Simulated XRD spectra
+
+* TODO Surfaces
+** Surface structures
+** Surface relaxation
+** Surface energy
+#+BEGIN_SRC sh
+inkscape images/surface-construction.svg
+#+END_SRC
+
+#+BEGIN_SRC sh :results none
+convert images/surface-construction.svg images/surface-construction.png
+#+END_SRC
+
+#+caption: Schematic figure illustrating the calculation of a surface energy.
+[[./images/surface-construction.png]]
+
+
+quantum size effects? A. Kiejna, J. Peisert and P. Scharoch, Surf. Sci. 432 (1999) 54
+
+#+RESULTS:
+
+* Atomistic thermodynamics
+* TODO Recipes
+** Modifying Atoms by deleting atoms
+Sometimes it is convenient to create an Atoms object by deleting atoms from an existing object. Here is a recipe to delete all the hydrogen atoms in a molecule. The idea is to make a list of indices of which atoms to delete using list comprehension, then use list deletion to delete those indices.
+
+#+BEGIN_SRC python :results output
+  from ase.data.molecules import molecule
+  atoms = molecule('CH3CH2OH')
+  print atoms
+
+  ind2del = [atom.index for atom in atoms if atom.symbol=='H']
+  print ind2del
+
+  del atoms[ind2del]
+  print atoms
+#+END_SRC
+
+#+RESULTS:
+: Atoms(symbols='C2OH6', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False, False, False])
+: [3, 4, 5, 6, 7, 8]
+: Atoms(symbols='C2O', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False, False, False])
+
+* TODO Computational geometry
+** Changing coordinate systems
+Let A, B, C be the unit cell vectors
+1) A = A1 x + A2 y + A3 z
+2) B = B1 x + B2 y + B3 z
+3) C = C1 x + C2 y + C3 z
+
+and we want to find the vector [s1 s2 s3] so that
+4) P = s1 A + s2 B + s3 C
+where
+5) P = [p1x + p2y + p3z]
+
+if we expand 4), we get:
+  s1 A1 x + s1 A2 y + s1 A3 z
++ s2 B1 x + s2 B2 y + s2 B3 z
++ s3 C1 x + s3 C2 y + s3 C3 z = p1 x + p2 y + p3 z
+
+If we now match coefficients on x, y, and z, we can write a set of
+linear equations as:
+
+|A1 B1 C1| |s1|   |p1|
+|A2 B2 C2| |s2| = |p2|
+|A3 B3 C3| |s3|   |p3|
+
+or, in standard form:
+
+transpose(A) s = p
+
+and we need to solve for s as:
+
+s = (A.T)^-1 p
+
+p must be a column vector, so we will have to transpose the positions
+provided by the atoms class, and then transpose the final result to
+get the positions back into row-vector form:
+
+s = ((A.T)^-1 p.T).T
+
+Here we implement that in code:
+
+#+BEGIN_SRC python :results output
+from ase import *
+from ase.lattice.surface import *
+
+np.set_printoptions(precision=3,suppress=True)
+
+slab = fcc111('Pd',
+              a=3.92,       # Pd lattice constant
+              size=(2,2,3), #3-layer slab in 1x1 configuration
+              vacuum=10.0)
+
+pos = slab.get_positions() #these positions use x,y,z vectors as a basis
+
+# we want to see the atoms in terms of the unitcell vectors
+newbasis = slab.get_cell()
+
+s = np.dot(np.linalg.inv(newbasis.T),pos.T).T
+print 'Coordinates in new bases are: \n',s
+
+# what we just did is equivalent to the following atoms method
+print 'Scaled coordinates from ase are: \n',slab.get_scaled_positions()
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Coordinates in new bases are:
+[[ 0.167  0.167  0.408]
+ [ 0.667  0.167  0.408]
+ [ 0.167  0.667  0.408]
+ [ 0.667  0.667  0.408]
+ [-0.167  0.333  0.5  ]
+ [ 0.333  0.333  0.5  ]
+ [-0.167  0.833  0.5  ]
+ [ 0.333  0.833  0.5  ]
+ [ 0.     0.     0.592]
+ [ 0.5    0.     0.592]
+ [ 0.     0.5    0.592]
+ [ 0.5    0.5    0.592]]
+Scaled coordinates from ase are:
+[[ 0.167  0.167  0.408]
+ [ 0.667  0.167  0.408]
+ [ 0.167  0.667  0.408]
+ [ 0.667  0.667  0.408]
+ [ 0.833  0.333  0.5  ]
+ [ 0.333  0.333  0.5  ]
+ [ 0.833  0.833  0.5  ]
+ [ 0.333  0.833  0.5  ]
+ [ 0.     0.     0.592]
+ [ 0.5    0.     0.592]
+ [ 0.     0.5    0.592]
+ [ 0.5    0.5    0.592]]
+#+end_example
+
+
+The method shown above is general to all basis set transformations. We
+examine another case next. Sometimes it is nice if all the coordinates
+are integers. For this example, we will use the bcc primitive lattice
+vectors and express the positions of each atom in terms of them. By
+definition each atomic position should be an integer combination of
+the primitive lattice vectors (before relaxation, and assuming one
+atom is at the origin, and the unit cell is aligned with the primitive
+basis!)
+
+#!/usr/bin/env python
+#+BEGIN_SRC python :results output
+from ase.lattice.cubic import BodyCenteredCubic
+from ase.calculators.jacapo import *
+
+bulk = BodyCenteredCubic(directions=[[1,0,0],
+                                     [0,1,0],
+                                     [0,0,1]],
+                         size=(2,2,2),
+                         latticeconstant=2.87,
+                         symbol='Fe')
+
+
+newbasis = 2.87*np.array([[-0.5, 0.5, 0.5],
+                          [0.5, -0.5, 0.5],
+                          [0.5, 0.5, -0.5]])
+
+pos = bulk.get_positions()
+
+s = np.dot(np.linalg.inv(newbasis.T),pos.T).T
+print 'atom positions in primitive basis'
+print s
+
+#let's see the unit cell in terms of the primitive basis too
+print 'unit cell in terms of the primitive basis'
+print np.dot(np.linalg.inv(newbasis.T),bulk.get_cell().T).T
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+atom positions in primitive basis
+[[ 0.  0.  0.]
+ [ 1.  1.  1.]
+ [ 0.  1.  1.]
+ [ 1.  2.  2.]
+ [ 1.  0.  1.]
+ [ 2.  1.  2.]
+ [ 1.  1.  2.]
+ [ 2.  2.  3.]
+ [ 1.  1.  0.]
+ [ 2.  2.  1.]
+ [ 1.  2.  1.]
+ [ 2.  3.  2.]
+ [ 2.  1.  1.]
+ [ 3.  2.  2.]
+ [ 2.  2.  2.]
+ [ 3.  3.  3.]]
+unit cell in terms of the primitive basis
+[[ 0.  2.  2.]
+ [ 2.  0.  2.]
+ [ 2.  2.  0.]]
+#+end_example
+
+
+** Simple distances, angles
+Scientific.Geometry contains several useful functions for
+performing vector algebra including computing lengths and angles.
+
+#+BEGIN_SRC python :results output
+import numpy as np
+from Scientific.Geometry import *
+
+A = Vector([1,1,1])   #Scientfic
+a = np.array([1,1,1]) #numpy
+
+B = Vector([0.0,1.0,0.0])
+
+print '|A| = ',A.length()        #Scientific Python way
+print '|a| = ',np.sum(a**2)**0.5 #numpy way
+print '|a| = ',np.linalg.norm(a) #numpy way 2
+
+print 'ScientificPython angle = ',A.angle(B) #in radians
+print 'numpy angle =            ',np.arccos(np.dot(a/np.linalg.norm(a),B/np.linalg.norm(B)))
+
+#cross products
+print 'Scientific A .cross. B = ',A.cross(B)
+print 'numpy A .cross. B      = ',np.cross(A,B) #you can use Vectors in numpy
+#+END_SRC
+
+#+RESULTS:
+: |A| =  1.73205080757
+: |a| =  1.73205080757
+: |a| =  1.73205080757
+: ScientificPython angle =  0.955316618125
+: numpy angle =             0.955316618125
+: Scientific A .cross. B =  [-1.0, 0.0, 1.0]
+: numpy A .cross. B      =  [-1.  0.  1.]
+
+** Unit cell properties
+The volume of a unit cell can be calculated from $V = (a_1 \times a_2)
+\cdot a_3$ where $a_1$, $a_2$ and $a_3$ are the unit cell vectors. It
+is more convenient, however, to simply evaluate that equation as the
+determinant of the matrix describing the unit cell, where each row of
+the matrix is a unit cell vector.
+
+   $V = |\det(ucell)|$
+
+Why do we need to take the absolute value? The sign of the determinant
+depends on the handedness of the order of the unit cell vectors. If
+they are right-handed the determinant will be positive, and if they
+are left-handed the determinant will be negative. Switching any two
+rows will change the sign of the determinant and the
+handedness. :mod:`ase` implements a convenient function to get the
+volume of an :mod:`Atoms` object: :func:`ase.atoms.get_volume`.
+
+Here are three equivalent ways to compute the unit cell volume.
+
+#+BEGIN_SRC python :results output
+import numpy as np
+
+a1 = [2, 0, 0]
+a2 = [1, 1, 0]
+a3 = [0, 0, 10]
+
+uc = np.array([a1, a2, a3])
+
+print np.dot(np.cross(a1,a2),a3)
+print np.linalg.det(uc)
+
+from ase import *
+
+atoms = Atoms([],cell=uc) #empty list of atoms
+print atoms.get_volume()
+#+END_SRC
+
+#+RESULTS:
+: 20
+: 20.0
+: 20.0
+
+** d-spacing
+If you like to set up the vacuum in your slab calculations in terms of
+equivalent layers of atoms, you need to calculate the d-spacing for
+the hkl plane you are using. The script below shows several ways to
+accomplish that.
+#+BEGIN_SRC python :results output
+from ase import *
+import numpy as np
+from ase.lattice.cubic import FaceCenteredCubic
+
+ag = FaceCenteredCubic(directions=[[1,0,0],
+                                   [0,1,0],
+                                   [0,0,1]],
+                       size=(1,1,1),
+                       symbol='Ag',
+                       latticeconstant=4.0)
+
+# these are the reciprocal lattice vectors
+b1,b2,b3 = np.linalg.inv(ag.get_cell())
+
+'''
+g(111) = 1*b1 + 1*b2 + 1*b3
+
+and |g(111)| = 1/d_111
+'''
+h,k,l = (1,1,1)
+d = 1./np.linalg.norm(h*b1 + k*b2 + l*b3)
+
+print 'd_111 spacing = %1.3f Angstroms' % d
+
+#method #2
+hkl = np.array([h,k,l])
+G = np.array([b1,b2,b3]) #reciprocal unit cell
+
+'''
+Gstar is usually defined as this matrix of dot products:
+
+Gstar = np.array([[dot(b1,b1), dot(b1,b2), dot(b1,b3)],
+                  [dot(b1,b2), dot(b2,b2), dot(b2,b3)],
+                  [dot(b1,b3), dot(b2,b3), dot(b3,b3)]])
+
+but I prefer the notationally more compact:
+Gstar = G .dot. transpose(G)
+
+then, 1/d_hkl^2 = hkl .dot. Gstar .dot. hkl
+'''
+
+Gstar = np.dot(G,G.T)
+
+id2 = np.dot(hkl,np.dot(Gstar,hkl))
+
+print np.sqrt(1/id2)
+
+# http://books.google.com/books?id=nJHSqEseuIUC&lpg=PA118&ots=YA9TBldoVH&dq=reciprocal%20metric%20tensor&pg=PA119#v=onepage&q=reciprocal%20metric%20tensor&f=false
+
+
+'''Finally, many text books on crystallography use long algebraic
+formulas for computing the d-spacing with sin and cos, vector lengths,
+and angles. Below we compute these and use them in the general
+triclinic structure formula which applies to all the structures.
+'''
+from Scientific.Geometry import Vector
+import math
+
+unitcell = ag.get_cell()
+A = Vector(unitcell[0])
+B = Vector(unitcell[1])
+C = Vector(unitcell[2])
+
+# lengths of the vectors
+a = A.length()#*angstroms2bohr
+b = B.length()#*angstroms2bohr
+c = C.length()#*angstroms2bohr
+
+# angles between the vectors in radians
+alpha = B.angle(C)
+beta = A.angle(C)
+gamma = A.angle(B)
+
+print '%1.3f %1.3f %1.3f %1.3f %1.3f %1.3f\n' % (a,b,c,
+                                                 alpha,beta,gamma)
+
+h,k,l = (1,1,1)
+
+from math import sin, cos
+
+id2 = ((h**2/a**2*sin(alpha)**2
+       + k**2/b**2*sin(beta)**2
+       + l**2/c**2*sin(gamma)**2
+       +2*k*l/b/c*(cos(beta)*cos(gamma)-cos(alpha))
+       +2*h*l/a/c*(cos(alpha)*cos(gamma)-cos(beta))
+       +2*h*k/a/b*(cos(alpha)*cos(beta)-cos(gamma)))
+       /(1-cos(alpha)**2-cos(beta)**2 - cos(gamma)**2
+         +2*cos(alpha)*cos(beta)*cos(gamma)))
+
+d = 1/math.sqrt(id2)
+
+print d
+
+#+END_SRC
+
+#+RESULTS:
+: d_111 spacing = 2.309 Angstroms
+: 2.30940107676
+: 4.000 4.000 4.000 1.571 1.571 1.571
+:
+: 2.30940107676
+
+** Center of mass
+The center of mass is a convenient origin for many rotations, and
+moment of inertia calculations. The center of mass is computed from:
+
+   $COM = \frac{\sum m_i \cdot r_i}{\sum m_i}$
+
+There is a convenience function for this: :func:`ase.atoms.get_center_of_mass`
+
+** Moments of inertia
+Moments of inertia are used in the rotational partition function in
+statistical mechanics. There is a convenience function for this:
+:func:`ase.atoms.get_moments_of_inertia`. Here are examples of using
+the function to calculate the moments of inertia for several types of
+molecules.
+
+#+BEGIN_SRC python :results output
+from ase import *
+from ase.structure import molecule
+from ase.units import *
+
+print 'linear rotors: I = [Ia Ia 0]'
+mlc = 'CO2'
+atoms = molecule(mlc)
+
+print '  %s moments of inertia: ' %(mlc), atoms.get_moments_of_inertia()
+print
+
+print 'symmetric rotors (IA = Ib) < Ic'
+mlc = 'NH3'
+atoms = molecule(mlc)
+print '  %s moments of inertia: ' %(mlc), atoms.get_moments_of_inertia()
+
+mlc = 'C6H6'
+atoms = molecule(mlc)
+print '  %s moments of inertia: ' %(mlc), atoms.get_moments_of_inertia()
+print
+
+print 'spherical rotors Ia = Ib = Ic'
+mlc = 'CH4'
+atoms = molecule(mlc)
+print '  %s moments of inertia: ' %(mlc), atoms.get_moments_of_inertia()
+print
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+linear rotors: I = [Ia Ia 0]
+  CO2 moments of inertia:  [  0.          44.45384271  44.45384271]
+
+symmetric rotors (IA = Ib) < Ic
+  NH3 moments of inertia:  [ 1.71012426  1.71012548  2.67031768]
+  C6H6 moments of inertia:  [  88.77914641   88.77916799  177.5583144 ]
+
+spherical rotors Ia = Ib = Ic
+  CH4 moments of inertia:  [ 3.19145621  3.19145621  3.19145621]
+
+#+end_example
+
+* References
+\bibliographystyle{plain}
+\bibliographystyle{dft}
