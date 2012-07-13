@@ -819,8 +819,7 @@ The results are not too far off, and more accurate frequencies may be possible u
 
 Note: the calc.get_vibrational_frequencies() is only available in jasp (7/12/2012).
 
-** TODO Thermochemical properties of molecules
-
+** Thermochemical properties of molecules
 ase provides a [[https://wiki.fysik.dtu.dk/ase/ase/thermochemistry.html#module-thermochemistry][thermochemistry]] module.
 
 #+BEGIN_SRC python :results output
@@ -908,6 +907,8 @@ Free energy components at T = 298.15 K and P = 101325.0 Pa:
 #+end_example
 
 ** TODO Molecular reaction energies
+*** Water gas shift example
+*** Temperature dependent water gas shift equilibrium constant
 ** TODO Molecular reaction barriers
 
 ** Simulated infrared spectra
@@ -1398,7 +1399,7 @@ Sometimes it is convenient to create an Atoms object by deleting atoms from an e
 : [3, 4, 5, 6, 7, 8]
 : Atoms(symbols='C2O', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False, False, False])
 
-* TODO Computational geometry
+* Computational geometry
 ** Changing coordinate systems
 Let A, B, C be the unit cell vectors
 1) A = A1 x + A2 y + A3 z
