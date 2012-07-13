@@ -26,7 +26,7 @@ This book serves two purposes: 1) to provide worked examples of using DFT to mod
 - [[http://www.scipy.org/][scipy]]
 - [[http://matplotlib.sourceforge.net/][matplotlib]]
 - [[http://www.gnu.org/software/emacs/][emacs]]
-  - [[http://orgmode.org][org-mode]] This book is written in org-mode, adn is best read in
+  - [[http://orgmode.org][org-mode]] This book is written in org-mode, and is best read in
     emacs in org-mode. This format provides clickable links, easy
     navigation, syntax highlighting, as well as the ability to
     interact with the tables and code. The book is also available in
@@ -296,7 +296,7 @@ Simple properties do not require a DFT calculation. They are typically only func
 *** Getting cartesian positions
 If you want the x,y,z coordinates of the atoms, use the func:ase.Atoms.get_positions. If you are interested in the fractional coordinates, use func:ase.Atoms.get_scaled_positions.
 
-#+BEGIN_SRC python :results output
+#+BEGIN_SRC python :results output :exports both
   from ase import Atoms
   from ase.data.molecules import molecule
   from ase.io import write
@@ -360,7 +360,7 @@ If you want the x,y,z coordinates of the atoms, use the func:ase.Atoms.get_posit
 *** Molecular weight and molecular formula
 We can quickly compute the molecular weight of a molecule with this little recipe.
 
-#+BEGIN_SRC python :results output
+#+BEGIN_SRC python :results output :exports both
   from ase import Atoms
   from ase.data.molecules import molecule
 
@@ -381,7 +381,7 @@ The center of mass is a helpful quantity to have for a variety of computations, 
 
 COM = \frac{\sum m_i \cdot r_i}{\sum m_i}
 
-#+BEGIN_SRC python :results output
+#+BEGIN_SRC python :results output :exports both
   from ase import Atoms
   from ase.structure import molecule
   from ase.io import write
@@ -417,7 +417,7 @@ COM = \frac{\sum m_i \cdot r_i}{\sum m_i}
 
 func:ase.Atoms.get_moments_of_inertia
 
-#+BEGIN_SRC python :results output
+#+BEGIN_SRC python :results output :exports both
   from ase import *
   from ase.structure import molecule
   from ase.units import *
@@ -475,7 +475,7 @@ mod:ase.structure.molecule
 *** Computing bond lengths and angles
 It is a common to compute bond lengths. The Atoms object contains a func:ase.Atoms.get_distance method to make this easy. You have to specify the indices of the two atoms you want the distance between. Don't forget the indices start at 0.
 
-#+BEGIN_SRC python :results output
+#+BEGIN_SRC python :results output :exports both
   from ase import Atoms
   from ase.structure import molecule
   from ase.io import write
@@ -499,7 +499,7 @@ It is a common to compute bond lengths. The Atoms object contains a func:ase.Ato
 
 Bond angles are a little trickier. We can use some simple trigonometry: $a \cdot b = |a||b| \cos(\theta)$, so we can calculate the angle as $\theta = \acos\(\frac{a \cdot b}{|a||b|}$, we just have to define our two vectors $a$ and $b$. We compute these vectors as the difference in positions of two atoms. For example, here we compute the angle H-N-H in an ammonia molecule. This is the angle between N-H1 and N-H2. In the next example, we utilize functions in numpy to perform the calculations, specifically the arccos function, the [[shell:pydoc numpy.dot][dot]] function, and [[shell:pydoc numpy.linalg.norm][norm]] functions.
 
-#+BEGIN_SRC python :results output
+#+BEGIN_SRC python :results output :exports both
   from ase import Atoms
   from ase.structure import molecule
   from ase.io import write
@@ -530,7 +530,7 @@ Bond angles are a little trickier. We can use some simple trigonometry: $a \cdot
 
 Alternatively you could use the func:ase.Atoms.get_angle. Note we want the angle between atoms 1-0-2 to get the H-N-H angle.
 
-#+BEGIN_SRC python :results output
+#+BEGIN_SRC python :results output :exports both
   from ase import Atoms
   from ase.data.molecules import molecule
   from numpy import pi
@@ -546,7 +546,7 @@ Alternatively you could use the func:ase.Atoms.get_angle. Note we want the angle
 
 **** Dihedral angles
 There is support in ase for computing [[http://en.wikipedia.org/wiki/Dihedral_angle][dihedral angles]]. Lets illustrate that for ethane. We will compute the dihedral angle between atoms 5, 1, 0, and 4. That is a H-C-C-H dihedral angle, and one can visually see (although not here) that these atoms have dihedral angle of 60 \circ.
-#+BEGIN_SRC python :results output
+#+BEGIN_SRC python :results output :exports both
   from ase import Atoms
   from ase.structure import molecule
   from ase.visualize import view
@@ -584,7 +584,7 @@ mod:ase.calculators.jacapo.Jacapo as in this example. Jacapo is
 a python interface to Dacapo that also interacts with ase3. Here is an
 example of getting the energy and forces from a CO molecule. The forces in this case are very high,indicating that this geometry is not close to the ground state geometry. Note that the forces are only along the x-axis, which is along the molecular axis.
 
-#+BEGIN_SRC python :results output
+#+BEGIN_SRC python :results output :exports both
 #!/usr/bin/env python
 import torque
 from ase import Atoms, Atom
@@ -616,7 +616,7 @@ print 'Forces = \n', co.get_forces()
 
 It does not look very different in Vasp. The total energies, and forces differ, because different pseudopotentials were used and different functionals were used (default functional for Dacapo is PW91).
 
-#+BEGIN_SRC python :results output
+#+BEGIN_SRC python :results output :exports both
 #!/usr/bin/env python
 from ase import Atoms,Atom
 from jasp import *
@@ -655,7 +655,7 @@ with jasp('molecules/simple-co', #output dir
 *** Bond lengths
 **** Manual determination
 The equilibrium bond length of a CO molecule is approximately the bond length that minimizes the total energy. We can find that by computing the total energy as a function of bond length, and noting where the minimum is. Here is an example in vasp. There are a few features I would like to point out here. We want to compute 5 bond lengths, and each calculation is independent of all the others. :mod:jasp is setup to automatically handle jobs for you by submitting them to the queue.
-#+BEGIN_SRC python :results output :tangle ./molecules/co-manual.py
+#+BEGIN_SRC python :results output :exports both
 #!/usr/bin/env python
 from ase import *
 from jasp import *
@@ -737,7 +737,7 @@ forces = (eV/ang)
 **** Automatic geometry optimization with vasp
 Vasp has built in geometry optimization using the IBRION and NSW tags. Here we compute the bond length for a CO molecule, letting Vasp do the geometry optimization for us.
 
-#+BEGIN_SRC python :results output
+#+BEGIN_SRC python :results output :exports both
 #!/usr/bin/env python
 from ase import *
 from jasp import *
@@ -773,7 +773,7 @@ with jasp('molecules/co-qn',
 
 ** Vibrational frequencies
 Vasp has built-in capability for performing vibrational calculations.
-#+BEGIN_SRC python :results output org
+#+BEGIN_SRC python :results output org :exports both
 #adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
 from ase import Atoms, Atom
 from jasp import *
@@ -822,7 +822,7 @@ Note: the calc.get_vibrational_frequencies() is only available in jasp (7/12/201
 ** Thermochemical properties of molecules
 ase provides a [[https://wiki.fysik.dtu.dk/ase/ase/thermochemistry.html#module-thermochemistry][thermochemistry]] module.
 
-#+BEGIN_SRC python :results output
+#+BEGIN_SRC python :results output :exports both
 from ase.structure import molecule
 from ase.thermochemistry import IdealGasThermo
 from jasp import *
@@ -914,7 +914,7 @@ Free energy components at T = 298.15 K and P = 101325.0 Pa:
 ** Simulated infrared spectra
 At http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02 there is a recipe for computing the Infrared vibrational spectroscopy intensities in Vasp. We are going to do that for water here. First, we will relax a water molecule.
 
-#+BEGIN_SRC python :results output org
+#+BEGIN_SRC python :results output org :exports both
 from ase import Atoms, Atom
 from jasp import *
 
@@ -971,7 +971,7 @@ with jasp('molecules/h2o_vib_dfpt',
 #+RESULTS:
 
 To analyze the results, this shell script was provided to extract the results.
-#+BEGIN_SRC sh :results output :dir molecules/h2o_vib_dfpt
+#+BEGIN_SRC sh :results output :dir molecules/h2o_vib_dfpt :exports both
 #!/bin/bash
 # A utility for calculating the vibrational intensities from VASP output (OUTCAR)
 # (C) David Karhanek, 2011-03-25, ICIQ Tarragona, Spain (www.iciq.es)
@@ -1101,7 +1101,7 @@ cat results/results.txt
 
 
 Note the results above include the rotational and vibrational modes (modes 4-9). The following shell script (also from http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02) removes those, and recalculates the intensities.
-#+BEGIN_SRC sh :results output :dir molecules/h2o_vib_dfpt
+#+BEGIN_SRC sh :results output :dir molecules/h2o_vib_dfpt :exports both
 #!/bin/bash
 # reformat intensities, just normal modes: 3N -> (3N-6)
 printf "..reformatting and normalizing intensities"
