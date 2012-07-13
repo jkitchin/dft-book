@@ -17,7 +17,7 @@
 https://wiki.fysik.dtu.dk/ase/
 
 * Introduction to this book
-This book serves two purposes: 1) to provide worked examples of using DFT to model materials properties, and 2) to provide references to more advanced treatments of these topics in the literature. Along the way to learning how to perform the calculations, you will learn how to analyze the data, make plots, and how to interpret the results. This book makes heavy use of many computational tools including:
+This book serves two purposes: 1) to provide worked examples of using DFT to model materials properties, and 2) to provide references to more advanced treatments of these topics in the literature. It is not a definitive reference on density functional theory. Along the way to learning how to perform the calculations, you will learn how to analyze the data, make plots, and how to interpret the results. This book makes heavy use of many computational tools including:
 
 - [[http://python.org/][Python]]
   - [[http://docs.python.org/modindex.html][Module index]]
@@ -26,13 +26,20 @@ This book serves two purposes: 1) to provide worked examples of using DFT to mod
 - [[http://www.scipy.org/][scipy]]
 - [[http://matplotlib.sourceforge.net/][matplotlib]]
 - [[http://www.gnu.org/software/emacs/][emacs]]
-  - [[http://orgmode.org][org-mode]]
-- jasp
-jasp is a sophisticated wrapper to the :mod:ase.calculators.vasp python interface to the VASP calculator. It was written by me to facilitate writing this book, and to develop the best possible way to run DFT calculations.
+  - [[http://orgmode.org][org-mode]] This book is written in org-mode, adn is best read in
+    emacs in org-mode. This format provides clickable links, easy
+    navigation, syntax highlighting, as well as the ability to
+    interact with the tables and code. The book is also available in
+    pdf.
+
+- [[https://bitbucket.org/jkitchin/jasp][jasp]]
+jasp is a sophisticated wrapper to the :mod:ase.calculators.vasp python interface to the VASP calculator. It was written by me to facilitate writing this book, and to develop the best possible way to run DFT calculations. The best way to learn to use jasp is from this book.
 
 jasp is currently available at https://bitbucket.org/jkitchin/jasp.
 
 The DFT code used primarily in this book is [[http://cms.mpi.univie.ac.at/vasp/guide/vasp.html][Vasp]].
+  - [[http://cms.mpi.univie.ac.at/wiki/index.php/Main_Page][Vasp wiki]]
+  - [[http://cms.mpi.univie.ac.at/wiki/index.php/The_VASP_Manual][Vasp Manual]]
 
 * Introduction to DFT
 
@@ -802,7 +809,7 @@ Note: the calc.get_vibrational_frequencies() is only available in jasp (7/12/201
 ** TODO Molecular reaction energies
 ** TODO Molecular reaction barriers
 
-** TODO Simulated infrared spectra
+** Simulated infrared spectra
 At http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02 there is a recipe for computing the Infrared vibrational spectroscopy intensities in Vasp. We are going to do that for water here. First, we will relax a water molecule.
 
 #+BEGIN_SRC python :results output org
@@ -1015,20 +1022,25 @@ cd ../..
 : 002 3713.0 0.019
 : 003 1587.2 1.000
 
+The interpretation of these results is that the mode at 3713 cm^{-1} would be nearly invisible in the IR spectrum. Earlier we interpreted that as the symmetric stretch. In this mode, there is only a small change in the molecule dipole moment, so there is a small IR intensity.
+
+*** TODO Shell scripts are rough. One day I should rewrite this in python.
 
 * TODO Clusters
 * TODO Bulk systems
 ** Defining and visualizing bulk systems
-** Determining bulk structures
+** TODO Determining bulk structures
 *** fcc/bcc
 *** hcp
 *** complex structures with internal degrees of freedom
 
-** Bulk reaction energies
+** TODO Bulk reaction energies
 ** Atom projected density of states
+In this example, we consider how to get the atom-projected density of states. We are interested in properties of the $d$-band on Pd, such as the $d$-band center and d-band width.
 #+BEGIN_SRC python :results output org
 from ase import Atoms, Atom
 from jasp import *
+from ase.calculators.vasp import VaspDos
 import sys
 
 from pylab import *
@@ -1085,16 +1097,163 @@ with jasp('bulk/pd-ados',
 
     xlabel('$E - E_f$ (eV)')
     ylabel('DOS (arbitrary units)')
-    savefig('bulk/pd-ados.png')
-    print '[[./bulk/pd-ados.png]]'
+    savefig('pd-ados.png')
+    print '[[./{0}/pd-ados.png]]'.format(calc.vaspdir)
+    print os.getcwd()
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_ORG
+Total # states = 9.28
+# occupied states = 8.15
+d-band center = -2.01 eV
+d-band width  = 2.72 eV
+[[./bulk/pd-ados/pd-ados.png]]
+/home/jkitchin/dft-org/bulk/pd-ados
 #+END_ORG
 
 ** Band structures
+To compute a band structure we do two things. First, we compute the self-consistent band structure. Then we compute the band structure at the desired k-points. We will use Si as an example (adapted from http://bbs.sciencenet.cn/bbs/upload/20083418325986.pdf
+
+#+BEGIN_SRC python :results output
+from jasp import *
+JASPRC['queue.walltime'] = '10:00:00'
+
+from ase import Atom, Atoms
+from ase.visualize import view
+
+a = 5.38936
+atoms = Atoms([Atom('Si',[0,0,0]),
+               Atom('Si',[0.25, 0.25, 0.25])])
+
+atoms.set_cell([[a/2., a/2., 0.0],
+                [0.0,  a/2., a/2.],
+                [a/2., 0.0, a/2.]],scale_atoms=True)
+
+with jasp('bulk/Si-selfconsistent',
+          xc='PBE',
+          prec='Medium',
+          istart=0,
+          icharg=2,
+          ediff=0.1e-03,
+          kpts=(4,4,4),
+          atoms=atoms) as calc:
+    print atoms.get_potential_energy()
+#+END_SRC
+
+#+RESULTS:
+: -10.799983
+
+Now, we run a new calculation along the k-point path desired. The standard VASP way of doing this is to modify the INCAR and KPOINTS file and rerun VASP. We will not do that. Doing that results in some lost information if you overwrite the old files. We will copy the old directory to a new directory, using code to ensure this only happens one time.
+#+BEGIN_SRC python :results output
+from jasp import *
+JASPRC['queue.walltime'] = '10:00:00'
+
+import os, shutil
+
+wd = 'bulk/Si-bandstructure'
+
+if not os.path.isdir(wd):
+    shutil.copytree('bulk/Si-selfconsistent', wd)
+
+kpts = [[0.5,0.5,0.0],   # L
+        [0,0,0],         # Gamma
+        [0,0,0],
+        [0.5, 0.5, 0.5]] # X
+
+with jasp(wd) as calc:
+    calc.set(icharg=11) # update incar
+    calc.write_kpoints(mode='line',
+                       kpts=kpts,
+                       kpt_format='rec',
+                       intersections=10) # make new kpoint file
+    print calc.calculate()
+
+# note you cannot run this script more than once because vasp.py does not know how to read in our new kpoint file yet.
+#+END_SRC
+
+#+RESULTS:
+
+:func:ase.calculators.vasp.Vasp.read_kpoints does not support reading in this KPOINTS file yet. jasp does not have a fancy way of extracting band structures yet, so we will learn how to manually parse the EIGENVAL file here to generate the band structure.
+
+#+BEGIN_SRC python :results output
+f = open('bulk/Si-bandstructure/EIGENVAL', 'r')
+
+line1 = f.readline()
+line2 = f.readline()
+line3 = f.readline()
+line4 = f.readline()
+comment = f.readline()
+unknown, npoints, nbands = [int(x) for x in f.readline().split()]
+
+blankline = f.readline()
+
+band_energies = [[] for i in range(nbands)]
+
+for i in range(npoints):
+    x,y,z, weight = [float(x) for x in f.readline().split()]
+
+    for j in range(nbands):
+        fields = f.readline().split()
+        id, energy = int(fields[0]), float(fields[1])
+        band_energies[id-1].append(energy)
+    blankline = f.readline()
+f.close()
+
+import matplotlib.pyplot as plt
+
+for i in range(nbands):
+    plt.plot(range(npoints), band_energies[i])
+
+ax = plt.gca()
+ax.set_xticks([]) # no tick marks
+plt.xlabel('k-vector')
+ax.set_xticks([0,10,19])
+ax.set_xticklabels(['$L$', '$\Gamma$', '$X$'])
+plt.savefig('bulk/Si-bandstructure/bandstructure.png')
+#+END_SRC
+
+#+RESULTS:
+
+[[./bulk/Si-bandstructure/bandstructure.png]]
+
 ** Simulated XRD spectra
+You do not really need a DFT calculation for this, except to get the optimized structure. A few notes on using this module:
+
+1. You need a large repeat unit cell.
+2. It is is not fast. There is a double loop over the atoms, meaning N^2 operations.
+3. This example is primarily a proof of concept. I have not thought about how good the results are.
+
+#+BEGIN_SRC python :results output
+from ase import Atom,Atoms
+from ase.xrdebye import *
+import numpy as np
+
+wavelength = 1.051967 # in angstroms
+
+XRD = XrDebye(wavelength=wavelength,alpha=1.01,damping=0.0)
+
+a = 3.92  # approximate lattice constant
+b = a / 2.
+atoms = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
+              cell=[(0, b, b),
+                    (b, 0, b),
+                    (b, b, 0)]).repeat((5,5,5))
+
+thetas = np.linspace(0.2, np.pi/4.)
+
+I = [XRD.get(atoms,s=s) for s in 2*np.sin(thetas)/wavelength]
+
+import matplotlib.pyplot as plt
+plt.plot((2*thetas)*180./np.pi,I)
+plt.xlabel('$2\Theta$')
+plt.ylabel('Intensity (arb. units)')
+plt.savefig('images/pd-xrd.png')
+#+END_SRC
+
+#+RESULTS:
+
+[[./images/pd-xrd.png]]
 
 * TODO Surfaces
 ** Surface structures
