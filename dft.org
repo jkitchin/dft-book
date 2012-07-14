@@ -2306,6 +2306,48 @@ print '1 Rydberg = %f eV' % (1*Rydberg/eV)
 : 1 Hartree = 627.509541 kcal/mol
 : 1 Rydberg = 13.605698 eV
 
+*** numpy arrays
+
+See http://www.scipy.org/Cookbook/BuildingArrays for examples of making numpy arrays.
+
+4.1.1. Extracting parts of an array
+
+When analyzing numerical data you may often want to analyze only a part of the data. For example, suppose you have x and y data, (x=time, y=signal) and you want to integrate the date between a particular time interval. You can slice a numpy array to extract parts of it. See http://www.scipy.org/Cookbook/Indexing for several examples of this.
+
+In this example we show how to extract the data in an interval. We have x data in the range of 0 to 6, and y data that is the cos(x). We want to extract the x and y data for 2 < x < 4, and the corresponding y-data. To do this, we utilize the numpy capability of slicing with a boolean array. We also show some customization of matplotlib.
+
+#+BEGIN_SRC python
+#!/usr/bin/env python
+
+import numpy as np
+import matplotlib as mpl
+#http://matplotlib.sourceforge.net/users/customizing.html
+mpl.rcParams['legend.numpoints'] = 1 #default is 2
+from pylab import *
+
+x = np.linspace(0,6,100)
+y = np.cos(x)
+
+plot(x,y,label='full')
+
+ind = (x>2) & (x<4)
+
+subx = x[ind]
+suby = y[ind]
+
+plot(subx,suby,'bo',label='sliced')
+xlabel('x')
+ylabel('cos(x)')
+legend(loc='lower right')
+savefig('images/np-array-slice.png')
+#+END_SRC
+
+#+RESULTS:
+: None
+
+[[./images/np-array-slice.png]]
+The expression x>2 returns an array of booleans (True where the element of x is greater than 2, and False where it is not) equal in size to x. Similarly x<4 returns a boolean array where x is less than 4. We take the logical and & of these two boolean arrays to get another boolean array where both conditions are True (i.e. x<2 and x>4). This final boolean array is True for the part of the arrays we are interested in, and we can use it to extract the subarrays we want.
+
 *** Statistics
 **** Confidence intervals
 #+BEGIN_SRC python :results output
@@ -2774,6 +2816,255 @@ carriage return.
 3) Manually writing and reading files is pretty tedious. Whenever
 possible you should use the builtin methods of numpy or pylab.
 
+*** Integration
+Numerical integrations is easy with the numpy.trapz() method. Use it like this: numpy.trapz(y,x). Note that y comes first. y and x must be the same length.
+
+Integration can be used to calculate average properties of continuous distributions. Suppose for example, we have a density of states, \rho as a function of energy E. We can integrate the density of states to find the total number of states:
+
+$N_{states} = \int \rho dE$
+
+or, in python:
+
+>>> Nstates = np.trapz(rho,E)
+
+where rho is a vector that contains the density of states at each energy in the vector E (vector here means a list of numbers).
+
+The average energy of distribution is:
+
+$E_{avg} = \frac{\int \rho E dE}{\int \rho dE}$
+
+or, in python:
+
+>>> e_avg = np.trapz(rho*E,E)/np.trapz(rho,E)
+
+These last two examples are the zeroth and first moments of the density of states. The second moment is related to the width squared of the distribution, and the third and fourth moements are related to skewness and kurtosis of the distribution.
+
+The nth moment is defined by:
+
+$m_n = \frac{\int \rho*E^n dE}{\int \rho dE}$
+
+To get the second moment of the density of states in python, we use::
+
+    >>> n = 2
+    >>> mom_2 = np.trapz(rho*E**n,E)/np.trapz(rho,E)
+
+*** Numerical differentiation
+numpy has a function called numpy.diff() that is similar to the one found in matlab. It calculates the differences between the elements in your list, and returns a list that is one element shorter, which makes it unsuitable for plotting the derivative of a function.
+4.3.1. Simple loops to define finite difference derivatives
+
+Loops in python are pretty slow (relatively speaking) but they are usually trivial to understand. In this script we show some simple ways to construct derivative vectors using loops. It is implied in these formulas that the data points are equally spaced.
+
+#+BEGIN_SRC python
+
+import numpy as np
+from pylab import *
+import time
+
+'''
+These are the brainless way to calculate numerical derivatives. They
+work well for very smooth data. they are surprisingly fast even up to
+10000 points in the vector.
+'''
+
+x = np.linspace(0.78,0.79,100)
+y = np.sin(x)
+dy_analytical = np.cos(x)
+'''
+lets use a forward difference method:
+that works up until the last point, where there is not
+a forward difference to use. there, we use a backward difference.
+'''
+
+tf1 = time.time()
+dyf = [0.0]*len(x)
+for i in range(len(y)-1):
+    dyf[i] = (y[i+1] - y[i])/(x[i+1]-x[i])
+#set last element by backwards difference
+dyf[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
+
+print ' Forward difference took %1.1f seconds' % (time.time() - tf1)
+
+'''and now a backwards difference'''
+tb1 = time.time()
+dyb = [0.0]*len(x)
+#set first element by forward difference
+dyb[0] = (y[0] - y[1])/(x[0] - x[1])
+for i in range(1,len(y)):
+    dyb[i] = (y[i] - y[i-1])/(x[i]-x[i-1])
+
+print ' Backward difference took %1.1f seconds' % (time.time() - tb1)
+
+'''and now, a centered formula'''
+tc1 = time.time()
+dyc = [0.0]*len(x)
+dyc[0] = (y[0] - y[1])/(x[0] - x[1])
+for i in range(1,len(y)-1):
+    dyc[i] = (y[i+1] - y[i-1])/(x[i+1]-x[i-1])
+dyc[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
+
+print ' Centered difference took %1.1f seconds' % (time.time() - tc1)
+
+'''
+the centered formula is the most accurate formula here
+'''
+
+plot(x,y)
+plot(x,dy_analytical,label='analytical derivative')
+plot(x,dyf,'--',label='forward')
+plot(x,dyb,'--',label='backward')
+plot(x,dyc,'--',label='centered')
+
+legend(loc='lower left')
+savefig('images/simple-diffs.png')
+show()
+#+END_SRC
+
+#+RESULTS:
+: None
+
+[[./images/simple-diffs.png]]
+
+Loops are usually not great for performance. Numpy offers some vectorized methods that allow us to compute derivatives without loops, although this comes at the mental cost of harder to understand syntax:
+
+#+BEGIN_SRC python
+import numpy as np
+from pylab import *
+
+x = np.linspace(0,2*np.pi,100)
+y = np.sin(x)
+dy_analytical = np.cos(x)
+
+
+# we need to specify the size of dy ahead because diff returns
+#an array of n-1 elements
+dy = np.zeros(y.shape,np.float) #we know it will be this size
+dy[0:-1] = np.diff(y)/np.diff(x)
+dy[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
+
+
+'''
+calculate dy by center differencing using array slices
+'''
+
+dy2 = np.zeros(y.shape,np.float) #we know it will be this size
+dy2[1:-1] = (y[2:] - y[0:-2])/(x[2:] - x[0:-2])
+dy2[0] = (y[1]-y[0])/(x[1]-x[0])
+dy2[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
+
+plot(x,y)
+plot(x,dy_analytical,label='analytical derivative')
+plot(x,dy,label='forward diff')
+plot(x,dy2,'k--',lw=2,label='centered diff')
+legend(loc='lower left')
+savefig('images/vectorized-diffs.png')
+show()
+#+END_SRC
+
+#+RESULTS:
+: None
+
+[[./images/vectorized-diffs.png]]
+
+If your data is very noisy, you will have a hard time getting good derivatives; derivatives tend to magnify noise. In these cases, you have to employ smoothing techniques, either implicitly by using a multipoint derivative formula, or explicitly by smoothing the data yourself, or taking the derivative of a function that has been fit to the data in the neighborhood you are interested in.
+
+Here is an example of a 4-point centered difference of some noisy data:
+
+#+BEGIN_SRC python
+import numpy as np
+from pylab import *
+
+x = np.linspace(0,2*np.pi,100)
+y = np.sin(x) + 0.1*np.random.random(size=x.shape)
+dy_analytical = np.cos(x)
+
+#2-point formula
+dyf = [0.0]*len(x)
+for i in range(len(y)-1):
+    dyf[i] = (y[i+1] - y[i])/(x[i+1]-x[i])
+#set last element by backwards difference
+dyf[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
+
+'''
+calculate dy by 4-point center differencing using array slices
+
+\frac{y[i-2] - 8y[i-1] + 8[i+1] - y[i+2]}{12h}
+
+y[0] and y[1] must be defined by lower order methods
+and y[-1] and y[-2] must be defined by lower order methods
+'''
+
+dy = np.zeros(y.shape,np.float) #we know it will be this size
+h = x[1]-x[0] #this assumes the points are evenely spaced!
+dy[2:-2] = (y[0:-4] - 8*y[1:-3] + 8*y[3:-1] - y[4:])/(12.*h)
+
+dy[0] = (y[1]-y[0])/(x[1]-x[0])
+dy[1] = (y[2]-y[1])/(x[2]-x[1])
+dy[-2] = (y[-2] - y[-3])/(x[-2] - x[-3])
+dy[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
+
+
+plot(x,y)
+plot(x,dy_analytical,label='analytical derivative')
+plot(x,dyf,'r-',label='2pt-forward diff')
+plot(x,dy,'k--',lw=2,label='4pt-centered diff')
+legend(loc='lower left')
+savefig('images/multipt-diff.png')
+show()
+#+END_SRC
+
+#+RESULTS:
+: None
+
+[[./images/multipt-diff.png]]
+
+The derivative is still noisy, but the four-point derivative is a little better than the two-pt formula.
+
+**** FFT derivatives
+
+It is possible to perform derivatives using FFT:
+#+BEGIN_SRC python
+import numpy as np
+from pylab import *
+
+N = 101 #number of points
+L = 2*np.pi #interval of data
+
+x = np.arange(0.0,L,L/float(N)) #this does not include the endpoint
+
+#add some random noise
+y = np.sin(x) + 0.05*np.random.random(size=x.shape)
+dy_analytical = np.cos(x)
+
+'''
+http://sci.tech-archive.net/Archive/sci.math/2008-05/msg00401.html
+
+you can use fft to calculate derivatives!
+'''
+
+if N % 2 == 0:
+    k = np.asarray(range(0,N/2)+[0] + range(-N/2+1,0))
+else:
+    k = np.asarray(range(0,(N-1)/2) +[0] + range(-(N-1)/2,0))
+
+k *= 2*np.pi/L
+
+fd = np.fft.ifft(1.j*k * np.fft.fft(y))
+
+plot(x,y)
+plot(x,dy_analytical,label='analytical der')
+plot(x,fd,label='fft der')
+legend(loc='lower left')
+
+savefig('images/fft-der.png')
+show()
+#+end_src
+
+#+RESULTS:
+: None
+
+[[./images/fft-der.png]]
+
+This example does not show any major advantage in the quality of the derivative, and it is almost certain I would never remember how to do this off the top of my head.
 
 *** NetCDF files
 -------------
