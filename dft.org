@@ -479,6 +479,7 @@ unsymmetric rotors Ia != Ib != Ic
 mod:ase.structure.molecule
 #+RESULTS:
 
+** Simple properties that require computations
 *** Computing bond lengths and angles
 It is a common to compute bond lengths. The Atoms object contains a func:ase.Atoms.get_distance method to make this easy. You have to specify the indices of the two atoms you want the distance between. Don't forget the indices start at 0.
 
@@ -650,13 +651,161 @@ with jasp('molecules/simple-co', #output dir
 : [[ 5.095  0.     0.   ]
 :  [-5.095  0.     0.   ]]
 
-*** TODO The density of states
-*** TODO Visualizing electron density
+*** The density of states
+#+BEGIN_SRC python
+#!/usr/bin/env python
+from ase.dft.dos import *
+from jasp import *
+from pylab import *
+
+with jasp('molecules/co-qn') as calc:
+    dos = DOS(calc)
+    plot(dos.get_energies(),dos.get_dos())
+    xlabel('Energy - $E_f$ (eV)')
+    ylabel('DOS')
+    savefig('images/co-dos.png')
+#+END_SRC
+
+#+RESULTS:
+
+[[./images/co-dos.png]]
+
+*** Visualizing electron density
+
+#+BEGIN_SRC python
+#!/usr/bin/env python
+from enthought.mayavi import mlab
+from jasp import *
+
+with jasp('molecules/co-qn') as calc:
+    x,y,z,cd = calc.get_charge_density()
+
+mlab.contour3d(x,y,z,cd)
+
+mlab.savefig('images/co-cd.png')
+
+mlab.show()
+#+END_SRC
+
+#+RESULTS:
+: None
+
+[[./images/co-cd.png]]
+
 *** TODO Visualizing Kohn-Sham orbitals
+need to read wavecar files!
+
 *** TODO Bader analysis
-*** TODO Dipole moments
+*** Dipole moments
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.calculators.vasp import *
+from ase.units import Debye
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('C',[2.422,0,0]),
+               Atom('O',[3.578,0,0])],
+            cell=(10,10,10))
+
+atoms.center()
+
+with jasp('molecules/co-centered',
+          encut=350,
+          xc='PBE',
+          atoms=atoms) as calc:
+    atoms.get_potential_energy()
+
+    vcd = VaspChargeDensity()
+
+    cd = np.array(vcd.chg[0])
+    n0, n1, n2 = cd.shape
+
+    s0 = 1.0/n0
+    s1 = 1.0/n1
+    s2 = 1.0/n2
+
+    X, Y, Z = np.mgrid[0.0:1.0:s0,
+                       0.0:1.0:s1,
+                       0.0:1.0:s2]
+
+    C = np.column_stack([X.ravel(),
+                         Y.ravel(),
+                         Z.ravel()])
+
+    atoms = calc.get_atoms()
+    uc = atoms.get_cell()
+    real = np.dot(C, uc)
+
+    #now convert arrays back to unitcell shape
+    x = np.reshape(real[:, 0], (n0, n1, n2))
+    y = np.reshape(real[:, 1], (n0, n1, n2))
+    z = np.reshape(real[:, 2], (n0, n1, n2))
+
+    nelements = n0*n1*n2
+    voxel_volume = atoms.get_volume()/nelements
+    total_electron_charge = -cd.sum()*voxel_volume
+
+
+    electron_density_center = np.array([(cd*x).sum(),
+                                        (cd*y).sum(),
+                                        (cd*z).sum()])
+    electron_density_center *= voxel_volume
+    electron_density_center /= total_electron_charge
+
+    electron_dipole_moment = electron_density_center*total_electron_charge
+    electron_dipole_moment *= -1.0 #we need the - here so the two
+                                    #negatives don't cancel
+    # now the ion charge center
+
+    from jasp.POTCAR import get_ZVAL
+
+    LOP = calc.get_pseudopotentials()
+    ppp = os.environ['VASP_PP_PATH']
+
+    zval = {}
+    for sym, ppath, hash in LOP:
+        fullpath = os.path.join(ppp, ppath)
+        z = get_ZVAL(fullpath)
+        zval[sym] = z
+    ion_charge_center = np.array([0.0, 0.0, 0.0])
+    total_ion_charge = 0.0
+    for atom in atoms:
+        Z = zval[atom.symbol]
+        total_ion_charge += Z
+        pos = atom.position
+        ion_charge_center += Z*pos
+
+    ion_charge_center /= total_ion_charge
+    ion_dipole_moment = ion_charge_center*total_ion_charge
+
+    dipole_vector = (ion_dipole_moment + electron_dipole_moment)
+
+    dipole_moment = ((dipole_vector**2).sum())**0.5/Debye
+
+    print 'The dipole moment is {0:1.2f}'.format(dipole_moment)
+#+END_SRC
+
+#+RESULTS:
+: -14.794112
+: The dipole moment is 0.10
+
+Note that a convenience function using the code above exists in jasp:
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.units import Debye
+
+with jasp('molecules/co-centered') as calc:
+    dipole_vector = calc.get_dipole_moment()
+    dipole_moment = ((dipole_vector**2).sum())**0.5/Debye
+    print 'The dipole moment is {0:1.2f} Debye'.format(dipole_moment)
+#+END_SRC
+
+#+RESULTS:
+: The dipole moment is 0.10 Debye
+
 *** TODO Atom-projected density of states
-*** TODO Multicenter density of states
+
 ** Geometry optimization
 *** Bond lengths
 **** Manual determination
@@ -2522,7 +2671,6 @@ savefig('images/nonlinear-fitting-lsq.png')
 [[./images/nonlinear-fitting-lsq.png]]
 
 *** TODO Interpolation in 3D
-vasp.py does not have a get_charge_density function!
 
 You might ask, why would I need to interpolate in 3D? Suppose you want to plot the charge density along a line through a unit cell that does not correspond to grid points? What are you to do? Interpolate. In contrast to an abundance of methods for 1D and 2D interpolation, I could not find any standard library methods for 3D interpolation. The Scipy cookbook on interpolation suggests that it should be doable with ndimage, but I could not figure out how to make those examples work.
 
@@ -2549,10 +2697,36 @@ In a trilinear interpolation scheme in a cell we perform several interpolations.
 Now, we use 1D interpolation formulas to compute the value of the scalar field at points I1 by interpolating between P1 and P2, and the value of the scalar field at I2 by interpolating between P3 and P4. In these points the only variable changing is x, so it is a simple 1D interpolation. We can then compute the value of the scalar field at I5 by interpolating between I1 and I2. We repeat the process on the top of the cube, to obtain points I3, I4 and I5. Finally, we compute the value of the scalar field at point P by interpolating between points I5 and I6. Note that the point I5 has coordinates (a,b,z1) and (a,b,z2), so the final interpolation is again a 1D interpolation along z evaluated at z=c to get the final value of the scalar field at P=(a,b,c).
 #+BEGIN_SRC python
 from jasp import *
+from ase.calculators.vasp import *
 
-with jasp('molecules/co-qn') as calc:
+with jasp('molecules/co-centered') as calc:
     atoms = calc.get_atoms()
-    x,y,z,cd = calc.get_charge_density()
+
+    vcd = VaspChargeDensity()
+
+    cd = np.array(vcd.chg[0])
+    n0, n1, n2 = cd.shape
+
+    s0 = 1.0/n0
+    s1 = 1.0/n1
+    s2 = 1.0/n2
+
+    X, Y, Z = np.mgrid[0.0:1.0:s0,
+                       0.0:1.0:s1,
+                       0.0:1.0:s2]
+
+    C = np.column_stack([X.ravel(),
+                         Y.ravel(),
+                         Z.ravel()])
+
+    atoms = calc.get_atoms()
+    uc = atoms.get_cell()
+    real = np.dot(C, uc)
+
+    #now convert arrays back to unitcell shape
+    x = np.reshape(real[:, 0], (n0, n1, n2))
+    y = np.reshape(real[:, 1], (n0, n1, n2))
+    z = np.reshape(real[:, 2], (n0, n1, n2))
 
 def interp3d(x,y,z,cd,xi,yi,zi):
     '''
@@ -2609,8 +2783,8 @@ def interp3d(x,y,z,cd,xi,yi,zi):
 
 pos = atoms.get_positions()
 
-P1 = np.array([0.0, 3.0, 3.0])
-P2 = np.array([5.0, 3.0, 3.0])
+P1 = np.array([0.0, 5.0, 5.0])
+P2 = np.array([9.0, 5.0, 5.0])
 
 npoints = 60
 
@@ -2618,6 +2792,7 @@ points = [P1 + n*(P2-P1)/npoints for n in range(npoints)]
 
 R = [np.linalg.norm(p-P1) for p in points]
 
+# interpolated line
 icd = [interp3d(x,y,z,cd,p[0],p[1],p[2]) for p in points]
 
 from pylab import *
@@ -2629,8 +2804,13 @@ plot([cR,cR],[0,2],'r-') #markers for where the nuclei are
 plot([oR,oR],[0,8],'r-')
 xlabel('|R| ($\AA$)')
 ylabel('Charge density (e/$\AA^3$)')
+savefig('images/CO-charge-density.png')
 show()
 #+END_SRC
+
+#+RESULTS:
+
+[[./images/CO-charge-density.png]]
 
 To generalize this to non-cubic cells, we need to do interpolation along arbitrary vectors. The overall strategy is the same:
 
