@@ -1164,6 +1164,40 @@ if None not in (E_O, E_O2):
 
 This is much closer to accepted literature values for the DFT-GGA O2 dissociation energy. It is still more than 1 eV above an experimental value, but most of that error is due to the GGA exchange correlation functional. Some additional parameters that might need to be checked for convergence are the SIGMA value (it is probably too high for a molecule), as well as the cutoff energy. Oxygen is a "hard" atom that requires a high cutoff energy to achieve high levels of convergence.
 
+***** Looking at the two spin densities
+In a spin-polarized calculation there are actually two electron densities: one for spin-up and one for spin-down. We will look at the differences in these two through the density of states.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.dft.dos import *
+
+with jasp('molecules/O2-sp-triplet') as calc:
+    dos = DOS(calc, width=0.2)
+    d_up = dos.get_dos(spin=0)
+    d_down = dos.get_dos(spin=1)
+    e = dos.get_energies()
+
+ind = e <= 0.0
+# integrate up to 0eV
+print 'number of up states = {0}'.format(np.trapz(d_up[ind],e[ind]))
+print 'number of down states = {0}'.format(np.trapz(d_down[ind],e[ind]))
+
+import pylab as plt
+plt.plot(e, d_up, e, -d_down)
+plt.xlabel('energy [eV]')
+plt.ylabel('DOS')
+plt.legend(['up','down'])
+plt.savefig('images/O2-sp-dos.png')
+#+END_SRC
+
+#+RESULTS:
+: number of up states = 7.00000343617
+: number of down states = 5.00001715094
+
+[[./images/O2-sp-dos.png]]
+
+You can see there are two different densities of states for the two spins. One has 7 electrons in it, and the other has 5 electrons in it. The difference of two electrons leads to the magnetic moment of 2 which we calculated earlier.
+
 **** Estimating triplet oxygen dissociation energy with low symmetry
 It has been suggested that breaking spherical symmetry of the atom can result in lower energy of the atom. The symmetry is broken by putting the atom off-center in a box.
 #+BEGIN_SRC python :results output
@@ -2064,6 +2098,107 @@ write('images/AgPd-bulk.png',atoms,show_unit_cell=2)
 ** TODO Determining bulk structures
 *** fcc/bcc
 *** hcp
+
+#+BEGIN_SRC python :results output
+from ase.lattice.hexagonal import HexagonalClosedPacked
+from jasp import *
+from ase.visualize import view
+JASPRC['queue.walltime'] = '10:00:00'
+atoms = HexagonalClosedPacked(symbol='Ru',
+                              latticeconstant={'a':2.7, 'c/a':1.584})
+
+a_list = [2.5, 2.6, 2.7, 2.8, 2.9]
+covera_list = [1.4, 1.5, 1.6, 1.7, 1.8]
+
+for a in a_list:
+    for covera in covera_list:
+
+        atoms = HexagonalClosedPacked(symbol='Ru',
+                              latticeconstant={'a':a, 'c/a':covera})
+        wd = 'bulk/Ru/{0:1.2f}-{1:1.2f}'.format(a,covera)
+
+        with jasp(wd,
+                  xc='PBE',
+                  kpts=(6,6,4),
+                  encut=350,
+                  atoms=atoms) as calc:
+            try:
+                atoms.get_potential_energy()
+            except (VaspSubmitted, VaspQueued):
+                pass
+
+#+END_SRC
+
+#+RESULTS:
+
+#+BEGIN_SRC python :results output
+from jasp import *
+import matplotlib.pyplot as plt
+
+a_list = [2.5, 2.6, 2.7, 2.8, 2.9]
+covera_list = [1.4, 1.5, 1.6, 1.7, 1.8]
+
+for a in a_list:
+    energies = []
+    for covera in covera_list:
+
+        wd = 'bulk/Ru/{0:1.2f}-{1:1.2f}'.format(a,covera)
+
+        with jasp(wd) as calc:
+            atoms = calc.get_atoms()
+            try:
+                energies.append(atoms.get_potential_energy())
+            except (VaspSubmitted, VaspQueued):
+                pass
+    plt.plot(covera_list, energies, label='a={0}'.format(a))
+
+plt.xlabel('$a$ ($\AA$)')
+plt.ylabel('Energy (eV)')
+plt.legend()
+plt.show()
+
+#+END_SRC
+
+
+contour plot
+#+BEGIN_SRC python :results output
+from jasp import *
+import matplotlib.pyplot as plt
+from pylab import *
+
+x = [2.5, 2.6, 2.7, 2.8, 2.9]
+y = [1.4, 1.5, 1.6, 1.7, 1.8]
+
+X,Y = meshgrid(x,y)
+Z = np.zeros(X.shape)
+
+for i,a in enumerate(x):
+    for j,covera in enumerate(y):
+
+        wd = 'bulk/Ru/{0:1.2f}-{1:1.2f}'.format(a,covera)
+
+        with jasp(wd) as calc:
+            atoms = calc.get_atoms()
+            try:
+                Z[i][j] = atoms.get_potential_energy()
+            except (VaspSubmitted, VaspQueued):
+                pass
+
+cf = plt.contourf(X,Y,Z,20,
+                  cmap=cm.jet)
+
+cbar = colorbar(cf)
+cbar.ax.set_ylabel('Energy (eV)')
+
+plt.xlabel('$a$ ($\AA$)')
+plt.ylabel('$c/a$')
+
+plt.legend()
+plt.savefig('images/ru-contourf.png')
+plt.show()
+#+END_SRC
+#+RESULTS:
+
 *** complex structures with internal degrees of freedom
 
 ** TODO Bulk reaction energies
