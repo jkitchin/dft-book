@@ -79,8 +79,8 @@ http://chemistry.anl.gov/compmat/comptherm.htm for the original files.
 All numbers are experimental values, except for coordinates, which are
 MP2(full)/6-31G(d) optimized geometries. Here is a list of all the species available in mod:ase.data.g2
 #+BEGIN_SRC python :results output
-  from ase.data import g2
-  print g2.data.keys()
+from ase.data import g2
+print g2.data.keys()
 #+END_SRC
 
 #+RESULTS:
@@ -91,16 +91,16 @@ Some other databases include the mod:ase.data.s22 for weakly interacting dimers 
 Here is an example of getting the geometry of an acetonitrile molecule and writing an image to a file. Note that the default unit cell is a $1 \AA \times 1 \AA \times 1 \AA$ cubic cell. That is too small to use if your calculator uses periodic boundary conditions. We center the atoms in the unit cell and add vacuum on each side. We will add 6 $\AA$ of vacuum on each side. In the write command we use the option show_unit_cell=2 to draw the unit cell boundaries
 
 #+BEGIN_SRC python :results output
-  from ase import Atoms
-  from ase.data.molecules import molecule
-  from ase.io import write
+from ase import Atoms
+from ase.data.molecules import molecule
+from ase.io import write
 
-  c60 = molecule('CH3CN')
+c60 = molecule('CH3CN')
 
-  c60.center(vacuum=6)
-  print c60.get_cell()
+c60.center(vacuum=6)
+print c60.get_cell()
 
-  write('molecules/ch3cn.png', c60, show_unit_cell=2)
+write('molecules/ch3cn.png', c60, show_unit_cell=2)
 #+END_SRC
 
 #+RESULTS:
@@ -907,9 +907,758 @@ Free energy components at T = 298.15 K and P = 101325.0 Pa:
 =======================
 #+end_example
 
-** TODO Molecular reaction energies
+** Molecular reaction energies
+*** O2 dissociation
+The first reaction we consider is a simple dissociation of oxygen molecule into two oxygen atoms: $O_2 \rightarrow 2 O$. The dissociation energy is pretty straightforward to define: it is the energy of the products minus the energy of the reactant. $D = 2*E_O - E_{O_2}$. It would appear that we simply calculate the energy of an oxygen atom, and an oxygen molecule and evaluate the formula. Let's do that.
+
+**** Simple estimate of O2 dissociation energy
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('O',[5,5,5])],
+              cell=(10,10,10))
+
+with jasp('molecules/O',
+          xc='PBE',
+          encut=400,
+          ismear=0,
+          atoms=atoms) as calc:
+    try:
+        E_O = atoms.get_potential_energy()
+    except (VaspSubmitted, VaspQueued):
+        E_O = None
+
+# now relaxed O2 dimer
+
+atoms = Atoms([Atom('O',[5,5,5]),
+               Atom('O',[6.22, 5,5])],
+              cell=(10,10,10))
+
+with jasp('molecules/O2',
+          xc='PBE',
+          encut=400,
+          ismear=0,
+          ibrion=2, # make sure we relax the geometry
+          nsw=10,
+          atoms=atoms) as calc:
+    try:
+        E_O2 = atoms.get_potential_energy()
+    except (VaspSubmitted, VaspQueued):
+        E_O2 = None
+
+if None not in (E_O, E_O2):
+    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2)
+#+END_SRC
+
+#+RESULTS:
+: O2 -> 2O  D = 8.521 eV
+
+The answer we have obtained is way too high! Experimentally
+
+We implicitly neglected spin-polarization in the example above. That could be a problem, since the O2 molecule can be in one of two spin states, a singlet or a triplet, and these should have different energies. Furthermore, the oxygen atom can be a singlet or a triplet, and these would have different energies. To account for spin polarization, we have to tell Vasp to use spin-polarization, and give initial guesses for the magnetic moments of the atoms. Let's try again with spin polarization.
+
+**** Estimating O2 dissociation energy with spin polarization in triplet ground states
+To tell Vasp to use spin-polarization we use ISPIN=2, and we set initial guesses for magnetic moments on the atoms with the magmom keyword. In a triplet state there are two electrons with spins of the same sign.
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('O',[5,5,5],magmom=2)],
+              cell=(10,10,10))
+
+with jasp('molecules/O-sp-triplet',
+          xc='PBE',
+          encut=400,
+          ismear=0,
+          ispin=2,
+          atoms=atoms) as calc:
+    try:
+        E_O = atoms.get_potential_energy()
+    except (VaspSubmitted, VaspQueued):
+        E_O = None
+
+print 'Magnetic moment on O = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
+
+# now relaxed O2 dimer
+atoms = Atoms([Atom('O',[5,5,5],magmom=1),
+               Atom('O',[6.22, 5,5],magmom=1)],
+              cell=(10,10,10))
+
+with jasp('molecules/O2-sp-triplet',
+          xc='PBE',
+          encut=400,
+          ismear=0,
+          ispin=2,  # turn spin-polarization on
+          ibrion=2, # make sure we relax the geometry
+          nsw=10,
+          atoms=atoms) as calc:
+    try:
+        E_O2 = atoms.get_potential_energy()
+    except (VaspSubmitted, VaspQueued):
+        E_O2 = None
+
+# verify magnetic moment
+print 'Magnetic moment on O2 = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
+
+if None not in (E_O, E_O2):
+    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2)
+#+END_SRC
+
+#+RESULTS:
+: Magnetic moment on O = 2.0000072 Bohr magnetons
+: Magnetic moment on O2 = 2.0000083 Bohr magnetons
+: O2 -> 2O  D = 6.668 eV
+
+This is much closer to accepted literature values for the DFT-GGA O2 dissociation energy. It is still more than 1 eV above an experimental value, but most of that error is due to the GGA exchange correlation functional. Some additional parameters that might need to be checked for convergence are the SIGMA value (it is probably too high for a molecule), as well as the cutoff energy. Oxygen is a "hard" atom that requires a high cutoff energy to achieve high levels of convergence.
+
+**** Estimating triplet oxygen dissociation energy with low symmetry
+It has been suggested that breaking spherical symmetry of the atom can result in lower energy of the atom. The symmetry is broken by putting the atom off-center in a box.
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('O',[5,5,5],magmom=2)],
+              cell=(8,9,10))
+
+with jasp('molecules/O-sp-triplet-lowsym',
+          xc='PBE',
+          encut=400,
+          ismear=0,
+          ispin=2,
+          atoms=atoms) as calc:
+    try:
+        E_O = atoms.get_potential_energy()
+    except (VaspSubmitted, VaspQueued):
+        E_O = None
+
+print 'Magnetic moment on O = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
+
+# now relaxed O2 dimer
+atoms = Atoms([Atom('O',[5,5,5],magmom=1),
+               Atom('O',[6.22, 5,5],magmom=1)],
+              cell=(10,10,10))
+
+with jasp('molecules/O2-sp-triplet',
+          xc='PBE',
+          encut=400,
+          ismear=0,
+          ispin=2,  # turn spin-polarization on
+          ibrion=2, # make sure we relax the geometry
+          nsw=10,
+          atoms=atoms) as calc:
+    try:
+        E_O2 = atoms.get_potential_energy()
+    except (VaspSubmitted, VaspQueued):
+        E_O2 = None
+
+# verify magnetic moment
+print 'Magnetic moment on O2 = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
+
+if None not in (E_O, E_O2):
+    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2)
+#+END_SRC
+
+#+RESULTS:
+: Magnetic moment on O = 2.0000053 Bohr magnetons
+: Magnetic moment on O2 = 2.0000083 Bohr magnetons
+: O2 -> 2O  D = 6.657 eV
+
+The energy difference between this 6.668 and 6.657 eV is only 11 meV!
+
+**** Estimating singlet oxygen dissociation energy
+Finally, let us consider the case where each species is in the singlet state.
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('O',[5,5,5],magmom=0)],
+              cell=(10,10,10))
+
+with jasp('molecules/O-sp-singlet',
+          xc='PBE',
+          encut=400,
+          ismear=0,
+          ispin=2,
+          atoms=atoms) as calc:
+    try:
+        E_O = atoms.get_potential_energy()
+    except (VaspSubmitted, VaspQueued):
+        E_O = None
+
+print 'Magnetic moment on O = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
+
+# now relaxed O2 dimer
+atoms = Atoms([Atom('O',[5,5,5],magmom=1),
+               Atom('O',[6.22, 5,5],magmom=-1)],
+              cell=(10,10,10))
+
+with jasp('molecules/O2-sp-singlet',
+          xc='PBE',
+          encut=400,
+          ismear=0,
+          ispin=2,  # turn spin-polarization on
+          ibrion=2, # make sure we relax the geometry
+          nsw=10,
+          atoms=atoms) as calc:
+    try:
+        E_O2 = atoms.get_potential_energy()
+    except (VaspSubmitted, VaspQueued):
+        E_O2 = None
+
+# verify magnetic moment
+print atoms.get_magnetic_moment()
+
+if None not in (E_O, E_O2):
+    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2)
+#+END_SRC
+
+#+RESULTS:
+: Magnetic moment on O = 1.9998232 Bohr magnetons
+: 0.0
+: O2 -> 2O  D = 5.650 eV
+
+Interestingly, Vasp still found a triplet spin state on the oxygen atom, even though we guessed an initial magnetic moment of 0. This highlights a difficulty in computing magnetic moments: you provide an initial guess and a solution is found. The magnetic moment of a singlet state is zero, so the  molecule is correct. Also interesting is that the dissociation energy is almost equal to the experimental value. This is probably a coincidence, and may reflect the fact that the singlet oxygen state is less stable than the triplet state. Let us directly compare their total energies:
+
+#+BEGIN_SRC python :results output
+from jasp import *
+
+with jasp('molecules/O2-sp-singlet') as calc:
+    print calc.get_atoms().get_potential_energy()
+
+with jasp('molecules/O2-sp-triplet') as calc:
+    print calc.get_atoms().get_potential_energy()
+#+END_SRC
+
+#+RESULTS:
+: -8.830101
+: -9.848287
+
+You can see here the triplet state has an energy that is 1 eV more stable than the singlet state.
+
 *** Water gas shift example
+We consider calculating the reaction energy of the water-gas shift reaction in this example.
+
+$CO + H_2O \leftrightharpoons CO_2 + H_2$
+
+We define the reaction energy as the difference in energy between the products and reactants.
+
+$\Delta E = E_{CO_2} + E_{H_2} - E_{CO} - E_{H_2O}$
+
+For now, we compute this energy simply as the difference in DFT energies. In the next section we will add zero-point energies and compute the energy difference as a function of temperature. For now, we simply need to compute the total energy of each molecule in its equilibrium geometry.
+
+#+BEGIN_SRC python :results output
+from ase.data.molecules import molecule
+from jasp import *
+JASPRC['queue.walltime'] = '1:00:00'
+
+# first we define our molecules. These will automatically be at the coordinates from the G2 database.
+
+CO =  molecule('CO')
+CO.set_cell([8,8,8], scale_atoms=False)
+
+H2O = molecule('H2O')
+H2O.set_cell([8,8,8], scale_atoms=False)
+
+CO2 =  molecule('CO2')
+CO2.set_cell([8,8,8], scale_atoms=False)
+
+H2 = molecule('H2')
+H2.set_cell([8,8,8], scale_atoms=False)
+
+# now the calculators to get the energies
+with jasp('molecules/wgs/CO',
+          xc='PBE',
+          encut=350,
+          ismear=0,
+          ibrion=2,
+          nsw=10,
+          atoms=CO) as calc:
+    try:
+        eCO = CO.get_potential_energy()
+    except (VaspSubmitted, VaspQueued):
+        eCO = None
+
+with jasp('molecules/wgs/CO2',
+          xc='PBE',
+          encut=350,
+          ismear=0,
+          ibrion=2,
+          nsw=10,
+          atoms=CO2) as calc:
+    try:
+        eCO2 = CO2.get_potential_energy()
+    except (VaspSubmitted, VaspQueued):
+        eCO2 = None
+
+with jasp('molecules/wgs/H2',
+          xc='PBE',
+          encut=350,
+          ismear=0,
+          ibrion=2,
+          nsw=10,
+          atoms=H2) as calc:
+    try:
+        eH2 = H2.get_potential_energy()
+    except (VaspSubmitted, VaspQueued):
+        eH2 = None
+
+with jasp('molecules/wgs/H2O',
+          xc='PBE',
+          encut=350,
+          ismear=0,
+          ibrion=2,
+          nsw=10,
+          atoms=H2O) as calc:
+    try:
+        eH2O = H2O.get_potential_energy()
+    except (VaspSubmitted, VaspQueued):
+        eH2O = None
+
+if None in (eCO2, eH2, eCO, eH2O):
+    pass
+else:
+    dE = eCO2 + eH2 - eCO - eH2O
+    print '\Delta E = {0:1.3f} eV'.format(dE)
+    print '\Delta E = {0:1.3f} kcal/mol'.format(dE*23.06035)
+    print '\Delta E = {0:1.3f} kJ/mol'.format(dE*96.485)
+#+END_SRC
+
+#+RESULTS:
+: \Delta E = -0.720 eV
+: \Delta E = -16.614 kcal/mol
+: \Delta E = -69.514 kJ/mol
+
+We [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-nist-webbook/#7][estimated]] the enthalpy of this reaction at standard conditions to be -41 kJ/mol, which is a fair bet lower than we estimated. In the next section we will examine whether additional corrections are needed, such as zero-point and temperature corrections.
+
+It is a good idea to verify your calculations and structures are what you expected. Let us print them here. Inspection of these results shows the geometries were all relaxed.
+
+#+BEGIN_SRC python :results output org
+from jasp import *
+
+print '**** calculation summaries'
+print '***** CO'
+with jasp('molecules/wgs/CO') as calc:
+    print '#+begin_example'
+    print calc
+    print '#+end_example'
+
+print '***** CO2'
+with jasp('molecules/wgs/CO2') as calc:
+    print '#+begin_example'
+    print calc
+    print '#+end_example'
+
+print '***** H2'
+with jasp('molecules/wgs/H2') as calc:
+    print '#+begin_example'
+    print calc
+    print '#+end_example'
+
+print '***** H2O'
+with jasp('molecules/wgs/H2O') as calc:
+    print '#+begin_example'
+    print calc
+    print '#+end_example'
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_ORG
+**** calculation summaries
+***** CO
+#+begin_example
+: -----------------------------
+  VASP calculation from /home/jkitchin/dft-org/molecules/wgs/CO
+  converged: True
+  Energy = -14.789536 eV
+
+  Unit cell vectors (angstroms)
+        x       y     z      length
+  a0 [ 8.000  0.000  0.000] 8.000
+  a1 [ 0.000  8.000  0.000] 8.000
+  a2 [ 0.000  0.000  8.000] 8.000
+  a,b,c,alpha,beta,gamma (deg): 8.000 8.000 8.000 90.0 90.0 90.0
+  Unit cell volume = 512.000 Ang^3
+  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
+             0.005  0.005  0.005 -0.000 -0.000 -0.000
+ Atom#  sym       position [x,y,z]        rmsForce
+   0    O   [0.000      0.000      0.490] 0.01
+   1    C   [0.000      0.000      7.346] 0.01
+--------------------------------------------------
+
+INCAR Parameters:
+-----------------
+        nbands: 9
+        ismear: 0
+           nsw: 10
+        ibrion: 2
+         encut: 350.0
+          prec: Normal
+          kpts: [1 1 1]
+    reciprocal: False
+            xc: PBE
+           txt: -
+         gamma: False
+
+Pseudopotentials used:
+----------------------
+C: potpaw_PBE/C/POTCAR (git-hash: 2272d6745da89a3d872983542cef1d18750fc952)
+O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
+#+end_example
+***** CO2
+#+begin_example
+: -----------------------------
+  VASP calculation from /home/jkitchin/dft-org/molecules/wgs/CO2
+  converged: True
+  Energy = -22.959572 eV
+
+  Unit cell vectors (angstroms)
+        x       y     z      length
+  a0 [ 8.000  0.000  0.000] 8.000
+  a1 [ 0.000  8.000  0.000] 8.000
+  a2 [ 0.000  0.000  8.000] 8.000
+  a,b,c,alpha,beta,gamma (deg): 8.000 8.000 8.000 90.0 90.0 90.0
+  Unit cell volume = 512.000 Ang^3
+  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
+             0.009  0.009  0.008 -0.000 -0.000 -0.000
+ Atom#  sym       position [x,y,z]        rmsForce
+   0    C   [0.000      0.000      0.000] 0.00
+   1    O   [0.000      0.000      1.177] 0.01
+   2    O   [0.000      0.000      6.823] 0.01
+--------------------------------------------------
+
+INCAR Parameters:
+-----------------
+        nbands: 12
+        ismear: 0
+           nsw: 10
+        ibrion: 2
+         encut: 350.0
+          prec: Normal
+          kpts: [1 1 1]
+    reciprocal: False
+            xc: PBE
+           txt: -
+         gamma: False
+
+Pseudopotentials used:
+----------------------
+C: potpaw_PBE/C/POTCAR (git-hash: 2272d6745da89a3d872983542cef1d18750fc952)
+O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
+#+end_example
+***** H2
+#+begin_example
+: -----------------------------
+  VASP calculation from /home/jkitchin/dft-org/molecules/wgs/H2
+  converged: True
+  Energy = -6.744001 eV
+
+  Unit cell vectors (angstroms)
+        x       y     z      length
+  a0 [ 8.000  0.000  0.000] 8.000
+  a1 [ 0.000  8.000  0.000] 8.000
+  a2 [ 0.000  0.000  8.000] 8.000
+  a,b,c,alpha,beta,gamma (deg): 8.000 8.000 8.000 90.0 90.0 90.0
+  Unit cell volume = 512.000 Ang^3
+  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
+             0.000  0.000  0.000 -0.000 -0.000 -0.000
+ Atom#  sym       position [x,y,z]        rmsForce
+   0    H   [0.000      0.000      0.376] 0.00
+   1    H   [0.000      0.000      7.624] 0.00
+--------------------------------------------------
+
+INCAR Parameters:
+-----------------
+        nbands: 5
+        ismear: 0
+           nsw: 10
+        ibrion: 2
+         encut: 350.0
+          prec: Normal
+          kpts: [1 1 1]
+    reciprocal: False
+            xc: PBE
+           txt: -
+         gamma: False
+
+Pseudopotentials used:
+----------------------
+H: potpaw_PBE/H/POTCAR (git-hash: fbc0773b08b32f553234b0b50cc6ad6f5085c816)
+#+end_example
+***** H2O
+#+begin_example
+: -----------------------------
+  VASP calculation from /home/jkitchin/dft-org/molecules/wgs/H2O
+  converged: True
+  Energy = -14.193569 eV
+
+  Unit cell vectors (angstroms)
+        x       y     z      length
+  a0 [ 8.000  0.000  0.000] 8.000
+  a1 [ 0.000  8.000  0.000] 8.000
+  a2 [ 0.000  0.000  8.000] 8.000
+  a,b,c,alpha,beta,gamma (deg): 8.000 8.000 8.000 90.0 90.0 90.0
+  Unit cell volume = 512.000 Ang^3
+  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
+             0.005  0.004  0.005 -0.000 -0.000 -0.000
+ Atom#  sym       position [x,y,z]        rmsForce
+   0    O   [0.000      0.000      0.122] 0.06
+   1    H   [0.000      0.766      7.522] 0.04
+   2    H   [0.000      7.234      7.522] 0.04
+--------------------------------------------------
+
+INCAR Parameters:
+-----------------
+        nbands: 8
+        ismear: 0
+           nsw: 10
+        ibrion: 2
+         encut: 350.0
+          prec: Normal
+          kpts: [1 1 1]
+    reciprocal: False
+            xc: PBE
+           txt: -
+         gamma: False
+
+Pseudopotentials used:
+----------------------
+H: potpaw_PBE/H/POTCAR (git-hash: fbc0773b08b32f553234b0b50cc6ad6f5085c816)
+O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
+#+end_example
+#+END_ORG
+
+
 *** Temperature dependent water gas shift equilibrium constant
+To correct the reaction energy for temperature effects, we must compute the vibrational frequencies of each species, and estimate the temperature dependent contributions to vibrational energy and entropy. We will break these calculations into several pieces. First we do each vibrational calculation. After those are done, we can get the data and construct the thermochemistry objects we need to estimate the reaction energy as a function of temperature (at constant pressure).
+
+**** CO vibrations
+#+BEGIN_SRC python :results output
+from jasp import *
+JASPRC['queue.walltime'] = '1:00:00'
+
+# get relaxed geometry
+with jasp('molecules/wgs/CO') as calc:
+    CO = calc.get_atoms()
+
+# now do the vibrations
+with jasp('molecules/wgs/CO-vib',
+          xc='PBE',
+          encut=350,
+          ismear=0,
+          ibrion=6,
+          nfree=2,
+          potim=0.02,
+          nsw=1,
+          atoms=CO) as calc:
+    calc.calculate()
+    vib_freq = calc.get_vibrational_frequencies()
+    print vib_freq
+#+END_SRC
+
+#+RESULTS:
+: [2115.528894, 60.594878000000001, 60.594878000000001, (0.987178+0j), (17.958586+0j), (17.958586+0j)]
+
+CO has only one vibrational mode.
+
+**** CO2 vibrations
+#+BEGIN_SRC python :results output
+from jasp import *
+JASPRC['queue.walltime'] = '1:00:00'
+
+# get relaxed geometry
+with jasp('molecules/wgs/CO2') as calc:
+    CO2 = calc.get_atoms()
+
+# now do the vibrations
+with jasp('molecules/wgs/CO2-vib',
+          xc='PBE',
+          encut=350,
+          ismear=0,
+          ibrion=6,
+          nfree=2,
+          potim=0.02,
+          nsw=1,
+          atoms=CO2) as calc:
+    calc.calculate()
+    vib_freq = calc.get_vibrational_frequencies()
+    print vib_freq
+#+END_SRC
+
+#+RESULTS:
+: [2352.9012849999999, 1316.6895039999999, 635.01591299999995, 635.01591299999995, (0.344306+0j), (1.7638670000000001+0j), (1.7638670000000001+0j), (62.700411000000003+0j), (62.700411000000003+0j)]
+
+CO2 is a linear molecule with 3N-5 = 4 vibrational modes. They are the first four frequencies.
+
+**** H2 vibrations
+#+BEGIN_SRC python :results output
+from jasp import *
+JASPRC['queue.walltime'] = '1:00:00'
+
+# get relaxed geometry
+with jasp('molecules/wgs/H2') as calc:
+    H2 = calc.get_atoms()
+
+# now do the vibrations
+with jasp('molecules/wgs/H2-vib',
+          xc='PBE',
+          encut=350,
+          ismear=0,
+          ibrion=6,
+          nfree=2,
+          potim=0.02,
+          nsw=1,
+          atoms=H2) as calc:
+    calc.calculate()
+    vib_freq = calc.get_vibrational_frequencies()
+    print vib_freq
+#+END_SRC
+
+#+RESULTS:
+: [4281.9177490000002, 129.14685499999999, 129.14685499999999, 0.0, 0.0, (1.0000000000000001e-05+0j)]
+
+There is only one frequency of importance (the one at 4281 cm^-1) for the linear H2 molecule.
+
+**** H2O vibrations
+#+BEGIN_SRC python :results output
+from jasp import *
+JASPRC['queue.walltime'] = '1:00:00'
+
+# get relaxed geometry
+with jasp('molecules/wgs/H2O') as calc:
+    H2O = calc.get_atoms()
+
+# now do the vibrations
+with jasp('molecules/wgs/H2O-vib',
+          xc='PBE',
+          encut=350,
+          ismear=0,
+          ibrion=6,
+          nfree=2,
+          potim=0.02,
+          nsw=1,
+          atoms=H2O) as calc:
+    calc.calculate()
+    vib_freq = calc.get_vibrational_frequencies()
+    print vib_freq
+#+END_SRC
+
+#+RESULTS:
+: [3782.0622130000002, 3672.1246000000001, 1586.23055, 135.82763, 16.280411000000001, (0.20858199999999999+0j), (26.297060999999999+0j), (106.869518+0j), (131.286732+0j)]
+
+Water has 3N-6 = 3 vibrational modes.
+
+**** thermochemistry
+Now we are ready. We have the electronic energies and vibrational frequencies of each species in the reaction.
+
+#+BEGIN_SRC python
+from ase.thermochemistry import IdealGasThermo
+from jasp import *
+import numpy as np
+import matplotlib.pyplot as plt
+
+# first we get the electronic energies
+with jasp('molecules/wgs/CO') as calc:
+    CO = calc.get_atoms()
+    E_CO = CO.get_potential_energy()
+
+with jasp('molecules/wgs/CO2') as calc:
+    CO2 = calc.get_atoms()
+    E_CO2 = CO2.get_potential_energy()
+
+with jasp('molecules/wgs/H2') as calc:
+    H2 = calc.get_atoms()
+    E_H2 = H2.get_potential_energy()
+
+with jasp('molecules/wgs/H2O') as calc:
+    H2O = calc.get_atoms()
+    E_H2O = H2O.get_potential_energy()
+
+# now we get the vibrational energies
+h = 4.1356675e-15 # eV*s
+c = 3.0e10 #cm/s
+
+with jasp('molecules/wgs/CO-vib') as calc:
+    vib_freq = calc.get_vibrational_frequencies()
+    CO_vib_energies = [h*c*nu for nu in vib_freq]
+
+with jasp('molecules/wgs/CO2-vib') as calc:
+    vib_freq = calc.get_vibrational_frequencies()
+    CO2_vib_energies = [h*c*nu for nu in vib_freq]
+
+with jasp('molecules/wgs/H2-vib') as calc:
+    vib_freq = calc.get_vibrational_frequencies()
+    H2_vib_energies = [h*c*nu for nu in vib_freq]
+
+with jasp('molecules/wgs/H2O-vib') as calc:
+    vib_freq = calc.get_vibrational_frequencies()
+    H2O_vib_energies = [h*c*nu for nu in vib_freq]
+
+# now we make a thermo object for each molecule
+CO_t = IdealGasThermo(vib_energies=CO_vib_energies[0:0],
+                      electronicenergy=E_CO, atoms=CO,
+                      geometry='linear', symmetrynumber=1,
+                      spin=0)
+
+CO2_t = IdealGasThermo(vib_energies=CO2_vib_energies[0:4],
+                      electronicenergy=E_CO2, atoms=CO2,
+                      geometry='linear', symmetrynumber=2,
+                      spin=0)
+
+H2_t = IdealGasThermo(vib_energies=H2_vib_energies[0:0],
+                      electronicenergy=E_H2, atoms=CO2,
+                      geometry='linear', symmetrynumber=2,
+                      spin=0)
+
+H2O_t = IdealGasThermo(vib_energies=H2O_vib_energies[0:5],
+                      electronicenergy=E_H2O, atoms=H2O,
+                      geometry='nonlinear', symmetrynumber=2,
+                      spin=0)
+
+# now we can compute G_rxn for a range of temperatures from 200 to 1000 K
+Trange = np.linspace(200,1000,20) #K
+P = 101325. # Pa
+Grxn = np.array([(CO2_t.get_free_energy(temperature=T, pressure=P)
+                  + H2_t.get_free_energy(temperature=T, pressure=P)
+                  - H2O_t.get_free_energy(temperature=T, pressure=P)
+                  - CO_t.get_free_energy(temperature=T, pressure=P))*96.485 for T in Trange])
+
+Hrxn = np.array([(CO2_t.get_enthalpy(temperature=T)
+                  + H2_t.get_enthalpy(temperature=T)
+                  - H2O_t.get_enthalpy(temperature=T)
+                  - CO_t.get_enthalpy(temperature=T))*96.485 for T in Trange])
+
+plt.plot(Trange, Grxn, 'bo-',label='$\Delta G_{rxn}$')
+plt.plot(Trange, Hrxn, 'ro:',label='$\Delta H_{rxn}$')
+plt.xlabel('Temperature (K)')
+plt.ylabel('$\Delta G_{rxn}$ (kJ/mol)')
+plt.legend(loc='best')
+plt.savefig('images/wgs-dG-T.png')
+
+plt.figure()
+R = 8.314e-3 # gas constant in kJ/mol/K
+
+Keq = np.exp(-Grxn/R/Trange)
+plt.plot(Trange, Keq)
+plt.ylim([0, 100])
+plt.xlabel('Temperature (K)')
+plt.ylabel('$K_{eq}$')
+plt.savefig('images/wgs-Keq.png')
+plt.show()
+#+END_SRC
+
+#+RESULTS:
+: None
+
+[[./images/wgs-dG-T.png]]
+You can see a few things here. One is that at near 298K, the Gibbs free energy is about -40 kJ/mol. This is too negative for a standard state free energy, which we estimated to be about -29 kJ/mol from the [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-nist-webbook/#7][Nist webbook. ]]There could be several reasons for this disagreement, but the most likely one is errors in the exchange-correlation functional. Second, it appears the reaction enthalpy gets slightly more exothermic with temperature. This does not seem correct.
+
+At 1000K we estimate the Gibbs free energy to be about -4 kJ/mol, compared to about -3 kJ/mol estimated from the Nist webbook.
+
+[[./images/wgs-Keq.png]]
+
+Despite the error in $\Delta G$, the equilibrium constant at 1000K seems reasonable. If you zoom in to 1000K you find the $K_{eq}$ is about 1.5, and it is known to be 1.44 (see [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-nist-webbook/#7][this example]]).
+
 ** TODO Molecular reaction barriers
 
 ** Simulated infrared spectra
