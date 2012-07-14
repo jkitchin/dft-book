@@ -663,10 +663,11 @@ with jasp('molecules/co-qn') as calc:
     plot(dos.get_energies(),dos.get_dos())
     xlabel('Energy - $E_f$ (eV)')
     ylabel('DOS')
-    savefig('images/co-dos.png')
+savefig('images/co-dos.png')
 #+END_SRC
 
 #+RESULTS:
+: None
 
 [[./images/co-dos.png]]
 
@@ -2990,7 +2991,7 @@ Some notes:
 1) opening a file in 'w' mode clobbers any existing file, so do that
 with care!
 
-2) when writing to a file you have to add \n to each line. this is the
+2) when writing to a file you have to add \\n to each line. this is the
 carriage return.
 
 3) Manually writing and reading files is pretty tedious. Whenever
@@ -3249,7 +3250,7 @@ This example does not show any major advantage in the quality of the derivative,
 *** NetCDF files
 -------------
 
-`NetCDF <http://www.unidata.ucar.edu/software/netcdf/>`_ is a binary,
+[[http://www.unidata.ucar.edu/software/netcdf][NetCDF]] is a binary,
 but cross-platform structured data format. 	The input file and
 output file for Dacapo is the NetCDF format. On creating a NetCDF file
 you must define the dimensions and variables before you can store data
@@ -3259,9 +3260,9 @@ the following modules:
 #. :mod:`Scientific.IO.NetCDF`
 (http://dirac.cnrs-orleans.fr/plone/software/scientificpython/)
 
-#. :mod:`netCDF3` (http://netcdf4-python.googlecode.com/svn/trunk/docs/netCDF3-module.html)
+:mod:`netCDF3` (http://netcdf4-python.googlecode.com/svn/trunk/docs/netCDF3-module.html)
 
-#. :mod:`pycdf` (http://pysclint.sourceforge.net/pycdf/) this is a very
+:mod:`pycdf` (http://pysclint.sourceforge.net/pycdf/) this is a very
 low level module modelled after the C-api. I am not sure it is completely
 bug-free (I have problems with character variables)
 
@@ -3724,7 +3725,7 @@ references to the relevant literature.
 This is probably the most common equation of state used most often,
 and is a modification of the original Murnaghan EOS described below. A
 current description of the equation is in reference
-\cite{PhysReB.70.224107}. You can also find the equations for the Vinet and
+\cite{PhysRevB.70.224107}. You can also find the equations for the Vinet and
 Pourier-Tarantola equations of state in that reference.
 
 Birch-Murnaghan EOS:

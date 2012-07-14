@@ -15,7 +15,6 @@ pdf: tex
 	bibtex dft
 	pdflatex -shell-escape dft
 	pdflatex -shell-escape dft
-	acroread dft.pdf
 
 clean:
 	rm -f *.aux *.log *.dvi *.blg *.bbl *.toc *.tex *~ *.out
