@@ -1517,7 +1517,7 @@ with jasp('molecules/wgs/H2-vib',
 #+RESULTS:
 : [4281.9177490000002, 129.14685499999999, 129.14685499999999, 0.0, 0.0, (1.0000000000000001e-05+0j)]
 
-There is only one frequency of importance (the one at 4281 cm^-1) for the linear H2 molecule.
+There is only one frequency of importance (the one at 4281 cm$^{-1}$) for the linear H2 molecule.
 
 **** H2O vibrations
 #+BEGIN_SRC python :results output
@@ -1548,7 +1548,7 @@ with jasp('molecules/wgs/H2O-vib',
 
 Water has 3N-6 = 3 vibrational modes.
 
-**** thermochemistry
+**** TODO thermochemistry
 Now we are ready. We have the electronic energies and vibrational frequencies of each species in the reaction.
 
 #+BEGIN_SRC python
@@ -1606,11 +1606,11 @@ CO2_t = IdealGasThermo(vib_energies=CO2_vib_energies[0:4],
                       spin=0)
 
 H2_t = IdealGasThermo(vib_energies=H2_vib_energies[0:0],
-                      electronicenergy=E_H2, atoms=CO2,
+                      electronicenergy=E_H2, atoms=H2,
                       geometry='linear', symmetrynumber=2,
                       spin=0)
 
-H2O_t = IdealGasThermo(vib_energies=H2O_vib_energies[0:5],
+H2O_t = IdealGasThermo(vib_energies=H2O_vib_energies[0:3],
                       electronicenergy=E_H2O, atoms=H2O,
                       geometry='nonlinear', symmetrynumber=2,
                       spin=0)
@@ -1658,6 +1658,8 @@ At 1000K we estimate the Gibbs free energy to be about -4 kJ/mol, compared to ab
 [[./images/wgs-Keq.png]]
 
 Despite the error in $\Delta G$, the equilibrium constant at 1000K seems reasonable. If you zoom in to 1000K you find the $K_{eq}$ is about 1.5, and it is known to be 1.44 (see [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-nist-webbook/#7][this example]]).
+
+***** TODO something is wrong with the thermochemistry I think.
 
 ** TODO Molecular reaction barriers
 
@@ -1879,6 +1881,34 @@ The interpretation of these results is that the mode at 3713 cm^{-1} would be ne
 * TODO Clusters                                                    :noexport:
 * TODO Bulk systems
 ** Defining and visualizing bulk systems
+*** Built-in functions in ase
+#+BEGIN_SRC python
+from ase.io import write
+from ase.lattice.cubic import FaceCenteredCubic
+
+
+atoms = FaceCenteredCubic(directions=[[1,0,0],
+                                      [0,1,0],
+                                      [0,0,1]],
+                                      size=(1,1,1),
+                                      symbol='Ag',
+                                      latticeconstant=4.0)
+
+write('images/Ag-bulk.png',atoms,show_unit_cell=2)
+
+# to make an alloy, we can replace one atom with another kind
+atoms[0].symbol = 'Pd'
+write('images/AgPd-bulk.png',atoms,show_unit_cell=2)
+
+#+END_SRC
+
+#+RESULTS:
+: None
+
+[[./images/Ag-bulk.png]]
+
+[[./images/AgPd-bulk.png]]
+
 ** TODO Determining bulk structures
 *** fcc/bcc
 *** hcp
@@ -2106,6 +2136,77 @@ plt.savefig('images/pd-xrd.png')
 [[./images/pd-xrd.png]]
 
 ** TODO Magnetism
+
+*** Determining if a magnetic solution is energetically favorable
+We can force a total magnetic moment onto a unit cell and compute the total energy as function of the total magnetic moment. If there is a minimum in the energy, then we know there is a lower energy magnetic solution than a non-magnetic solution.
+#+BEGIN_SRC python :results output
+from jasp import *
+JASPRC['queue.walltime'] = '1:00:00'
+from ase.lattice.cubic import BodyCenteredCubic
+
+atoms = BodyCenteredCubic(directions=[[1,0,0],
+                                      [0,1,0],
+                                      [0,0,1]],
+                                      size=(1,1,1),
+                                      symbol='Fe')
+
+NUPDOWNS = [0.0, 2.0, 4.0, 5.0, 6.0, 8.0]
+energies = []
+for B in NUPDOWNS:
+    with jasp('bulk/Fe-bcc-fixedmagmom-{0:1.2f}'.format(B),
+          xc='PBE',
+          encut=300,
+          kpts=(4,4,4),
+          ispin=2,
+          nupdown=B,
+          atoms=atoms) as calc:
+        try:
+            e = atoms.get_potential_energy()
+            energies.append(e)
+        except (VaspSubmitted, VaspQueued):
+            pass
+
+import matplotlib.pyplot as plt
+plt.plot(NUPDOWNS, energies)
+plt.xlabel('Total Magnetic Moment')
+plt.ylabel('Energy (eV)')
+plt.savefig('images/Fe-fixedmagmom.png')
+#+END_SRC
+
+[[./images/Fe-fixedmagmom.png]]
+
+You can see here there is a minimum in energy at a total magnetic moment somewhere between 4 and 5. There are two Fe atoms in the unit cell, which means the magnetic moment on each atom must be about 2.5 Bohr-Magnetons. This is a good guess for a real calculation. Note that Vasp [[http://cms.mpi.univie.ac.at/vasp/guide/node100.html#SECTION00099000000000000000][recommends]] you overestimate the magnetic moment guesses if you are looking for ferromagnetic solutions.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+JASPRC['queue.walltime'] = '1:00:00'
+from ase.lattice.cubic import BodyCenteredCubic
+
+
+atoms = BodyCenteredCubic(directions=[[1,0,0],
+                                      [0,1,0],
+                                      [0,0,1]],
+                                      size=(1,1,1),
+                                      symbol='Fe')
+
+for atom in atoms:
+    atom.magmom = 2.5
+
+with jasp('bulk/Fe-bcc-sp-1',
+          xc='PBE',
+          encut=300,
+          kpts=(4,4,4),
+          ispin=2,
+          atoms=atoms) as calc:
+        try:
+            e = atoms.get_potential_energy()
+            print atoms.get_magnetic_moment()
+            print atoms.get_magnetic_moments()
+        except (VaspSubmitted, VaspQueued):
+            pass
+#+END_SRC
+*** TODO find out how to get atoms magnetic moments.
+
 * TODO Surfaces
 ** Surface structures
 ** Surface relaxation
