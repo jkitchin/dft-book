@@ -65,6 +65,8 @@ Similar code would be used for other calculators, e.g. GPAW, Jacapo, etc... you 
 
 * Introduction to DFT
 
+Monkhorst-Pack k-points \cite{PhysRevB.13.5188}
+
 * Molecules
 In this chapter we consider how to construct models of molecules, how to manipulate them, and how to calculate many properties of molecules.
 ** Defining and visualizing molecules
@@ -2277,6 +2279,567 @@ Sometimes it is convenient to create an Atoms object by deleting atoms from an e
 : [3, 4, 5, 6, 7, 8]
 : Atoms(symbols='C2O', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False, False, False])
 
+*** Using units in ase
+#+BEGIN_SRC python :results output
+#!/usr/bin/env python
+from ase.units import *
+
+d = 1*Angstrom
+print d/nm
+
+e = 1*eV
+print '1 eV = %f Hartrees' % (e/Hartree)
+print '1 eV = %f Rydbergs' % (e/Rydberg)
+print '1 eV = %f kJ/mol' % (e/(kJ/mol))
+print '1 eV = %f kcal/mol' % (e/(kcal/mol))
+
+print '1 Hartree = %f kcal/mol' % (1*Hartree/(kcal/mol))
+print '1 Rydberg = %f eV' % (1*Rydberg/eV)
+#+END_SRC
+
+#+RESULTS:
+: 0.1
+: 1 eV = 0.036749 Hartrees
+: 1 eV = 0.073499 Rydbergs
+: 1 eV = 96.485309 kJ/mol
+: 1 eV = 23.060542 kcal/mol
+: 1 Hartree = 627.509541 kcal/mol
+: 1 Rydberg = 13.605698 eV
+
+*** Statistics
+**** Confidence intervals
+#+BEGIN_SRC python :results output
+#!/usr/bin/env python
+from numpy import *
+from scipy.stats.distributions import  t
+
+
+n = 10 #number of measurements
+dof = n - 1 #degrees of freedom
+avg_x = 16.1 #average measurement
+std_x = 0.01 #standard deviation of measurements
+
+#Find 95% prediction interval for next measurement
+
+alpha = 1.0 - 0.95
+
+pred_interval = t.ppf(1-alpha/2.,dof)*std_x*sqrt(1.+1./n)
+
+print 'We are 95%% confident the next measurement will be between %1.3f and %1.3f' % (avg_x - pred_interval, avg_x + pred_interval)
+#+END_SRC
+
+#+RESULTS:
+: We are 95% confident the next measurement will be between 16.076 and 16.124
+
+*** Curve fitting
+**** Linear fitting
+#+BEGIN_SRC python :results output
+#examples of linear curve fitting using least squares
+import numpy as np
+
+xdata = np.array([0.,1.,2.,3.,4.,5.,6.])
+ydata = np.array([0.1, 0.81, 4.03, 9.1, 15.99, 24.2, 37.2])
+
+#fit a third order polynomial
+from pylab import polyfit, plot, show, legend, savefig
+pars = polyfit(xdata,ydata,3)
+print pars
+
+## numpy method returns more data
+A = np.column_stack([xdata**3,xdata**2,xdata,np.ones(len(xdata),np.float)])
+pars_np,resids,rank,s = np.linalg.lstsq(A,ydata)
+print pars_np
+
+'''
+we are trying to solve Ax = b for x in the least squares sense. There
+are more rows in A than elements in x so, we can left multiply each
+side by A^T, and then solve for x with an inverse.
+
+A^TAx = A^Tb
+x = (A^TA)^-1 A^T b
+'''
+# not as pretty but equivalent!
+pars_man= np.dot(np.linalg.inv(np.dot(A.T,A)), np.dot(A.T,ydata))
+print pars_man
+
+#but, it is easy to fit an exponential function to it!
+# y = a*exp(x)+b
+Aexp = np.column_stack([np.exp(xdata), np.ones(len(xdata),np.float)])
+pars_exp=np.dot(np.linalg.inv(np.dot(Aexp.T,Aexp)), np.dot(Aexp.T,ydata))
+
+plot(xdata,ydata,'ro')
+fity = np.dot(A,pars)
+plot(xdata,fity,'k-',label='poly fit')
+plot(xdata,np.dot(Aexp,pars_exp),'b-',label='exp fit')
+legend()
+savefig('images/curve-fit-1.png')
+#+END_SRC
+
+#+RESULTS:
+: [ 0.04861111  0.63440476  0.61365079 -0.08928571]
+: [ 0.04861111  0.63440476  0.61365079 -0.08928571]
+: [ 0.04861111  0.63440476  0.61365079 -0.08928571]
+
+[[./images/curve-fit-1.png]]
+
+*** Nonlinear curve fitting
+#+BEGIN_SRC python :results outputt
+from scipy.optimize import leastsq
+import numpy as np
+
+vols = np.array([13.71, 14.82, 16.0, 17.23, 18.52])
+
+energies = np.array([-56.29, -56.41, -56.46, -56.463,-56.41])
+
+def Murnaghan(parameters,vol):
+    'From PRB 28,5480 (1983'
+    E0 = parameters[0]
+    B0 = parameters[1]
+    BP = parameters[2]
+    V0 = parameters[3]
+
+    E = E0 + B0*vol/BP*(((V0/vol)**BP)/(BP-1)+1) - V0*B0/(BP-1.)
+
+    return E
+
+def objective(pars,y,x):
+    #we will minimize this function
+    err =  y - Murnaghan(pars,x)
+    return err
+
+x0 = [ -56., 0.54, 2., 16.5] #initial guess of parameters
+
+plsq = leastsq(objective, x0, args=(energies,vols))
+
+print plsq
+
+from pylab import *
+plot(vols,energies,'ro')
+
+#plot the fitted curve on top
+x = np.linspace(min(vols),max(vols),50)
+y = Murnaghan(plsq[0],x)
+plot(x,y,'k-')
+xlabel('Volume')
+ylabel('energy')
+savefig('images/nonlinear-curve-fitting.png')
+#+END_SRC
+
+[[./images/nonlinear-curve-fitting.png]]
+
+See additional examples at http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
+
+*** Nonlinear curve fitting by direct least squares mimimization
+#+BEGIN_SRC python :results output
+from scipy.optimize import fmin
+import numpy as np
+
+volumes = np.array([13.71, 14.82, 16.0, 17.23, 18.52])
+
+energies = np.array([-56.29, -56.41, -56.46, -56.463,-56.41])
+
+def Murnaghan(parameters,vol):
+    'From PRB 28,5480 (1983'
+    E0 = parameters[0]
+    B0 = parameters[1]
+    BP = parameters[2]
+    V0 = parameters[3]
+
+    E = E0 + B0*vol/BP*(((V0/vol)**BP)/(BP-1)+1) - V0*B0/(BP-1.)
+
+    return E
+
+def objective(pars,vol):
+    #we will minimize this function
+    err =  energies - Murnaghan(pars,vol)
+    return np.sum(err**2) #we return the summed squared error directly
+
+x0 = [ -56., 0.54, 2., 16.5] #initial guess of parameters
+
+plsq = fmin(objective,x0,args=(volumes,)) #note args is a tuple
+
+print plsq
+
+from pylab import *
+plot(volumes,energies,'ro')
+
+#plot the fitted curve on top
+x = np.linspace(min(volumes),max(volumes),50)
+y = Murnaghan(plsq,x)
+plot(x,y,'k-')
+savefig('images/nonlinear-fitting-lsq.png')
+#+END_SRC
+
+#+RESULTS:
+: Optimization terminated successfully.
+:          Current function value: 0.000020
+:          Iterations: 137
+:          Function evaluations: 240
+: [-56.46932645   0.59141447   1.9044796   16.59341303]
+
+[[./images/nonlinear-fitting-lsq.png]]
+
+*** TODO Interpolation in 3D
+vasp.py does not have a get_charge_density function!
+
+You might ask, why would I need to interpolate in 3D? Suppose you want to plot the charge density along a line through a unit cell that does not correspond to grid points? What are you to do? Interpolate. In contrast to an abundance of methods for 1D and 2D interpolation, I could not find any standard library methods for 3D interpolation. The Scipy cookbook on interpolation suggests that it should be doable with ndimage, but I could not figure out how to make those examples work.
+
+The principle we will use to develop an interpolation function in 3D is called trilinear interpolation, where we use multiple linear 1D interpolations to compute the value of a point inside a cube. As developed here, this solution only applies to rectangular grids. Later we will generalize the approach. We state the problem as follows:
+
+    we know a scalar field inside a unit cell on a regularly spaced grid. In Dacapo these fields may be the charge density or electrostatic potential for example, and they are known on the fft grids.
+    we want to estimate the value of the scalar field at a point not on the grid, say P=(a,b,c).
+
+Solution: Find the cube that contains the point, and is defined by points
+    P1-P8 as shown in Figure Trilinear interpolation.
+
+#+BEGIN_SRC sh
+inkscape images/trilinear-interpolation.svg
+#+END_SRC
+
+#+BEGIN_SRC sh :results none
+convert images/trilinear-interpolation.svg images/trilinear-interpolation.png
+#+END_SRC
+
+[[./images/trilinear-interpolation.png]]
+
+In a trilinear interpolation scheme in a cell we perform several interpolations. The red lines are 1D interpolations in x along constant y, and z. The light blue lines are 1D interpolations in y along constant x=a, z, and the vertical dark line through P is the final interpolation at constant x=a, y=b in z.
+
+Now, we use 1D interpolation formulas to compute the value of the scalar field at points I1 by interpolating between P1 and P2, and the value of the scalar field at I2 by interpolating between P3 and P4. In these points the only variable changing is x, so it is a simple 1D interpolation. We can then compute the value of the scalar field at I5 by interpolating between I1 and I2. We repeat the process on the top of the cube, to obtain points I3, I4 and I5. Finally, we compute the value of the scalar field at point P by interpolating between points I5 and I6. Note that the point I5 has coordinates (a,b,z1) and (a,b,z2), so the final interpolation is again a 1D interpolation along z evaluated at z=c to get the final value of the scalar field at P=(a,b,c).
+#+BEGIN_SRC python
+from jasp import *
+
+with jasp('molecules/co-qn') as calc:
+    atoms = calc.get_atoms()
+    x,y,z,cd = calc.get_charge_density()
+
+def interp3d(x,y,z,cd,xi,yi,zi):
+    '''
+    interpolate a cubic 3D grid defined by x,y,z,cd at the point
+    (xi,yi,zi)
+    '''
+
+    def get_index(value,vector):
+        '''
+        assumes vector ordered decreasing to increasing. A bisection
+        search would be faster.
+        '''
+        for i,val in enumerate(vector):
+            if val > value:
+                return i-1
+        return None
+
+    xv = x[:,0,0]
+    yv = y[0,:,0]
+    zv = z[0,0,:]
+
+    a,b,c = xi, yi, zi
+
+    i = get_index(a,xv)
+    j = get_index(b,yv)
+    k = get_index(c,zv)
+
+    x1 = x[i,j,k]
+    x2 = x[i+1,j,k]
+    y1 = y[i,j,k]
+    y2 = y[i,j+1,k]
+    z1 = z[i,j,k]
+    z2 = z[i,j,k+1]
+
+    u1 = cd[i, j, k]
+    u2 = cd[i+1, j, k]
+    u3 = cd[i, j+1, k]
+    u4 = cd[i+1, j+1, k]
+    u5 = cd[i, j, k+1]
+    u6 = cd[i+1, j, k+1]
+    u7 = cd[i, j+1, k+1]
+    u8 = cd[i+1, j+1, k+1]
+
+    w1 = u2 + (u2-u1)/(x2-x1)*(a-x2)
+    w2 = u4 + (u4-u3)/(x2-x1)*(a-x2)
+    w3 = w2 + (w2-w1)/(y2-y1)*(b-y2)
+    w4 = u5 + (u6-u5)/(x2-x1)*(a-x1)
+    w5 = u7 + (u8-u7)/(x2-x1)*(a-x1)
+    w6 = w4 + (w5-w4)/(y2-y1)*(b-y1)
+    w7 = w3 + (w6-w3)/(z2-z1)*(c-z1)
+    u = w7
+
+    return u
+
+pos = atoms.get_positions()
+
+P1 = np.array([0.0, 3.0, 3.0])
+P2 = np.array([5.0, 3.0, 3.0])
+
+npoints = 60
+
+points = [P1 + n*(P2-P1)/npoints for n in range(npoints)]
+
+R = [np.linalg.norm(p-P1) for p in points]
+
+icd = [interp3d(x,y,z,cd,p[0],p[1],p[2]) for p in points]
+
+from pylab import *
+
+plot(R,icd)
+cR = np.linalg.norm(pos[0]-P1)
+oR = np.linalg.norm(pos[1]-P1)
+plot([cR,cR],[0,2],'r-') #markers for where the nuclei are
+plot([oR,oR],[0,8],'r-')
+xlabel('|R| ($\AA$)')
+ylabel('Charge density (e/$\AA^3$)')
+show()
+#+END_SRC
+
+To generalize this to non-cubic cells, we need to do interpolation along arbitrary vectors. The overall strategy is the same:
+
+    Find the cell that contains the point (a,b,c).
+    compute the scaled coordinates (sa,sb,sc) of the point inside the cell.
+    Do the interpolations along the basis vectors. Given u1 at P1(x1,y1,z1) and u2 at P2(x2,y2,z2) where (P2-P1) is a cell basis vector a, u = u1 + sa*(u2-u1). There are still 7 interpolations to do.
+
+Below is an example of this code, using a the python library bisect to find the cell.
+
+#+BEGIN_SRC python
+'''
+3D vector interpolation in non-cubic unit cells with vector
+interpolation.
+
+This function should work for any shape unit cell.
+'''
+from ase.calculators.jacapo import Jacapo
+import bisect
+import numpy as np
+
+atoms = Jacapo.read_atoms('/home/jkitchin/www/dft/source/jacapo/1-molecules/1.2-calculating-simple-properties/1.2.6-dipole-moment/1.6-co-dense.nc')
+calc = atoms.get_calculator()
+x,y,z,cd = calc.get_charge_density()
+
+def vinterp3d(x,y,z,u,xi,yi,zi):
+
+    p = np.array([xi,yi,zi])
+
+    #1D arrays of cooridinates
+    xv = x[:,0,0]
+    yv = y[0,:,0]
+    zv = z[0,0,:]
+
+    # we subtract 1 because bisect tells us where to insert the
+    # element to maintain an ordered list, so we want the index to the
+    # left of that point
+    i = bisect.bisect_right(xv,xi) - 1
+    j = bisect.bisect_right(yv,yi) - 1
+    k = bisect.bisect_right(zv,zi) - 1
+
+    #points at edge of cell. We only need P1, P2, P3, and P5
+    P1 = np.array([x[i,j,k],y[i,j,k],z[i,j,k]])
+    P2 = np.array([x[i+1,j,k],y[i+1,j,k],z[i+1,j,k]])
+    P3 = np.array([x[i,j+1,k],y[i,j+1,k],z[i,j+1,k]])
+    P5 = np.array([x[i,j,k+1],y[i,j,k+1],z[i,j,k+1]])
+
+    #values of u at edge of cell
+    u1 = u[i,j,k]
+    u2 = u[i+1,j,k]
+    u3 = u[i,j+1,k]
+    u4 = u[i+1,j+1,k]
+    u5 = u[i,j,k+1]
+    u6 = u[i+1,j,k+1]
+    u7 = u[i,j+1,k+1]
+    u8 = u[i+1,j+1,k+1]
+
+    #cell basis vectors, not the unit cell, but the voxel cell containing the point
+    cbasis = np.array([P2-P1,
+                       P3-P1,
+                       P5-P1])
+
+    #now get interpolated point in terms of the cell basis
+    s = np.dot(np.linalg.inv(cbasis.T),np.array([xi,yi,zi])-P1)
+
+    #now s = (sa, sb, sc) which are fractional coordinates in the vector space
+    #next we do the interpolations
+    ui1 = u1 + s[0]*(u2-u1)
+    ui2 = u3 + s[0]*(u4-u3)
+
+    ui3 = u5 + s[0]*(u6-u5)
+    ui4 = u7 + s[0]*(u8-u7)
+
+    ui5 = ui1 + s[1]*(ui2-ui1)
+    ui6 = ui3 + s[1]*(ui4-ui3)
+
+    ui7 = ui5 + s[2]*(ui6-ui5)
+
+    return ui7
+
+
+# compute a line with 60 points in it through these two points
+P1 = np.array([0.0, 3.0, 3.0])
+P2 = np.array([5.0, 3.0, 3.0])
+
+npoints = 60
+
+points = [P1 + n*(P2-P1)/npoints for n in range(npoints)]
+
+# compute the distance along the line
+R = [np.linalg.norm(p-P1) for p in points]
+
+icd = [vinterp3d(x,y,z,cd,p[0],p[1],p[2]) for p in points]
+
+from pylab import plot, xlabel, ylabel, show
+
+
+plot(R,icd)
+pos = atoms.get_positions()
+cR = np.linalg.norm(pos[0]-P1)
+oR = np.linalg.norm(pos[1]-P1)
+plot([cR,cR],[0,2],'r-') #markers for where the nuclei are
+plot([oR,oR],[0,8],'r-')
+xlabel('|R| ($\AA$)')
+ylabel('Charge density (e/$\AA^3$)')
+show()
+#+END_SRC
+
+#+RESULTS:
+: None
+
+*** Reading and writing data
+
+**** Builtin io modules
+
+``pylab`` has two convenient and powerful functions for saving and
+reading data, :func:`pylab.save` and :func:`pylab.load`.
+
+#+BEGIN_SRC python
+pylab.save('pdat.dat',(x,y))
+#+END_SRC
+
+and later you can read these arrays back in with:
+
+#+BEGIN_SRC python
+x,y = pylab.load('pdat.dat')
+#+END_SRC
+
+see also :func:`pylab.csv2rec` and :func:`pylab.loadtxt` and
+:func:`pylab.savetxt`.
+
+See http://www.scipy.org/Cookbook/InputOutput for examples of numpy io.
+
+**** From scratch
+
+You can save data in many ways from scratch. Basically, just open a
+file and write data to it. Likewise, any datafile that has some
+structure to it can probably be read by python.
+
+Reading a datafile with
+::
+
+	#header
+	#ignore these lines
+	john, 4
+	robert, 5
+	terry, 5
+
+A standard approach would be to read in all the lines, skip the first
+two lines, split each line (remember each line is a string) at the
+',', and append the first field to one variable, and append the second
+field to another variable as an integer.  For example::
+
+#+BEGIN_SRC python
+v1 = []
+v2 = []
+lines = open('somefile','r').readlines()
+
+for line in lines[2:]: #skip the first two lines
+    fields = line.split(',')
+	v1.append(fields[0]) #names
+	v2.append(int(fields[1])) #number
+#+END_SRC
+
+Writing datafiles is easy too.
+#+BEGIN_SRC python
+v1 = ['john','robert','terry']
+v2 = [4,5,6]
+f = open('somefile', 'w') #note 'w' = write mode
+f.write('#header\n')
+f.write('#ignore these lines\n')
+for a,b in zip(v1,v2):
+	f.write('%s, %i\n' % (a,b))
+f.close()
+#+END_SRC
+
+Some notes:
+1) opening a file in 'w' mode clobbers any existing file, so do that
+with care!
+
+2) when writing to a file you have to add \n to each line. this is the
+carriage return.
+
+3) Manually writing and reading files is pretty tedious. Whenever
+possible you should use the builtin methods of numpy or pylab.
+
+
+*** NetCDF files
+-------------
+
+`NetCDF <http://www.unidata.ucar.edu/software/netcdf/>`_ is a binary,
+but cross-platform structured data format. 	The input file and
+output file for Dacapo is the NetCDF format. On creating a NetCDF file
+you must define the dimensions and variables before you can store data
+in them. You can create and read NetCDF files in python using one of
+the following modules:
+
+#. :mod:`Scientific.IO.NetCDF`
+(http://dirac.cnrs-orleans.fr/plone/software/scientificpython/)
+
+#. :mod:`netCDF3` (http://netcdf4-python.googlecode.com/svn/trunk/docs/netCDF3-module.html)
+
+#. :mod:`pycdf` (http://pysclint.sourceforge.net/pycdf/) this is a very
+low level module modelled after the C-api. I am not sure it is completely
+bug-free (I have problems with character variables)
+
+
+I suggest you read through the jacapo.py code for many examples of
+reading and writing NetCDF files.
+
+*** python modules
+
+
+the comma separated values (:mod:`csv`) module in python allows you to
+easily create datafiles:
+
+``csv`` writing::
+
+	import numpy as np
+
+	x = np.linspace(0.0,6.0,100)
+	y = np.cos(x)
+
+	import csv
+	writer = csv.writer(open("some.csv", "w"))
+	writer.writerows(zip(x,y))
+
+
+It is not so easy to read the data back in though because the module
+only returns strings, so you must turn the strings back into floats (or
+whatever other format they should be).
+
+``csv`` reading::
+
+	import csv
+	reader = csv.reader(open("some.csv",'r'),delimiter=',')
+
+	x,y = [],[]
+	for row in reader:
+	    #csv returns strings that must be cast as floats
+	        a,b = [float(z) for z in row]
+		    x.append(a)
+		    y.append(b)
+
+This is almost as much work as manually reading the data though. The
+module is more powerful than I have shown here, so one day checkout
+``pydoc csv``
+
+The :mod:`pickle` and :mod:`shelve` modules of python also offer some
+data storage functionality. Check them out some day too.
+
+*** reading and writing excel files
 ** Computational geometry
 *** Changing coordinate systems
 Let A, B, C be the unit cell vectors
@@ -2676,6 +3239,204 @@ spherical rotors Ia = Ib = Ic
 
 #+end_example
 
+** Equations of State
+
+The module :mod:`ase.util.eos` uses a simple polynomial equation of
+state to find bulk unit cell equilibrium volumes and bulk
+modulus. There are several other choices you could use that are more
+standard in the literature. Here we summarize them and provide
+references to the relevant literature.
+
+
+*** Birch-Murnaghan
+
+This is probably the most common equation of state used most often,
+and is a modification of the original Murnaghan EOS described below. A
+current description of the equation is in reference
+\cite{PhysReB.70.224107}. You can also find the equations for the Vinet and
+Pourier-Tarantola equations of state in that reference.
+
+Birch-Murnaghan EOS:
+
+
+   $E(\eta) = E_0 + \frac{9B_0 V_0}{16}(\eta^2-1)^2(6+B'_0(\eta^2-1)-4\eta^2)$
+
+where $\eta=(V/V_0)^{1/3}$, $B_0$ and $B'_0$ are the bulk
+modulus and its pressure derivative at the equilibrium volume
+$V_0$. You may find other derivations of this equation in the
+literature too.
+
+Two other equations of state in that reference are the Vinet EOS:
+
+
+   $E(\eta) = E_0 + \frac{2 B_0 V_0}{(B'_0-1)^2}(2-(5+3B'_0 (\eta-1) e^{-3(B'_0-1)(\eta-1)/2})$
+
+and the Poirier-Tarantola EOS:
+
+
+   $E(\varrho) = E_0 + \frac{B_0 V_0 \varrho^2}{6}(3 + \varrho (B'_0-2))$
+
+with $\varrho=-3 \ln(\eta)$.
+
+*** Murnaghan
+
+The equation most often used in the Murnaghan  \cite{Murnaghan1944}
+equation of state is described in \cite{PhysRevB.28.5480}.
+
+
+   $E = E_T+\frac{B_0 V}{B'_0}\left[\frac{(V_0/V)^{B'_0}}{B'_0-1}+1\right]-\frac{V_0 B_0}{B'_0-1}$
+
+where $V$ is the volume, $B_0$ and $B'_0$ are the bulk
+modulus and its pressure derivative at the equilibrium volume
+$V_0$. All of these are parameters that are fitted to energy
+vs. unit cell volume ($V$) data. When fitting data to this equation a
+guess of 2-4 for $B'_0$ is usually a good start.
+
+
+*** Birch
+
+
+The original Birch equation \cite{Birch} is:
+
+
+   $E = E_0 + \frac{9}{8} B_0 V_0 \left(\left(\frac{V_0}{V}\right)^{\frac{2}{3}}-1\right)^2+\frac{9}{16} B_0 V_0 (B'_0-4)\left(\left(\frac{V}{V_0}\right)^{2/3}-1\right)^3$
+
+*** The Anton-Schmidt Equation of state \cite{Mayer200323}
+
+   $E(V) = E_\infty + \frac{B V_0}{n+1}\left(\frac{V}{V_0}\right)^{n+1} \left( \ln{\frac{V}{V_0}} - \frac{1}{n+1}\right)$
+
+where :math:$E_\infty$ corresponds to the energy at infinite separation,
+although the model they use to derive this equation breaks down at
+large separations so this is usually not a good estimate of the
+cohesive energy. $n$ is in the range of -2.
+
+*** Fitting data to these equations of state
+-----------------------------------------
+
+To use these equations of state to find the equilibrium cell volume
+and bulk modulus we need a set of calculations that give us the energy
+of the unit cell as a function of the cell volume. We then fit that
+data to one of the above equations to extract the parameters we want.
+All of these equations of state are non-linear in the cell volume,
+which means you have to provide some initial guesses for the
+parameters.
+
+Here we describe a strategy for getting some estimates of the
+parameters using a linear least squares fitting of a parabola to the
+data to estimate $E_0$, $V_0$, $B$ and
+$B'_0$ which are used as initial guess for a non-linear least
+squares fit of the equation of state to the data.
+
+The following example illustrates one approach to this problem for the
+Murnaghan equation of state:
+
+#+BEGIN_SRC python :results output
+#!/usr/bin/env python
+
+'''Example of fitting the Birch-Murnaghan EOS to data'''
+
+from pylab import * #this includes numpy as np!
+from scipy.optimize import leastsq
+
+# raw data from 2.2.3-al-analyze-eos.py
+v = np.array([13.72, 14.83, 16.0, 17.23, 18.52])
+e = np.array([-56.29, -56.41, -56.46, -56.46, -56.42])
+
+#make a vector to evaluate fits on with a lot of points so it looks smooth
+vfit = np.linspace(min(v),max(v),100)
+
+### fit a parabola to the data
+# y = ax^2 + bx + c
+a,b,c = polyfit(v,e,2) #this is from pylab
+
+'''
+the parabola does not fit the data very well, but we can use it to get
+some analytical guesses for other parameters.
+
+V0 = minimum energy volume, or where dE/dV=0
+E = aV^2 + bV + c
+dE/dV = 2aV + b = 0
+V0 = -b/2a
+
+E0 is the minimum energy, which is:
+E0 = aV0^2 + bV0 + c
+
+B is equal to V0*d^2E/dV^2, which is just 2a*V0
+
+and from experience we know Bprime_0 is usually a small number like 4
+'''
+
+#now here are our initial guesses.
+v0 = -b/(2*a)
+e0 = a*v0**2 + b*v0 + c
+b0 = 2*a*v0
+bP = 4
+
+#now we have to create the equation of state function
+def Murnaghan(parameters,vol):
+    '''
+    given a vector of parameters and volumes, return a vector of energies.
+    equation From PRB 28,5480 (1983)
+    '''
+    E0 = parameters[0]
+    B0 = parameters[1]
+    BP = parameters[2]
+    V0 = parameters[3]
+
+    E = E0 + B0*vol/BP*(((V0/vol)**BP)/(BP-1)+1) - V0*B0/(BP-1.)
+
+    return E
+
+# and we define an objective function that will be minimized
+def objective(pars,y,x):
+    #we will minimize this function
+    err =  y - Murnaghan(pars,x)
+    return err
+
+x0 = [e0, b0, bP, v0] #initial guesses in the same order used in the Murnaghan function
+
+murnpars, ier = leastsq(objective, x0, args=(e,v)) #this is from scipy
+
+#now we make a figure summarizing the results
+plot(v,e,'ro')
+plot(vfit, a*vfit**2 + b*vfit + c,'--',label='parabolic fit')
+plot(vfit, Murnaghan(murnpars,vfit), label='Murnaghan fit')
+xlabel('Volume ($\AA^3$)')
+ylabel('Energy (eV)')
+legend(loc='best')
+
+#add some text to the figure in figure coordinates
+ax = gca()
+text(0.4,0.5,'Min volume = %1.2f $\AA^3$' % murnpars[3],
+     transform = ax.transAxes)
+text(0.4,0.4,'Bulk modulus = %1.2f eV/$\AA^3$ = %1.2f GPa' % (murnpars[1],
+                                                              murnpars[1]*160.21773)
+     , transform = ax.transAxes)
+savefig('images/a-eos.png')
+show()
+
+print 'initial guesses  : ',x0
+print 'fitted parameters: ', murnpars
+
+#+END_SRC
+
+#+RESULTS:
+: initial guesses  :  [-56.472134949694016, 0.63066383554976546, 4, 16.789583121285862]
+: fitted parameters:  [-56.46560371   0.48969488   4.75292243  16.57279459]
+
+[[./images/a-eos.png]]
+
+You can see the Murnaghan equation of state fits the data better than
+the parabola.
+
+Here is a comparison of the initial guesses and final parameters. You
+can see our guesses from the parabola were actually pretty good, and
+are the main reason we converged to a solution. If you try other
+guesses you will probably find the `scipy.optimize.leastsq` function
+does not converge.
+
+* Python
+** TODO easy_install as a user
 * References
 \bibliographystyle{plain}
 \bibliography{dft}
