@@ -18,6 +18,8 @@
 * Introduction to this book
 This book serves two purposes: 1) to provide worked examples of using DFT to model materials properties, and 2) to provide references to more advanced treatments of these topics in the literature. It is not a definitive reference on density functional theory. Along the way to learning how to perform the calculations, you will learn how to analyze the data, make plots, and how to interpret the results. This book is very much "recipe" oriented, with the intention of giving you enough information and knowledge to start your research. In that sense, many of the computations are not publication quality with respect to convergence of calculation parameters.
 
+You will read a lot of python code in this book. That is by design. I believe that computational work should always be scripted. That leaves a record of everything you did, so that you can reproduce it later, or report exactly what you did.
+
 This book makes heavy use of many computational tools including:
 
 - [[http://python.org/][Python]]
@@ -2496,7 +2498,219 @@ with jasp('bulk/Fe-bcc-sp-1',
 
 * TODO Surfaces
 ** Surface structures
+
+*** Simple surfaces
+ase provides many [[https://wiki.fysik.dtu.dk/ase/ase/surface.html#module-ase.lattice.surface][utility functions]] to setup surfaces. Here is a simple example of an fcc111 Al surface. There are built in functions for fcc111, bcc110, bcc111, hcp001 and diamond111.
+
+#+BEGIN_SRC python
+from ase.lattice.surface import *
+from ase.io import write
+
+slab = fcc111('Al', size=(2,2,3), vacuum=10.0)
+
+write('images/Al-slab.png', slab, rotation='90x',show_unit_cell=2)
+#+END_SRC
+
+#+RESULTS:
+: None
+
+[[./images/Al-slab.png]]
+
+*** vicinal surfaces
+
+Many stepped surfaces are not that difficult to make now. The main idea in generating them is described [[https://wiki.fysik.dtu.dk/ase/_downloads/general_surface.pdf][here]]. ase provides a general function for making vicinal surfaces. Here is an example.
+
+#+BEGIN_SRC python
+from ase.lattice.surface import surface
+from ase.io import write
+
+# Au(211) with 9 layers
+s1 = surface('Au', (2, 1, 1), 9)
+s1.center(vacuum=10, axis=2)
+
+write('images/Au-211.png',
+      s1.repeat((3,3,1)),
+      rotation='-30z,90x', # change the orientation for viewing
+      show_unit_cell=2)
+
+#+END_SRC
+
+#+RESULTS:
+: None
+
+[[./images/Au-211.png]]
+
 ** Surface relaxation
+When a surface is created, the bulk symmetry is broken and consenquently there will be forces on the surface atoms. We will examine some consequences of this with a simple Al slab. First, we show there are forces on the slab atoms.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.lattice.surface import *
+
+atoms = fcc111('Al', size=(1,1,4), vacuum=10.0)
+
+with jasp('surfaces/Al-slab-unrelaxed',
+          xc='PBE',
+          kpts=(6,6,1),
+          encut=350,
+          atoms=atoms) as calc:
+    atoms.get_forces()
+    print calc
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+: -----------------------------
+  VASP calculation from /home/jkitchin/dft-org/surfaces/Al-slab-unrelaxed
+  converged: True
+  Energy = -14.177069 eV
+
+  Unit cell vectors (angstroms)
+        x       y     z      length
+  a0 [ 2.864  0.000  0.000] 2.864
+  a1 [ 1.432  2.480  0.000] 2.864
+  a2 [ 0.000  0.000  27.015] 27.015
+  a,b,c,alpha,beta,gamma (deg): 2.864 2.864 27.015 90.0 90.0 90.0
+  Unit cell volume = 191.872 Ang^3
+  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
+             0.007  0.007  0.002 -0.000 -0.000 -0.000
+ Atom#  sym       position [x,y,z]         tag  rmsForce
+   0    Al  [0.000      0.000     10.000]   4   0.01
+   1    Al  [1.432      0.827     12.338]   3   0.18
+   2    Al  [2.864      1.653     14.677]   2   0.18
+   3    Al  [0.000      0.000     17.015]   1   0.01
+--------------------------------------------------
+
+INCAR Parameters:
+-----------------
+        nbands: 10
+         encut: 350.0
+          prec: Normal
+          kpts: [6 6 1]
+    reciprocal: False
+            xc: PBE
+           txt: -
+         gamma: False
+
+Pseudopotentials used:
+----------------------
+Al: potpaw_PBE/Al/POTCAR (git-hash: c8d9ecb0b6ebec0256c5f5072cee4de6a046dac2)
+#+end_example
+
+Some points to note. The forces on the atoms have symmetry to them.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.lattice.surface import *
+
+atoms = fcc111('Al', size=(1,1,4), vacuum=10.0)
+
+with jasp('surfaces/Al-slab-unrelaxed') as calc:
+    atoms = calc.get_atoms()
+
+    for i in range(1,len(atoms)):
+        print atoms[i].z - atoms[i-1].z
+#+END_SRC
+
+#+RESULTS:
+: 2.33826859022
+: 2.33826859022
+: 2.33826859022
+
+We have to make some decisions about how to relax the slab. One choice would be to relax all the atoms in the slab. If we do that, then there will be no atoms with bulk like spacing unless we increase the slab thickness pretty dramatically. It is pretty common to freeze some atoms at the bulk coordinates, and let the others relax. We will freeze the bottom two layers (defined by tags 3 and 4) and let the first two layers relax. To do that we add constraints to the slab.
+
+Note: the [[https://wiki.fysik.dtu.dk/ase/ase/constraints.html][ase constraints]] are only partially used by jasp/vasp. The FixAtoms constraint gets written to the POSCAR file, and is then used internally in Vasp. The only other constraint that Vasp can use internally is FixScaled. The other constraints are not written to the POSCAR and are not used by Vasp.
+
+TODO: show how to use other ase.constraints with jasp.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.lattice.surface import *
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Al', size=(1,1,4), vacuum=10.0)
+
+with jasp('surfaces/Al-slab-relaxed',
+          xc='PBE',
+          kpts=(6,6,1),
+          encut=350,
+          ibrion=2,
+          isif=2,
+          nsw=10,
+          atoms=atoms) as calc:
+
+    constraint = FixAtoms(mask=[atom.tag >= 3 for atom in atoms])
+    atoms.set_constraint(constraint)
+
+    atoms.get_forces()
+    print calc
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+: -----------------------------
+  VASP calculation from /home/jkitchin/dft-org/surfaces/Al-slab-relaxed
+  converged: True
+  Energy = -14.181417 eV
+
+  Unit cell vectors (angstroms)
+        x       y     z      length
+  a0 [ 2.864  0.000  0.000] 2.864
+  a1 [ 1.432  2.480  0.000] 2.864
+  a2 [ 0.000  0.000  27.015] 27.015
+  a,b,c,alpha,beta,gamma (deg): 2.864 2.864 27.015 90.0 90.0 90.0
+  Unit cell volume = 191.872 Ang^3
+  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
+             0.006  0.006  0.001 -0.000 -0.000 -0.000
+ Atom#  sym       position [x,y,z]         tag  rmsForce
+   0    Al  [0.000      0.000     10.000]   4   0.00
+   1    Al  [1.432      0.827     12.338]   3   0.00
+   2    Al  [2.864      1.653     14.637]   2   0.05
+   3    Al  [0.000      0.000     16.982]   1   0.02
+--------------------------------------------------
+
+INCAR Parameters:
+-----------------
+        nbands: 10
+           nsw: 10
+        ibrion: 2
+          isif: 2
+         encut: 350.0
+          prec: Normal
+          kpts: [6 6 1]
+    reciprocal: False
+            xc: PBE
+           txt: -
+         gamma: False
+
+Pseudopotentials used:
+----------------------
+Al: potpaw_PBE/Al/POTCAR (git-hash: c8d9ecb0b6ebec0256c5f5072cee4de6a046dac2)
+#+end_example
+
+You can see that atoms 2 and 3 (the ones we relaxed) now have very low forces on them and it appears that atoms 0 and 1 have no forces on them. That is because the FixAtoms constraint works by setting the forces on those atoms to zero. We can see in the next example that the z-positions of the relaxed atoms have indeed relaxed and changed, while the position of the frozen atoms did not change.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.lattice.surface import *
+
+atoms = fcc111('Al', size=(1,1,4), vacuum=10.0)
+
+with jasp('surfaces/Al-slab-relaxed') as calc:
+    atoms = calc.get_atoms()
+
+    for i in range(1,len(atoms)):
+        print 'd_({0},{1}) = {2}'.format(i,i-1,
+                                      atoms[i].z - atoms[i-1].z)
+
+#+END_SRC
+
+#+RESULTS:
+: d_(1,0) = 2.33826859022
+: d_(2,1) = 2.29891157834
+: d_(3,2) = 2.34530960922
+
+
 ** Surface energy
 
 The easiest way to calculate surface energies is from this equation:
@@ -2537,7 +2751,208 @@ where $\Delta E_N = E_{slab}^N - E_{slab}^{N-1}$.
 
 #+RESULTS:
 
-** TODO Dipole correction
+** work function
+To get the work function, we need to have the local potential. this is not written by default in vasp, and we have to tell it to do that with the LVTOT keyword.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.lattice.surface import *
+from ase.constraints import FixAtoms
+from pylab import *
+from jasp.volumetric_data import *
+
+with jasp('surfaces/Al-slab-relaxed') as calc:
+    atoms = calc.get_atoms()
+
+with jasp('surfaces/Al-slab-locpot',
+          xc='PBE',
+          kpts=(6,6,1),
+          encut=350,
+          lvtot=True, # write out local potential
+          lvhar=True, # write out only electrostatic potential, not xc pot
+          atoms=atoms) as calc:
+
+    calc.calculate()
+    atoms = calc.get_atoms()
+
+    x,y,z,lp = calc.get_local_potential()
+    nx, ny, nz = lp.shape
+
+    axy = [np.average(lp[:,:,z]) for z in range(nz)]
+    # setup the x-axis in realspace
+    uc = atoms.get_cell()
+    xaxis = np.linspace(0,uc[2][2],nz)
+
+    plot(xaxis, axy)
+    show()
+#+END_SRC
+
+#+RESULTS:
+
+
+** Dipole correction
+Slabs that are not symmetric (e.g. they have adsorbates on only one side) can develop dipole moments. Periodic dipoles can be problematic, as they create an artificial field that may affect the surface properties such as the work function and the convergence of the calculations. The solution to this problem is to introduce a dipole field in the cell to exactly cancel the dipole moment \cite{PhysRevB.46.16067} (see \cite{PhysRevB.59.12301} for a small correction) to minimize the effect.
+
+Here we will just illustrate the effect.
+*** slab with no dipole correction
+#+BEGIN_SRC python
+#!/usr/bin/env python
+from ase.lattice.surface import *
+from jasp import *
+from jasp.volumetric_data import *
+
+slab = fcc111('Al', size=(2,2,2), vacuum=10.0)
+add_adsorbate(slab,'Na',height=1.2,position='fcc')
+
+slab.center()
+
+with jasp('surfaces/Al-Na-nodip',
+          xc='PBE',
+          encut=340,
+          kpts=(2,2,1),
+          lvtot=True, # write out local potential
+          lvhar=True, # write out only electrostatic potential, not xc pot
+          atoms=slab) as calc:
+    calc.calculate()
+
+    x,y,z,lp = calc.get_local_potential()
+    nx, ny, nz = lp.shape
+
+    axy = [np.average(lp[:,:,z]) for z in range(nz)]
+    # setup the x-axis in realspace
+    uc = atoms.get_cell()
+    xaxis = np.linspace(0,uc[2][2],nz)
+
+    plot(xaxis, axy)
+    show()
+#+END_SRC
+
+#+RESULTS:
+
+*** slab with a dipole correction
+Note this takes a considerably longer time to run than without a dipole correction!
+
+#+BEGIN_SRC python :results output
+from ase.lattice.surface import *
+from jasp import *
+JASPRC['mode'] = 'run'
+slab = fcc111('Al', size=(2,2,2), vacuum=10.0)
+add_adsorbate(slab,'Na',height=1.2,position='fcc')
+
+slab.center()
+
+with jasp('surfaces/Al-Na-dip',
+          xc='PBE',
+          encut=340,
+          kpts=(2,2,1),
+          idipol=3,   # only along z-axis
+          lvtot=True, # write out local potential
+          lvhar=True, # write out only electrostatic potential, not xc pot
+          atoms=slab) as calc:
+    # pre-converge
+    #calc.calculate()
+
+    x,y,z,cd = calc.get_charge_density()
+    n0, n1, n2 = cd.shape
+    nelements = n0*n1*n2
+    voxel_volume = slab.get_volume()/nelements
+    total_electron_charge = cd.sum()*voxel_volume
+
+    electron_density_center = np.array([(cd*x).sum(),
+                                        (cd*y).sum(),
+                                        (cd*z).sum()])
+    electron_density_center *= voxel_volume
+    electron_density_center /= total_electron_charge
+
+    print electron_density_center
+    uc = slab.get_cell()
+    sedc = np.dot(np.linalg.inv(uc.T),electron_density_center.T).T
+    print sedc
+
+    print calc.calculation_required(slab,['energy'])
+    ## # now turn on potential calculation: violates jasp workflow!
+    calc.set(ldipol=True, dipol=sedc)
+    print calc.read_convergence()
+    print calc.calculation_required(slab,['energy'])
+
+    calc.calculate()
+
+    x,y,z,lp = calc.get_local_potential()
+    nx, ny, nz = lp.shape
+
+    axy = [np.average(lp[:,:,z]) for z in range(nz)]
+    # setup the x-axis in realspace
+    uc = slab.get_cell()
+    xaxis = np.linspace(0,uc[2][2],nz)
+    from pylab import *
+    plot(xaxis, axy)
+    show()
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+[  4.21229252   2.41891645  10.65385708]
+[ 0.49161039  0.48766346  0.47693298]
+False
+True
+True
+ vasp.5.2.12 11Nov11 complex
+
+ POSCAR found :  2 types and       9 ions
+ LDA part: xc-table for Pade appr. of Perdew
+ found WAVECAR, reading the header
+ POSCAR, INCAR and KPOINTS ok, starting setup
+ WARNING: small aliasing (wrap around) errors must be expected
+ FFT: planning ...(           1 )
+ reading WAVECAR
+ the WAVECAR file was read sucessfully
+ initial charge from wavefunction
+ entering main loop
+       N       E                     dE             d eps       ncg     rms          rms(c)
+DAV:   1    -0.225544211605E+02   -0.22554E+02   -0.20687E-01    76   0.150E+00    0.337E-01
+DAV:   2    -0.225435282511E+02    0.10893E-01   -0.55679E-01    84   0.274E+00    0.307E-01
+DAV:   3    -0.225264927245E+02    0.17036E-01   -0.10780E-01    76   0.136E+00    0.475E-02
+DAV:   4    -0.225268171472E+02   -0.32442E-03   -0.72918E-03    87   0.352E-01    0.244E-02
+DAV:   5    -0.225266957499E+02    0.12140E-03   -0.18147E-03    71   0.183E-01    0.155E-02
+DAV:   6    -0.225267194815E+02   -0.23732E-04   -0.11686E-04    47   0.611E-02
+   1 F= -.22526719E+02 E0= -.22538320E+02  d E =0.348008E-01
+ writing wavefunctions
+#+end_example
+
+#+BEGIN_SRC python
+from jasp import *
+from pylab import *
+
+with jasp('surfaces/Al-Na-nodip') as calc:
+    atoms = calc.get_atoms()
+
+    x,y,z,lp = calc.get_local_potential()
+    nx, ny, nz = lp.shape
+
+    axy_1 = [np.average(lp[:,:,z]) for z in range(nz)]
+    # setup the x-axis in realspace
+    uc = atoms.get_cell()
+    xaxis_1 = np.linspace(0,uc[2][2],nz)
+
+with jasp('surfaces/Al-Na-dip') as calc:
+    atoms = calc.get_atoms()
+
+    x,y,z,lp = calc.get_local_potential()
+    nx, ny, nz = lp.shape
+
+    axy_2 = [np.average(lp[:,:,z]) for z in range(nz)]
+    # setup the x-axis in realspace
+    uc = atoms.get_cell()
+    xaxis_2 = np.linspace(0,uc[2][2],nz)
+
+plot(xaxis_1, axy_1, label='no dipole correction')
+plot(xaxis_2, axy_2, label='dipole correction')
+show()
+#+END_SRC
+
+#+RESULTS:
+: None
+
 * TODO Atomistic thermodynamics
 * TODO Advanced electronic structure methods
 ** DFT+U
@@ -4044,6 +4459,10 @@ does not converge.
 
 * Python
 ** TODO easy_install as a user
+
+This usually works if that directory is on your PYTHONPATH
+
+easy_install -d ~/lib/python2.6/site-packages/ pymatgen
 * References
 \bibliographystyle{plain}
 \bibliography{dft}
