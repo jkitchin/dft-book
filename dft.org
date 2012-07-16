@@ -2066,7 +2066,6 @@ The interpretation of these results is that the mode at 3713 cm^{-1} would be ne
 
 *** TODO Shell scripts are rough. One day I should rewrite this in python.
 
-* TODO Clusters                                                    :noexport:
 * TODO Bulk systems
 ** Defining and visualizing bulk systems
 *** Built-in functions in ase
@@ -2098,44 +2097,16 @@ write('images/AgPd-bulk.png',atoms,show_unit_cell=2)
 [[./images/AgPd-bulk.png]]
 
 ** TODO Determining bulk structures
-*** fcc/bcc
+*** TODO fcc/bcc
 *** hcp
 
 #+BEGIN_SRC python :results output
 from ase.lattice.hexagonal import HexagonalClosedPacked
 from jasp import *
-from ase.visualize import view
-JASPRC['queue.walltime'] = '10:00:00'
+import matplotlib.pyplot as plt
+
 atoms = HexagonalClosedPacked(symbol='Ru',
                               latticeconstant={'a':2.7, 'c/a':1.584})
-
-a_list = [2.5, 2.6, 2.7, 2.8, 2.9]
-covera_list = [1.4, 1.5, 1.6, 1.7, 1.8]
-
-for a in a_list:
-    for covera in covera_list:
-
-        atoms = HexagonalClosedPacked(symbol='Ru',
-                              latticeconstant={'a':a, 'c/a':covera})
-        wd = 'bulk/Ru/{0:1.2f}-{1:1.2f}'.format(a,covera)
-
-        with jasp(wd,
-                  xc='PBE',
-                  kpts=(6,6,4),
-                  encut=350,
-                  atoms=atoms) as calc:
-            try:
-                atoms.get_potential_energy()
-            except (VaspSubmitted, VaspQueued):
-                pass
-
-#+END_SRC
-
-#+RESULTS:
-
-#+BEGIN_SRC python :results output
-from jasp import *
-import matplotlib.pyplot as plt
 
 a_list = [2.5, 2.6, 2.7, 2.8, 2.9]
 covera_list = [1.4, 1.5, 1.6, 1.7, 1.8]
@@ -2144,25 +2115,34 @@ for a in a_list:
     energies = []
     for covera in covera_list:
 
+        atoms = HexagonalClosedPacked(symbol='Ru',
+                              latticeconstant={'a':a, 'c/a':covera})
+
         wd = 'bulk/Ru/{0:1.2f}-{1:1.2f}'.format(a,covera)
 
-        with jasp(wd) as calc:
-            atoms = calc.get_atoms()
+        with jasp(wd,
+                  xc='PBE',
+                  kpts=(6,6,4),
+                  encut=350,
+                  atoms=atoms) as calc:
             try:
                 energies.append(atoms.get_potential_energy())
             except (VaspSubmitted, VaspQueued):
                 pass
     plt.plot(covera_list, energies, label='a={0}'.format(a))
 
-plt.xlabel('$a$ ($\AA$)')
+plt.xlabel('$c/a$ ($\AA$)')
 plt.ylabel('Energy (eV)')
 plt.legend()
-plt.show()
-
+plt.savefig('images/Ru-covera-scan.png')
 #+END_SRC
 
+#+RESULTS:
 
-contour plot
+[[./images/Ru-covera-scan.png]]
+
+It looks like there is a minimum in the a=2.7 $\AA$ curve, at a c/a ratio of about 1.6. We can look at the same data in a contour plot which shows more clearly there is minimum in all directions near that point.
+
 #+BEGIN_SRC python :results output
 from jasp import *
 import matplotlib.pyplot as plt
@@ -2201,8 +2181,205 @@ plt.show()
 #+END_SRC
 #+RESULTS:
 
-*** complex structures with internal degrees of freedom
+[[./images/ru-contourf.png]]
 
+*** complex structures with internal degrees of freedom
+A unit cell has six degrees of freedom: the lengths of each unit cell vector, and the angle between each vector. There may additionally be internal degrees of freedom for the atoms. It is impractical to try the approach used for Ru on anything complicated.
+
+1. With the atoms frozen find the volume (at constant shape) that minimizes the total energy. The goal here is to just get an idea of where the right volume is.
+2. Perform a volume equation of state calculation where each calculation is at constant volume, but the shape is allowed to change.
+3. Finally, do a final calculation near the minimum energy allowing the volume to also change.
+
+This multistep process is pretty reasonable to get a converged structure pretty quickly.
+
+#+BEGIN_SRC python :results output
+from ase import *
+import numpy as np
+from jasp import *
+import matplotlib.pyplot as plt
+
+'''
+create a TiO2 structure from the lattice vectors at
+http://cst-www.nrl.navy.mil/lattice/struk/c4.html
+'''
+a = 4.59 # experimental degrees of freedom.
+c = 2.96
+u = 0.3 #internal degree of freedom!
+
+#primitive vectors
+a1 = a*np.array([1.0, 0.0, 0.0])
+a2 = a*np.array([0.0, 1.0, 0.0])
+a3 = c*np.array([0.0, 0.0, 1.0])
+
+atoms = Atoms([Atom('Ti',[0., 0., 0.]),
+               Atom('Ti',0.5*a1 + 0.5*a2 + 0.5*a3),
+               Atom('O',u*a1+u*a2),
+               Atom('O',-u*a1 -u*a2),
+               Atom('O',(0.5+u)*a1 + (0.5-u)*a2 + 0.5*a3),
+               Atom('O',(0.5-u)*a1 + (0.5+u)*a2 + 0.5*a3)],
+              cell=[a1,a2,a3])
+
+v0 = atoms.get_volume()
+cell0 = atoms.get_cell()
+
+factors = [0.9, 0.95, 1.0, 1.05, 1.1] #to change volume by
+
+energies, volumes = [], []
+for f in factors:
+    v1 = f*v0
+    cell_factor = (v1/v0)**(1./3.)
+
+    atoms.set_cell(cell0*cell_factor, scale_atoms=True)
+
+    with jasp('bulk/tio2/step1-{0:1.2f}'.format(f),
+              encut=350,
+              kpts=(4,4,4),
+              xc='PBE',
+              sigma=0.05,
+              atoms=atoms) as calc:
+        try:
+            energies.append(atoms.get_potential_energy())
+            volumes.append(atoms.get_volume())
+        except (VaspSubmitted, VaspQueued):
+            pass
+
+plt.plot(volumes, energies)
+plt.xlabel('Vol. ($\AA^3)$')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/tio2-step1.png')
+#+END_SRC
+
+#+RESULTS:
+: [-52.042192999999997, -52.649554999999999, -52.949852999999997, -52.950336, -52.783493999999997]
+
+[[./images/tio2-step1.png]]
+
+In step 2 we will actually do some relaxations. We will do a series of relaxations, from 62 to 66 $\AA^3$, and allow the ions and cell shape to relax (ISIF=4) at constant volume.
+
+#+BEGIN_SRC python
+from jasp import *
+import matplotlib.pyplot as plt
+
+JASPRC['queue.walltime'] = '10:00'
+
+with jasp('bulk/tio2/step1-1.00') as calc:
+    atoms = calc.get_atoms()
+    v0 = atoms.get_volume()
+    cell0 = atoms.get_cell()
+
+
+volumes = [62., 63., 64., 65., 66.]
+
+energies = []
+for v in volumes:
+    atoms.set_cell((v/v0)**(1./3.)*cell0, scale_atoms=True)
+    with jasp('bulk/tio2/step2-{0}'.format(v),
+              encut=350,
+              kpts=(4,4,4),
+              xc='PBE',
+              sigma=0.05,
+              isif=4,     # relax ions, cell shape. not volume
+              ibrion=2,
+              nsw=10,
+              atoms=atoms) as calc:
+        try:
+            energies.append(atoms.get_potential_energy())
+        except (VaspSubmitted, VaspQueued):
+            pass
+
+plt.plot(volumes, energies)
+plt.xlabel('Vol. ($\AA^3)$')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/tio2-step2.png')
+#+END_SRC
+
+#+RESULTS:
+: None
+
+[[./images/tio2-step2.png]]
+
+Now, we take the final step, with ISIF=3 using the best guess from step 2.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+
+with jasp('bulk/tio2/step2-64.0') as calc:
+    atoms = calc.get_atoms()
+
+with jasp('bulk/tio2/step3',
+          encut=350,
+          kpts=(4,4,4),
+          xc='PBE',
+          sigma=0.05,
+          isif=3,     # relax ions, cell shape, and volume
+          ibrion=2,
+          nsw=10,
+          atoms=atoms) as calc:
+        try:
+            calc.calculate()
+            print calc
+        except (VaspSubmitted, VaspQueued):
+            pass
+
+from pyspglib import spglib
+print '\nThe spacegroup is {0}'.format(spglib.get_spacegroup(atoms))
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+: -----------------------------
+  VASP calculation from /home/jkitchin/dft-org/bulk/tio2/step3
+  converged: True
+  Energy = -53.201939 eV
+
+  Unit cell vectors (angstroms)
+        x       y     z      length
+  a0 [ 4.553  0.000  0.000] 4.553
+  a1 [ 0.000  4.553  0.000] 4.553
+  a2 [ 0.000  0.000  2.932] 2.932
+  a,b,c,alpha,beta,gamma (deg): 4.553 4.553 2.932 90.0 90.0 90.0
+  Unit cell volume = 60.759 Ang^3
+  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
+            -0.001 -0.001  0.000 -0.000 -0.000 -0.000
+ Atom#  sym       position [x,y,z]         tag  rmsForce
+   0    Ti  [0.000      0.000      0.000]   0   0.00
+   1    Ti  [2.276      2.276      1.466]   0   0.00
+   2    O   [1.379      1.379      0.000]   0   0.00
+   3    O   [3.174      3.174      0.000]   0   0.00
+   4    O   [3.655      0.898      1.466]   0   0.00
+   5    O   [0.898      3.655      1.466]   0   0.00
+--------------------------------------------------
+
+INCAR Parameters:
+-----------------
+        nbands: 20
+           nsw: 10
+        ibrion: 2
+          isif: 3
+         encut: 350.0
+         sigma: 0.05
+          prec: Normal
+          kpts: [4 4 4]
+    reciprocal: False
+            xc: PBE
+           txt: -
+         gamma: False
+
+Pseudopotentials used:
+----------------------
+O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
+Ti: potpaw_PBE/Ti/POTCAR (git-hash: a29a4f0f14083cf90544a3cf1ae7fc220b31829c)
+
+The spacegroup is  (136)
+#+end_example
+
+The points to note here are the following:
+1. The stress on the unit cell is very low.
+2. The forces on the atoms are very small (less than 0.0 eV/$\AA$).
+3. The agreement with experimental lattice parameters is pretty good.
+4. The spacegroup is still correct.
+
+*** TODO relative stabilities of two phases
 ** TODO Bulk reaction energies
 ** Atom projected density of states
 In this example, we consider how to get the atom-projected density of states. We are interested in properties of the $d$-band on Pd, such as the $d$-band center and d-band width.
@@ -2425,7 +2602,6 @@ plt.savefig('images/pd-xrd.png')
 [[./images/pd-xrd.png]]
 
 ** TODO Magnetism
-
 *** Determining if a magnetic solution is energetically favorable
 We can force a total magnetic moment onto a unit cell and compute the total energy as function of the total magnetic moment. If there is a minimum in the energy, then we know there is a lower energy magnetic solution than a non-magnetic solution.
 #+BEGIN_SRC python :results output
@@ -2710,8 +2886,58 @@ with jasp('surfaces/Al-slab-relaxed') as calc:
 : d_(2,1) = 2.29891157834
 : d_(3,2) = 2.34530960922
 
+** Work function
+To get the work function, we need to have the local potential. this is not written by default in vasp, and we have to tell it to do that with the LVTOT keyword.
 
-** Surface energy
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.lattice.surface import *
+from ase.constraints import FixAtoms
+from pylab import *
+from jasp.volumetric_data import *
+
+with jasp('surfaces/Al-slab-relaxed') as calc:
+    atoms = calc.get_atoms()
+
+with jasp('surfaces/Al-slab-locpot',
+          xc='PBE',
+          kpts=(6,6,1),
+          encut=350,
+          lvtot=True, # write out local potential
+          lvhar=True, # write out only electrostatic potential, not xc pot
+          atoms=atoms) as calc:
+
+    calc.calculate()
+    ef = calc.get_fermi_level()
+
+    atoms = calc.get_atoms()
+
+    x,y,z,lp = calc.get_local_potential()
+
+nx, ny, nz = lp.shape
+
+axy = np.array([np.average(lp[:,:,z]) for z in range(nz)])
+# setup the x-axis in realspace
+uc = atoms.get_cell()
+xaxis = np.linspace(0,uc[2][2],nz)
+
+plot(xaxis, axy)
+plot([min(xaxis), max(xaxis)], [ef, ef],'k:')
+savefig('images/Al-wf.png')
+
+ind = (xaxis > 0) & (xaxis < 5)
+wf = np.average(axy[ind]) - ef
+print ' The workfunction is {0:1.2f} eV'.format(wf)
+#+END_SRC
+
+#+RESULTS:
+:  The workfunction is 4.04 eV
+
+The workfunction of Al is listed as 4.08 at http://hyperphysics.phy-astr.gsu.edu/hbase/tables/photoelec.html.
+
+[[./images/Al-wf.png]]
+
+** TODO Surface energy
 
 The easiest way to calculate surface energies is from this equation:
 
@@ -2750,45 +2976,6 @@ where $\Delta E_N = E_{slab}^N - E_{slab}^{N-1}$.
 #quantum size effects? A. Kiejna, J. Peisert and P. Scharoch, Surf. Sci. 432 (1999) 54
 
 #+RESULTS:
-
-** work function
-To get the work function, we need to have the local potential. this is not written by default in vasp, and we have to tell it to do that with the LVTOT keyword.
-
-#+BEGIN_SRC python :results output
-from jasp import *
-from ase.lattice.surface import *
-from ase.constraints import FixAtoms
-from pylab import *
-from jasp.volumetric_data import *
-
-with jasp('surfaces/Al-slab-relaxed') as calc:
-    atoms = calc.get_atoms()
-
-with jasp('surfaces/Al-slab-locpot',
-          xc='PBE',
-          kpts=(6,6,1),
-          encut=350,
-          lvtot=True, # write out local potential
-          lvhar=True, # write out only electrostatic potential, not xc pot
-          atoms=atoms) as calc:
-
-    calc.calculate()
-    atoms = calc.get_atoms()
-
-    x,y,z,lp = calc.get_local_potential()
-    nx, ny, nz = lp.shape
-
-    axy = [np.average(lp[:,:,z]) for z in range(nz)]
-    # setup the x-axis in realspace
-    uc = atoms.get_cell()
-    xaxis = np.linspace(0,uc[2][2],nz)
-
-    plot(xaxis, axy)
-    show()
-#+END_SRC
-
-#+RESULTS:
-
 
 ** Dipole correction
 Slabs that are not symmetric (e.g. they have adsorbates on only one side) can develop dipole moments. Periodic dipoles can be problematic, as they create an artificial field that may affect the surface properties such as the work function and the convergence of the calculations. The solution to this problem is to introduce a dipole field in the cell to exactly cancel the dipole moment \cite{PhysRevB.46.16067} (see \cite{PhysRevB.59.12301} for a small correction) to minimize the effect.
@@ -2830,7 +3017,7 @@ with jasp('surfaces/Al-Na-nodip',
 #+RESULTS:
 
 *** slab with a dipole correction
-Note this takes a considerably longer time to run than without a dipole correction!
+    Note this takes a considerably longer time to run than without a dipole correction! In Vasp there are several levels of dipole correction to apply. You can use the IDIPOL tag to turn it on, and specify which direction to apply it in (1=x, 2=y, 3=z, 4=all directions). This simply corrects the total energy and forces. It does not change the contents of LOCPOT. For that, you ahve to also set the LDIPOL and DIPOL tags. It is not efficient to set all three at the same time for some reason. The Vasp manual recommends you first set IDIPOL to get a converged electronic structure, and then set LDIPOL to True, and set the center of electron density in DIPOL. That makes these calculations a multistep process, because we must run a calculation, analyze the charge density to get the center of charge, and then run a second calculation.
 
 #+BEGIN_SRC python :results output
 from ase.lattice.surface import *
@@ -2850,7 +3037,7 @@ with jasp('surfaces/Al-Na-dip',
           lvhar=True, # write out only electrostatic potential, not xc pot
           atoms=slab) as calc:
     # pre-converge
-    #calc.calculate()
+    calc.calculate()
 
     x,y,z,cd = calc.get_charge_density()
     n0, n1, n2 = cd.shape
@@ -2866,60 +3053,22 @@ with jasp('surfaces/Al-Na-dip',
 
     print electron_density_center
     uc = slab.get_cell()
-    sedc = np.dot(np.linalg.inv(uc.T),electron_density_center.T).T
-    print sedc
 
-    print calc.calculation_required(slab,['energy'])
+    # get scaled electron charge density center
+    sedc = np.dot(np.linalg.inv(uc.T),electron_density_center.T).T
+
     ## # now turn on potential calculation: violates jasp workflow!
     calc.set(ldipol=True, dipol=sedc)
-    print calc.read_convergence()
-    print calc.calculation_required(slab,['energy'])
 
     calc.calculate()
-
-    x,y,z,lp = calc.get_local_potential()
-    nx, ny, nz = lp.shape
-
-    axy = [np.average(lp[:,:,z]) for z in range(nz)]
-    # setup the x-axis in realspace
-    uc = slab.get_cell()
-    xaxis = np.linspace(0,uc[2][2],nz)
-    from pylab import *
-    plot(xaxis, axy)
-    show()
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-[  4.21229252   2.41891645  10.65385708]
-[ 0.49161039  0.48766346  0.47693298]
-False
-True
-True
- vasp.5.2.12 11Nov11 complex
+: [  4.21230433   2.41883629  10.6566894 ]
 
- POSCAR found :  2 types and       9 ions
- LDA part: xc-table for Pade appr. of Perdew
- found WAVECAR, reading the header
- POSCAR, INCAR and KPOINTS ok, starting setup
- WARNING: small aliasing (wrap around) errors must be expected
- FFT: planning ...(           1 )
- reading WAVECAR
- the WAVECAR file was read sucessfully
- initial charge from wavefunction
- entering main loop
-       N       E                     dE             d eps       ncg     rms          rms(c)
-DAV:   1    -0.225544211605E+02   -0.22554E+02   -0.20687E-01    76   0.150E+00    0.337E-01
-DAV:   2    -0.225435282511E+02    0.10893E-01   -0.55679E-01    84   0.274E+00    0.307E-01
-DAV:   3    -0.225264927245E+02    0.17036E-01   -0.10780E-01    76   0.136E+00    0.475E-02
-DAV:   4    -0.225268171472E+02   -0.32442E-03   -0.72918E-03    87   0.352E-01    0.244E-02
-DAV:   5    -0.225266957499E+02    0.12140E-03   -0.18147E-03    71   0.183E-01    0.155E-02
-DAV:   6    -0.225267194815E+02   -0.23732E-04   -0.11686E-04    47   0.611E-02
-   1 F= -.22526719E+02 E0= -.22538320E+02  d E =0.348008E-01
- writing wavefunctions
-#+end_example
-
-#+BEGIN_SRC python
+*** Comparing no dipole correction with a dipole correction
+To see the difference in what the dipole correction does, we now plot the potentials from each calculation.
+#+BEGIN_SRC python :results output
 from jasp import *
 from pylab import *
 
@@ -2934,6 +3083,8 @@ with jasp('surfaces/Al-Na-nodip') as calc:
     uc = atoms.get_cell()
     xaxis_1 = np.linspace(0,uc[2][2],nz)
 
+    e1 = atoms.get_potential_energy()
+
 with jasp('surfaces/Al-Na-dip') as calc:
     atoms = calc.get_atoms()
 
@@ -2945,13 +3096,33 @@ with jasp('surfaces/Al-Na-dip') as calc:
     uc = atoms.get_cell()
     xaxis_2 = np.linspace(0,uc[2][2],nz)
 
+    ef2 = calc.get_fermi_level()
+    e2 = atoms.get_potential_energy()
+
+print 'The difference in energy is {0} eV.'.format(e2-e1)
+
 plot(xaxis_1, axy_1, label='no dipole correction')
 plot(xaxis_2, axy_2, label='dipole correction')
-show()
+plot([min(xaxis_2), max(xaxis_2)],[ef2,ef2], 'k:', label='Fermi level')
+xlabel('z ($\AA$)')
+ylabel('xy-averaged electrostatic potential')
+legend(loc='best')
+savefig('images/dip-vs-nodip-esp.png')
 #+END_SRC
 
 #+RESULTS:
-: None
+: The difference in energy is 0.006389 eV.
+
+The key points to notice in this figure are:
+1. The two deep dips are where the atoms are.
+2. Without a dipole correction, the electrostatic potential never flattens out. there is near constant slope in the vacuum region, which means there is an electric field there.
+3. With a dipole moment the potential is flat in the vacuum region, except for the step jump near 23 $\AA$.
+4. The difference between the Fermi level and the flat vacuum potential is the work function.
+5. The difference in energy with and without the dipole correction here is small.
+
+[[./images/dip-vs-nodip-esp.png]]
+
+** Adsorption energies
 
 * TODO Atomistic thermodynamics
 * TODO Advanced electronic structure methods
