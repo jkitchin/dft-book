@@ -13,6 +13,7 @@ tex: dft.org dft.bib
 pdf: tex
 	pdflatex -shell-escape dft
 	bibtex dft
+	makeindex dft
 	pdflatex -shell-escape dft
 	pdflatex -shell-escape dft
 

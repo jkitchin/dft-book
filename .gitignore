@@ -1,0 +1,5 @@
+POTCAR
+CHG*
+WAVECAR
+*.o[0-9]*
+*~

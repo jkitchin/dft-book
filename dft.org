@@ -17,9 +17,6 @@
 #+latex_header: \usepackage{makeidx}
 #+latex_header: \makeindex
 
-\clearpage
-\addcontentsline{toc}{chapter}{Index}
-\printindex
 
 * Introduction to this book
 This book serves two purposes: 1) to provide worked examples of using DFT to model materials properties, and 2) to provide references to more advanced treatments of these topics in the literature. It is not a definitive reference on density functional theory. Along the way to learning how to perform the calculations, you will learn how to analyze the data, make plots, and how to interpret the results. This book is very much "recipe" oriented, with the intention of giving you enough information and knowledge to start your research. In that sense, many of the computations are not publication quality with respect to convergence of calculation parameters.
@@ -2219,7 +2216,7 @@ write('images/AgPd-bulk.png',atoms,show_unit_cell=2)
 
 ** Determining bulk structures
 *** fcc/bcc crystal structures
-The fcc and bcc structures are simple. They only have one degree of freedom: the lattice constant. In this section we show how to calculate the equilibrium volume of each structure, and determine which one is more stable. We start with the fcc crystal structure of Cu. We will manually define the crystal structure based on the definitions in Kittel \cite{Kittel} (Chapter 1).
+The fcc and bcc structures are simple. They only have one degree of freedom: the lattice constant. In this section we show how to calculate the equilibrium volume of each structure, and determine which one is more stable. We start with the fcc crystal structure of Cu. We will manually define the crystal structure based on the definitions in Kittel \cite{kittel} (Chapter 1).
 
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -2650,8 +2647,6 @@ The points to note here are the following:
 3. The agreement with experimental lattice parameters is pretty good.
 4. The spacegroup is still correct.
 
-*** TODO relative stabilities of two phases
-
 ** Bulk calculation parameters
 *** Effect of SIGMA
 
@@ -2751,7 +2746,7 @@ print 'The cohesive energy is {0:1.3f} eV'.format(cohesive_energy)
 
 According to Kittel, the cohesive energy of Rh is 5.75 eV. There are a few reasons we may have discrepancy here:
 
-1. The k-point grid used in the bulk state is not very dense. However, you can see below that the total energy is pretty converged by a $6\times\6\times6$ k-point grid. \index{convergence:KPOINTS}
+1. The k-point grid used in the bulk state is not very dense. However, you can see below that the total energy is pretty converged by a $6 \times 6 \times 6$ $k$-point grid. \index{convergence:KPOINTS}
 
 
 
@@ -2830,7 +2825,306 @@ print 'The cohesive energy is {0:1.3f} eV'.format(cohesive_energy)
 Again, the value in Kittel \cite{kittel} is 5.75 eV which is very close to this value.
 
 ** TODO Bulk reaction energies
-*** cohesive energy
+*** Alloy formation energies
+In this section we will consider how to calculate the formation energy of an fcc Cu-Pdalloy and how to use that information to discuss relative stabilities.
+**** Basic alloy formation energy
+#+BEGIN_SRC python :results output
+from jasp import *
+JASPRC['mode']='run'
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000])],
+              cell=  [[ 1.818,  0.000,  1.818],
+                      [ 1.818,  1.818,  0.000],
+                      [ 0.000,  1.818,  1.818]])
+
+with jasp('bulk/alloy/cu',
+          xc='PBE',
+          encut=350,
+          kpts=(13,13,13),
+          nbands=9,
+          ibrion=2,
+          isif=4,
+          nsw=10,
+          atoms=atoms) as calc:
+    cu = atoms.get_potential_energy()
+
+
+atoms = Atoms([Atom('Pd',  [0.000,      0.000,      0.000])],
+              cell=[[ 1.978,  0.000,  1.978],
+                    [ 1.978,  1.978,  0.000],
+                    [0.000,  1.978,  1.978]])
+
+
+with jasp('bulk/alloy/pd',
+          xc='PBE',
+          encut=350,
+          kpts=(13,13,13),
+          nbands=9,
+          ibrion=2,
+          isif=4,
+          nsw=10,
+          atoms=atoms) as calc:
+    pd = atoms.get_potential_energy()
+
+print cu, pd
+#+END_SRC
+
+#+RESULTS:
+: -3.723306 -5.183823
+
+Note that the Pd energy is more negative than the Cu energy. This does not mean anything significant. We cannot say Pd is more stable than Cu; it is not like Cu could transmutate into Pd!
+
+#+BEGIN_SRC python :results output
+from jasp import *
+JASPRC['mode']='run'
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
+               Atom('Pd',  [-1.652,     0.000,      2.039])],
+              cell=  [[ 0.000, -2.039,  2.039],
+                      [ 0.000,  2.039,  2.039],
+                      [ -3.303,  0.000,  0.000]])
+
+with jasp('bulk/alloy/cupd-1',
+          xc='PBE',
+          encut=350,
+          kpts=(12,12,8),
+          nbands=17,
+          ibrion=2,
+          isif=4,
+          nsw=10,
+          atoms=atoms) as calc:
+    cupd1 = atoms.get_potential_energy()
+
+
+atoms = Atoms([Atom('Cu',  [-0.049,     0.049,      0.049]),
+               Atom('Cu',  [-11.170,   11.170,     11.170]),
+               Atom('Pd',  [-7.415,     7.415,      7.415]),
+               Atom('Pd',  [-3.804 ,    3.804,      3.804])],
+              cell=[[-5.629,  3.701,  5.629 ],
+                    [-3.701,  5.629,  5.629 ],
+                    [-5.629,  5.629,  3.701 ]])
+
+with jasp('bulk/alloy/cupd-2',
+          xc='PBE',
+          encut=350,
+          kpts=(8,8,8),
+          nbands=34,
+          ibrion=2,
+          isif=4,
+          nsw=10,
+          atoms=atoms) as calc:
+    cupd2 = atoms.get_potential_energy()
+
+print cupd1, cupd2
+#+END_SRC
+
+#+RESULTS:
+: -9.147752 -17.97924
+
+Looking at these energies, you could be tempted to say cupd-2 is more stable than cupd-1 because its energy is much lower. This is wrong, however, because cupd-2 has twice as many atoms as cupd-1. We should compare the normalized total energies.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+
+with jasp('bulk/alloy/cupd-1') as calc:
+    atoms = calc.get_atoms()
+    e1 = atoms.get_potential_energy()/len(atoms)
+
+with jasp('bulk/alloy/cupd-2') as calc:
+    atoms = calc.get_atoms()
+    e2 = atoms.get_potential_energy()/len(atoms)
+
+print 'cupd-1: {0} eV/atom'.format(e1)
+print 'cupd-2: {0} eV/atom'.format(e2)
+#+END_SRC
+
+#+RESULTS:
+: cupd-1: -4.573876 eV/atom
+: cupd-2: -4.49481 eV/atom
+
+After normalizing by number of atoms, we can see that cupd-1 is a more stable structure. However, we are looking at total energies, and we might ask: is cupd-1 more stable than a mixture of the parent compounds, fcc Cu and Pd?
+
+#+BEGIN_SRC python :results output
+from jasp import *
+
+with jasp('bulk/alloy/cu') as calc:
+    atoms = calc.get_atoms()
+    cu = atoms.get_potential_energy()/len(atoms)
+
+with jasp('bulk/alloy/pd') as calc:
+    atoms = calc.get_atoms()
+    pd = atoms.get_potential_energy()/len(atoms)
+
+
+with jasp('bulk/alloy/cupd-1') as calc:
+    atoms = calc.get_atoms()
+    e1 = atoms.get_potential_energy()
+    for atom in atoms:
+        if atom.symbol == 'Cu':
+            e1 -= cu
+        else:
+            e1 -= pd
+    e1 /= len(atoms)
+
+with jasp('bulk/alloy/cupd-2') as calc:
+    atoms = calc.get_atoms()
+    e2 = atoms.get_potential_energy()
+    for atom in atoms:
+        if atom.symbol == 'Cu':
+            e2 -= cu
+        else:
+            e2 -= pd
+    e2 /= len(atoms)
+
+print 'Delta Hf cupd-1 = {0:1.2f} eV/atom'.format(e1)
+print 'Delta Hf cupd-2 = {0:1.2f} eV/atom'.format(e2)
+#+END_SRC
+
+#+RESULTS:
+: Delta Hf cupd-1 = -0.12 eV/atom
+: Delta Hf cupd-2 = -0.04 eV/atom
+
+The answer is yes. Both structures are energetically more favorable than an equal composition mixture of the parent metals. The heat of formation for both structures is exothermic, but the cupd-1 structure is more stable than the cupd-2 structure. This is shown conceptually in Figure \ref{fig:alloy1}.
+
+#+caption: Conceptual picture of two alloys with exothermic formation energies.
+#+label: fig:alloy1
+[[./images/alloy-stability.svg]]
+
+
+
+We will now examine another structure at another composition and its stability.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+JASPRC['mode']='queue'
+from ase import Atom, Atoms
+
+# parent metals
+with jasp('bulk/alloy/cu') as calc:
+    atoms = calc.get_atoms()
+    cu = atoms.get_potential_energy()/len(atoms)
+
+with jasp('bulk/alloy/pd') as calc:
+    atoms = calc.get_atoms()
+    pd = atoms.get_potential_energy()/len(atoms)
+
+atoms = Atoms([Atom('Cu',  [-3.672,     3.672,      3.672]),
+               Atom('Cu',  [0.000,     0.000,      0.000]),
+               Atom('Cu',  [-10.821,   10.821,     10.821]),
+               Atom('Pd',  [-7.246,     7.246,      7.246])],
+               cell=[[-5.464,  3.565,  5.464],
+                     [-3.565,  5.464,  5.464],
+                     [-5.464,  5.464,  3.565]])
+
+with jasp('bulk/alloy/cu3pd-1',
+          xc='PBE',
+          encut=350,
+          kpts=(8,8,8),
+          nbands=34,
+          ibrion=2,
+          isif=4,
+          nsw=10,
+          atoms=atoms) as calc:
+    e3 = atoms.get_potential_energy()
+    for atom in atoms:
+        if atom.symbol == 'Cu':
+            e3 -= cu
+        else:
+            e3 -= pd
+    e3 /= len(atoms)
+print 'Delta Hf cu3pd-1 = {0:1.2f} eV/atom'.format(e3)
+#+END_SRC
+
+#+RESULTS:
+: Delta Hf cu3pd-1 = -0.02 eV/atom
+
+The formation energy is slightly exothermic, which means the structure is more stable than a mixture of the parent metals. However, let us consider whether the structure is stable with respect to phase separation into pure Cu and the cupd-1 structure. We define the following quantities:
+
+$H_{f,Cu}$ = 0.0 eV/atom,    $x_0$ = 0
+$H_{f,cupd-1}$ = -0.12 eV/atom,   $x_3$ = 0.5
+
+The composition weighted average at $x_Pd=0.25$ is:
+
+$H_f = H_{f,Cu} + \frac{x0-x}{x0-x3}(H_{f,cupd-1} - H_{f,Cu}$
+
+#+BEGIN_SRC python :results output
+x0 = 0.0; x3 = 0.5; x = 0.25;
+Hf1 = 0.0; Hf3 = -0.12;
+
+print Hf1 + (x0-x)/(x0-x3)*(Hf3 - Hf1)
+
+#+END_SRC
+
+#+RESULTS:
+: -0.06
+
+We find the weighted composition formation energy of pure Cu and cupd-1 is more favorable than the formation energy of cu3pd-1. Therefore, we could expect that structure to phase separate into a mixture of pure Cu and cupd-1. Schematically what we are seeing is shown in Figure \ref{fig:alloy-phase-separation}.
+
+#+BEGIN_SRC sh
+inkscape images/alloy-phase-stability.svg
+#+END_SRC
+
+#+RESULTS:
+#+caption: Illustration of phase separation.
+#+label: fig:alloy-phase-separation
+[[./images/alloy-phase-stability.svg]]
+
+Finally, let us consider one more structure with the Cu3Pd stoichiometry.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+JASPRC['mode']='queue'
+from ase import Atom, Atoms
+
+# parent metals
+with jasp('bulk/alloy/cu') as calc:
+    atoms = calc.get_atoms()
+    cu = atoms.get_potential_energy()/len(atoms)
+
+with jasp('bulk/alloy/pd') as calc:
+    atoms = calc.get_atoms()
+    pd = atoms.get_potential_energy()/len(atoms)
+
+atoms = Atoms([Atom('Cu',  [-1.867,     1.867,      0.000]),
+               Atom('Cu',  [0.000,      0.000,      0.000]),
+               Atom('Cu',  [0.000,      1.867,      1.867]),
+               Atom('Pd',  [-1.867,     0.000,      1.86])],
+               cell=[[-3.735,  0.000,  0.000],
+                     [0.000,  0.000,  3.735],
+                     [0.000,  3.735,  0.000]])
+
+with jasp('bulk/alloy/cu3pd-2',
+          xc='PBE',
+          encut=350,
+          kpts=(8,8,8),
+          nbands=34,
+          ibrion=2,
+          isif=4,
+          nsw=10,
+          atoms=atoms) as calc:
+    e4 = atoms.get_potential_energy()
+    for atom in atoms:
+        if atom.symbol == 'Cu':
+            e4 -= cu
+        else:
+            e4 -= pd
+    e4 /= len(atoms)
+print 'Delta Hf cu3pd-2 = {0:1.2f} eV/atom'.format(e4)
+#+END_SRC
+
+#+RESULTS:
+: Delta Hf cu3pd-2 = -0.10 eV/atom
+
+This looks promising: the formation energy is much more favorable than cu3pd-1, and it is below the composition weighted formation energy of -0.06 eV/atom. Consequently, we conclude that this structure will not phase separate into a mixture of Cu and CuPd. We cannot say, however, if there is a more stable phase, or if it might phase separate into two other phases. We also note here that we have ignored a few other contributions to alloy stability. We have only considered the electronic energy contributions to the formation energy. At temperatures above absolute zero there are additional contributions including configurational and vibrational entropy, which may stabilize some structures more than others. Finally, our analysis is limited to comparisons of the structures computed on the fcc lattice. In fact, it is known that the CuPd alloy forms a bcc structure. We did not calculate that structure, so we can not say if it is more or less stable than the obvious fcc structure we found.
+
+#+caption: Illustration of phase separation.
+#+label: fig:alloy-phase-separation-2
+[[./images/alloy-phase-stability-2.svg]]
+
+The construction of alloy phase diagrams is difficult. You are always faced with the possibility that there is a phase that you have not calculated that is more stable than the ones you did calculate. One approach is to use a tool that automates the discovery of relevant structures such as the Alloy Theoretic Automated Toolkit (ATAT) \cite{vandeWalle2002539,vandeWalle2009266} which uses a cluster expansion methodology.
+
 ** Atom projected density of states
 In this example, we consider how to get the atom-projected density of states. We are interested in properties of the $d$-band on Pd, such as the $d$-band center and d-band width.
 #+BEGIN_SRC python :results output org
