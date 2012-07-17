@@ -2824,6 +2824,274 @@ print 'The cohesive energy is {0:1.3f} eV'.format(cohesive_energy)
 
 Again, the value in Kittel \cite{kittel} is 5.75 eV which is very close to this value.
 
+** Effect of pressure on phase stability
+So far we have only considered relative stability at a pressure of 0 Pa. We now consider the relative stability of two phases under pressure. We will consider TiO2 in the rutile and anatase phases.
+
+The pressure is defined by:
+$P = -\frac{\partial E}{\partial V}_T$
+
+so if we have an equation of state $E(V)$ we can calculate the pressure at any volume, or alternatively, given a pressure, compute the volume. Pressure can affect the energy of two phases differently, so that one may become stable under pressure. The condition where a phase transition occurs is when the pressure in the two phases is the same, which occurs at a common tangent.
+
+Here is an example of that.
+
+http://prb.aps.org/abstract/PRB/v47/i11/p6299_1
+
+ZnS http://cst-www.nrl.navy.mil/lattice/struk/b3.html
+http://cst-www.nrl.navy.mil/lattice/struk/b1.html
+
+http://en.wikipedia.org/wiki/Birch%E2%80%93Murnaghan_equation_of_state
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase import Atom, Atoms
+
+B='Ti'; X='O'; a=4.59; c=2.958; u=0.305;
+'''
+create a rutile structure from the lattice vectors at
+http://cst-www.nrl.navy.mil/lattice/struk/c4.html
+
+spacegroup: 136 P4_2/mnm
+'''
+a1 = a*np.array([1.0, 0.0, 0.0])
+a2 = a*np.array([0.0, 1.0, 0.0])
+a3 = c*np.array([0.0, 0.0, 1.0])
+
+atoms = Atoms([Atom(B, [0., 0., 0.]),
+               Atom(B, 0.5*a1 + 0.5*a2 + 0.5*a3),
+               Atom(X,  u*a1 + u*a2),
+               Atom(X, -u*a1 - u*a2),
+               Atom(X, (0.5+u)*a1 + (0.5-u)*a2 + 0.5*a3),
+               Atom(X, (0.5-u)*a1 + (0.5+u)*a2 + 0.5*a3)],
+               cell=[a1, a2, a3])
+
+nTiO2 = len(atoms)/3.
+v0 = atoms.get_volume()
+cell0 = atoms.get_cell()
+
+volumes = [28., 30., 32., 34., 36.]  #vol of one TiO2
+
+for v in volumes:
+    atoms.set_cell(cell0*((nTiO2*v/v0)**(1./3.)), scale_atoms=True)
+
+    with jasp('bulk/TiO2/rutile/rutile-{0}'.format(v),
+              encut=350,
+              kpts=(6,6,6),
+              xc='PBE',
+              ismear=0,
+              sigma=0.001,
+              isif=2,
+              ibrion=2,
+              nsw=20,
+              atoms=atoms) as calc:
+        try:
+            print atoms.get_potential_energy()
+        except (VaspSubmitted, VaspQueued):
+            pass
+#+END_SRC
+
+#+RESULTS:
+: -52.001084
+: -52.752668
+: -53.004621
+: -52.894179
+: -52.523686
+
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase import Atom, Atoms
+# http://cst-www.nrl.navy.mil/lattice/struk/c5.html
+
+B='Ti'; X='O'; a=3.7842; c=2*4.7573; z=0.0831;
+
+a1 = a*np.array([1.0, 0.0, 0.0])
+a2 = a*np.array([0.0, 1.0, 0.0])
+a3 = np.array([0.5*a, 0.5*a, 0.5*c])
+
+atoms = Atoms([Atom(B, -0.125*a1 + 0.625*a2 + 0.25*a3),
+               Atom(B,  0.125*a1 + 0.375*a2 + 0.75*a3),
+               Atom(X, -z*a1 + (0.25-z)*a2 + 2.*z*a3),
+               Atom(X, -(0.25+z)*a1 + (0.5-z)*a2 + (0.5+2*z)*a3),
+               Atom(X, z*a1 - (0.25 - z)*a2 + (1-2*z)*a3),
+               Atom(X, (0.25 + z)*a1 + (0.5 + z)*a2 + (0.5-2*z)*a3)],
+               cell=[a1,a2,a3])
+
+nTiO2 = len(atoms)/3.
+v0 = atoms.get_volume()
+cell0 = atoms.get_cell()
+
+volumes = [30., 33., 35., 37., 39.]  #vol of one TiO2
+
+for v in volumes:
+    atoms.set_cell(cell0*((nTiO2*v/v0)**(1./3.)), scale_atoms=True)
+
+    with jasp('bulk/TiO2/anatase/anatase-{0}'.format(v),
+              encut=350,
+              kpts=(6,6,6),
+              xc='PBE',
+              ismear=0,
+              sigma=0.001,
+              isif=2,
+              ibrion=2,
+              nsw=20,
+              atoms=atoms) as calc:
+        try:
+            print atoms.get_potential_energy()
+        except (VaspSubmitted, VaspQueued):
+            pass
+#+END_SRC
+
+#+RESULTS:
+: -51.835014
+: -52.956683
+: -53.174844
+: -53.094443
+: -52.809584
+
+$E(V) = E_0 + \frac{9 V_0 B_0}{16} \left { \left [ (V_0/V)^{2/3} -1 \right ]^{2/3} B'_0 + \left [ (V_0/V)^{2/3} -1 \right]^2\left [ 6-4 (V_0/V)^{2/3}\right ] \right }$
+
+$P(V) = \frac{3 B_0}{2} \left [ (V_0/V)^{7/3} - ((V_0/V)^{5/3} \right ] \left { 1 + \frac{3}{4}(B'_0 -4) \left [(V_0/V)^{2/3} -1 \right ] \right }$
+
+#+BEGIN_SRC python :results output
+from jasp import *
+import matplotlib.pyplot as plt
+
+# anatase equation of stte
+volumes = [30., 33., 35., 37., 39.]  #vol of one TiO2
+a_volumes, a_energies = [], []
+for v in volumes:
+    with jasp('bulk/TiO2/anatase/anatase-{0}'.format(v)) as calc:
+        atoms = calc.get_atoms()
+        nTiO2 = len(atoms)/3.0
+        a_volumes.append(atoms.get_volume()/nTiO2)
+        a_energies.append(atoms.get_potential_energy()/nTiO2)
+
+
+
+# rutile equation of state
+volumes = [28., 30., 32., 34., 36.]  #vol of one TiO2
+r_volumes, r_energies = [], []
+for v in volumes:
+    with jasp('bulk/TiO2/rutile/rutile-{0}'.format(v)) as calc:
+        atoms = calc.get_atoms()
+        nTiO2 = len(atoms)/3.0
+        r_volumes.append(atoms.get_volume()/nTiO2)
+        r_energies.append(atoms.get_potential_energy()/nTiO2)
+
+
+# cubic polynomial fit to equation of state E(V) = pars*[V^3 V^2 V^1 V^0]
+apars = np.polyfit(a_volumes, a_energies, 3)
+rpars = np.polyfit(r_volumes, r_energies, 3)
+
+print 'E_anatase(V) = {0}*V^3 + {1}*V^2 + {2}*V + {3}'.format(*apars)
+print 'E_rutile(V) = {0}*V^3 + {1}*V^2 + {2}*V + {3}'.format(*rpars)
+print 'anatase epars: {0!r}'.format(apars)
+print 'rutile epars: {0!r}'.format(rpars)
+# get pressure parameters P(V) = -dE/dV
+dapars = -np.polyder(apars)
+drpars = -np.polyder(rpars)
+
+print 'anatase ppars: {0!r}'.format(dapars)
+print 'rutile ppars: {0!r}'.format(drpars)
+
+print
+print 'P_anatase(V) = {0}*V^2 + {0}*V + {2}'.format(*dapars)
+print 'P_rutile(V) =  {0}*V^2 + {0}*V + {2}'.format(*drpars)
+
+vfit = np.linspace(28,40)
+
+# plot the equations of state
+plt.plot(a_volumes, a_energies,'bo ', label='Anatase')
+plt.plot(vfit, np.polyval(apars, vfit), 'b-')
+
+plt.plot(r_volumes, r_energies,'gs ', label='Rutile')
+plt.plot(vfit, np.polyval(rpars, vfit), 'g-')
+
+plt.xlabel('Volume ($\AA^3$/f.u.)')
+plt.ylabel('Total energy (eV/f.u.)')
+plt.legend()
+plt.xlim([25,40])
+plt.ylim([-27, -26])
+plt.savefig('images/rutile-anatase-eos.png')
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+E_anatase(V) = -0.00106049245571*V^3 + 0.130279403916*V^2 + -5.23520055177*V + 42.520286914
+E_rutile(V) = -0.00124680208333*V^3 + 0.142966535714*V^2 + -5.33239732738*V + 38.5903669857
+anatase epars: array([ -1.06049246e-03,   1.30279404e-01,  -5.23520055e+00,
+         4.25202869e+01])
+rutile epars: array([ -1.24680208e-03,   1.42966536e-01,  -5.33239733e+00,
+         3.85903670e+01])
+anatase ppars: array([  3.18147737e-03,  -2.60558808e-01,   5.23520055e+00])
+rutile ppars: array([  3.74040625e-03,  -2.85933071e-01,   5.33239733e+00])
+
+P_anatase(V) = 0.00318147736712*V^2 + 0.00318147736712*V + 5.23520055177
+P_rutile(V) =  0.00374040625*V^2 + 0.00374040625*V + 5.33239732738
+#+end_example
+
+[[./images/rutile-anatase-eos.png]]
+
+To find the conditions where a phase transition occurs, we have to find the common tangent line between the rutile and anatase phases. In other words we have to solve these two equations:
+
+(E_anatase(V1) - E_rutile(V2))/(V1-V2) = P_anatase(V1)
+(E_anatase(V1) - E_rutile(V2))/(V1-V2) = P_rutile(V2)
+
+This is a nonlinear algebra problem.
+
+#+BEGIN_SRC python :results output
+from ase.units import GPa
+from numpy import array, linspace, polyval
+
+anatase_epars = array([ -1.06049246e-03,   1.30279404e-01,  -5.23520055e+00,
+         4.25202869e+01])
+rutile_epars = array([ -1.24680208e-03,   1.42966536e-01,  -5.33239733e+00,
+         3.85903670e+01])
+
+anatase_ppars = array([  3.18147737e-03,  -2.60558808e-01,   5.23520055e+00])
+rutile_ppars = array([  3.74040625e-03,  -2.85933071e-01,   5.33239733e+00])
+
+def func(V):
+    V1 = V[0] # rutile volume
+    V2 = V[1] # anatase volume
+
+    E_rutile = polyval(rutile_epars,V1)
+    E_anatase = polyval(anatase_epars,V2)
+
+    P_rutile =  polyval(rutile_ppars,V1)
+    P_anatase = polyval(anatase_ppars,V2)
+
+    return [(E_anatase - E_rutile)/(V1-V2) - P_anatase,
+            (E_anatase - E_rutile)/(V1-V2) - P_rutile]
+
+from scipy.optimize import fsolve
+x0 = fsolve(func,[28,34])
+print x0
+print polyval(anatase_ppars,x0[1])/GPa
+print polyval(rutile_ppars,x0[0])/GPa
+
+# illustrate the common tangent
+import matplotlib.pyplot as plt
+
+vfit = linspace(28,40)
+plt.plot(vfit, polyval(anatase_epars,vfit),label='anatase')
+plt.plot(vfit, polyval(rutile_epars,vfit),label='rutile')
+plt.plot(x0, [polyval(rutile_epars,x0[0]),
+              polyval(anatase_epars,x0[1])], 'ko-', label='common tangent')
+plt.legend()
+plt.xlabel('Volume ($\AA^3$/f.u.)')
+plt.ylabel('Total energy (eV/f.u.)')
+plt.savefig('images/eos-common-tangent.png')
+#+END_SRC
+
+#+RESULTS:
+: [ 31.67490656  34.60893508]
+: 4.52495142656
+: 4.5249514267
+
+At a pressure of 4.5 GPa, we expect that anatase will start converting into rutile. Along this common tangent, a mixture of the two phases will be more stable than either pure phase.
+
+[[./images/eos-common-tangent.png]]
+
 ** TODO Bulk reaction energies
 *** Alloy formation energies
 In this section we will consider how to calculate the formation energy of an fcc Cu-Pdalloy and how to use that information to discuss relative stabilities.
