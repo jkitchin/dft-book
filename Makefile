@@ -18,4 +18,4 @@ pdf: tex
 	pdflatex -shell-escape dft
 
 clean:
-	rm -f *.aux *.log *.dvi *.blg *.bbl *.toc *.tex *~ *.out
+	rm -f *.aux *.log *.dvi *.blg *.bbl *.toc *.tex *~ *.out *.idx *.ilg *.ind
