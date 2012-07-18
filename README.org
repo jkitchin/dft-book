@@ -1,0 +1,5 @@
+This is a project to compile a pretty comprehensive set of notes and examples on using density functional theory to model properties of materials.
+
+Bug/typo/error reports should be sent to:
+
+John Kitchin (jkitchin@andrew.cmu.edu)

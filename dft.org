@@ -944,6 +944,71 @@ with jasp('molecules/co-qn',
 
 
 ** Vibrational frequencies
+*** Manual calculation of vibrational frequency
+
+The principle idea in calculating vibrational frequencies is that we consider a molecular system as masses connected by springs. If the springs are Hookean, e.g. the force is proportional to the displacement, then we can readily solve the equations of motion and find that the vibrational frequencies are related to the force constants and the masses of the atoms. For example, in a simple molecule like CO where there is only one spring, the frequency is:
+
+$\nu = \frac{1}{2\pi}\sqrt{k/\mu}$ where $\frac{1}{mu} = \frac{1}{m_C} + \frac{1}{m_O}$ and $k$ is the spring constant. We will compute the value of $k$ from DFT calculations as follows:
+
+$k = \frac{\partial^2E}{\partial x^2}$ at the equilibrium bond length. We actually already have the data to do this from section [[*Manual%20determination][Manual determination]]. We only need to fit an equation to the energy vs. bond-length data, find the minimum energy bond-length, and then evaluate the second derivative of the fitted function at the minimum. We will use a cubic polynomial for demonstration here. Polynomials are numerically convenient because they are easy to fit, and it is trivial to get the roots and derivatives of the polynomials, as well as to evaluate them at other points.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.units import *
+
+bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
+energies = []
+
+for d in bond_lengths:
+    with jasp('molecules/co-{0}'.format(d)) as calc:
+        atoms = calc.get_atoms()
+        energies.append(atoms.get_potential_energy())
+
+# fit the data
+pars = np.polyfit(bond_lengths, energies, 3)
+xfit = np.linspace(1.05, 1.25)
+efit = np.polyval(pars, xfit)
+
+# first derivative
+dpars = np.polyder(pars)
+# find where the minimum is. chose the second one because it is the
+# minimum we need.
+print 'roots of first derivative are {0}'.format(np.roots(dpars))
+
+d_min = 1.14425395
+# second derivative
+ddpars = np.polyder(dpars)
+
+#curvature at minimum = force constant
+k = np.polyval(ddpars, d_min)/kg*s**2
+
+# reduced mass
+from ase.data import atomic_masses
+C_mass = atomic_masses[6]/kg
+O_mass = atomic_masses[8]/kg
+
+mu = (C_mass*O_mass)/(C_mass + O_mass)
+
+frequency = 1./(2.*np.pi)*np.sqrt(k/mu)
+print 'The CO vibrational frequency is {0} cm^{{-1}}'.format(frequency/3e10)
+
+import matplotlib.pyplot as plt
+plt.plot(bond_lengths, energies, 'bo ')
+plt.plot(xfit, efit, 'b-')
+plt.xlabel('Bond length ($\AA$)')
+plt.ylabel('Total energy (eV)')
+plt.show()
+#+END_SRC
+
+#+RESULTS:
+: roots of first derivative are [ 1.43384501  1.14425395]
+: The frequency is 2143.60766258 cm^{-1}
+
+This result is in good agreement with [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C630080&Units=SI&Type=IR-SPEC&Index=0#IR-SPEC][experiment]]. The procedure used above is how many vibrational calculations are done. With more atoms, you have to determine a force constant matrix and diagonalize it. For more details, see \cite{wilson1955}. In practice, we usually allow a packaged code to automate this, which we cover in the next section.
+
+A final note is that this analysis is in the "harmonic approximation". The frequency equation is the solution to a harmonic oscillator. If the spring is non-linear, then there are anharmonic effects that may become important, especially at higher temperatures.
+
+*** Automated vibrational  calculations
 Vasp has built-in capability for performing vibrational calculations.
 #+BEGIN_SRC python :results output  :exports both
 #adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
