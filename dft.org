@@ -3153,7 +3153,7 @@ At a pressure of 4.5 GPa, we expect that anatase will start converting into ruti
 
 [[./images/eos-common-tangent.png]]
 
-** TODO Bulk reaction energies
+** Bulk reaction energies
 *** Alloy formation energies
 In this section we will consider how to calculate the formation energy of an fcc Cu-Pdalloy and how to use that information to discuss relative stabilities.
 **** Basic alloy formation energy
@@ -3454,6 +3454,81 @@ This looks promising: the formation energy is much more favorable than cu3pd-1, 
 
 The construction of alloy phase diagrams is difficult. You are always faced with the possibility that there is a phase that you have not calculated that is more stable than the ones you did calculate. One approach is to use a tool that automates the discovery of relevant structures such as the Alloy Theoretic Automated Toolkit (ATAT) \cite{vandeWalle2002539,vandeWalle2009266} which uses a cluster expansion methodology.
 
+** Bulk density of states
+#+BEGIN_SRC python
+from ase import Atoms, Atom
+from jasp import *
+import sys
+
+from pylab import *
+import numpy as np
+from ase.dft import DOS
+
+a = 3.9  # approximate lattice constant
+b = a / 2.
+bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
+             cell=[(0, b, b),
+                   (b, 0, b),
+                   (b, b, 0)])
+
+with jasp('bulk/pd-dos',
+          encut=300,
+          xc='PBE',
+          lreal=False,
+          kpts=(8, 8, 8),  # this is too low for high quality DOS
+          atoms=bulk) as calc:
+
+    # this runs the calculation
+    bulk.get_potential_energy()
+    dos = DOS(calc, width=0.2)
+    d = dos.get_dos()
+    e = dos.get_energies()
+
+import pylab as plt
+plt.plot(e,d)
+plt.xlabel('energy [eV]')
+plt.ylabel('DOS')
+plt.savefig('images/pd-dos.png')
+
+#+END_SRC
+
+#+RESULTS:
+: None
+
+[[./images/pd-dos.png]]
+
+This DOS looks roughly like you would expect. The peak between -5 to 0 eV is the Pd d-band.
+
+The vasp manual [[http://cms.mpi.univie.ac.at/vasp/guide/node124.html#SECTION000933000000000000000][recommends]] a final run be made with ISMEAR=-5, which uses the tetrahedron method with Blo\"chl corrections.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.dft import DOS
+with jasp('bulk/pd-dos') as calc:
+    calc.clone('bulk/pd-dos-ismear-5')
+
+with jasp('bulk/pd-dos-ismear-5') as calc:
+    bulk = calc.get_atoms()
+
+    calc.set(ismear=-5)
+
+    bulk.get_potential_energy()
+    dos = DOS(calc, width=0.2)
+    d = dos.get_dos()
+    e = dos.get_energies()
+
+import pylab as plt
+plt.plot(e, d)
+plt.xlabel('energy [eV]')
+plt.ylabel('DOS')
+plt.savefig('images/pd-dos-ismear-5.png')
+#+END_SRC
+
+#+RESULTS:
+
+[[./images/pd-dos-ismear-5.png]]
+This is not that different from the regular ISMEAR, so I am not sure this is correct. Maybe there is another way to compute DOS when the tetrahedral method is used? This looks like the eigenvalue spectrum.
+
 ** Atom projected density of states
 In this example, we consider how to get the atom-projected density of states. We are interested in properties of the $d$-band on Pd, such as the $d$-band center and d-band width.
 #+BEGIN_SRC python :results output org
@@ -3489,6 +3564,7 @@ with jasp('bulk/pd-ados',
     energies = ados.energy
     dos = ados.site_dos(0, 'd')
 
+    #we will select energies in the range of -10, 5
     ind = (energies < 5) & (energies > -10)
 
     energies = energies[ind]
@@ -3501,7 +3577,7 @@ with jasp('bulk/pd-ados',
     wd2 = np.trapz(energies**2 * dos, energies) / np.trapz(dos, energies)
 
     print 'Total # states = %1.2f' % Nstates
-    print '# occupied states = %1.2f' % N_occupied_states
+    print 'number of occupied states = %1.2f' % N_occupied_states
     print 'd-band center = %1.2f eV' % ed
     print 'd-band width  = %1.2f eV' % np.sqrt(wd2)
 
@@ -3516,20 +3592,19 @@ with jasp('bulk/pd-ados',
 
     xlabel('$E - E_f$ (eV)')
     ylabel('DOS (arbitrary units)')
-    savefig('pd-ados.png')
-    print '[[./{0}/pd-ados.png]]'.format(calc.vaspdir)
-    print os.getcwd()
+
+savefig('images/pd-ados.png')
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_ORG
-Total # states = 9.28
-# occupied states = 8.15
-d-band center = -2.01 eV
+Total # states = 9.29
+number of occupied states = 8.18
+d-band center = -2.00 eV
 d-band width  = 2.72 eV
-[[./bulk/pd-ados/pd-ados.png]]
-/home/jkitchin/dft-org/bulk/pd-ados
 #+END_ORG
+
+[[./images/pd-ados.png]]
 
 ** Band structures
 To compute a band structure we do two things. First, we compute the self-consistent band structure. Then we compute the band structure at the desired k-points. We will use Si as an example (adapted from http://bbs.sciencenet.cn/bbs/upload/20083418325986.pdf
@@ -3745,7 +3820,8 @@ with jasp('bulk/Fe-bcc-sp-1',
 #+END_SRC
 *** TODO find out how to get atoms magnetic moments.
 
-* TODO Surfaces
+** TODO phonons
+* Surfaces
 ** Surface structures
 
 *** Simple surfaces
@@ -4010,31 +4086,25 @@ The workfunction of Al is listed as 4.08 at http://hyperphysics.phy-astr.gsu.edu
 
 [[./images/Al-wf.png]]
 
-** TODO Surface energy
-
+** Surface energy
 The easiest way to calculate surface energies is from this equation:
 
 $\sigma = \frac{1}{2}(E_{slab} - \frac{N_{slab}}{N_{bulk}} E_{bulk})$
 
 where $E_{slab}$ is the total energy of a symmetric slab (i.e. one with inversion symmetry, and where both sides of the slab have been relaxed), $E_{bulk}$ is the total energy of a bulk unit cell, $N_{slab}$ is the number of atoms in the slab, and $N_{bulk}$ is the number of atoms in the bulk unit cell. One should be sure that the bulk energy is fully converged with respect to $k$-points, and that the slab energy is also converged with respect to $k$-points. The energies should be compared at the same cutoff energies. The idea is then to increase the thickness of the slab until the surface energy $\sigma$ converges.
 
+#+BEGIN_SRC sh
+inkscape images/surface-construction.svg
+#+END_SRC
+
+#+caption: Schematic figure illustrating the calculation of a surface energy.
+[[./images/surface-construction.svg]]
+
 Unfortunately, this approach does not always work. The bulk system is treated subtly different than the slab system, particularly in the $z$-direction where the vacuum is (where typically only one k-point is used in slabs). Consequently, the $k$-point sampling is not equivalent in the two systems, and one can in general expect some errors due to this, with the best case being cancellation of the errors due to total $k$-point convergence. In the worst case, one can get a linear divergence in the surface energy with slab thickness \cite{PhysRevB.49.16798}.
 
 A variation of this method that usually results in better $k$-point error cancellation is to calculate the bulk unit cell energy using the slab unit cell with no vacuum space, with the same k-point mesh in the x and y directions, but with increased k-points in the $z$-direction. Thus, the bulk system and slab system have the same Brillouin zone in at least two dimensions. This maximizes the cancellation of $k$-point errors, but still does not guarantee convergence of the surface energy, as discussed in \cite{PhysRevB.49.16798,0953-8984-10-4-017}.
 
 For quick estimates of the surface energy, one of the methods described above is likely sufficient. The advantage of these methods is the small number of calculations required to obtain the estimate, one needs only a bulk calculation (which must be done anyhow to get the bulk lattice constant to create the slab), and a slab calculation that is sufficiently thick to get the estimate. Additional calculations are only required to test the convergence of the surface energy.
-
-
-#+BEGIN_SRC sh
-inkscape images/surface-construction.svg
-#+END_SRC
-
-#+BEGIN_SRC sh :results none
-convert images/surface-construction.svg images/surface-construction.png
-#+END_SRC
-
-#+caption: Schematic figure illustrating the calculation of a surface energy.
-[[./images/surface-construction.png]]
 
 An alternative method for calculating surface energies that does not involve an explicit bulk calculation follows Ref. \cite{0953-8984-10-4-017}. The method follows from equation (ref{eq:se}) where for a N-atom slab, in the limit of N \rightarrow \infty,
 
@@ -4046,11 +4116,79 @@ $\sigma = \lim{N \rightarrow \infty} \frac{1}{2}(E_{slab}^N - N \Delta E_N)$
 
 where $\Delta E_N = E_{slab}^N - E_{slab}^{N-1}$.
 
-#quantum size effects? A. Kiejna, J. Peisert and P. Scharoch, Surf. Sci. 432 (1999) 54
+We will examine this approach here. We will use unrelaxed slabs for computational efficiency.
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.units import *
+from ase.lattice.surface import *
+import matplotlib.pyplot as plt
 
-\cite{doi.10.1021/jp200950a} Mo2C surface energy
+Nlayers = [3, 4, 5, 6, 7, 8, 9, 10, 11]
+energies = []
+sigmas = []
+
+for n in Nlayers:
+
+    slab = fcc111('Cu', size=(1,1,n), vacuum=10.0)
+    slab.center()
+
+    with jasp('bulk/Cu-layers/{0}'.format(n),
+              xc='PBE',
+              encut=350,
+              kpts=(8,8,1),
+              atoms=slab) as calc:
+        calc.set_nbands(f=2) # the default nbands in Vasp is too low for Al
+        try:
+            energies.append(slab.get_potential_energy())
+        except (VaspSubmitted, VaspQueued):
+            pass
+
+for i in range(len(Nlayers)-1):
+    N = Nlayers[i]
+    DeltaE_N = energies[i+1] - energies[i]
+    sigma = 0.5*(-N*energies[i+1] + (N+1)*energies[i])
+    sigmas.append(sigma)
+    print 'sigma = {0} eV/atom'.format(sigma)
+
+plt.plot(Nlayers[0:-1], sigmas,'bo-')
+plt.xlabel('Number of layers')
+plt.ylabel('Surface energy (eV/atom)')
+plt.savefig('images/Cu-unrelaxed-surface-energy.png')
+#+END_SRC
 
 #+RESULTS:
+: sigma = 0.5522845 eV/atom
+: sigma = 0.3979905 eV/atom
+: sigma = 0.5903805 eV/atom
+: sigma = 0.3177165 eV/atom
+: sigma = 0.579716 eV/atom
+: sigma = 0.321148 eV/atom
+: sigma = 0.593281 eV/atom
+: sigma = 0.401526 eV/atom
+
+[[./images/Cu-unrelaxed-surface-energy.png]]
+One reason for the oscillations may be quantum size effects \cite{Fiolhais2003209}. In \cite{PhysRevB.75.115131} the surface energy of Cu(111) is reported as 0.48 eV/atom, or 1.36 J/m$^2$. Here is an example showing a conversion between these two units. We use ase to compute the area of the unit cell from the norm of the cross-product of the vectors defining the surface unit cell.
+
+#+BEGIN_SRC python :results output
+from ase.lattice.surface import *
+from ase.units import *
+import numpy as np
+
+slab = fcc111('Cu', size=(1,1,3), vacuum=10.0)
+cell = slab.get_cell()
+
+area = np.linalg.norm(np.cross(cell[0], cell[1]))
+
+sigma = 0.48 #eV/atom
+
+print 'sigma = {0} J/m^2'.format(sigma/area/(J/m**2))
+#+END_SRC
+
+#+RESULTS:
+: sigma = 1.3628146074 J/m^2
+
+*** Advanced topics in surface energy
+The surface energies can be used to estimate the shapes of nanoparticles using a Wulff construction. See \cite{doi.10.1021/jp200950a} for an example of computing Mo2C surface energies and particle shapes, and \cite{Inoglu2009188} for an example of the influence of adsorbates on surface energies and particle shapes of Cu.
 
 ** Dipole correction
 Slabs that are not symmetric (e.g. they have adsorbates on only one side) can develop dipole moments. Periodic dipoles can be problematic, as they create an artificial field that may affect the surface properties such as the work function and the convergence of the calculations. The solution to this problem is to introduce a dipole field in the cell to exactly cancel the dipole moment \cite{PhysRevB.46.16067} (see \cite{PhysRevB.59.12301} for a small correction) to minimize the effect.
@@ -4200,9 +4338,9 @@ The key points to notice in this figure are:
 ** Adsorption energies
 
 * TODO Atomistic thermodynamics
-* TODO Advanced electronic structure methods
-** DFT+U
-** Hybrid functionals
+* Advanced electronic structure methods
+** TODO DFT+U
+** TODO Hybrid functionals
 * Appendices
 ** Recipes
 *** Modifying Atoms by deleting atoms
@@ -5264,7 +5402,6 @@ unit cell in terms of the primitive basis
  [ 2.  2.  0.]]
 #+end_example
 
-
 *** Simple distances, angles
 Scientific.Geometry contains several useful functions for
 performing vector algebra including computing lengths and angles.
@@ -5702,6 +5839,60 @@ can see our guesses from the parabola were actually pretty good, and
 are the main reason we converged to a solution. If you try other
 guesses you will probably find the `scipy.optimize.leastsq` function
 does not converge.
+
+** Miscellaneous jasp/Vasp tips
+*** Using a special setup
+Vasp provides [[http://cms.mpi.univie.ac.at/vasp/vasp/PAW_potentials.html][special setups]] for some elements. The following guidelines tell you what is in a potential:
+
+No extension means the standard potential
+_h  means the potential is harder than the standard (i.e. needs a higher cutoff energy)
+_s  means the potential is softer than the standard (i.e. needs a lower cutoff energy)
+
+_sv $s$ and $p$ semi-core states are treated as valence states
+_pv $p$ semi-core states are treated as valence states
+_d  $d$ semi-core states are treated as valence states
+
+[[http://cms.mpi.univie.ac.at/vasp/vasp/st_row_elements.html][1st row elements]]
+[[http://cms.mpi.univie.ac.at/vasp/vasp/Alkali_alkali_earth_elements_simple_metals.html][Alkali and alkali-earth metals]]
+[[http://cms.mpi.univie.ac.at/vasp/vasp/_elements.html][d-elements]]
+[[http://cms.mpi.univie.ac.at/vasp/vasp/_elements_including_first_row.html][p-elements]]
+[[http://cms.mpi.univie.ac.at/vasp/vasp/_elements_I.html][f-elements]]
+
+Here we show how to select the O_sv potential in a calculation.
+
+#+BEGIN_SRC python :results output
+from ase import Atoms, Atom
+from jasp import *
+
+JASPRC['mode']='run'
+
+atoms = Atoms([Atom('O',[5,5,5],magmom=1)],
+             cell=(6,6,6))
+
+with jasp('molecules/O_sv',
+          encut=300,
+          xc='PBE',
+          ispin=2,
+          ismear=0,
+          sigma=0.001,
+          txt='O_test.txt',
+          setups={'O':'_sv'}, # specifies O_sv potential
+          atoms=atoms) as calc:
+
+    print atoms.get_potential_energy()
+#+END_SRC
+
+#+RESULTS:
+: -1578.61345
+
+How do you know you got the right one? We can look at the first line of the POTCAR file in the calculation directory to see.
+#+BEGIN_SRC sh
+head -n 1 molecules/O_sv/POTCAR
+#+END_SRC
+
+#+RESULTS:
+: PAW_PBE O_sv 05Jul2007
+
 
 * Python
 ** TODO easy_install as a user
