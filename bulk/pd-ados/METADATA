@@ -1,9 +1,0 @@
-uuid = 8de20708-cb9a-11e1-8f30-003048f5e49e
-user.username = jkitchin
-user.fullname = John Kitchin
-user.email = jkitchin@andrew.cmu.edu
-
-date.created = 1342040046.36
-date.created.ascii = Wed Jul 11 16:54:06 2012
-Pd.potential.path = potpaw_PBE/Pd/POTCAR
-Pd.potential.git_hash = abec334aaffe253d3b9fb835c3a06cba6c014023
