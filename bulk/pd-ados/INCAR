@@ -1,5 +1,6 @@
 INCAR created by Atomic Simulation Environment
  ENCUT = 300.000000
  PREC = Normal
- RWIGS = 1.5000 
+ RWIGS = 1.5000
  LREAL = .FALSE.
+ ISMEAR = -5
