@@ -3627,13 +3627,14 @@ Cu: potpaw_PBE/Cu/POTCAR (git-hash: a44c591415026f53deb16a99ca3f06b1e69be10b)
 #+BEGIN_SRC python :results output
 from jasp import *
 
+# don't forget to normalize your total energy to a formula unit. Cu2O has 3 atoms, so the number of formula units in an atoms is len(atoms)/3.
 with jasp('bulk/Cu2O') as calc:
     atoms = calc.get_atoms()
-    cu2o_energy = atoms.get_potential_energy()
+    cu2o_energy = atoms.get_potential_energy()/(len(atoms)/3)
 
 with jasp('bulk/CuO') as calc:
     atoms = calc.get_atoms()
-    cuo_energy = atoms.get_potential_energy()
+    cuo_energy = atoms.get_potential_energy()/(len(atoms)/2)
 
 # make sure to use the same cutoff energy for the O2 molecule!
 with jasp('molecules/O2-sp-triplet-400') as calc:
@@ -3645,9 +3646,9 @@ print rxn_energy
 #+END_SRC
 
 #+RESULTS:
-: -13.780574
+: -1.966168
 
-There are a few reasons why our number does not agree with the experimental reaction energy. One reason is related to errors in the O2 dissociation energy, and another reason is related to localization of electrons in the Cu 3d orbitals \cite{PhysRevB.73.195107}. The first error of incorrect O2 dissociation error is a systematic error that can be corrected empirically \cite{PhysRevB.73.195107}. Fixing the second error requires the application of DFT+U.
+There are a few reasons why our number does not agree with the experimental reaction energy. One reason is related to errors in the O2 dissociation energy, and another reason is related to localization of electrons in the Cu 3d orbitals \cite{PhysRevB.73.195107}. The first error of incorrect O$_2$ dissociation error is a systematic error that can be corrected empirically \cite{PhysRevB.73.195107}. Fixing the second error requires the application of DFT+U.
 
 ** Bulk density of states
 #+BEGIN_SRC python
@@ -4590,7 +4591,256 @@ with jasp('bulk/pt-neb',
 * TODO Atomistic thermodynamics
 * Advanced electronic structure methods
 ** TODO DFT+U
-update [[*Metal%20oxide%20oxidation%20energies][Metal oxide oxidation energies]] example with DFT+U, U = 4.0
+
+[[http://cms.mpi.univie.ac.at/vasp/vasp/On_site_Coulomb_interaction_L_S_DA_U.html][VASP manual on DFT+U]]
+
+update ]] example with DFT+U, U = 4.0
+
+*** Metal oxide oxidation energies with DFT+U
+We will reconsider here the reaction (see [[*Metal%20oxide%20oxidation%20energies][Metal oxide oxidation energies]]) $2 Cu_2O + O_2 \rightleftharpoons 4 CuO$. We need to compute the energy of each species, now with DFT+U. In \cite{PhysRevB.73.195107} they use a U parameter of 4 eV for Cu which gave the best agreement with the experimental value. We will also try that.
+
+**** Cu2O calculation with U=4.0
+#+BEGIN_SRC python :results output
+from jasp import *
+
+from ase.visualize import *
+from ase import Atom, Atoms
+
+with jasp('bulk/Cu2O') as calc:
+    calc.clone('bulk/Cu2O-U=4.0')
+
+with jasp('bulk/Cu2O-U=4.0') as calc:
+    calc.set(ldau=True,   # turn DFT+U on
+             ldautype=2,  # select simplified rotationally invariant option
+             ldau_luj={'Cu':{'L':2,  'U':4.0, 'J':0.0},
+                        'O':{'L':-1, 'U':0.0, 'J':0.0}},
+             ldauprint=1,
+             ibrion=-1,  #do not rerelax
+             nsw=0)
+    atoms = calc.get_atoms()
+    print atoms.get_potential_energy()
+    print calc
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+-22.228203
+: -----------------------------
+  VASP calculation from /home/jkitchin/dft-org/bulk/Cu2O-U=4.0
+  converged: True
+  Energy = -22.228203 eV
+
+  Unit cell vectors (angstroms)
+        x       y     z      length
+  a0 [ 4.270  0.000  0.000] 4.270
+  a1 [ 0.000  4.270  0.000] 4.270
+  a2 [ 0.000  0.000  4.270] 4.270
+  a,b,c,alpha,beta,gamma (deg): 4.270 4.270 4.270 90.0 90.0 90.0
+  Unit cell volume = 77.854 Ang^3
+  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
+             0.018  0.018  0.018 -0.000 -0.000 -0.000
+ Atom#  sym       position [x,y,z]         tag  rmsForce
+   0    Cu  [0.000      0.000      0.000]   0   0.00
+   1    Cu  [2.135      2.135      0.000]   0   0.00
+   2    Cu  [2.135      0.000      2.135]   0   0.00
+   3    Cu  [0.000      2.135      2.135]   0   0.00
+   4    O   [1.067      1.067      1.067]   0   0.00
+   5    O   [3.202      3.202      3.202]   0   0.00
+--------------------------------------------------
+
+INCAR Parameters:
+-----------------
+        nbands: 37
+           nsw: 0
+        ibrion: -1
+      ldautype: 2
+          isif: 3
+     ldauprint: 1
+         encut: 400.0
+          ldau: True
+         ldaul: [-1.0, 2.0]
+         ldauj: [0.0, 0.0]
+         ldauu: [0.0, 4.0]
+      ldau_luj: {'O': {'J': 0.0, 'U': 0.0, 'L': -1}, 'Cu': {'J': 0.0, 'U': 4.0, 'L': 2}}
+          prec: Normal
+          kpts: [8 8 8]
+    reciprocal: False
+            xc: PBE
+           txt: -
+         gamma: False
+
+Pseudopotentials used:
+----------------------
+O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
+Cu: potpaw_PBE/Cu/POTCAR (git-hash: a44c591415026f53deb16a99ca3f06b1e69be10b)
+#+end_example
+
+
+#+BEGIN_SRC sh :results output
+grep -A 3 "LDA+U is selected, type is set to LDAUTYPE" bulk/Cu2O-U=4.0/OUTCAR
+#+END_SRC
+
+#+RESULTS:
+:  LDA+U is selected, type is set to LDAUTYPE =  2
+:    angular momentum for each species LDAUL =    -1    2
+:    U (eV)           for each species LDAUU =   0.0  4.0
+:    J (eV)           for each species LDAUJ =   0.0  0.0
+
+**** CuO calculation with U=4.0
+#+BEGIN_SRC python :results output
+from jasp import *
+
+from ase.visualize import *
+from ase import Atom, Atoms
+
+with jasp('bulk/CuO') as calc:
+    calc.clone('bulk/CuO-U=4.0')
+
+with jasp('bulk/CuO-U=4.0') as calc:
+    calc.set(ldau=True,   # turn DFT+U on
+             ldautype=2,  # select simplified rotationally invariant option
+             ldau_luj={'Cu':{'L':2,  'U':4.0, 'J':0.0},
+                        'O':{'L':-1, 'U':0.0, 'J':0.0}},
+             ldauprint=1,
+             ibrion=-1,  #do not rerelax
+             nsw=0)
+    atoms = calc.get_atoms()
+    print atoms.get_potential_energy()
+    print calc
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+-16.87013
+: -----------------------------
+  VASP calculation from /home/jkitchin/dft-org/bulk/CuO-U=4.0
+  converged: True
+  Energy = -16.870130 eV
+
+  Unit cell vectors (angstroms)
+        x       y     z      length
+  a0 [ 2.302 -1.776  0.046] 2.908
+  a1 [ 2.302  1.776  0.046] 2.908
+  a2 [-0.762  0.000  5.087] 5.144
+  a,b,c,alpha,beta,gamma (deg): 2.908 2.908 5.144 95.8 95.8 95.8
+  Unit cell volume = 41.730 Ang^3
+  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
+             0.030  0.018  0.027 -0.000 -0.007 -0.000
+ Atom#  sym       position [x,y,z]         tag  rmsForce
+   0    Cu  [1.151      0.888      0.023]   0   0.00
+   1    Cu  [0.770     -0.888      2.566]   0   0.00
+   2    O   [2.111     -0.168      1.318]   0   0.04
+   3    O   [1.730      0.168      3.861]   0   0.04
+--------------------------------------------------
+
+INCAR Parameters:
+-----------------
+        nbands: 23
+           nsw: 0
+        ibrion: -1
+      ldautype: 2
+          isif: 3
+     ldauprint: 1
+         encut: 400.0
+          ldau: True
+         ldaul: [-1.0, 2.0]
+         ldauj: [0.0, 0.0]
+         ldauu: [0.0, 4.0]
+      ldau_luj: {'O': {'J': 0.0, 'U': 0.0, 'L': -1}, 'Cu': {'J': 0.0, 'U': 4.0, 'L': 2}}
+          prec: Normal
+          kpts: [8 8 8]
+    reciprocal: False
+            xc: PBE
+           txt: -
+         gamma: False
+
+Pseudopotentials used:
+----------------------
+O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
+Cu: potpaw_PBE/Cu/POTCAR (git-hash: a44c591415026f53deb16a99ca3f06b1e69be10b)
+#+end_example
+
+
+
+**** Reaction energy calculation with DFT+U
+#+BEGIN_SRC python :results output
+from jasp import *
+
+# don't forget to normalize your total energy to a formula unit. Cu2O has 3 atoms, so the number of formula units in an atoms is len(atoms)/3.
+with jasp('bulk/Cu2O-U=4.0') as calc:
+    atoms = calc.get_atoms()
+    cu2o_energy = atoms.get_potential_energy()/(len(atoms)/3)
+
+with jasp('bulk/CuO-U=4.0') as calc:
+    atoms = calc.get_atoms()
+    cuo_energy = atoms.get_potential_energy()/(len(atoms)/2)
+
+# make sure to use the same cutoff energy for the O2 molecule!
+with jasp('molecules/O2-sp-triplet-400') as calc:
+    atoms = calc.get_atoms()
+    o2_energy = atoms.get_potential_energy()
+
+rxn_energy = 4.0*cuo_energy - o2_energy - 2.0*cu2o_energy
+print rxn_energy
+#+END_SRC
+
+#+RESULTS:
+: -1.663819
+
+This is still not in quantitative agreement with the result in \cite{PhysRevB.73.195107}, which at U=4 eV is about -3.14 eV (estimated from a graph). We have not applied the O$_2$ correction here yet. In that paper, they apply a constant shift of -1.36 eV per O$_2$. However, they also report an O$_2$ dissociation energy of 6.02 eV, and the energy we [[calculated]] is about 6.65 eV. If we take the difference of these two dissociation energies (0.63 eV) and subtract it from the correction to compensate for the additional offset (-1.36 eV + -0.63 eV = -1.99 eV) and finally add that to the reaction energy we get (-1.66 - 1.99 = -3.65 eV). This is still too negative by about 0.5 eV, and it is not clear why. In the next section we will see that trend in relative energies as a function of U is correct, so maybe it is not a good idea to add our additional correction of 0.63 eV on.
+
+**** How much does U affect the reaction energy?
+#+BEGIN_SRC python :results output
+from jasp import *
+JASPRC['mode'] = 'run'
+for U in [2.0, 4.0, 6.0]:
+    ## Cu2O ########################################
+    with jasp('bulk/Cu2O') as calc:
+        calc.clone('bulk/Cu2O-U={0}'.format(U))
+
+    with jasp('bulk/Cu2O-U={0}'.format(U)) as calc:
+        calc.set(ldau=True,   # turn DFT+U on
+                 ldautype=2,  # select simplified rotationally invariant option
+                 ldau_luj={'Cu':{'L':2,  'U':U, 'J':0.0},
+                           'O':{'L':-1, 'U':0.0, 'J':0.0}},
+                ldauprint=1,
+                ibrion=-1,  #do not rerelax
+                nsw=0)
+        atoms = calc.get_atoms()
+        cu2o_energy = atoms.get_potential_energy()/(len(atoms)/3)
+
+    ## CuO ########################################
+    with jasp('bulk/CuO') as calc:
+        calc.clone('bulk/CuO-U={0}'.format(U))
+
+    with jasp('bulk/CuO-U={0}'.format(U)) as calc:
+        calc.set(ldau=True,   # turn DFT+U on
+                 ldautype=2,  # select simplified rotationally invariant option
+                 ldau_luj={'Cu':{'L':2,  'U':U, 'J':0.0},
+                           'O':{'L':-1, 'U':0.0, 'J':0.0}},
+                ldauprint=1,
+                ibrion=-1,  #do not rerelax
+                nsw=0)
+        atoms = calc.get_atoms()
+        cuo_energy = atoms.get_potential_energy()/(len(atoms)/2)
+
+    ## O2 ########################################
+    # make sure to use the same cutoff energy for the O2 molecule!
+    with jasp('molecules/O2-sp-triplet-400') as calc:
+        atoms = calc.get_atoms()
+        o2_energy = atoms.get_potential_energy()
+
+    rxn_energy = 4.0*cuo_energy - o2_energy - 2.0*cu2o_energy
+    print 'U = {0}  reaction energy = {1}'.format(U,rxn_energy - 1.99)
+#+END_SRC
+
+#+RESULTS:
+: U = 2.0  reaction energy = -3.876906
+: U = 4.0  reaction energy = -3.653819
+: U = 6.0  reaction energy = -3.397605
+
+In \cite{PhysRevB.73.195107}, the difference in reaction energy from U=2 eV to U=4 eV was about 0.5 eV (estimated from graph). Here we see a range of 0.48 eV from U=2 eV to U=4 eV. Note that for U=0 eV, we had a (corrected reaction energy of -3.96 eV). Overall, the effect of adding U decreases this reaction energy.
+
 ** Hybrid functionals
 This example is adapted from http://cms.mpi.univie.ac.at/wiki/index.php/FccNi_DOS
 
@@ -6265,6 +6515,50 @@ head molecules/O_sv-4nodes/OUTCAR
 This usually works if that directory is on your PYTHONPATH
 
 easy_install -d ~/lib/python2.6/site-packages/ pymatgen
+** Integer division math gotchas
+It pays to be careful when dividing by integers because you can get unexpected results if you do not know the integer division rules. In python 2.6, if you divide two integers, you get an integer! This is usually not a problem if there is no remainder in the division, e.g. 6/3=2. But, if there is a remainder, and that remainder is important, you will lose it. Here is an example of calculating the mole fraction of a species from integer numbers of atoms in the unit cell. If you are not careful, you get the wrong answer! You can convert (also called casting) a number to a float using the float command.
+
+#+BEGIN_SRC python :results output
+nPd = 4
+nCu = 5
+x_Cu = nCu/(nPd + nCu)
+print x_Cu
+
+# now cast as floats
+x_Cu = float(nCu)/float(nPd + nCu)
+print x_Cu
+#+END_SRC
+
+#+RESULTS:
+: 0
+: 0.555555555556
+
+Note that if one of the numbers is a float, python will automatically cast the integer as a float, and return a float.
+#+BEGIN_SRC python :results output
+nPd = 4
+nCu = 5
+
+# now cast as floats
+x_Cu = float(nCu)/(nPd + nCu)
+print x_Cu
+#+END_SRC
+
+#+RESULTS:
+: 0.555555555556
+
+Finally, you can tell python a number is a float by adding a decimal to it. You do not need to put a 0 after the decimal, but you can.
+
+#+BEGIN_SRC python :results output
+nPd = 4.  # this is a float
+nCu = 5
+
+x_Cu = nCu/(nPd + nCu)
+print x_Cu
+#+END_SRC
+
+#+RESULTS:
+: 0.555555555556
+
 * References
 \bibliographystyle{plainurl}
 \bibliography{dft}
