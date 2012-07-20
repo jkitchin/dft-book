@@ -4531,12 +4531,67 @@ The key points to notice in this figure are:
 [[./images/dip-vs-nodip-esp.png]]
 
 ** Adsorption energies
+*** TODO simple estimate
+*** TODO Coverage dependence
+** Diffusion barrier
+http://cms.mpi.univie.ac.at/wiki/index.php/Collective_jumps_of_a_Pt_adatom_on_fcc-Pt_%28001%29:_Nudged_Elastic_Band_Calculation
+
+We will look at how to use jasp to do a nudged elastic band.
+
+First we make the initial and final states:
+
+bulk/pt-neb/00
+bulk/pt-neb/03
+
+Next we have to create the images in 01 and 02
+
+#+BEGIN_SRC python :results output
+from ase.io import read,write
+from ase.neb import NEB
+import os
+from jasp import *
+JASPRC['queue.walltime'] = '10:00:00'
+
+initial = read('bulk/pt-neb/00/POSCAR')
+final  = read('bulk/pt-neb/03/POSCAR')
+
+images = [initial]
+images += [initial.copy() for i in range(2)]
+images += [final]
+
+neb = NEB(images)
+neb.interpolate()
+
+# now write out the images
+for i in range(1,len(images)-1):
+    d = 'bulk/pt-neb/0{0}'.format(i)
+    if not os.path.exists(d): os.makedirs(d)
+    write(d + '/POSCAR',images[i])
+
+with jasp('bulk/pt-neb',
+          xc='PBE',
+          kpts=(3,3,1),
+          ediff=1e-6,
+          prec='Normal',
+          ibrion=1,
+          nsw=10,
+          ediffg=-0.01,
+          nelmin=5,
+          images=2,
+          spring=-5,
+          atoms=initial) as calc:
+    calc.calculate()
+
+# post analysis TODO
+#+END_SRC
+
+#+RESULTS:
 
 * TODO Atomistic thermodynamics
 * Advanced electronic structure methods
 ** TODO DFT+U
 update [[*Metal%20oxide%20oxidation%20energies][Metal oxide oxidation energies]] example with DFT+U, U = 4.0
-** TODO Hybrid functionals
+** Hybrid functionals
 This example is adapted from http://cms.mpi.univie.ac.at/wiki/index.php/FccNi_DOS
 
 #+BEGIN_SRC python :results output
@@ -4585,7 +4640,6 @@ with jasp('bulk/Ni-HSE06') as calc:
      e_hse06 = dos.get_energies()
      d_hse06 = dos.get_dos()
 
-
 import pylab as plt
 plt.plot(e_pbe, d_pbe, label='PBE')
 plt.plot(e_pbe0, d_pbe0, label='PBE0')
@@ -4603,6 +4657,11 @@ plt.savefig('images/ni-dos-pbe-pbe0-hse06.png')
 
 [[./images/ni-dos-pbe-pbe0-hse06.png]]
 
+** TODO vdW
+http://cms.mpi.univie.ac.at/vasp/vasp/vdW_DF_functional_Langreth_Lundqvist_et_al.html
+
+** [[http://cms.mpi.univie.ac.at/vasp/vasp/DFT_D2_method_Grimme.html][DFT+D]]
+\cite{PhysRevB.82.081101}
 * Appendices
 ** Recipes
 *** Modifying Atoms by deleting atoms
