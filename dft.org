@@ -16,6 +16,7 @@
 #+XSLT:
 #+latex_header: \usepackage{makeidx}
 #+latex_header: \makeindex
+#+LINK: incar http://cms.mpi.univie.ac.at/wiki/index.php/%s
 
 * Introduction to this book
 This book serves two purposes: 1) to provide worked examples of using DFT to model materials properties, and 2) to provide references to more advanced treatments of these topics in the literature. It is not a definitive reference on density functional theory. Along the way to learning how to perform the calculations, you will learn how to analyze the data, make plots, and how to interpret the results. This book is very much "recipe" oriented, with the intention of giving you enough information and knowledge to start your research. In that sense, many of the computations are not publication quality with respect to convergence of calculation parameters.
@@ -381,7 +382,6 @@ for i,s,n,p in zip(atom_indices,sym,num,pos):
  10  H     1     -2.15   -1.24    0.00
  11  H     1     -2.15    1.24    0.00
 #+end_example
-
 
 
 *** Molecular weight and molecular formula
@@ -1502,6 +1502,63 @@ with jasp('molecules/O2-sp-triplet') as calc:
 : -9.848287
 
 You can see here the triplet state has an energy that is 1 eV more stable than the singlet state.
+
+**** Using a different potential
+It is possible we need a higher quality potential to get the 6.02 eV value quoted by many. Here we try the O_sv potential, which treats the 1s electrons as valence electrons. Note however, the ENMIN in the POTCAR is very high!
+
+#+BEGIN_SRC sh
+grep ENMIN $VASP_PP_PATH/potpaw_PBE/O_sv/POTCAR
+#+END_SRC
+
+#+RESULTS:
+: ENMAX  = 1421.493; ENMIN  = 1066.119 eV
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('O',[5,5,5],magmom=2)],
+              cell=(8,9,10))
+
+with jasp('molecules/O-sp-triplet-lowsym-sv',
+          xc='PBE',
+          ismear=0,
+          ispin=2,
+          setups={'O':'_sv'},
+          atoms=atoms) as calc:
+    try:
+        E_O = atoms.get_potential_energy()
+    except (VaspSubmitted, VaspQueued):
+        E_O = None
+
+print 'Magnetic moment on O = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
+
+# now relaxed O2 dimer
+atoms = Atoms([Atom('O',[5,5,5],magmom=1),
+               Atom('O',[6.22, 5,5],magmom=1)],
+              cell=(10,10,10))
+
+with jasp('molecules/O2-sp-triplet-sv',
+          xc='PBE',
+          ismear=0,
+          ispin=2,  # turn spin-polarization on
+          ibrion=2, # make sure we relax the geometry
+          nsw=10,
+          setups={'O':'_sv'},
+          atoms=atoms) as calc:
+    try:
+        E_O2 = atoms.get_potential_energy()
+    except (VaspSubmitted, VaspQueued):
+        E_O2 = None
+
+# verify magnetic moment
+print 'Magnetic moment on O2 = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
+
+if None not in (E_O, E_O2):
+    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2)
+#+END_SRC
+
+#+RESULTS:
 
 *** Water gas shift example
 We consider calculating the reaction energy of the water-gas shift reaction in this example.
@@ -4370,6 +4427,7 @@ with jasp('surfaces/Al-slab-relaxed') as calc:
 : d_(2,1) = 2.29891157834
 : d_(3,2) = 2.34530960922
 
+** TODO Surface reconstruction
 ** Work function
 To get the work function, we need to have the local potential. this is not written by default in vasp, and we have to tell it to do that with the LVTOT keyword.
 
@@ -4671,9 +4729,146 @@ The key points to notice in this figure are:
 [[./images/dip-vs-nodip-esp.png]]
 
 ** Adsorption energies
-*** TODO simple estimate
+*** simple estimate
+Calculating an adsorption energy amounts to computing the energy of the following kind of reaction:
+
+$slab + gas-phase molecule \rightarrow slab_adsorbate + products$
+
+There are many variations of this idea. The slab may already have some adsorbates on it, the slab may reconstruct on adsorption, the gas-phase molecule may or may not dissociate, and the products may or may not stick to the surface. We have to decide where to put the adsorbates, i.e. what site to put them on, and some sites will be more stable than others. We will consider the dissociative adsorption of O2 on three sites of a Pt(111) slab. We will assume the oxygen molecule has split in half, and that the atoms have moved far apart. We will model the oxygen coverage at 0.25 ML, which means we need to use a $2 \times 2$ surface unit cell. For computational speed, we will freeze the slab, but allow the adsorbate to relax.
+
+$\Delta H_{ads} (eV/O) = E_{slab+O} - E_{slab} - 0.5*E_O2$
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.lattice.surface import *
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Pt', size=(2,2,3), vacuum=10.0)
+constraint = FixAtoms(mask=[True for atom in atoms])
+atoms.set_constraint(constraint)
+
+with jasp('surfaces/Pt-slab',
+          xc='PBE',
+          kpts=(4,4,1),
+          encut=350,
+          atoms=atoms) as calc:
+    slab_e = atoms.get_potential_energy()
+#+END_SRC
+
+**** TODO fcc site
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.lattice.surface import *
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Pt', size=(2,2,3), vacuum=10.0)
+constraint = FixAtoms(mask=[True for atom in atoms])
+atoms.set_constraint(constraint)
+
+# note this function only works when atoms are created by the surface module.
+add_adsorbate(atoms, 'O', height=1.2, position='fcc')
+
+with jasp('surfaces/Pt-slab-O-fcc',
+          xc='PBE',
+          kpts=(4,4,1),
+          encut=350,
+          ibrion=2,
+          nsw=25,
+          atoms=atoms) as calc:
+    slab_o_fcc_e = atoms.get_potential_energy()
+#+END_SRC
+
+#+RESULTS:
+
+**** TODO bridge site
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.lattice.surface import *
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Pt', size=(2,2,3), vacuum=10.0)
+constraint = FixAtoms(mask=[True for atom in atoms])
+atoms.set_constraint(constraint)
+
+# note this function only works when atoms are created by the surface module.
+add_adsorbate(atoms, 'O', height=1.2, position='bridge')
+
+with jasp('surfaces/Pt-slab-O-bridge',
+          xc='PBE',
+          kpts=(4,4,1),
+          encut=350,
+          ibrion=2,
+          nsw=25,
+          atoms=atoms) as calc:
+    slab_o_fcc_e = atoms.get_potential_energy()
+#+END_SRC
+
+#+RESULTS:
+
+**** TODO bridge site with constraints
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.lattice.surface import *
+from ase.constraints import FixAtoms, FixCartesian
+
+atoms = fcc111('Pt', size=(2,2,3), vacuum=10.0)
+constraint = FixAtoms(mask=[True for atom in atoms])
+
+
+# note this function only works when atoms are created by the surface module.
+add_adsorbate(atoms, 'O', height=1.2, position='bridge')
+print atoms[-1], len(atoms)
+
+atoms.set_constraint([constraint,FixCartesian(12,[True, True, False])])
+
+print atoms.constraints
+with jasp('surfaces/Pt-slab-O-bridge-2',
+          xc='PBE',
+          kpts=(4,4,1),
+          encut=350,
+          ibrion=2,
+          nsw=25,
+          atoms=atoms) as calc:
+    print atoms.constraints
+    slab_o_fcc_e = atoms.get_potential_energy()
+
+    pass
+#+END_SRC
+
+#+RESULTS:
+
+**** TODO hcp site
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.lattice.surface import *
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Pt', size=(2,2,3), vacuum=10.0)
+constraint = FixAtoms(mask=[True for atom in atoms])
+atoms.set_constraint(constraint)
+
+# note this function only works when atoms are created by the surface module.
+add_adsorbate(atoms, 'O', height=1.2, position='hcp')
+
+with jasp('surfaces/Pt-slab-O-hcp',
+          xc='PBE',
+          kpts=(4,4,1),
+          encut=350,
+          ibrion=2,
+          nsw=25,
+          atoms=atoms) as calc:
+    slab_o_fcc_e = atoms.get_potential_energy()
+#+END_SRC
+
+#+RESULTS:
+
 *** TODO Coverage dependence
-** Diffusion barrier
+The adsorbates on the surface can interact with each other which results in coverage dependent adsorption energies \cite{PhysRevB.82.045414}.
+
+** Surface Diffusion barrier
+
+See this review \cite{ANIE.ANIE200602223} of diffusion on transition metal surfaces.
+
 http://cms.mpi.univie.ac.at/wiki/index.php/Collective_jumps_of_a_Pt_adatom_on_fcc-Pt_%28001%29:_Nudged_Elastic_Band_Calculation
 
 We will look at how to use jasp to do a nudged elastic band.
