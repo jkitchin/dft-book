@@ -3715,6 +3715,7 @@ This looks promising: the formation energy is much more favorable than cu3pd-1, 
 
 The construction of alloy phase diagrams is difficult. You are always faced with the possibility that there is a phase that you have not calculated that is more stable than the ones you did calculate. One approach is to use a tool that automates the discovery of relevant structures such as the Alloy Theoretic Automated Toolkit (ATAT) \cite{vandeWalle2002539,vandeWalle2009266} which uses a cluster expansion methodology.
 
+*** TODO Metal oxide formation energies
 *** Metal oxide oxidation energies
 We will consider here the reaction $2 Cu_2O + O_2 \rightleftharpoons 4 CuO$. We need to compute the energy of each species.
 
@@ -5047,8 +5048,267 @@ with jasp('bulk/pt-neb',
 #+RESULTS:
 
 * Atomistic thermodynamics
+
+Let's consider how much the Gibbs free energy of an O2 molecule changes as a function of temperature, at 1 atm. We use the Shomate polynomials to approximate the temperature dependent entropy and enthalpy, and use the parameters from the [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447&Units=SI&Mask=1#Thermo-Gas][Nist Webbook]] for O2.
+#+BEGIN_SRC python :results output
+import numpy as np
+import matplotlib.pyplot as plt
+from ase.units import *
+K = 1. #not defined in ase.units!
+
+# Shomate parameters
+A = 31.32234; B = -20.23531; C = 57.86644
+D = -36.50624; E = -0.007374; F = -8.903471
+G = 246.7945; H = 0.0
+
+def entropy(T):
+    '''entropy returned as eV/K
+    T in K
+    '''
+    t = T/1000.
+    s = A*np.log(t) + B*t + C*(t**2)/2. + D*(t**3)/3. - E/(2.*t**2) + G
+    return s*J/mol/K
+
+def enthalpy(T):
+    ''' H - H(298.15) returned as eV/molecule'''
+    t = T/1000.
+    h = A*t + B*(t**2)/2. + C*(t**3)/3. + D*(t**4)/4. - E/t + F - H
+    return h*kJ/mol
+
+T = np.linspace(100,700)
+
+G = enthalpy(T) - T*entropy(T)
+
+plt.plot(T,G)
+plt.xlabel('Temperature (K)')
+plt.ylabel('$\Delta G^\circ$ (eV)')
+plt.savefig('images/O2-mu.png')
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: Effect of temperature on the Gibbs free energy of an O2 molecule at 1 atm.
+[[./images/O2-mu.png]]
+
+This is clearly a big effect! Between 500-600K, the energy has dropped by nearly 1 eV.
+
+#+BEGIN_SRC python
+import matplotlib.pyplot as plt
+import numpy as np
+from ase.units import *
+
+atm = 101325*Pascal #atm is not defined in units
+K = 1
+
+# examine range over 10^-10 to 10^10 atm
+P = np.logspace(-10,10)*atm
+
+plt.semilogx(P/atm, kB*(300*K)*np.log(P/(1*atm)),label='300K')
+plt.semilogx(P/atm, kB*(600*K)*np.log(P/(1*atm)),label='600K')
+plt.xlabel('Pressure (atm)')
+plt.ylabel('$\Delta G (eV)')
+plt.legend(loc='best')
+plt.savefig('images/O2-g-p.png')
+
+#+END_SRC
+
+#+RESULTS:
+: None
+
+#+caption: Effects of pressure on the ideal gas Gibbs free energy
+[[./images/O2-g-p.png]]
+
+Similarly, you can see that simply changing the pressure has a large effect on the Gibbs free energy of an ideal gas through the term: $kT\ln(P/P_0)$, and that this effect is also temperature dependent. This leads us to the final formula we will use for the chemical potential of oxgyen:
+
+$\mu_{O_2} = E_{O_2}^{DFT} + E_{O_2}^{ZPE} + \Delta \mu (T) + kT \ln(P/P_0}$
+
+** bulk phase stability of oxides
+We will  consider the effects of oxygen pressure and temperature on the formation energy of Ag2O and Cu2O.
+
+$2Cu + 1/2 O_2 \rightarrow Cu_2O$
+
+In atomistic thermodynamics, we define the free energy of formation as:
+We define the formation energy as:
+
+$G_f = G_{Cu_2O} -2G_{Cu} - 0.5 G_{O_2}$
+
+We will at this point assume that the solids are incompressible, and that $S_{Cu_2O} -2S_{Cu} \approx 0$, which leads to $G_{Cu_2O} -2G_{Cu} \approx E_{Cu_2O} -2E_{Cu}$, which we directly compute from DFT. We express $G_{O_2} = \mu_{O_2} = E_{O_2}^{DFT} + E_{O_2}^{ZPE} + \Delta \mu (T) + kT \ln(P/P_0}$. In this example we neglect the zero-point energy of the oxygen molecule, and finally arrive at:
+
+$G_f \approx E_{Cu_2O} -2E_{Cu} - 0.5 (E_{O_2}^{DFT} + \delta \mu (T) + kT \ln(P/P_0)$
+
+Which, after grouping terms is:
+
+$G_f \approx E_{Cu_2O} -2E_{Cu} - 0.5 (E_{O_2}^{DFT}) - 0.5*\Delta mu_{O_2}(P,T)$
+
+with $\Delta mu_{O_2}(P,T) = \delta \mu (T) + kT \ln(P/P_0)$. We get $\delta \mu (T)$ from the Janaf Tables, or the NIST Webbook.
+
+You will recognize in this equation the standard formation energy we calculated in [[*Metal%20oxide%20formation%20energies][Metal oxide formation energies]], plus a correction for the non standard state pressure and temperature ($\Delta mu_{O_2}(P,T) = 0$ at standard state).
+
+
+$G_f \approx H_f - 0.5*\Delta mu_{O_2}(P,T)$
+
+
+The [[http://materialsproject.org/materials/361/][formation energy of Cu2O]] is -1.9521 eV/formula unit. The [[http://materialsproject.org/materials/353/][formation energy for Ag2O]] is -0.99 eV/formula unit. Let us consider what temperature the oxides decompose at a fixed oxygen pressure of 1e-10 atm. We need to find the temperature where:
+
+$H_f = 0.5*\Delta mu_{O_2}(P,T)$
+
+which will make the formation energy be 0.
+
+#+BEGIN_SRC python :results output
+import numpy as np
+import matplotlib.pyplot as plt
+from ase.units import *
+from scipy.optimize import fsolve
+
+K = 1. #not defined in ase.units!
+atm = 101325*Pascal
+
+# Shomate parameters valid from 100-700K
+A = 31.32234; B = -20.23531; C = 57.86644
+D = -36.50624; E = -0.007374; F = -8.903471
+G = 246.7945; H = 0.0
+
+def entropy(T):
+    '''entropy returned as eV/K
+    T in K
+    '''
+    t = T/1000.
+    s = A*np.log(t) + B*t + C*(t**2)/2. + D*(t**3)/3. - E/(2.*t**2) + G
+    return s*J/mol/K
+
+def enthalpy(T):
+    ''' H - H(298.15) returned as eV/molecule'''
+    t = T/1000.
+    h = A*t + B*(t**2)/2. + C*(t**3)/3. + D*(t**4)/4. - E/t + F - H
+    return h*kJ/mol
+
+def DeltaMu(T,P):
+    '''
+    T in K
+    P in atm
+    '''
+    return enthalpy(T) - T*entropy(T) + kB*T*np.log(P/atm)
+
+T = np.linspace(100,1000)
+P = 1e-10*atm
+
+def func(T):
+    'Cu2O'
+    return -1.95 - 0.5*DeltaMu(T,P)
+
+print 'Cu2O decomposition temperature is {0} K'.format(fsolve(func, 900))
+
+def func(T):
+    'Ag2O'
+    return -0.99 - 0.5*DeltaMu(T,P)
+
+print 'Ag2O decomposition temperature is {0} K'.format(fsolve(func, 470))
+
+# you have use \\times to escape the first \ in pyplot
+plt.plot(T, DeltaMu(T,1e10*atm),label='1$\\times 10^{10}$ atm')
+plt.plot(T, DeltaMu(T,1e5*atm),label='1$\\times 10^5$ atm')
+plt.plot(T, DeltaMu(T,1*atm),label='1 atm')
+plt.plot(T, DeltaMu(T,1e-5*atm),label='1$\\times 10^{-5}$ atm')
+plt.plot(T, DeltaMu(T,1e-10*atm),label='1$\\times 10^{-10}$ atm')
+
+plt.xlabel('Temperature (K)')
+plt.ylabel('$\Delta \mu_{O_2}(T,p)$ (eV)')
+plt.legend(loc='best')
+plt.savefig('images/O2-mu.png')
+#+END_SRC
+
+#+RESULTS:
+: Cu2O decomposition temperature is [ 916.90220698] K
+: Ag2O decomposition temperature is [ 478.25748939] K
+
+#+caption: $\Delta \mu_{O_2}(T,p)$ at different pressures and temperatures.
+#+label: fig:mu-o2
+[[./images/O2-mu.png]]
+
+#+BEGIN_SRC python :results output
+import numpy as np
+import matplotlib.pyplot as plt
+from ase.units import *
+from scipy.optimize import fsolve
+
+K = 1. #not defined in ase.units!
+atm = 101325*Pascal
+
+# Shomate parameters valid from 100-700K
+A = 31.32234; B = -20.23531; C = 57.86644
+D = -36.50624; E = -0.007374; F = -8.903471
+G = 246.7945; H = 0.0
+
+def entropy(T):
+    '''entropy returned as eV/K
+    T in K
+    '''
+    t = T/1000.
+    s = A*np.log(t) + B*t + C*(t**2)/2. + D*(t**3)/3. - E/(2.*t**2) + G
+    return s*J/mol/K
+
+def enthalpy(T):
+    ''' H - H(298.15) returned as eV/molecule'''
+    t = T/1000.
+    h = A*t + B*(t**2)/2. + C*(t**3)/3. + D*(t**4)/4. - E/t + F - H
+    return h*kJ/mol
+
+def DeltaMu(T,P):
+    '''
+    T in K
+    P in atm
+    '''
+    return enthalpy(T) - T*entropy(T) + kB*T*np.log(P/atm)
+
+P = np.logspace(-11,1,10)*atm
+T = []
+for p in P:
+
+    def func(T):
+        return -0.99 - 0.5*DeltaMu(T,p)
+    T.append(fsolve(func, 450)[0])
+
+plt.semilogy(T,P/atm)
+plt.xlabel('Temperature (K)')
+plt.ylabel('Pressure (atm)')
+plt.text(800,1e-7,'Ag')
+plt.text(600,1e-3,'Ag$_2$O')
+plt.savefig('images/Ag2O-decomposition.png')
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: Temperature dependent decomposition pressure for Ag2O.
+[[./images/Ag2O-decomposition.png]]
+
+This shows that at high temperature and low p_{O2} metallic silver is stable, but if the  p_{O2} gets high enough, the oxide becomes thermodynamically favorable. Here is another way to look at it.
+
+#+BEGIN_SRC python
+import numpy as np
+import matplotlib.pyplot as plt
+from ase.units import *
+
+K = 1. #not defined in ase.units!
+atm = 101325*Pascal
+Hf = -0.99
+
+P = 1*atm
+
+Dmu = np.linspace(-4,0)
+
+Hf = -0.99 - 0.5*Dmu
+
+plt.plot(Dmu, Hf, label='Ag$_2$O')
+plt.plot(Dmu, np.zeros(Hf.shape), label='Ag')
+plt.xlabel('$\Delta \mu_{O_2}$ (eV)')
+plt.ylabel('$H_f$ (eV)')
+plt.show()
+#+END_SRC
+
+This graph shows graphically the $\Delta \mu$ required to make the metal more stable than the oxide. Anything less than about -2 eV will have the metal more stable. That can be achieved by any one of the following combinations (graphically estimated from Figure \ref{fig:mu-o2}):
+About 500K at 1e-10 atm, 600K at 1e-5 atm, 900K at 1atmm, etc...
+
 ** TODO Effect on adsorption
-** TODO bulk phase stability
 ** TODO multiple reactions
 * Advanced electronic structure methods
 ** DFT+U
