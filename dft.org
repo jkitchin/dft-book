@@ -6,7 +6,7 @@
 #+DESCRIPTION:
 #+KEYWORDS:
 #+LANGUAGE:  en
-#+OPTIONS:   H:6 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   H:6 num:t toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t
 #+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
 #+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
 #+EXPORT_SELECT_TAGS: export
@@ -16,7 +16,12 @@
 #+XSLT:
 #+latex_header: \usepackage{makeidx}
 #+latex_header: \makeindex
+
+# custom link for incar:ISMEAR
 #+LINK: incar http://cms.mpi.univie.ac.at/wiki/index.php/%s
+
+# export code and results. need to figure out how to handle org environments
+##+PROPERTY: exports both
 
 * Introduction to this book
 This book serves two purposes: 1) to provide worked examples of using DFT to model materials properties, and 2) to provide references to more advanced treatments of these topics in the literature. It is not a definitive reference on density functional theory. Along the way to learning how to perform the calculations, you will learn how to analyze the data, make plots, and how to interpret the results. This book is very much "recipe" oriented, with the intention of giving you enough information and knowledge to start your research. In that sense, many of the computations are not publication quality with respect to convergence of calculation parameters.
@@ -73,14 +78,14 @@ The DFT code used primarily in this book is [[http://cms.mpi.univie.ac.at/vasp/g
 
 Similar code would be used for other calculators, e.g. GPAW, Jacapo, etc... you would just have to import the python modules for those codes, and replace the code that defines the calculator.
 
-* Introduction to DFT
+* TODO Introduction to DFT
 All calculations were performed using VASP \cite{Kresse199615, PhysRevB.54.11169, PhysRevB.49.14251, PhysRevB.47.558}, the Perdew-Burke-Ernzerhof (PBE) \cite{PhysRevLett.77.3865} exchange correlation functional with projector augmented wave (PAW) potentials provided in VASP \cite{PhysRevB.50.17953,PhysRevB.59.1758}.
 
 Monkhorst-Pack k-points \cite{PhysRevB.13.5188}
 
 ** Recommended reading
 
-Original papers \cite{PhysRev.136.B864,PhysRev.140.A1133}
+Original papers on DFT \cite{PhysRev.136.B864,PhysRev.140.A1133}
 
 Kohn's Nobel Lecture \cite{RevModPhys.71.1253}, Pople's Nobel Lecture \cite{RevModPhys.71.1267}
 
@@ -101,7 +106,7 @@ http://chemistry.anl.gov/compmat/comptherm.htm for the original files.
 
 All numbers are experimental values, except for coordinates, which are
 MP2(full)/6-31G(d) optimized geometries. Here is a list of all the species available in mod:ase.data.g2
-#+BEGIN_SRC python :results output
+#+BEGIN_SRC python :results output :exports both
 from ase.data import g2
 print g2.data.keys()
 #+END_SRC
@@ -113,7 +118,7 @@ Some other databases include the mod:ase.data.s22 for weakly interacting dimers 
 
 Here is an example of getting the geometry of an acetonitrile molecule and writing an image to a file. Note that the default unit cell is a $1 \AA \times 1 \AA \times 1 \AA$ cubic cell. That is too small to use if your calculator uses periodic boundary conditions. We center the atoms in the unit cell and add vacuum on each side. We will add 6 $\AA$ of vacuum on each side. In the write command we use the option show_unit_cell=2 to draw the unit cell boundaries
 
-#+BEGIN_SRC python :results output
+#+BEGIN_SRC python :results output :exports both
 from ase import Atoms
 from ase.data.molecules import molecule
 from ase.io import write
@@ -131,23 +136,23 @@ write('molecules/ch3cn.png', c60, show_unit_cell=2)
 :  [  0.        13.537479   0.      ]
 :  [  0.         0.        15.014576]]
 
-file:molecules/ch3cn.png
+[[./molecules/ch3cn.png]]
 
 
 It is possible to rotate the atoms with func:ase.io.write if you wanted to see pictures from another angle. In the next example we rotate 45 degrees about the x-axis, then 45 degrees about the y-axis. Note that this only affects the image, not the actual coordinates
 
 #+BEGIN_SRC python :results output
-  from ase import Atoms
-  from ase.data.molecules import molecule
-  from ase.io import write
+from ase import Atoms
+from ase.data.molecules import molecule
+from ase.io import write
 
-  atoms = molecule('CH3CN')
+atoms = molecule('CH3CN')
 
-  atoms.center(vacuum=6)
-  print atoms.get_cell()
+atoms.center(vacuum=6)
+print atoms.get_cell()
 
-  write('molecules/ch3cn-rotated.png', atoms,
-        show_unit_cell=2,rotation='45x,45y,0z')
+write('molecules/ch3cn-rotated.png', atoms,
+      show_unit_cell=2,rotation='45x,45y,0z')
 #+END_SRC
 
 #+RESULTS:
@@ -155,26 +160,27 @@ It is possible to rotate the atoms with func:ase.io.write if you wanted to see p
 :  [  0.        13.537479   0.      ]
 :  [  0.         0.        15.014576]]
 
-file:molecules/ch3cn-rotated.png
+#+caption: The rotated version of CH3CN.
+[[./molecules/ch3cn-rotated.png]]
 
 If you actually want to rotate the coordinates, there is a nice way to do that to, with the func:ase.Atoms.rotate method. Actually there are some subtelties in rotation. One rotates the molecule an angle (in radians) around a vector, but you have to choose whether the center of mass should be fixed or not. You also must decide whether the unit cell should be rotated or not. In the next example you can see the coordinates have changed due to the rotations.
 
 #+BEGIN_SRC python :results output
-  from ase import Atoms
-  from ase.data.molecules import molecule
-  from ase.io import write
-  from numpy import pi
+from ase import Atoms
+from ase.data.molecules import molecule
+from ase.io import write
+from numpy import pi
 
-  # ammonia
-  atoms = molecule('CH3CN')
-  p1 = atoms.get_positions()
+# ammonia
+atoms = molecule('CH3CN')
+p1 = atoms.get_positions()
 
-  atoms.rotate('x', pi/4, center='COM', rotate_cell=False)
-  atoms.rotate('y', pi/4, center='COM', rotate_cell=False)
+atoms.rotate('x', pi/4, center='COM', rotate_cell=False)
+atoms.rotate('y', pi/4, center='COM', rotate_cell=False)
 
-  write('molecules/ch3cn-rotated-2.png',atoms,show_unit_cell=2)
-  p2 = atoms.get_positions()
-  print p2 - p1
+write('molecules/ch3cn-rotated-2.png',atoms,show_unit_cell=2)
+p2 = atoms.get_positions()
+print p2 - p1
 #+END_SRC
 
 #+RESULTS:
@@ -185,15 +191,59 @@ If you actually want to rotate the coordinates, there is a nice way to do that t
 :  [-1.35405183  1.33495444 -0.04610517]
 :  [-0.8340703   1.33495444  1.2092413 ]]
 
-file:molecules/ch3cn-rotated-2.png
+#+caption: Rotated CH3CN molecule
+[[./molecules/ch3cn-rotated-2.png]]
 
 Note in this last case the unit cell is oriented differently than the previous example, since we chose not to rotate the unit cell.
 
-*** Reading other data formats in
-   :PROPERTIES:
-   :ID:       o2b:ab5e549d-cc5d-48cb-85fa-0b1c4c332562
-   :POST_DATE: [2012-03-10 Sat 10:48]
-   :END:
+*** Reading other data formats into a calculation
+
+ase.io.read supports reading in many different formats:
+    Known formats:
+
+    =========================  ===========
+    format                     short name
+    =========================  ===========
+    GPAW restart-file          gpw
+    Dacapo netCDF output file  dacapo
+    Old ASE netCDF trajectory  nc
+    Virtual Nano Lab file      vnl
+    ASE pickle trajectory      traj
+    ASE bundle trajectory      bundle
+    GPAW text output           gpaw-text
+    CUBE file                  cube
+    XCrySDen Structure File    xsf
+    Dacapo text output         dacapo-text
+    XYZ-file                   xyz
+    VASP POSCAR/CONTCAR file   vasp
+    VASP OUTCAR file           vasp_out
+    SIESTA STRUCT file         struct_out
+    ABINIT input file          abinit
+    V_Sim ascii file           v_sim
+    Protein Data Bank          pdb
+    CIF-file                   cif
+    FHI-aims geometry file     aims
+    FHI-aims output file       aims_out
+    VTK XML Image Data         vti
+    VTK XML Structured Grid    vts
+    VTK XML Unstructured Grid  vtu
+    TURBOMOLE coord file       tmol
+    TURBOMOLE gradient file    tmol-gradient
+    exciting input             exi
+    AtomEye configuration      cfg
+    WIEN2k structure file      struct
+    DftbPlus input file        dftb
+    CASTEP geom file           cell
+    CASTEP output file         castep
+    CASTEP trajectory file     geom
+    ETSF format                etsf.nc
+    DFTBPlus GEN format        gen
+    CMR db/cmr-file            db
+    CMR db/cmr-file            cmr
+    LAMMPS dump file           lammps
+    Gromacs coordinates        gro
+    =========================  ===========
+
 You can read xyz-coordinate files to create mod:ase.Atoms objects.  Here is
 what an xyz file might look like:
 
@@ -204,19 +254,19 @@ you will have to figure out a way to provide it. In this example, we
 center the atoms in a box with vacuum on all sides.
 
 #+BEGIN_SRC python
-  from ase.io.xyz import *
-  from ase.io import write
-  import numpy as np
+from ase.io import read,write
+import numpy as np
 
-  atoms = read_xyz('molecules/isobutane.xyz')
-  atoms.center(vacuum=5)
-  write('molecules/isobutane_xyz.png', atoms, show_unit_cell=2)
+atoms = read('molecules/isobutane.xyz')
+atoms.center(vacuum=5)
+write('molecules/isobutane_xyz.png', atoms, show_unit_cell=2)
 #+END_SRC
 
 #+RESULTS:
 : None
 
-file:molecules/isobutane_xyz.png
+#+caption: An isobutane molecule read in from an xyz data file.
+[[./molecules/isobutane_xyz.png]]
 
 *** From scratch
     When there is no data file for the molecule you want, or no database to get it from, you have to define your atoms geometry by hand. Here is how that is done.
@@ -238,7 +288,7 @@ file:molecules/isobutane_xyz.png
 #+RESULTS:
 : V = 1000 Ang^3
 
-file:molecules/simple-cubic-cell.png
+[[./molecules/simple-cubic-cell.png]]
 
 There are two inconvenient features of the simple cubic cell:
 
@@ -266,7 +316,7 @@ The first problem is easy to solve by centering the atoms in the unit cell. The 
 #+RESULTS:
 : V = 715.8 Ang^3
 
-file:molecules/fcc-cell.png
+[[./molecules/fcc-cell.png]]
 
 At this point you might ask "How do you know the distance to the neighboring image?" The =ag= viewer lets you compute this graphically, but we can use code to determine this too. All we have to do is figure out the length of each lattice vector. We use the numpy module to compute the distance of a vector as the square root of the sum of squared elements.
 
@@ -315,7 +365,7 @@ It is frequently useful to combine two Atoms objects, e.g. for computing reactio
 
 #+RESULTS:
 
-file:molecules/bothatoms.png
+[[./molecules/bothatoms.png]]
 
 ** Simple properties
 Simple properties do not require a DFT calculation. They are typically only functions of the atom types and geometries.
@@ -382,7 +432,6 @@ for i,s,n,p in zip(atom_indices,sym,num,pos):
  10  H     1     -2.15   -1.24    0.00
  11  H     1     -2.15    1.24    0.00
 #+end_example
-
 
 *** Molecular weight and molecular formula
 We can quickly compute the molecular weight of a molecule with this little recipe.
@@ -1011,6 +1060,8 @@ plt.show()
 This result is in good agreement with [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C630080&Units=SI&Type=IR-SPEC&Index=0#IR-SPEC][experiment]]. The procedure used above is how many vibrational calculations are done. With more atoms, you have to determine a force constant matrix and diagonalize it. For more details, see \cite{wilson1955}. In practice, we usually allow a packaged code to automate this, which we cover in the next section.
 
 A final note is that this analysis is in the "harmonic approximation". The frequency equation is the solution to a harmonic oscillator. If the spring is non-linear, then there are anharmonic effects that may become important, especially at higher temperatures.
+**** TODO zero-point energy
+$E_{ZPE} = \frac{1}{2} h \nu$
 
 *** Automated vibrational  calculations
 Vasp has built-in capability for performing vibrational calculations.
@@ -1056,6 +1107,11 @@ http://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=800#Electronic-Spec
 The results are not too far off, and more accurate frequencies may be possible using tighter tolerance on POTIM, or by using IBRION=7 or 8.
 
 Note: the calc.get_vibrational_frequencies() is only available in jasp (7/12/2012).
+**** TODO ZPE
+show manual calculation, and if there is an ase way
+
+*** TODO Vibrations through ase
+must set JASPRC['mode']='run' and submit the job to the queue. Also, clone the directory because we will be throwing away the results.
 
 ** Thermochemical properties of molecules
 ase provides a [[https://wiki.fysik.dtu.dk/ase/ase/thermochemistry.html#module-thermochemistry][thermochemistry]] module.
@@ -1503,7 +1559,7 @@ with jasp('molecules/O2-sp-triplet') as calc:
 
 You can see here the triplet state has an energy that is 1 eV more stable than the singlet state.
 
-**** Using a different potential
+**** TODO Using a different potential
 It is possible we need a higher quality potential to get the 6.02 eV value quoted by many. Here we try the O_sv potential, which treats the 1s electrons as valence electrons. Note however, the ENMIN in the POTCAR is very high!
 
 #+BEGIN_SRC sh
@@ -1559,7 +1615,11 @@ if None not in (E_O, E_O2):
 #+END_SRC
 
 #+RESULTS:
+: Magnetic moment on O = 2.0 Bohr magnetons
+: Magnetic moment on O2 = 1.9999996 Bohr magnetons
+: O2 -> 2O  D = 6.819 eV
 
+That was not it! unless this result is still not converged
 *** Water gas shift example
 We consider calculating the reaction energy of the water-gas shift reaction in this example.
 
@@ -4212,6 +4272,7 @@ with jasp('bulk/Fe-bcc-sp-1',
 #+END_SRC
 *** TODO find out how to get atoms magnetic moments.
 
+*** TODO NiO-FeO formation energies
 ** TODO phonons
 * Surfaces
 ** Surface structures
@@ -4738,6 +4799,7 @@ There are many variations of this idea. The slab may already have some adsorbate
 
 $\Delta H_{ads} (eV/O) = E_{slab+O} - E_{slab} - 0.5*E_O2$
 
+***** clean slab calculation
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase.lattice.surface import *
@@ -4755,18 +4817,20 @@ with jasp('surfaces/Pt-slab',
     slab_e = atoms.get_potential_energy()
 #+END_SRC
 
-**** TODO fcc site
+***** fcc site
 #+BEGIN_SRC python :results output
 from jasp import *
+
 from ase.lattice.surface import *
 from ase.constraints import FixAtoms
 
 atoms = fcc111('Pt', size=(2,2,3), vacuum=10.0)
-constraint = FixAtoms(mask=[True for atom in atoms])
-atoms.set_constraint(constraint)
 
 # note this function only works when atoms are created by the surface module.
 add_adsorbate(atoms, 'O', height=1.2, position='fcc')
+
+constraint = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
+atoms.set_constraint(constraint)
 
 with jasp('surfaces/Pt-slab-O-fcc',
           xc='PBE',
@@ -4776,22 +4840,24 @@ with jasp('surfaces/Pt-slab-O-fcc',
           nsw=25,
           atoms=atoms) as calc:
     slab_o_fcc_e = atoms.get_potential_energy()
+    print slab_o_fcc_e
 #+END_SRC
 
 #+RESULTS:
 
-**** TODO bridge site
+***** TODO bridge site
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase.lattice.surface import *
 from ase.constraints import FixAtoms
 
 atoms = fcc111('Pt', size=(2,2,3), vacuum=10.0)
-constraint = FixAtoms(mask=[True for atom in atoms])
-atoms.set_constraint(constraint)
 
 # note this function only works when atoms are created by the surface module.
 add_adsorbate(atoms, 'O', height=1.2, position='bridge')
+
+constraint = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
+atoms.set_constraint(constraint)
 
 with jasp('surfaces/Pt-slab-O-bridge',
           xc='PBE',
@@ -4805,50 +4871,19 @@ with jasp('surfaces/Pt-slab-O-bridge',
 
 #+RESULTS:
 
-**** TODO bridge site with constraints
-#+BEGIN_SRC python :results output
-from jasp import *
-from ase.lattice.surface import *
-from ase.constraints import FixAtoms, FixCartesian
-
-atoms = fcc111('Pt', size=(2,2,3), vacuum=10.0)
-constraint = FixAtoms(mask=[True for atom in atoms])
-
-
-# note this function only works when atoms are created by the surface module.
-add_adsorbate(atoms, 'O', height=1.2, position='bridge')
-print atoms[-1], len(atoms)
-
-atoms.set_constraint([constraint,FixCartesian(12,[True, True, False])])
-
-print atoms.constraints
-with jasp('surfaces/Pt-slab-O-bridge-2',
-          xc='PBE',
-          kpts=(4,4,1),
-          encut=350,
-          ibrion=2,
-          nsw=25,
-          atoms=atoms) as calc:
-    print atoms.constraints
-    slab_o_fcc_e = atoms.get_potential_energy()
-
-    pass
-#+END_SRC
-
-#+RESULTS:
-
-**** TODO hcp site
+***** hcp site
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase.lattice.surface import *
 from ase.constraints import FixAtoms
 
 atoms = fcc111('Pt', size=(2,2,3), vacuum=10.0)
-constraint = FixAtoms(mask=[True for atom in atoms])
-atoms.set_constraint(constraint)
 
 # note this function only works when atoms are created by the surface module.
 add_adsorbate(atoms, 'O', height=1.2, position='hcp')
+
+constraint = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
+atoms.set_constraint(constraint)
 
 with jasp('surfaces/Pt-slab-O-hcp',
           xc='PBE',
@@ -4858,6 +4893,95 @@ with jasp('surfaces/Pt-slab-O-hcp',
           nsw=25,
           atoms=atoms) as calc:
     slab_o_fcc_e = atoms.get_potential_energy()
+#+END_SRC
+
+#+RESULTS:
+
+**** Analysis of adsorption energies
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.io import write
+
+with jasp('surfaces/Pt-slab') as calc:
+    atoms = calc.get_atoms()
+    e_slab = atoms.get_potential_energy()
+write('images/pt-slab.png',atoms,show_unit_cell=2)
+
+with jasp('surfaces/Pt-slab-O-fcc') as calc:
+    atoms = calc.get_atoms()
+    e_slab_o_fcc = atoms.get_potential_energy()
+write('images/pt-slab-fcc-o.png',atoms,show_unit_cell=2)
+
+with jasp('surfaces/Pt-slab-O-hcp') as calc:
+    atoms = calc.get_atoms()
+    e_slab_o_hcp = atoms.get_potential_energy()
+write('images/pt-slab-hcp-o.png',atoms,show_unit_cell=2)
+
+#with jasp('surfaces/Pt-slab-O-bridge') as calc:
+#    atoms = calc.get_atoms()
+#    e_slab_o_bridge = atoms.get_potential_energy()
+#write('images/pt-slab-bridge-o.png',atoms,show_unit_cell=2)
+
+with jasp('molecules/O2-sp-triplet-350') as calc:
+    atoms = calc.get_atoms()
+    e_O2 = atoms.get_potential_energy()
+
+Hads_fcc = e_slab_o_fcc - e_slab - 0.5*e_O2
+Hads_hcp = e_slab_o_hcp - e_slab - 0.5*e_O2
+#Hads_bridge = e_slab_o_bridge - e_slab - 0.5*e_O2
+
+print 'Hads (fcc) = {0} eV/O'.format(Hads_fcc)
+print 'Hads (hcp) = {0} eV/O'.format(Hads_hcp)
+#print 'Hads (bridge) = {0} eV/O'.format(Hads_bridge)
+#+END_SRC
+
+#+RESULTS:
+: Hads (fcc) = -1.5043585 eV/O
+: Hads (hcp) = -0.9247535 eV/O
+
+| [[./images/pt-slab.png]] | [[./images/pt-slab-fcc-o.png]] | [[./images/pt-slab-hcp-o.png]]  |  images/pt-slab-bridge-o.png     |
+
+#+BEGIN_SRC python
+from ase.io import read, write
+
+atoms = read('surfaces/Pt-slab-O-bridge/POSCAR')
+write('images/Pt-o-brige-ori.png', atoms, show_unit_cell=2)
+#+END_SRC
+
+#+RESULTS:
+: None
+
+| initial geometry            | Final geometry |
+| [[./images/Pt-o-brige-ori.png]] |                |
+
+
+***** TODO bridge site with constraints
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.lattice.surface import *
+from ase.constraints import FixAtoms, FixScaled
+
+atoms = fcc111('Pt', size=(2,2,3), vacuum=10.0)
+
+# note this function only works when atoms are created by the surface module.
+add_adsorbate(atoms, 'O', height=1.2, position='bridge')
+constraint1 = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
+# fix in xy-direction, free in z
+# actually, freeze movement in surface unit cell, and free along 3rd lattice vector
+constraint2 = FixScaled(atoms.get_cell(), 12, [True, True, False])
+
+atoms.set_constraint([constraint1, constraint2])
+
+with jasp('surfaces/Pt-slab-O-bridge-xy-constrained',
+          xc='PBE',
+          kpts=(4,4,1),
+          encut=350,
+          ibrion=2,
+          nsw=25,
+          atoms=atoms) as calc:
+
+    slab_o_fcc_e = atoms.get_potential_energy()
+
 #+END_SRC
 
 #+RESULTS:
@@ -4922,7 +5046,10 @@ with jasp('bulk/pt-neb',
 
 #+RESULTS:
 
-* TODO Atomistic thermodynamics
+* Atomistic thermodynamics
+** TODO Effect on adsorption
+** TODO bulk phase stability
+** TODO multiple reactions
 * Advanced electronic structure methods
 ** DFT+U
 
@@ -5246,6 +5373,8 @@ http://cms.mpi.univie.ac.at/vasp/vasp/vdW_DF_functional_Langreth_Lundqvist_et_al
 
 ** [[http://cms.mpi.univie.ac.at/vasp/vasp/DFT_D2_method_Grimme.html][TODO DFT+D]]
 \cite{PhysRevB.82.081101}
+** TODO ELF
+** TODO Charge partitioning schemes
 * Appendices
 ** Recipes
 *** Modifying Atoms by deleting atoms
@@ -5269,6 +5398,15 @@ Sometimes it is convenient to create an Atoms object by deleting atoms from an e
 : Atoms(symbols='C2O', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False, False, False])
 
 *** Using units in ase
+ase uses a base set of atomic units. Other units are defined in terms of those units, and you can easily convert to alternative units by dividing your quantity in atomic units by the units you want.
+
+Not too many units are defined:
+['A', 'AUT', 'Ang', 'Angstrom', 'Bohr', 'C', 'Debye', 'GPa', 'Ha', 'Hartree', 'J', 'Pascal', 'Ry', 'Rydberg', 'alpha', 'cm', 'eV', 'erg', 'fs', 'kB', 'kJ', 'kcal', 'kg', 'm', 'meV', 'mol', 'nm', 's', 'second']
+
+it is not that hard to define your own derived units though.
+
+Note these  are only conversion factors. No unit algebra is enforced!
+
 #+BEGIN_SRC python :results output
 #!/usr/bin/env python
 from ase.units import *
@@ -5276,14 +5414,20 @@ from ase.units import *
 d = 1*Angstrom
 print d/nm
 
-e = 1*eV
-print '1 eV = %f Hartrees' % (e/Hartree)
-print '1 eV = %f Rydbergs' % (e/Rydberg)
-print '1 eV = %f kJ/mol' % (e/(kJ/mol))
-print '1 eV = %f kcal/mol' % (e/(kcal/mol))
+print '1 eV = %f Hartrees' % (eV/Hartree)
+print '1 eV = %f Rydbergs' % (eV/Rydberg)
+print '1 eV = %f kJ/mol' % (eV/(kJ/mol))
+print '1 eV = %f kcal/mol' % (eV/(kcal/mol))
 
 print '1 Hartree = %f kcal/mol' % (1*Hartree/(kcal/mol))
 print '1 Rydberg = %f eV' % (1*Rydberg/eV)
+
+# derived units
+minute = 60*s
+hour = 60*minute
+
+#convert 10 hours to minutes
+print 10*hour/minute
 #+END_SRC
 
 #+RESULTS:
@@ -5294,6 +5438,7 @@ print '1 Rydberg = %f eV' % (1*Rydberg/eV)
 : 1 eV = 23.060542 kcal/mol
 : 1 Hartree = 627.509541 kcal/mol
 : 1 Rydberg = 13.605698 eV
+: 600.0
 
 *** numpy arrays
 
@@ -6798,7 +6943,7 @@ head -n 1 molecules/O_sv/POTCAR
 #+RESULTS:
 : PAW_PBE O_sv 05Jul2007
 
-*** TODO Running jasp in parallel
+*** Running jasp in parallel
 jasp is smart. If you ask for more than one node, it will automatically try to run in parallel.
 
 #+BEGIN_SRC python :results output
@@ -6843,6 +6988,130 @@ head molecules/O_sv-4nodes/OUTCAR
 
 #+end_example
 
+*** Exporting data json, xml, python, sqlite
+jasp has some capability for representing a calculation result in an archival format. The formats currently under development are json, xml, python and sqlite. The main point of these methods is to make it easy to create archive files that are machine readable for supplementary information in publications. These are under development.
+
+**** python
+This is code that should reconstruct the python code needed to run a particular calculation. There are some limitations, e.g. it does not currently get magnetic moments on the atoms.
+#+BEGIN_SRC python :results output
+from jasp import *
+
+with jasp('bulk/alloy/cu') as calc:
+    print calc.python
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+from numpy import array
+from ase import Atom, Atoms
+from jasp import *
+
+atoms = Atoms([Atom('Cu',[0.0, 0.0, 0.0]),
+               cell = [[1.818, 0.0, 1.818],
+                       [1.818, 1.818, 0.0],
+                       [0.0, 1.818, 1.818]])
+
+with jasp('bulk/alloy/cu',
+          nbands = 9,
+          nsw = 10,
+          ibrion = 2,
+          isif = 4,
+          encut = 350.0,
+          prec = 'Normal',
+          kpts = array([13, 13, 13]),
+          reciprocal = False,
+          xc = 'PBE',
+          txt = '-',
+          gamma = False,
+          atoms=atoms) as calc:
+    # your code here
+
+#+end_example
+
+**** json
+
+#+BEGIN_SRC python :results output
+from jasp import *
+
+with jasp('bulk/alloy/cu') as calc:
+    print calc.json
+#+END_SRC
+
+#+RESULTS:
+: {"INCAR": {"ldau": null, "eint": null, "lclimb": null, "iband": null, "timestep": null, "ldau_luj": null, "fnmin": null, "ispin": null, "lcorr": null, "iopt": null, "ichain": null, "ismear": null, "lscalapack": null, "emin": null, "lwave": null, "maxmove": null, "ngxf": null, "ebreak": null, "lplane": null, "npar": null, "istart": null, "nkred": null, "ialgo": null, "ngz": null, "system": null, "prec": "Normal", "luse_vdw": null, "icharg": null, "sdalpha": null, "nfree": null, "lsepb": null, "lorbit": null, "zab_vdw": null, "ngy": null, "kspacing": null, "pomass": null, "magmom": null, "lpard": null, "sdr": null, "aldac": null, "nelm": null, "ldaul": null, "nkredx": null, "nkredy": null, "nkredz": null, "lelf": null, "stol": null, "lvdw": null, "ldauu": null, "zval": null, "nsim": null, "ngyf": null, "deper": null, "lscalu": null, "lglobal": null, "ldipol": null, "ropt": null, "symprec": null, "falphadec": null, "weimin": null, "ftimedec": null, "ldneb": null, "maxmix": null, "vdwgr": null, "nwrite": null, "lmaxmix": null, "param2": null, "param1": null, "lbfgsmem": null, "kgamma": null, "smass": null, "laechg": null, "potim": null, "idipol": null, "lhfcalc": null, "lasph": null, "emax": null, "isym": null, "ldauprint": null, "ferdo": null, "encut": 350.0, "lcharg": null, "nbands": 9, "ngzf": null, "dipol": null, "ediff": null, "enaug": null, "rwigs": null, "nelect": null, "bmix": null, "fdstep": null, "invcurve": null, "isif": 4, "ddr": null, "hfscreen": null, "ftimeinc": null, "lthomas": null, "teend": null, "addgrid": null, "ltangentold": null, "voskown": null, "ediffg": null, "jacobian": null, "vdwrn": null, "nsw": 10, "iniwav": null, "algo": null, "nelmdl": null, "amix_mag": null, "aexx": null, "lnebcell": null, "encutfock": null, "aggac": null, "ftimemax": null, "ldiag": null, "snl": null, "ldauj": null, "drotmax": null, "nbmod": null, "lasync": null, "nblk": null, "gga": null, "kpuse": null, "ferwe": null, "tebeg": null, "bmix_mag": null, "aggax": null, "iwavpr": null, "amin": null, "nupdown": null, "lvhar": null, "loptics": null, "falpha": null, "dfnmax": null, "lvtot": null, "llineopt": null, "ldautype": null, "ngx": null, "dfnmin": null, "ibrion": 2, "amix": null, "time": null, "nelmin": null, "lepsilon": null, "lsepk": null, "sigma": null}, "input": {"kpts": [13, 13, 13], "reciprocal": false, "setups": null, "xc": "PBE", "txt": "-", "gamma": false}, "atoms": {"cell": [[1.8180000000000001, 0.0, 1.8180000000000001], [1.8180000000000001, 1.8180000000000001, 0.0], [0.0, 1.8180000000000001, 1.8180000000000001]], "symbols": ["Cu"], "pbc": [true, true, true], "positions": [[0.0, 0.0, 0.0]]}}
+
+**** xml
+This relies on the pyxser module.
+#+BEGIN_SRC python :results output
+from jasp import *
+
+with jasp('bulk/alloy/cu') as calc:
+    print calc.xml
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+<?xml version="1.0" encoding="utf-8"?>
+<pyxs:obj xmlns:pyxs="http://projects.coder.cl/pyxser/model/" version="1.0" type="vasp" module="jasp.serialize" objid="id488763344">
+  <pyxs:col type="dict" name="d">
+    <pyxs:col type="dict" name="INCAR">
+      <pyxs:prop type="str" name="prec">Normal</pyxs:prop>
+      <pyxs:prop type="float" name="encut">350.0</pyxs:prop>
+      <pyxs:prop type="int" name="nbands">9</pyxs:prop>
+      <pyxs:prop type="int" name="isif">4</pyxs:prop>
+      <pyxs:prop type="int" name="nsw">10</pyxs:prop>
+      <pyxs:prop type="int" name="ibrion">2</pyxs:prop>
+    </pyxs:col>
+    <pyxs:col type="dict" name="input">
+      <pyxs:col type="list" name="kpts">
+        <pyxs:prop type="int" name="kpts">13</pyxs:prop>
+        <pyxs:prop type="int" name="kpts">13</pyxs:prop>
+        <pyxs:prop type="int" name="kpts">13</pyxs:prop>
+      </pyxs:col>
+      <pyxs:prop type="bool" name="reciprocal">False</pyxs:prop>
+      <pyxs:prop type="str" name="xc">PBE</pyxs:prop>
+      <pyxs:prop type="str" name="txt">-</pyxs:prop>
+      <pyxs:prop type="bool" name="gamma">False</pyxs:prop>
+    </pyxs:col>
+    <pyxs:col type="dict" name="atoms">
+      <pyxs:col type="list" name="cell">
+        <pyxs:col type="list" name="cell">
+          <pyxs:prop type="float" name="cell">1.818</pyxs:prop>
+          <pyxs:prop type="float" name="cell">0.0</pyxs:prop>
+          <pyxs:prop type="float" name="cell">1.818</pyxs:prop>
+        </pyxs:col>
+        <pyxs:col type="list" name="cell">
+          <pyxs:prop type="float" name="cell">1.818</pyxs:prop>
+          <pyxs:prop type="float" name="cell">1.818</pyxs:prop>
+          <pyxs:prop type="float" name="cell">0.0</pyxs:prop>
+        </pyxs:col>
+        <pyxs:col type="list" name="cell">
+          <pyxs:prop type="float" name="cell">0.0</pyxs:prop>
+          <pyxs:prop type="float" name="cell">1.818</pyxs:prop>
+          <pyxs:prop type="float" name="cell">1.818</pyxs:prop>
+        </pyxs:col>
+      </pyxs:col>
+      <pyxs:col type="list" name="symbols">
+        <pyxs:prop type="str" name="symbols">Cu</pyxs:prop>
+      </pyxs:col>
+      <pyxs:col type="list" name="pbc">
+        <pyxs:prop type="bool" name="pbc">True</pyxs:prop>
+        <pyxs:prop type="bool" name="pbc">True</pyxs:prop>
+        <pyxs:prop type="bool" name="pbc">True</pyxs:prop>
+      </pyxs:col>
+      <pyxs:col type="list" name="positions">
+        <pyxs:col type="list" name="positions">
+          <pyxs:prop type="float" name="positions">0.0</pyxs:prop>
+          <pyxs:prop type="float" name="positions">0.0</pyxs:prop>
+          <pyxs:prop type="float" name="positions">0.0</pyxs:prop>
+        </pyxs:col>
+      </pyxs:col>
+    </pyxs:col>
+  </pyxs:col>
+</pyxs:obj>
+
+#+end_example
+
 * Python
 ** TODO easy_install as a user
 
@@ -6864,8 +7133,6 @@ print x_Cu
 #+END_SRC
 
 #+RESULTS:
-: 0
-: 0.555555555556
 
 Note that if one of the numbers is a float, python will automatically cast the integer as a float, and return a float.
 #+BEGIN_SRC python :results output

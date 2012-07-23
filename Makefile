@@ -20,8 +20,11 @@ pdf: tex
 html:
 	$(BATCH_EMACS) -f org-export-as-html
 
+xhtml:
+	mk4ht htlatex dft.tex '-shell-escape,xhtml,charset=utf-8,pmathml' ' -cunihtf -utf8 -cvalidate'
+
 mobi: html
 	/home/jkitchin/kindlegen/kindlegen dft.html
 
 clean:
-	rm -f *.aux *.log *.dvi *.blg *.bbl *.toc *.tex *~ *.out *.idx *.ilg *.ind
+	rm -f *.aux *.log *.dvi *.blg *.bbl *.toc *~ *.out *.idx *.ilg *.ind
