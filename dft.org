@@ -662,38 +662,6 @@ forces are only along the x-axis, which is along the molecular axis.
 
 #+BEGIN_SRC python :results output :exports both
 #!/usr/bin/env python
-import torque
-from ase import Atoms, Atom
-from ase.calculators.jacapo import Jacapo
-import numpy as np
-
-# this makes array printing a little more readable
-np.set_printoptions(precision=3,suppress=True)
-
-co = Atoms([Atom('C',[0,   0, 0]),
-            Atom('O',[1.2, 0, 0])],
-            cell=(6.,6.,6.))
-
-calc = Jacapo('molecules/co.nc',   #output filename
-              nbands=6,
-              pw=350,
-              ft=0.01,
-              atoms=co)
-
-print 'Total energy = ',co.get_potential_energy()
-print 'Forces = \n', co.get_forces()
-#+END_SRC
-
-#+RESULTS:
-: Total energy =  -591.081446318
-: Forces =
-: [[ 4.466 -0.     0.   ]
-:  [-4.5   -0.    -0.   ]]
-
-It does not look very different in Vasp. The total energies, and forces differ, because different pseudopotentials were used and different functionals were used (default functional for Dacapo is PW91).
-
-#+BEGIN_SRC python :results output :exports both
-#!/usr/bin/env python
 from ase import Atoms,Atom
 from jasp import *
 import numpy as np
@@ -760,7 +728,30 @@ mlab.show()
 #+RESULTS:
 : None
 
+#+caption: Charge density of a CO molecule with an atom at the origin. Due to periodic boundary conditions, part of the charge is at each corner of the unit cell.
 [[./images/co-cd.png]]
+
+
+#+BEGIN_SRC python
+#!/usr/bin/env python
+from enthought.mayavi import mlab
+from jasp import *
+
+with jasp('molecules/co-centered') as calc:
+    x,y,z,cd = calc.get_charge_density()
+
+mlab.contour3d(x,y,z,cd)
+
+mlab.savefig('images/co-cd-centered.png')
+
+mlab.show()
+#+END_SRC
+
+#+RESULTS:
+: None
+
+#+caption: Charge density of a CO molecule centered in the unit cell.
+[[./images/co-cd-centered.png]]
 
 *** TODO Visualizing Kohn-Sham orbitals
 need to read wavecar files!
@@ -960,7 +951,7 @@ forces = (eV/ang)
 #+end_example
 
 **** Automatic geometry optimization with vasp
-Vasp has built in geometry optimization using the IBRION and NSW tags. Here we compute the bond length for a CO molecule, letting Vasp do the geometry optimization for us.
+Vasp has built in geometry optimization using the [[incar:IBRION][IBRION]] and [[incar:NSW][NSW]] tags. Here we compute the bond length for a CO molecule, letting Vasp do the geometry optimization for us.
 
 #+BEGIN_SRC python :results output :exports both
 #!/usr/bin/env python
@@ -1059,6 +1050,25 @@ plt.show()
 
 This result is in good agreement with [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C630080&Units=SI&Type=IR-SPEC&Index=0#IR-SPEC][experiment]]. The procedure used above is how many vibrational calculations are done. With more atoms, you have to determine a force constant matrix and diagonalize it. For more details, see \cite{wilson1955}. In practice, we usually allow a packaged code to automate this, which we cover in the next section.
 
+We now consider how much energy is in this vibration. This is commonly called zero-point energy (ZPE) and it is defined as $E_{ZPE} = \frac{1}{2} h \nu$ for a single mode.
+
+#+BEGIN_SRC python :results output :exports both
+
+c = 3e10 # speed of light cm/s
+h = 4.135667516e-15 # eV/s
+
+nu = 2143.6076625*c # 1/s
+
+E_zpe = 0.5*h*nu
+
+print 'E_ZPE = {0:1.3f} eV'.format(E_zpe)
+#+END_SRC
+
+#+RESULTS:
+: E_ZPE = 0.133 eV
+
+This is a reasonable amount of energy! Zero-point energy increases with increasing vibrational frequency.
+
 A final note is that this analysis is in the "harmonic approximation". The frequency equation is the solution to a harmonic oscillator. If the spring is non-linear, then there are anharmonic effects that may become important, especially at higher temperatures.
 **** TODO zero-point energy
 $E_{ZPE} = \frac{1}{2} h \nu$
@@ -1104,11 +1114,45 @@ Note we get 9 frequencies here. Water has 3 atoms, with three degrees of freedom
 
 http://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=800#Electronic-Spec
 
-The results are not too far off, and more accurate frequencies may be possible using tighter tolerance on POTIM, or by using IBRION=7 or 8.
+The results are not too far off, and more accurate frequencies may be possible using tighter tolerance on [[incar:POTIM][POTIM]], or by using [[incar:IBRION][IBRION]]=7 or 8.
 
 Note: the calc.get_vibrational_frequencies() is only available in jasp (7/12/2012).
-**** TODO ZPE
-show manual calculation, and if there is an ase way
+**** Zero-point energy for multiple modes
+For a molecule with lots of vibrational modes the zero-point energy is defined as the sum over all the vibrational modes:
+
+$E_{ZPE} = \sum_i \frac{1}{2} h \nu_i$
+
+Here is an example for water. Note we do not sum over the imaginary modes. We should also ignore the rotational and translational modes (some of those are imaginary, but some are just small).
+
+#+BEGIN_SRC python :results output
+from jasp import *
+import numpy as np
+c = 3e10 # speed of light cm/s
+h = 4.135667516e-15 # eV/s
+
+# first, get the frequencies.
+with jasp('molecules/h2o_vib') as calc:
+    freq = calc.get_vibrational_frequencies()
+
+ZPE = 0.0
+for f in freq:
+    if not isinstance(f,float):
+        continue #skip complex numbers
+    nu = f*c # convert to frequency
+    ZPE += 0.5*h*nu
+
+print 'The ZPE of water is {0:1.3f} eV'.format(ZPE)
+
+# one liner
+ZPE = np.sum([0.5*h*f*c for f in freq if isinstance(f, float)])
+print 'The ZPE of water is {0:1.3f} eV'.format(ZPE)
+#+END_SRC
+
+#+RESULTS:
+: The ZPE of water is 0.571 eV
+: The ZPE of water is 0.571 eV
+
+Note the zero-point energy of water is also fairly high. That is because of the high frequency O-H stretches.
 
 *** TODO Vibrations through ase
 must set JASPRC['mode']='run' and submit the job to the queue. Also, clone the directory because we will be throwing away the results.
@@ -4845,8 +4889,9 @@ with jasp('surfaces/Pt-slab-O-fcc',
 #+END_SRC
 
 #+RESULTS:
+: -73.663977
 
-***** TODO bridge site
+***** bridge site
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase.lattice.surface import *
@@ -4867,7 +4912,7 @@ with jasp('surfaces/Pt-slab-O-bridge',
           ibrion=2,
           nsw=25,
           atoms=atoms) as calc:
-    slab_o_fcc_e = atoms.get_potential_energy()
+    print atoms.get_potential_energy()
 #+END_SRC
 
 #+RESULTS:
@@ -4893,10 +4938,11 @@ with jasp('surfaces/Pt-slab-O-hcp',
           ibrion=2,
           nsw=25,
           atoms=atoms) as calc:
-    slab_o_fcc_e = atoms.get_potential_energy()
+    print atoms.get_potential_energy()
 #+END_SRC
 
 #+RESULTS:
+: -73.224097
 
 **** Analysis of adsorption energies
 #+BEGIN_SRC python :results output
@@ -4918,10 +4964,10 @@ with jasp('surfaces/Pt-slab-O-hcp') as calc:
     e_slab_o_hcp = atoms.get_potential_energy()
 write('images/pt-slab-hcp-o.png',atoms,show_unit_cell=2)
 
-#with jasp('surfaces/Pt-slab-O-bridge') as calc:
-#    atoms = calc.get_atoms()
-#    e_slab_o_bridge = atoms.get_potential_energy()
-#write('images/pt-slab-bridge-o.png',atoms,show_unit_cell=2)
+with jasp('surfaces/Pt-slab-O-bridge') as calc:
+    atoms = calc.get_atoms()
+    e_slab_o_bridge = atoms.get_potential_energy()
+write('images/pt-slab-bridge-o.png',atoms,show_unit_cell=2)
 
 with jasp('molecules/O2-sp-triplet-350') as calc:
     atoms = calc.get_atoms()
@@ -4929,49 +4975,78 @@ with jasp('molecules/O2-sp-triplet-350') as calc:
 
 Hads_fcc = e_slab_o_fcc - e_slab - 0.5*e_O2
 Hads_hcp = e_slab_o_hcp - e_slab - 0.5*e_O2
-#Hads_bridge = e_slab_o_bridge - e_slab - 0.5*e_O2
+Hads_bridge = e_slab_o_bridge - e_slab - 0.5*e_O2
 
 print 'Hads (fcc) = {0} eV/O'.format(Hads_fcc)
 print 'Hads (hcp) = {0} eV/O'.format(Hads_hcp)
-#print 'Hads (bridge) = {0} eV/O'.format(Hads_bridge)
+print 'Hads (bridge) = {0} eV/O'.format(Hads_bridge)
 #+END_SRC
 
 #+RESULTS:
-: Hads (fcc) = -1.5043585 eV/O
-: Hads (hcp) = -0.9247535 eV/O
+: Hads (fcc) = -1.0385455 eV/O
+: Hads (hcp) = -0.5986655 eV/O
+: Hads (bridge) = -1.0384925 eV/O
 
-| [[./images/pt-slab.png]] | [[./images/pt-slab-fcc-o.png]] | [[./images/pt-slab-hcp-o.png]]  |  images/pt-slab-bridge-o.png     |
+You can see the hcp site is not as energetically favorable as the fcc site. Interestingly, the bridge site seems to be as favorable as the fcc site. This is not correct, and to see why, we have to look at the final geometries of each calculation.
+
+#+caption: Final geometry of the fcc site.
+[[./images/pt-slab-fcc-o.png]]
+
+#+caption: Final geometry of the hcp site.
+[[./images/pt-slab-hcp-o.png]]
+
+#+caption: Final geometry of the bridge site. You can see that the Oxygen atom ended up in the fcc site.
+[[./images/pt-slab-bridge-o.png]]
+
+Let us see what the original geometry and final geometry were. The POSCAR contains the initial geometry (as long as you haven't copied CONTCAR to POSCAR), and the CONTCAR contains the final geometry.
 
 #+BEGIN_SRC python
 from ase.io import read, write
 
 atoms = read('surfaces/Pt-slab-O-bridge/POSCAR')
 write('images/Pt-o-brige-ori.png', atoms, show_unit_cell=2)
+
+atoms = read('surfaces/Pt-slab-O-bridge/CONTCAR')
+write('images/Pt-o-brige-final.png', atoms, show_unit_cell=2)
 #+END_SRC
 
 #+RESULTS:
 : None
 
 | initial geometry            | Final geometry |
-| [[./images/Pt-o-brige-ori.png]] |                |
+| [[./images/Pt-o-brige-ori.png]] |    [[./images/Pt-o-brige-final.png]]      |
 
+You can see the problem. We should not call the adsorption energy from this calculation a bridge site adsorption energy because the O atom is actually in an fcc site! This kind of result can happen with relaxation, and you should always check that the result you get makes sense. Next, we consider how to get a bridge site adsorption energy by using constraints.
 
-***** TODO bridge site with constraints
+Some final notes:
+1. We did not let the slabs relax in these examples, and allowing them to relax is likely to have a big effect on the adsorption energies. You have to decide how many layers to relax, and check for convergence with respect to the number of layers.
+2. The slabs were pretty thin. It is typical these days to see slabs that are 4-5 or more layers thick.
+3. We did not consider how well converged the calculations were with respect to k-points or ENCUT.
+4. We did not consider the effect of the error in O2 dissociation energy on the adsorption energies.
+4. We did not consider coverage effects.
+
+***** Adsorption on bridge site with constraints
+To prevent the oxygen atom from sliding down into the fcc site, we have to constrain it so that it only moves in the z-direction. This is an artificial constraint; the bridge site is only metastable. But there are lots of reasons you might want to do this anyway. One is the bridge site is a transition state for diffusion between the fcc and hcp sites. Another is to understand the role of coordination in the adsorption energies. We use a FixScaled constraint in ase to constrain the O atom so it can only move in the z-direction (actually so it can only move in the direction of the third unit cell vector, which only has a z-component).
+
 #+BEGIN_SRC python :results output
 from jasp import *
+JASPRC['mode'] = None
 from ase.lattice.surface import *
 from ase.constraints import FixAtoms, FixScaled
+from ase.io import write
 
 atoms = fcc111('Pt', size=(2,2,3), vacuum=10.0)
 
 # note this function only works when atoms are created by the surface module.
 add_adsorbate(atoms, 'O', height=1.2, position='bridge')
 constraint1 = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
-# fix in xy-direction, free in z
-# actually, freeze movement in surface unit cell, and free along 3rd lattice vector
+# fix in xy-direction, free in z. actually, freeze movement in surface
+# unit cell, and free along 3rd lattice vector
 constraint2 = FixScaled(atoms.get_cell(), 12, [True, True, False])
 
 atoms.set_constraint([constraint1, constraint2])
+write('images/Pt-O-bridge-constrained-initial.png', atoms, show_unit_cell=2)
+print 'Initial O position: {0}'.format(atoms.positions[-1])
 
 with jasp('surfaces/Pt-slab-O-bridge-xy-constrained',
           xc='PBE',
@@ -4980,17 +5055,93 @@ with jasp('surfaces/Pt-slab-O-bridge-xy-constrained',
           ibrion=2,
           nsw=25,
           atoms=atoms) as calc:
+    e_bridge = atoms.get_potential_energy()
 
-    slab_o_fcc_e = atoms.get_potential_energy()
+write('images/Pt-O-bridge-constrained-final.png', atoms, show_unit_cell=2)
+print 'Final O position  : {0}'.format(atoms.positions[-1])
 
+# now compute Hads
+with jasp('surfaces/Pt-slab') as calc:
+    atoms = calc.get_atoms()
+    e_slab = atoms.get_potential_energy()
+
+
+with jasp('molecules/O2-sp-triplet-350') as calc:
+    atoms = calc.get_atoms()
+    e_O2 = atoms.get_potential_energy()
+
+Hads_bridge = e_bridge - e_slab - 0.5*e_O2
+
+print 'Hads (bridge) = {0:1.3f} eV/O'.format(Hads_bridge)
+#+END_SRC
+
+#+RESULTS:
+: Initial O position: [  1.386   0.     15.726]
+: Final O position  : [  1.386   0.     15.977]
+: Hads (bridge) = -0.488 eV/O
+
+You can see that only the z-position of the O atom changed. Also, the adsorption energy of O on the bridge site is *much* less favorable than on the fcc or hcp sites.
+
+#+caption: Initial state of the O atom on the bridge site.
+[[./images/Pt-O-bridge-constrained-initial.png]]
+
+#+caption: Final state of the constrained O atom, still on the bridge site.
+[[./images/Pt-O-bridge-constrained-final.png]]
+
+*** TODO Coverage dependence
+The adsorbates on the surface can interact with each other which results in coverage dependent adsorption energies \cite{PhysRevB.82.045414}. Coverage dependence is not difficult to model; we simply compute adsorption energies in different size unit cells, and/or with different adsorbate configurations. Here we consider dissociative oxygen adsorption at 1ML on Pt(111) in an fcc site, which is one oxygen atom in a $1\times 1$ unit cell.
+
+***** clean slab calculation
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.lattice.surface import *
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Pt', size=(1,1,3), vacuum=10.0)
+constraint = FixAtoms(mask=[True for atom in atoms])
+atoms.set_constraint(constraint)
+
+with jasp('surfaces/Pt-slab-1x1',
+          xc='PBE',
+          kpts=(8,8,1),
+          encut=350,
+          atoms=atoms) as calc:
+    slab_e = atoms.get_potential_energy()
 #+END_SRC
 
 #+RESULTS:
 
-*** TODO Coverage dependence
-The adsorbates on the surface can interact with each other which results in coverage dependent adsorption energies \cite{PhysRevB.82.045414}.
+***** fcc site
+#+BEGIN_SRC python :results output
+from jasp import *
 
-** Surface Diffusion barrier
+from ase.lattice.surface import *
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Pt', size=(1,1,3), vacuum=10.0)
+
+# note this function only works when atoms are created by the surface module.
+add_adsorbate(atoms, 'O', height=1.2, position='fcc')
+
+constraint = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
+atoms.set_constraint(constraint)
+
+with jasp('surfaces/Pt-slab-1x1-O-fcc',
+          xc='PBE',
+          kpts=(8,8,1),
+          encut=350,
+          ibrion=2,
+          nsw=25,
+          atoms=atoms) as calc:
+    slab_o_fcc_e = atoms.get_potential_energy()
+    print slab_o_fcc_e
+#+END_SRC
+
+#+RESULTS:
+
+
+*** TODO Effect of adsorption on the surface energy
+** TODO Surface Diffusion barrier
 
 See this review \cite{ANIE.ANIE200602223} of diffusion on transition metal surfaces.
 
@@ -5106,7 +5257,7 @@ P = np.logspace(-10,10)*atm
 plt.semilogx(P/atm, kB*(300*K)*np.log(P/(1*atm)),label='300K')
 plt.semilogx(P/atm, kB*(600*K)*np.log(P/(1*atm)),label='600K')
 plt.xlabel('Pressure (atm)')
-plt.ylabel('$\Delta G (eV)')
+plt.ylabel('$\Delta G$ (eV)')
 plt.legend(loc='best')
 plt.savefig('images/O2-g-p.png')
 
