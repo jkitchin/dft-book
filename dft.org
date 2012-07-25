@@ -3024,7 +3024,7 @@ In the self-consistent cycle  of a DFT calculation, the total energy is minimize
 
 Some rules to keep in mind:
 1. The smearing methods were designed for metals. For molecules, semiconductors and insulators you should use a very small SIGMA (e.g. 0.01).
-2. Standard values for metallic systems is SIGMA=0.1, but the best SIGMA may be [[The reason this is done is to speed up convergence of calculations. ][material specific]].
+2. Standard values for metallic systems is SIGMA=0.1, but the best SIGMA may be [[http://cms.mpi.univie.ac.at/vasp/guide/node159.html ][material specific]].
 
 #+BEGIN_SRC python :results output
 from jasp import *
