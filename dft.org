@@ -3018,9 +3018,9 @@ The points to note here are the following:
 4. The spacegroup is still correct.
 
 ** Bulk calculation parameters
-*** Effect of SIGMA
+*** Effect of [[incar:SIGMA][SIGMA]]
 
-In the self-consistent cycle  of a DFT calculation, the total energy is minimized with respect to occupation of the Kohn-Sham orbitals. At absolute zero, a band is either occupied or empty. This discrete occupation results in discontinuous changes in energy with changes in occupation, which makes it difficult to converge. One solution is to artificially broaden the band occupancies, as if they were occupied at a higher temperature where partial occupation is possible. This results in a continuous dependence of energy on the partial occupancy, and dramatically increases the rate of convergence. [[http://cms.mpi.univie.ac.at/vasp/guide/node124.html#SECTION000933000000000000000][ISMEAR, SIGMA]] affect how the partial occupancies of the bands are determined. \index{ISMEAR,SIGMA}
+In the self-consistent cycle  of a DFT calculation, the total energy is minimized with respect to occupation of the Kohn-Sham orbitals. At absolute zero, a band is either occupied or empty. This discrete occupation results in discontinuous changes in energy with changes in occupation, which makes it difficult to converge. One solution is to artificially broaden the band occupancies, as if they were occupied at a higher temperature where partial occupation is possible. This results in a continuous dependence of energy on the partial occupancy, and dramatically increases the rate of convergence. [[incar:SIGMA][SIGMA]] and [[incar:ISMEAR][ISMEAR]] affect how the partial occupancies of the bands are determined. \index{ISMEAR} \index{SIGMA}
 
 Some rules to keep in mind:
 1. The smearing methods were designed for metals. For molecules, semiconductors and insulators you should use a very small SIGMA (e.g. 0.01).
@@ -3624,9 +3624,7 @@ The answer is yes. Both structures are energetically more favorable than an equa
 
 #+caption: Conceptual picture of two alloys with exothermic formation energies.
 #+label: fig:alloy1
-[[./images/alloy-stability.svg]]
-
-
+[[./images/alloy-stability.png]]
 
 We will now examine another structure at another composition and its stability.
 
@@ -3696,14 +3694,10 @@ print Hf1 + (x0-x)/(x0-x3)*(Hf3 - Hf1)
 
 We find the weighted composition formation energy of pure Cu and cupd-1 is more favorable than the formation energy of cu3pd-1. Therefore, we could expect that structure to phase separate into a mixture of pure Cu and cupd-1. Schematically what we are seeing is shown in Figure \ref{fig:alloy-phase-separation}.
 
-#+BEGIN_SRC sh
-inkscape images/alloy-phase-stability.svg
-#+END_SRC
-
-#+RESULTS:
+# inkscape images/alloy-phase-stability.svg
 #+caption: Illustration of phase separation.
 #+label: fig:alloy-phase-separation
-[[./images/alloy-phase-stability.svg]]
+[[./images/alloy-phase-stability.png]]
 
 Finally, let us consider one more structure with the Cu3Pd stoichiometry.
 
@@ -3753,9 +3747,10 @@ print 'Delta Hf cu3pd-2 = {0:1.2f} eV/atom'.format(e4)
 
 This looks promising: the formation energy is much more favorable than cu3pd-1, and it is below the composition weighted formation energy of -0.06 eV/atom. Consequently, we conclude that this structure will not phase separate into a mixture of Cu and CuPd. We cannot say, however, if there is a more stable phase, or if it might phase separate into two other phases. We also note here that we have ignored a few other contributions to alloy stability. We have only considered the electronic energy contributions to the formation energy. At temperatures above absolute zero there are additional contributions including configurational and vibrational entropy, which may stabilize some structures more than others. Finally, our analysis is limited to comparisons of the structures computed on the fcc lattice. In fact, it is known that the CuPd alloy forms a bcc structure. We did not calculate that structure, so we can not say if it is more or less stable than the obvious fcc structure we found.
 
+# convert ./images/alloy-phase-stability-2.svg ./images/alloy-phase-stability-2.png
 #+caption: Illustration of phase separation.
 #+label: fig:alloy-phase-separation-2
-[[./images/alloy-phase-stability-2.svg]]
+[[./images/alloy-phase-stability-2.png]]
 
 The construction of alloy phase diagrams is difficult. You are always faced with the possibility that there is a phase that you have not calculated that is more stable than the ones you did calculate. One approach is to use a tool that automates the discovery of relevant structures such as the Alloy Theoretic Automated Toolkit (ATAT) \cite{vandeWalle2002539,vandeWalle2009266} which uses a cluster expansion methodology.
 
@@ -4592,12 +4587,10 @@ $\sigma = \frac{1}{2}(E_{slab} - \frac{N_{slab}}{N_{bulk}} E_{bulk})$
 
 where $E_{slab}$ is the total energy of a symmetric slab (i.e. one with inversion symmetry, and where both sides of the slab have been relaxed), $E_{bulk}$ is the total energy of a bulk unit cell, $N_{slab}$ is the number of atoms in the slab, and $N_{bulk}$ is the number of atoms in the bulk unit cell. One should be sure that the bulk energy is fully converged with respect to $k$-points, and that the slab energy is also converged with respect to $k$-points. The energies should be compared at the same cutoff energies. The idea is then to increase the thickness of the slab until the surface energy $\sigma$ converges.
 
-#+BEGIN_SRC sh
-inkscape images/surface-construction.svg
-#+END_SRC
 
+# inkscape images/surface-construction.svg
 #+caption: Schematic figure illustrating the calculation of a surface energy.
-[[./images/surface-construction.svg]]
+[[./images/surface-construction.png]]
 
 Unfortunately, this approach does not always work. The bulk system is treated subtly different than the slab system, particularly in the $z$-direction where the vacuum is (where typically only one k-point is used in slabs). Consequently, the $k$-point sampling is not equivalent in the two systems, and one can in general expect some errors due to this, with the best case being cancellation of the errors due to total $k$-point convergence. In the worst case, one can get a linear divergence in the surface energy with slab thickness \cite{PhysRevB.49.16798}.
 
@@ -4843,7 +4836,7 @@ $slab + gas-phase molecule \rightarrow slab_adsorbate + products$
 There are many variations of this idea. The slab may already have some adsorbates on it, the slab may reconstruct on adsorption, the gas-phase molecule may or may not dissociate, and the products may or may not stick to the surface. We have to decide where to put the adsorbates, i.e. what site to put them on, and some sites will be more stable than others. We will consider the dissociative adsorption of O2 on three sites of a Pt(111) slab. We will assume the oxygen molecule has split in half, and that the atoms have moved far apart. We will model the oxygen coverage at 0.25 ML, which means we need to use a $2 \times 2$ surface unit cell. For computational speed, we will freeze the slab, but allow the adsorbate to relax.
 
 $\Delta H_{ads} (eV/O) = E_{slab+O} - E_{slab} - 0.5*E_O2$
-
+**** Calculations
 ***** clean slab calculation
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -5025,7 +5018,7 @@ Some final notes:
 4. We did not consider the effect of the error in O2 dissociation energy on the adsorption energies.
 4. We did not consider coverage effects.
 
-***** Adsorption on bridge site with constraints
+**** Adsorption on bridge site with constraints
 To prevent the oxygen atom from sliding down into the fcc site, we have to constrain it so that it only moves in the z-direction. This is an artificial constraint; the bridge site is only metastable. But there are lots of reasons you might want to do this anyway. One is the bridge site is a transition state for diffusion between the fcc and hcp sites. Another is to understand the role of coordination in the adsorption energies. We use a FixScaled constraint in ase to constrain the O atom so it can only move in the z-direction (actually so it can only move in the direction of the third unit cell vector, which only has a z-component).
 
 #+BEGIN_SRC python :results output
@@ -5171,7 +5164,7 @@ print 'Hads (1ML) = {0:1.3f} eV'.format(hads)
 : Hads (1ML) = -0.099 eV
 
 The adsorption energy is *much* less favorable at 1ML coverage than at 0.25 ML coverage! We will return what this means in [[*Effect%20on%20adsorption][Atomistic thermodynamics effect on adsorption]].
-*** TODO Effect of adsorption on the surface energy
+*** Effect of adsorption on the surface energy
 There is a small point to make here about what adsorption does to surface energies. Let us define a general surface formation energy scheme like this:
 
 #+caption: Schematic of forming a surface with adsorbates.
@@ -5787,7 +5780,7 @@ print rxn_energy
 #+RESULTS:
 : -1.663819
 
-This is still not in quantitative agreement with the result in \cite{PhysRevB.73.195107}, which at U=4 eV is about -3.14 eV (estimated from a graph). We have not applied the O$_2$ correction here yet. In that paper, they apply a constant shift of -1.36 eV per O$_2$. However, they also report an O$_2$ dissociation energy of 6.02 eV, and the energy we [[calculated]] is about 6.65 eV. If we take the difference of these two dissociation energies (0.63 eV) and subtract it from the correction to compensate for the additional offset (-1.36 eV + -0.63 eV = -1.99 eV) and finally add that to the reaction energy we get (-1.66 - 1.99 = -3.65 eV). This is still too negative by about 0.5 eV, and it is not clear why. In the next section we will see that trend in relative energies as a function of U is correct, so maybe it is not a good idea to add our additional correction of 0.63 eV on.
+This is still not in quantitative agreement with the result in \cite{PhysRevB.73.195107}, which at U=4 eV is about -3.14 eV (estimated from a graph). We have not applied the O$_2$ correction here yet. In that paper, they apply a constant shift of -1.36 eV per O$_2$. However, they also report an O$_2$ dissociation energy of 6.02 eV, and the energy we calculated earlier is about 6.65 eV. If we take the difference of these two dissociation energies (0.63 eV) and subtract it from the correction to compensate for the additional offset (-1.36 eV + -0.63 eV = -1.99 eV) and finally add that to the reaction energy we get (-1.66 - 1.99 = -3.65 eV). This is still too negative by about 0.5 eV, and it is not clear why. In the next section we will see that trend in relative energies as a function of U is correct, so maybe it is not a good idea to add our additional correction of 0.63 eV on.
 
 **** How much does U affect the reaction energy?
 #+BEGIN_SRC python :results output
@@ -6208,14 +6201,12 @@ The principle we will use to develop an interpolation function in 3D is called t
 Solution: Find the cube that contains the point, and is defined by points
     P1-P8 as shown in Figure Trilinear interpolation.
 
-#+BEGIN_SRC sh
-inkscape images/trilinear-interpolation.svg
-#+END_SRC
-
-#+BEGIN_SRC sh :results none
+#+BEGIN_SRC sh :results none :exports none
 convert images/trilinear-interpolation.svg images/trilinear-interpolation.png
 #+END_SRC
 
+# inkscape images/trilinear-interpolation.svg
+#+caption: Trilinear interpolation scheme.
 [[./images/trilinear-interpolation.png]]
 
 In a trilinear interpolation scheme in a cell we perform several interpolations. The red lines are 1D interpolations in x along constant y, and z. The light blue lines are 1D interpolations in y along constant x=a, z, and the vertical dark line through P is the final interpolation at constant x=a, y=b in z.
