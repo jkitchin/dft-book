@@ -5088,10 +5088,16 @@ You can see that only the z-position of the O atom changed. Also, the adsorption
 #+caption: Final state of the constrained O atom, still on the bridge site.
 [[./images/Pt-O-bridge-constrained-final.png]]
 
-*** TODO Coverage dependence
+*** Coverage dependence
 The adsorbates on the surface can interact with each other which results in coverage dependent adsorption energies \cite{PhysRevB.82.045414}. Coverage dependence is not difficult to model; we simply compute adsorption energies in different size unit cells, and/or with different adsorbate configurations. Here we consider dissociative oxygen adsorption at 1ML on Pt(111) in an fcc site, which is one oxygen atom in a $1\times 1$ unit cell.
 
-***** clean slab calculation
+For additional reading, see these references from our work:
+- Correlations of coverage dependence of oxygen adsorption on different metals \cite{miller:104709,Miller2009794}
+- Coverage effects of atomic adsorbates on Pd(111) \cite{PhysRevB.79.205412}
+- Simple model for estimating coverage dependence \cite{PhysRevB.82.045414}
+- Coverage effects on alloys \cite{PhysRevB.77.075437}
+
+**** clean slab calculation
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase.lattice.surface import *
@@ -5111,7 +5117,7 @@ with jasp('surfaces/Pt-slab-1x1',
 
 #+RESULTS:
 
-***** fcc site
+**** fcc site at 1 ML coverage
 #+BEGIN_SRC python :results output
 from jasp import *
 
@@ -5138,9 +5144,59 @@ with jasp('surfaces/Pt-slab-1x1-O-fcc',
 #+END_SRC
 
 #+RESULTS:
+: -21.941036
 
+**** Adsorption energy at 1ML
+#+BEGIN_SRC python :results output :exports both
+from jasp import *
 
+with jasp('surfaces/Pt-slab-1x1-O-fcc') as calc:
+    atoms = calc.get_atoms()
+    e_slab_o = atoms.get_potential_energy()
+
+# clean slab
+with jasp('surfaces/Pt-slab-1x1') as calc:
+    atoms = calc.get_atoms()
+    e_slab = atoms.get_potential_energy()
+
+with jasp('molecules/O2-sp-triplet-350') as calc:
+    atoms = calc.get_atoms()
+    e_O2 = atoms.get_potential_energy()
+
+hads = e_slab_o - e_slab - 0.5*e_O2
+print 'Hads (1ML) = {0:1.3f} eV'.format(hads)
+#+END_SRC
+
+#+RESULTS:
+: Hads (1ML) = -0.099 eV
+
+The adsorption energy is *much* less favorable at 1ML coverage than at 0.25 ML coverage! We will return what this means in [[*Effect%20on%20adsorption][Atomistic thermodynamics effect on adsorption]].
 *** TODO Effect of adsorption on the surface energy
+There is a small point to make here about what adsorption does to surface energies. Let us define a general surface formation energy scheme like this:
+
+#+caption: Schematic of forming a surface with adsorbates.
+[[./images/adsorbate-surface-energy.png]]
+
+Let us presume the surfaces are symmetric, and that each surface contributes half of the energy change. The overall change in energy:
+
+$\Delta E = E_{slab,ads} - E_{ads} - E_{bulk}$
+
+where the the energies are appropriately normalized for the stoichiometry. Let us rearrange the terms, and add and subtract a constant term $E_{slab}$.
+
+$\Delta E = E_{slab,ads} - E_{slab} - E_{ads} - E_{bulk} + E_{slab}$
+
+We defined $\gamma_{clean} = \frac{1}{2A}(E_{slab} - E_{bulk})$, and we defined $H_{ads} = E_{slab,ads} - E_{slab} - E_{ads}$ for adsorption on a single side of a slab. In this case, there are adsorbates on both sides of the slab, so $E_{slab,ads} - E_{slab} - E_{ads} = 2 \Delta H_{ads}$. If we normalize by $2A$, the area for both sides of the slab, we get
+
+$\frac{\Delta E}{2A} = \gamma = \gamma_{clean} + \frac{H_{ads}}{A}$
+
+You can see here that the adsorption energy serves to stabilize, or reduce the surface energy, provided that the adsorption energy is negative.
+
+Some final notes about the equations above:
+
+- We were not careful about stoichiometry. As written, it is assumed there are the same number of atoms (not including the adsorbates) in the slabs and bulk, and the same number of adsorbate atoms in the slab and $E_{ads}$. Appropriate normalization factors must be included if that is not true.
+
+- It is not necessary to perform a symmetric slab calculation to determine the effect of adsorption on the surface energy! You can examine $\gamma - \gamma_{clean}$ with knowledge of only the adsorption energies!
+
 ** TODO Surface Diffusion barrier
 
 See this review \cite{ANIE.ANIE200602223} of diffusion on transition metal surfaces.
@@ -5271,7 +5327,7 @@ plt.savefig('images/O2-g-p.png')
 
 Similarly, you can see that simply changing the pressure has a large effect on the Gibbs free energy of an ideal gas through the term: $kT\ln(P/P_0)$, and that this effect is also temperature dependent. This leads us to the final formula we will use for the chemical potential of oxgyen:
 
-$\mu_{O_2} = E_{O_2}^{DFT} + E_{O_2}^{ZPE} + \Delta \mu (T) + kT \ln(P/P_0}$
+$\mu_{O_2} = E_{O_2}^{DFT} + E_{O_2}^{ZPE} + \Delta \mu (T) + kT \ln(P/P_0)$
 
 ** bulk phase stability of oxides
 We will  consider the effects of oxygen pressure and temperature on the formation energy of Ag2O and Cu2O.
@@ -5283,7 +5339,7 @@ We define the formation energy as:
 
 $G_f = G_{Cu_2O} -2G_{Cu} - 0.5 G_{O_2}$
 
-We will at this point assume that the solids are incompressible, and that $S_{Cu_2O} -2S_{Cu} \approx 0$, which leads to $G_{Cu_2O} -2G_{Cu} \approx E_{Cu_2O} -2E_{Cu}$, which we directly compute from DFT. We express $G_{O_2} = \mu_{O_2} = E_{O_2}^{DFT} + E_{O_2}^{ZPE} + \Delta \mu (T) + kT \ln(P/P_0}$. In this example we neglect the zero-point energy of the oxygen molecule, and finally arrive at:
+We will at this point assume that the solids are incompressible, and that $S_{Cu_2O} -2S_{Cu} \approx 0$, which leads to $G_{Cu_2O} -2G_{Cu} \approx E_{Cu_2O} -2E_{Cu}$, which we directly compute from DFT. We express $G_{O_2} = \mu_{O_2} = E_{O_2}^{DFT} + E_{O_2}^{ZPE} + \Delta \mu (T) + kT \ln(P/P_0)$. In this example we neglect the zero-point energy of the oxygen molecule, and finally arrive at:
 
 $G_f \approx E_{Cu_2O} -2E_{Cu} - 0.5 (E_{O_2}^{DFT} + \delta \mu (T) + kT \ln(P/P_0)$
 
@@ -5460,7 +5516,81 @@ This graph shows graphically the $\Delta \mu$ required to make the metal more st
 About 500K at 1e-10 atm, 600K at 1e-5 atm, 900K at 1atmm, etc...
 
 ** TODO Effect on adsorption
+We now consider the question: Given a pressure and temperature, what coverage would you expect on a surface? We saw earlier that adsorption energies depend on the site and coverage. We lso know the coverage depends on the pressure and temperature. Above some temperature, desorption occurs, and below some pressure adsorption will not be favorable. We seek to develop a quantitative method to determine those conditions.
+
+We redefine the adsorption energy as:
+
+$\Delta G_{ads} \approx E_{slab, ads} - E_{slab} - \mu_{ads}$
+
+where again we neglect all contributions to the free energy of the slabs from vibrational energy and entropy, as well as configurational entropy if that is relevant. That leaves only the pressure and temperature dependence of the adsorbate, which we treat in the ideal gas limit.
+
+We expand $\mu_{ads}$ as $E_{ads}+\Delta \mu(T,p)$, and thus:
+
+$\Delta G_{ads} \approx E_{slab, ads} - E_{slab} - E_{ads} -\Delta \mu(T,p)$
+
+or
+
+$\Delta G_{ads} \approx \Delta H_{ads} -\Delta \mu(T,p)$
+
+where $\Delta H_{ads}$ is the adsorption energy we defined earlier. Now we can examine the effect of $\Delta \mu(T,p)$ on the adsorption energies. We will use the adsorption energies for the oxygen on Pt(111) system we computed earlier:
+
+| system           | $\Delta H (eV/O)$ |
+| fcc (0.25 ML)    |             -1.04 |
+| hcp (0.25 ML)    |             -0.60 |
+| bridge (0.25 ML) |             -0.49 |
+| fcc(1ML)         |             -0.10 |
+
+#+BEGIN_SRC python
+import numpy as np
+import matplotlib.pyplot as plt
+
+fcc25 = -1.04
+hcp25 = -0.60
+bridge25 = -0.49
+fcc1 = -0.10
+
+Dmu = np.linspace(-4,0)
+
+plt.plot(Dmu, np.zeros(Dmu.shape), label='Pt(111)')
+plt.plot(Dmu, fcc25 - 0.5*Dmu, label='fcc - 0.25 ML')
+plt.plot(Dmu, hcp25 - 0.5*Dmu, label='hcp - 0.25 ML')
+plt.plot(Dmu, bridge25 - 0.5*Dmu, label='bridge - 0.25 ML')
+plt.plot(Dmu, fcc1 - 0.5*Dmu, label='fcc - 1.0 ML')
+
+plt.xlabel('$\Delta \mu O_2$ (eV)')
+plt.ylabel('$\Delta G_{ads}$ (eV/O)')
+plt.legend(loc='best')
+plt.savefig('images/atomistic-thermo-adsorption.png')
+#+END_SRC
+
+#+RESULTS:
+: None
+
+[[./images/atomistic-thermo-adsorption.png]]
 ** TODO multiple reactions
+
+In \cite{Inoglu2009188} we considered multiple reactions in an atomistic thermodynamic framework. Let us consider these three reactions of dissociative adsorption of hydrogen and hydrogen disulfide, and consider how to compute the reaction energy for the third reaction.
+
+1. $H_2 + 2* \leftrightharpoons 2H*$
+
+2. $H_2S + 2* \leftrightharpoons H* + SH*$
+
+3. $SH* + * \leftrightharpoons S* + H*$
+
+The reaction energy of interest is $E_{rxn} = \mu_{S*} + \mu{H*} - \mu{SH*}$ The question is, what are these chemical potentials? We would like them in terms of pressures and temperature, preferrably of molecules that can be approximated as ideal gases. By equilibrium arguments we can say that $\mu_{H*} = \frac{1}{2} \mu_{H_2}$. It follows that at equilibrium:
+
+$ \mu_{H*} + \mu_{SH*} = \mu_{H_2S}$ and $\mu_{S*} + \mu_{S*} = \mu_{SH*}$. From the first equation we have:
+
+$\mu_{SH*} = \mu_{H_2S} - \frac{1}{2}\mu_{H_2}$
+
+and from the second equation we have:
+
+$\mu_{S*} = \mu_{SH*} - \mu_{H*} = \mu_{H_2S} - \mu_{H_2}$.
+
+Thus, the chemical potentials of all these three adsorbed species depend on the chemical potentials of two gas-phase species. The chemical potentials of each of these gases can be defined as:
+
+$\mu_{gas}(T,p) = E_{gas}(0K) + \delta \mu + kT\ln\left (p/p^0\right )$, as we have defined before.
+
 * Advanced electronic structure methods
 ** DFT+U
 
