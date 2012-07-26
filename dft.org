@@ -1603,7 +1603,54 @@ with jasp('molecules/O2-sp-triplet') as calc:
 
 You can see here the triplet state has an energy that is 1 eV more stable than the singlet state.
 
-**** TODO Using a different potential
+**** Verifying the magnetic moments on each atom
+It is one thing to see the total magnetic moment of a singlet state, and another to ask what are the magnetic moments on each atom. In vasp you must use [[incar:LORBIT][LORBIT]]=11 to get the magnetic moments of the atoms written out.
+
+#+BEGIN_SRC python :results output :exports both
+from jasp import *
+from ase import Atom, Atoms
+
+with jasp('molecules/O2-sp-singlet') as calc:
+    calc.clone('molecules/O2-sp-singlet-magmoms')
+
+with jasp('molecules/O2-sp-singlet-magmoms') as calc:
+    calc.set(lorbit=11)
+    atoms = calc.get_atoms()
+    magmoms = atoms.get_magnetic_moments()
+
+    print 'singlet ground state'
+    for i,atom in enumerate(atoms):
+        print 'atom {0}: magmom = {1}'.format(i, magmoms[i])
+    print atoms.get_magnetic_moment()
+
+with jasp('molecules/O2-sp-triplet') as calc:
+    calc.clone('molecules/O2-sp-triplet-magmoms')
+
+with jasp('molecules/O2-sp-triplet-magmoms') as calc:
+    calc.set(lorbit=11)
+    atoms = calc.get_atoms()
+    magmoms = atoms.get_magnetic_moments()
+    print
+    print 'triplet ground state'
+    for i,atom in enumerate(atoms):
+        print 'atom {0}: magmom = {1}'.format(i, magmoms[i])
+    print atoms.get_magnetic_moment()
+#+END_SRC
+
+#+RESULTS:
+: singlet ground state
+: atom 0: magmom = 0.0
+: atom 1: magmom = 0.0
+: 0.0
+:
+: triplet ground state
+: atom 0: magmom = 0.815
+: atom 1: magmom = 0.815
+: 2.0000084
+
+Note the atomic magnetic moments do not add up to the total magnetic moment. The atomic magnetic moments are not really true observable properties. The moments are determined by a projection method that probably involves a spherical orbital, so the moments may be over or underestimated.
+
+**** Using a different potential
 It is possible we need a higher quality potential to get the 6.02 eV value quoted by many. Here we try the O_sv potential, which treats the 1s electrons as valence electrons. Note however, the ENMIN in the POTCAR is very high!
 
 #+BEGIN_SRC sh
@@ -4310,9 +4357,39 @@ with jasp('bulk/Fe-bcc-sp-1',
         except (VaspSubmitted, VaspQueued):
             pass
 #+END_SRC
-*** TODO find out how to get atoms magnetic moments.
+*** Antiferromagnetic spin states
+#+BEGIN_SRC python :results output :exports both
+from jasp import *
+from ase import Atom, Atoms
 
-*** TODO NiO-FeO formation energies
+atoms = Atoms([Atom('Fe',[0.00,  0.00,  0.00], magmom=5),
+               Atom('Fe',[4.3, 4.3, 4.3], magmom=-5),
+               Atom('O', [2.15,  2.15,  2.15],magmom=0),
+               Atom('O', [6.45,  6.45,  6.45],magmom=0)],
+               cell=[[4.3,    2.15,    2.15],
+                     [2.15,    4.3,     2.15],
+                     [2.15,    2.15,    4.3]])
+
+with jasp('bulk/afm-feo',
+          encut=350,
+          prec='Normal',
+          ispin=2,
+          nupdown=0, # this forces a non-magnetic solution
+          lorbit=11,
+          lreal=False,
+          atoms=atoms) as calc:
+    print atoms.get_magnetic_moments()
+    print atoms.get_magnetic_moment()
+
+#+END_SRC
+
+#+RESULTS:
+: [ 2.652 -2.652  0.     0.   ]
+: 0.0
+
+You can see that even though the total magnetic moment is 0, there is a spin on both Fe atoms, and they are pointing in opposite directions.
+
+*** TODO NiO-FeO formation energies with magnetism
 ** TODO phonons
 * Surfaces
 ** Surface structures
@@ -5909,6 +5986,8 @@ http://cms.mpi.univie.ac.at/vasp/vasp/vdW_DF_functional_Langreth_Lundqvist_et_al
 \cite{PhysRevB.82.081101}
 ** TODO ELF
 ** TODO Charge partitioning schemes
+* Acknowledgments
+I would like to thank Zhongnan Xu for sending me some examples on magnetism. Alan McGaughey for sending me some NEB examples.
 * Appendices
 ** Recipes
 *** Modifying Atoms by deleting atoms
