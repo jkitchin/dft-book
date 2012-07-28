@@ -1248,7 +1248,7 @@ Free energy components at T = 298.15 K and P = 101325.0 Pa:
 *** O2 dissociation
 The first reaction we consider is a simple dissociation of oxygen molecule into two oxygen atoms: $O_2 \rightarrow 2 O$. The dissociation energy is pretty straightforward to define: it is the energy of the products minus the energy of the reactant. $D = 2*E_O - E_{O_2}$. It would appear that we simply calculate the energy of an oxygen atom, and an oxygen molecule and evaluate the formula. Let's do that.
 
-**** Simple estimate of O2 dissociation energy
+**** Simple estimate of O$_2$ dissociation energy
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase import Atom, Atoms
@@ -1291,12 +1291,12 @@ if None not in (E_O, E_O2):
 #+RESULTS:
 : O2 -> 2O  D = 8.521 eV
 
-The answer we have obtained is way too high! Experimentally
+The answer we have obtained is way too high! Experimentally the dissociation energy is more like 5.2 eV (need reference).
 
-We implicitly neglected spin-polarization in the example above. That could be a problem, since the O2 molecule can be in one of two spin states, a singlet or a triplet, and these should have different energies. Furthermore, the oxygen atom can be a singlet or a triplet, and these would have different energies. To account for spin polarization, we have to tell Vasp to use spin-polarization, and give initial guesses for the magnetic moments of the atoms. Let's try again with spin polarization.
+We implicitly neglected spin-polarization in the example above. That could be a problem, since the O$_$2 molecule can be in one of two spin states, a singlet or a triplet, and these should have different energies. Furthermore, the oxygen atom can be a singlet or a triplet, and these would have different energies. To account for spin polarization, we have to tell Vasp to use spin-polarization, and give initial guesses for the magnetic moments of the atoms. Let's try again with spin polarization.
 
-**** Estimating O2 dissociation energy with spin polarization in triplet ground states
-To tell Vasp to use spin-polarization we use ISPIN=2, and we set initial guesses for magnetic moments on the atoms with the magmom keyword. In a triplet state there are two electrons with spins of the same sign.
+**** Estimating O$_2$ dissociation energy with spin polarization in triplet ground states
+To tell Vasp to use spin-polarization we use [[incar:ISPIN][INCAR]]=2, and we set initial guesses for magnetic moments on the atoms with the magmom keyword. In a triplet state there are two electrons with spins of the same sign.
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase import Atom, Atoms
@@ -1347,7 +1347,7 @@ if None not in (E_O, E_O2):
 : Magnetic moment on O2 = 2.0000083 Bohr magnetons
 : O2 -> 2O  D = 6.668 eV
 
-This is much closer to accepted literature values for the DFT-GGA O2 dissociation energy. It is still more than 1 eV above an experimental value, but most of that error is due to the GGA exchange correlation functional. Some additional parameters that might need to be checked for convergence are the SIGMA value (it is probably too high for a molecule), as well as the cutoff energy. Oxygen is a "hard" atom that requires a high cutoff energy to achieve high levels of convergence.
+This is much closer to accepted literature values for the DFT-GGA O$_2$ dissociation energy. It is still more than 1 eV above an experimental value, but most of that error is due to the GGA exchange correlation functional. Some additional parameters that might need to be checked for convergence are the SIGMA value (it is probably too high for a molecule), as well as the cutoff energy. Oxygen is a "hard" atom that requires a high cutoff energy to achieve high levels of convergence.
 
 ***** Looking at the two spin densities
 In a spin-polarized calculation there are actually two electron densities: one for spin-up and one for spin-down. We will look at the differences in these two through the density of states.
@@ -1383,7 +1383,7 @@ plt.savefig('images/O2-sp-dos.png')
 
 You can see there are two different densities of states for the two spins. One has 7 electrons in it, and the other has 5 electrons in it. The difference of two electrons leads to the magnetic moment of 2 which we calculated earlier.
 
-**** Convergence study of the O2 dissociation energy \index{convergence!ENCUT}
+**** Convergence study of the O$_2$ dissociation energy \index{convergence!ENCUT}
 #+BEGIN_SRC python :results output
 from jasp import *
 JASPRC['queue.walltime'] = '10:00:00'
@@ -1447,7 +1447,7 @@ plt.savefig('images/O2-dissociation-convergence.png')
 
 [[./images/O2-dissociation-convergence.png]]
 
-Based on these results, you could argue the dissociation energy is converged to about 2 meV at a planewave cutoff of 450 eV, and within 50 meV at 350 eV cutoff. You have to decide what an appropriate level of convergence is. Note that increasing the planewave cutoff significantly increases the computational time, so you are balancing level of convergence with computational speed.
+Based on these results, you could argue the dissociation energy is converged to about 2 meV at a planewave cutoff of 450 eV, and within 50 meV at 350 eV cutoff. You have to decide what an appropriate level of convergence is. Note that increasing the planewave cutoff significantly increases the computational time, so you are balancing level of convergence with computational speed. It would appear that planewave cutoff is not the cause for the discrepancy between our calculations and literature values.
 
 #+BEGIN_SRC python :results output
 encuts = [250, 300, 350, 400, 450, 500, 550]
@@ -1479,27 +1479,226 @@ for encut in encuts:
 
 #+end_example
 
-**** Estimating triplet oxygen dissociation energy with low symmetry
-It has been suggested that breaking spherical symmetry of the atom can result in lower energy of the atom. The symmetry is broken by putting the atom off-center in a box.
+**** Illustration of the effect of sigma
+We were not careful in selecting a good value for [[incar:SIGMA][SIGMA]] in the calculations above. The default value of SIGMA is 0.2, which may be fine for metals, but it is not correct for molecules. SIGMA is the broadening factor used to smear the electronic density of states at the Fermi level. For a metal with a continuous density of states, this appropriate, but for molecules with discrete energy states it does not make sense. We are somewhat forced to use the machinery designed for metals on molecules. The solution is to use a very small SIGMA. Ideally you would use SIGMA=0, but that is not practical for convergence reasons, so we try to find what is small enough.
+
+Let us examine the effect of SIGMA on the dissociation energy here.
+
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase import Atom, Atoms
 
+sigmas = [0.2, 0.1, 0.05, 0.02, 0.01, 0.001]
+
+D = []
+for sigma in sigmas:
+    atoms = Atoms([Atom('O',[5, 5, 5], magmom=2)],
+                   cell=(10,10,10))
+
+    with jasp('molecules/O-sp-triplet-sigma-{0}'.format(sigma),
+              xc='PBE',
+              encut=400,
+              ismear=0,
+              sigma=sigma,
+              ispin=2,
+              atoms=atoms) as calc:
+        try:
+            E_O = atoms.get_potential_energy()
+        except (VaspSubmitted, VaspQueued):
+            E_O = None
+
+    # now relaxed O2 dimer
+    atoms = Atoms([Atom('O',[5,    5, 5],magmom=1),
+                   Atom('O',[6.22, 5, 5],magmom=1)],
+              cell=(10,10,10))
+
+    with jasp('molecules/O2-sp-triplet-sigma-{0}'.format(sigma),
+              xc='PBE',
+              encut=400,
+              ismear=0,
+              sigma=sigma,
+              ispin=2,  # turn spin-polarization on
+              ibrion=2, # make sure we relax the geometry
+              nsw=10,
+              atoms=atoms) as calc:
+        try:
+            E_O2 = atoms.get_potential_energy()
+        except (VaspSubmitted, VaspQueued):
+            E_O2 = None
+
+    if None not in (E_O, E_O2):
+        d = 2*E_O - E_O2
+        D.append(d)
+        print 'O2 -> 2O sigma = {0}  D = {1:1.3f} eV'.format(sigma, d)
+
+import matplotlib.pyplot as plt
+plt.plot(sigmas, D, 'bo-')
+plt.xlabel('SIGMA (eV)')
+plt.ylabel('O$_2$ dissociation energy (eV)')
+plt.savefig('images/O2-dissociation-sigma-convergence.png')
+#+END_SRC
+
+#+RESULTS:
+=O2 -> 2O sigma = 0.2  D = 6.668 eV
+O2 -> 2O sigma = 0.1  D = 6.746 eV
+O2 -> 2O sigma = 0.05  D = 6.784 eV
+O2 -> 2O sigma = 0.02  D = 6.807 eV
+O2 -> 2O sigma = 0.01  D = 6.815 eV
+=
+
+#+caption: Effect of SIGMA on the oxygen dissociation energy.
+[[./images/O2-dissociation-sigma-convergence.png]]
+
+Clearly SIGMA has an effect, but it does not move the dissociation energy closer to the literature values!
+
+**** TODO Estimating triplet oxygen dissociation energy with low symmetry
+It has been suggested that breaking spherical symmetry of the atom can result in lower energy of the atom. The symmetry is broken by putting the atom off-center in a box. We will examine the total energy of an oxygen atom in a few geometries. First, let us consider variations of a square box.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase import Atom, Atoms
+
+# square box origin
+atoms = Atoms([Atom('O',[0,0,0],magmom=2)],
+              cell=(10,10,10))
+
+with jasp('molecules/O-square-box-origin',
+          xc='PBE',
+          encut=400,
+          ismear=0,
+          sigma=0.01,
+          ispin=2,
+          atoms=atoms) as calc:
+    try:
+        print 'Square box (origin): E = {0} eV'.format(atoms.get_potential_energy())
+    except (VaspSubmitted, VaspQueued):
+        pass
+
+
+# square box center
 atoms = Atoms([Atom('O',[5,5,5],magmom=2)],
+              cell=(10,10,10))
+
+with jasp('molecules/O-square-box-center',
+          xc='PBE',
+          encut=400,
+          ismear=0,
+          sigma=0.01,
+          ispin=2,
+          atoms=atoms) as calc:
+    try:
+        print 'Square box (center): E = {0} eV'.format(atoms.get_potential_energy())
+    except (VaspSubmitted, VaspQueued):
+        pass
+
+# square box random
+atoms = Atoms([Atom('O',[2.13, 7.32, 1.11],magmom=2)],
+              cell=(10,10,10))
+
+with jasp('molecules/O-square-box-random',
+          xc='PBE',
+          encut=400,
+          ismear=0,
+          sigma=0.01,
+          ispin=2,
+          atoms=atoms) as calc:
+    try:
+        print 'Square box (random): E = {0} eV'.format(atoms.get_potential_energy())
+    except (VaspSubmitted, VaspQueued):
+        pass
+
+
+#+END_SRC
+
+#+RESULTS:
+: Square box (origin): E = -1.516623 eV
+: Square box (center): E = -1.516623 eV
+: Square box (random): E = -1.515359 eV
+
+There is no difference of significance in these energies. The origin and center are identical (by symmetry too). The meV variation in the random position is probably only due to the atom being off the fft grid points a little bit.
+
+Now, let's consider some non-square boxes.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase import Atom, Atoms
+
+# orthrhombic box origin
+atoms = Atoms([Atom('O',[0,0,0],magmom=2)],
+              cell=(8,9,10))
+
+with jasp('molecules/O-orthorhombic-box-origin',
+          xc='PBE',
+          encut=400,
+          ismear=0,
+          sigma=0.01,
+          ispin=2,
+          atoms=atoms) as calc:
+    try:
+        print 'Orthorhombic box (origin): E = {0} eV'.format(atoms.get_potential_energy())
+    except (VaspSubmitted, VaspQueued):
+        pass
+
+# orthrhombic box center
+atoms = Atoms([Atom('O',[4, 4.5, 5],magmom=2)],
+              cell=(8,9,10))
+
+with jasp('molecules/O-orthorhombic-box-center',
+          xc='PBE',
+          encut=400,
+          ismear=0,
+          sigma=0.01,
+          ispin=2,
+          atoms=atoms) as calc:
+    try:
+        print 'Orthorhombic box (center): E = {0} eV'.format(atoms.get_potential_energy())
+    except (VaspSubmitted, VaspQueued):
+        pass
+
+# orthorhombic box random
+atoms = Atoms([Atom('O',[2.13, 7.32, 1.11],magmom=2)],
+              cell=(8, 9, 10))
+
+with jasp('molecules/O-orthorhombic-box-random',
+          xc='PBE',
+          encut=400,
+          ismear=0,
+          sigma=0.01,
+          ispin=2,
+          atoms=atoms) as calc:
+    try:
+        print 'Orthorhombic box (random): E = {0} eV'.format(atoms.get_potential_energy())
+    except (VaspSubmitted, VaspQueued):
+        pass
+
+#+END_SRC
+
+#+RESULTS:
+: Orthorhombic box (origin): E = -1.8941 eV
+: Orthorhombic box (center): E = -1.894124 eV
+: Orthorhombic box (random): E = -1.494285 eV
+
+This is a surprisingly large difference in energy! Nearly 0.4 eV. This is precisely the amount of energy we were in disagreement with the literature values. Surprisingly, the "random" position is higher in energy, similar to the cubic boxes. Finally, we put this all together. We use a non-symmetric box for the O-atom
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('O',[5.1, 4.2, 6.1],magmom=2)],
               cell=(8,9,10))
 
 with jasp('molecules/O-sp-triplet-lowsym',
           xc='PBE',
           encut=400,
           ismear=0,
+          sigma=0.01,
           ispin=2,
           atoms=atoms) as calc:
     try:
         E_O = atoms.get_potential_energy()
+        print 'Magnetic moment on O = {0} Bohr  magnetons'.format(atoms.get_magnetic_moment())
     except (VaspSubmitted, VaspQueued):
         E_O = None
-
-print 'Magnetic moment on O = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
 
 # now relaxed O2 dimer
 atoms = Atoms([Atom('O',[5,5,5],magmom=1),
@@ -1510,28 +1709,31 @@ with jasp('molecules/O2-sp-triplet',
           xc='PBE',
           encut=400,
           ismear=0,
+          sigma=0.01,
           ispin=2,  # turn spin-polarization on
           ibrion=2, # make sure we relax the geometry
           nsw=10,
           atoms=atoms) as calc:
     try:
         E_O2 = atoms.get_potential_energy()
+        # verify magnetic moment
+        print 'Magnetic moment on O2 = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
+
     except (VaspSubmitted, VaspQueued):
         E_O2 = None
 
-# verify magnetic moment
-print 'Magnetic moment on O2 = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
-
 if None not in (E_O, E_O2):
+    print 'E_O: ',E_O
     print 'O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2)
 #+END_SRC
 
 #+RESULTS:
-: Magnetic moment on O = 2.0000053 Bohr magnetons
+: Magnetic moment on O = 2.0000016 Bohr  magnetons
 : Magnetic moment on O2 = 2.0000083 Bohr magnetons
-: O2 -> 2O  D = 6.657 eV
+: E_O:  -1.893571
+: O2 -> 2O  D = 6.061 eV
 
-The energy difference between this 6.668 and 6.657 eV is only 11 meV!
+This actually agrees within 30-50 meV of reported literature values. Note that with a different "random" position, we get the lower energy for the O atom. All the disagreement we had been seeing was apparently in the O atom energy. So, if you don't need D in your analysis, you will not see the error. Also note that this error is specific to there being a spherical atom in a symmetric cell. This is not a problem for most molecules.
 
 **** Estimating singlet oxygen dissociation energy
 Finally, let us consider the case where each species is in the singlet state.
@@ -1650,7 +1852,7 @@ with jasp('molecules/O2-sp-triplet-magmoms') as calc:
 
 Note the atomic magnetic moments do not add up to the total magnetic moment. The atomic magnetic moments are not really true observable properties. The moments are determined by a projection method that probably involves a spherical orbital, so the moments may be over or underestimated.
 
-**** Using a different potential
+**** TODO Using a different potential
 It is possible we need a higher quality potential to get the 6.02 eV value quoted by many. Here we try the O_sv potential, which treats the 1s electrons as valence electrons. Note however, the ENMIN in the POTCAR is very high!
 
 #+BEGIN_SRC sh
@@ -1664,13 +1866,14 @@ grep ENMIN $VASP_PP_PATH/potpaw_PBE/O_sv/POTCAR
 from jasp import *
 from ase import Atom, Atoms
 
-atoms = Atoms([Atom('O',[5,5,5],magmom=2)],
+atoms = Atoms([Atom('O',[4, 4.5, 5],magmom=2)],
               cell=(8,9,10))
 
 with jasp('molecules/O-sp-triplet-lowsym-sv',
           xc='PBE',
           ismear=0,
           ispin=2,
+          sigma=0.01,
           setups={'O':'_sv'},
           atoms=atoms) as calc:
     try:
@@ -1688,6 +1891,7 @@ atoms = Atoms([Atom('O',[5,5,5],magmom=1),
 with jasp('molecules/O2-sp-triplet-sv',
           xc='PBE',
           ismear=0,
+          sigma=0.01,
           ispin=2,  # turn spin-polarization on
           ibrion=2, # make sure we relax the geometry
           nsw=10,
@@ -1706,11 +1910,7 @@ if None not in (E_O, E_O2):
 #+END_SRC
 
 #+RESULTS:
-: Magnetic moment on O = 2.0 Bohr magnetons
-: Magnetic moment on O2 = 1.9999996 Bohr magnetons
-: O2 -> 2O  D = 6.819 eV
 
-That was not it! unless this result is still not converged
 *** Water gas shift example
 We consider calculating the reaction energy of the water-gas shift reaction in this example.
 
@@ -2002,7 +2202,6 @@ H: potpaw_PBE/H/POTCAR (git-hash: fbc0773b08b32f553234b0b50cc6ad6f5085c816)
 O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
 #+end_example
 #+END_ORG
-
 
 *** Temperature dependent water gas shift equilibrium constant
 To correct the reaction energy for temperature effects, we must compute the vibrational frequencies of each species, and estimate the temperature dependent contributions to vibrational energy and entropy. We will break these calculations into several pieces. First we do each vibrational calculation. After those are done, we can get the data and construct the thermochemistry objects we need to estimate the reaction energy as a function of temperature (at constant pressure).
@@ -3801,7 +4000,6 @@ This looks promising: the formation energy is much more favorable than cu3pd-1, 
 
 The construction of alloy phase diagrams is difficult. You are always faced with the possibility that there is a phase that you have not calculated that is more stable than the ones you did calculate. One approach is to use a tool that automates the discovery of relevant structures such as the Alloy Theoretic Automated Toolkit (ATAT) \cite{vandeWalle2002539,vandeWalle2009266} which uses a cluster expansion methodology.
 
-*** TODO Metal oxide formation energies
 *** Metal oxide oxidation energies
 We will consider here the reaction $2 Cu_2O + O_2 \rightleftharpoons 4 CuO$. We need to compute the energy of each species.
 
@@ -4254,7 +4452,7 @@ plt.savefig('bulk/Si-bandstructure/bandstructure.png')
 You do not really need a DFT calculation for this, except to get the optimized structure. A few notes on using this module:
 
 1. You need a large repeat unit cell.
-2. It is is not fast. There is a double loop over the atoms, meaning N^2 operations.
+2. It is is not fast. There is a double loop over the atoms, meaning N^2 operations, and you need large unit cells!
 3. This example is primarily a proof of concept. I have not thought about how good the results are.
 
 #+BEGIN_SRC python :results output
@@ -4605,7 +4803,8 @@ with jasp('surfaces/Al-slab-relaxed') as calc:
 : d_(2,1) = 2.29891157834
 : d_(3,2) = 2.34530960922
 
-** TODO Surface reconstruction
+*** TODO Surface reconstruction
+maybe a 110 missing row reconstruction? \cite{PhysRevB.83.075415}
 ** Work function
 To get the work function, we need to have the local potential. this is not written by default in vasp, and we have to tell it to do that with the LVTOT keyword.
 
@@ -4758,6 +4957,8 @@ print 'sigma = {0} J/m^2'.format(sigma/area/(J/m**2))
 
 *** Advanced topics in surface energy
 The surface energies can be used to estimate the shapes of nanoparticles using a Wulff construction. See \cite{doi.10.1021/jp200950a} for an example of computing Mo2C surface energies and particle shapes, and \cite{Inoglu2009188} for an example of the influence of adsorbates on surface energies and particle shapes of Cu.
+
+For a classic paper on trends in surface energies see \cite{Vitos1998186} .
 
 ** Dipole correction
 Slabs that are not symmetric (e.g. they have adsorbates on only one side) can develop dipole moments. Periodic dipoles can be problematic, as they create an artificial field that may affect the surface properties such as the work function and the convergence of the calculations. The solution to this problem is to introduce a dipole field in the cell to exactly cancel the dipole moment \cite{PhysRevB.46.16067} (see \cite{PhysRevB.59.12301} for a small correction) to minimize the effect.
@@ -5267,63 +5468,37 @@ Some final notes about the equations above:
 
 - It is not necessary to perform a symmetric slab calculation to determine the effect of adsorption on the surface energy! You can examine $\gamma - \gamma_{clean}$ with knowledge of only the adsorption energies!
 
+** TODO Adsorbate vibrations
+#+BEGIN_SRC python :results output  :exports both
+from jasp import *
+
+with jasp('surfaces/Pt-slab-O-fcc') as calc:
+    calc.clone('surfaces/Pt-slab-O-fcc-vib')
+
+
+
+with jasp('surfaces/Pt-slab-O-fcc-vib') as calc:
+    calc.set(ibrion=6,# finite differences with symmetry
+             nfree=2, # central differences (default)
+             potim=0.015,# default as well
+             ediff=1e-8,
+             nsw=1)
+    atoms = calc.get_atoms()
+    print atoms.get_forces()
+    print calc.get_vibrational_frequencies()
+#+END_SRC
 ** TODO Surface Diffusion barrier
 
 See this review \cite{ANIE.ANIE200602223} of diffusion on transition metal surfaces.
 
 http://cms.mpi.univie.ac.at/wiki/index.php/Collective_jumps_of_a_Pt_adatom_on_fcc-Pt_%28001%29:_Nudged_Elastic_Band_Calculation
 
-We will look at how to use jasp to do a nudged elastic band.
 
-First we make the initial and final states:
 
-bulk/pt-neb/00
-bulk/pt-neb/03
 
-Next we have to create the images in 01 and 02
-
-#+BEGIN_SRC python :results output
-from ase.io import read,write
-from ase.neb import NEB
-import os
-from jasp import *
-JASPRC['queue.walltime'] = '10:00:00'
-
-initial = read('bulk/pt-neb/00/POSCAR')
-final  = read('bulk/pt-neb/03/POSCAR')
-
-images = [initial]
-images += [initial.copy() for i in range(2)]
-images += [final]
-
-neb = NEB(images)
-neb.interpolate()
-
-# now write out the images
-for i in range(1,len(images)-1):
-    d = 'bulk/pt-neb/0{0}'.format(i)
-    if not os.path.exists(d): os.makedirs(d)
-    write(d + '/POSCAR',images[i])
-
-with jasp('bulk/pt-neb',
-          xc='PBE',
-          kpts=(3,3,1),
-          ediff=1e-6,
-          prec='Normal',
-          ibrion=1,
-          nsw=10,
-          ediffg=-0.01,
-          nelmin=5,
-          images=2,
-          spring=-5,
-          atoms=initial) as calc:
-    calc.calculate()
-
-# post analysis TODO
-#+END_SRC
-
-#+RESULTS:
-
+*** TODO climbing image NEB
+*** TODO use vibrations to confirm transition state
+** TODO Diffusion rates
 * Atomistic thermodynamics
 
 Let's consider how much the Gibbs free energy of an O2 molecule changes as a function of temperature, at 1 atm. We use the Shomate polynomials to approximate the temperature dependent entropy and enthalpy, and use the parameters from the [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447&Units=SI&Mask=1#Thermo-Gas][Nist Webbook]] for O2.
@@ -5662,8 +5837,7 @@ Thus, the chemical potentials of all these three adsorbed species depend on the 
 $\mu_{gas}(T,p) = E_{gas}(0K) + \delta \mu + kT\ln\left (p/p^0\right )$, as we have defined before.
 
 * Advanced electronic structure methods
-** DFT+U
-
+** DFT+U \index{DFT+U}
 [[http://cms.mpi.univie.ac.at/vasp/vasp/On_site_Coulomb_interaction_L_S_DA_U.html][VASP manual on DFT+U]]
 
 *** Metal oxide oxidation energies with DFT+U
@@ -5831,7 +6005,6 @@ Cu: potpaw_PBE/Cu/POTCAR (git-hash: a44c591415026f53deb16a99ca3f06b1e69be10b)
 #+end_example
 
 
-
 **** Reaction energy calculation with DFT+U
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -5852,12 +6025,14 @@ with jasp('molecules/O2-sp-triplet-400') as calc:
 
 rxn_energy = 4.0*cuo_energy - o2_energy - 2.0*cu2o_energy
 print rxn_energy
+print rxn_energy - 1.36
 #+END_SRC
 
 #+RESULTS:
 : -1.663819
+: -3.023819
 
-This is still not in quantitative agreement with the result in \cite{PhysRevB.73.195107}, which at U=4 eV is about -3.14 eV (estimated from a graph). We have not applied the O$_2$ correction here yet. In that paper, they apply a constant shift of -1.36 eV per O$_2$. However, they also report an O$_2$ dissociation energy of 6.02 eV, and the energy we calculated earlier is about 6.65 eV. If we take the difference of these two dissociation energies (0.63 eV) and subtract it from the correction to compensate for the additional offset (-1.36 eV + -0.63 eV = -1.99 eV) and finally add that to the reaction energy we get (-1.66 - 1.99 = -3.65 eV). This is still too negative by about 0.5 eV, and it is not clear why. In the next section we will see that trend in relative energies as a function of U is correct, so maybe it is not a good idea to add our additional correction of 0.63 eV on.
+This is still not in quantitative agreement with the result in \cite{PhysRevB.73.195107}, which at U=4 eV is about -3.14 eV (estimated from a graph). We have not applied the O$_2$ correction here yet. In that paper, they apply a constant shift of -1.36 eV per O$_2$. After we apply that correction, we agree within 0.12 eV, which is pretty good considering we have not checked for convergence.
 
 **** How much does U affect the reaction energy?
 #+BEGIN_SRC python :results output
@@ -5914,7 +6089,9 @@ In \cite{PhysRevB.73.195107}, the difference in reaction energy from U=2 eV to U
 This example highlights the challenge of using an approach like DFT+U. On one hand, U has a clear effect of changing the reaction energy. On the other hand, so does the correction factor for the O2 binding energy. In \cite{PhysRevB.73.195107} the authors tried to get the O2 binding energy correction from oxide calculations where U is not important, so that it is decoupled from the non-cancelling errors that U fixes. See \cite{PhysRevB.84.045115} for additional discussion of how to mix GGA and GGA+U results.
 
 ** Hybrid functionals
+*** FCC Ni DOS
 This example is adapted from http://cms.mpi.univie.ac.at/wiki/index.php/FccNi_DOS
+\index{HSE06}
 
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -5934,7 +6111,7 @@ with jasp('bulk/Ni-PBE',
           xc='PBE',
           ispin=2,lorbit=11,
           atoms=atoms) as calc:
-    print atoms.get_potential_energy()
+    print 'PBE energy: ',atoms.get_potential_energy()
     dos = DOS(calc,width=0.2)
     e_pbe = dos.get_energies()
     d_pbe = dos.get_dos()
@@ -5947,7 +6124,7 @@ with jasp('bulk/Ni-PBE0') as calc:
               algo='D',
               time=0.4)
      atoms = calc.get_atoms()
-     print atoms.get_potential_energy()
+     print 'PBE0 energy: ',atoms.get_potential_energy()
      dos = DOS(calc,width=0.2)
      e_pbe0 = dos.get_energies()
      d_pbe0 = dos.get_dos()
@@ -5957,7 +6134,7 @@ with jasp('bulk/Ni-HSE06') as calc:
               hfscreen=0.2,
               algo='D', time=0.4)
      atoms = calc.get_atoms()
-     print atoms.get_potential_energy()
+     print 'HSE06 energy: ', atoms.get_potential_energy()
      dos = DOS(calc,width=0.2)
      e_hse06 = dos.get_energies()
      d_hse06 = dos.get_dos()
@@ -5973,9 +6150,9 @@ plt.savefig('images/ni-dos-pbe-pbe0-hse06.png')
 #+END_SRC
 
 #+RESULTS:
-: -5.530247
-: -6.848931
-: -6.293369
+: PBE energy:  -5.530247
+: PBE0 energy:  -6.848931
+: HSE06 energy -6.293369
 
 [[./images/ni-dos-pbe-pbe0-hse06.png]]
 
@@ -5986,6 +6163,8 @@ http://cms.mpi.univie.ac.at/vasp/vasp/vdW_DF_functional_Langreth_Lundqvist_et_al
 \cite{PhysRevB.82.081101}
 ** TODO ELF
 ** TODO Charge partitioning schemes
+** TODO COOP/COHP
+maybe Mike Widom can show me how he did this with VASP?
 * Acknowledgments
 I would like to thank Zhongnan Xu for sending me some examples on magnetism. Alan McGaughey for sending me some NEB examples.
 * Appendices
