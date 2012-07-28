@@ -1293,7 +1293,7 @@ if None not in (E_O, E_O2):
 
 The answer we have obtained is way too high! Experimentally the dissociation energy is more like 5.2 eV (need reference).
 
-We implicitly neglected spin-polarization in the example above. That could be a problem, since the O$_$2 molecule can be in one of two spin states, a singlet or a triplet, and these should have different energies. Furthermore, the oxygen atom can be a singlet or a triplet, and these would have different energies. To account for spin polarization, we have to tell Vasp to use spin-polarization, and give initial guesses for the magnetic moments of the atoms. Let's try again with spin polarization.
+We implicitly neglected spin-polarization in the example above. That could be a problem, since the O$_2$ molecule can be in one of two spin states, a singlet or a triplet, and these should have different energies. Furthermore, the oxygen atom can be a singlet or a triplet, and these would have different energies. To account for spin polarization, we have to tell Vasp to use spin-polarization, and give initial guesses for the magnetic moments of the atoms. Let's try again with spin polarization.
 
 **** Estimating O$_2$ dissociation energy with spin polarization in triplet ground states
 To tell Vasp to use spin-polarization we use [[incar:ISPIN][INCAR]]=2, and we set initial guesses for magnetic moments on the atoms with the magmom keyword. In a triplet state there are two electrons with spins of the same sign.
