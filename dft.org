@@ -5550,7 +5550,52 @@ print 'vibrational freq   = {0} cm^(-1)'.format(f/(h*c))
 
 Note that now there are 39 modes, which is 3*N where N=13 atoms in the unit cell. Many of the modes are low in frequency, which correspond to slab modes that are essentially phonons. The O frequencies are not that different from the previous calculation (497 vs 512 cm^(-1)). This is why it is common to keep the slab atoms frozen.
 
-Calculating these results took 39*2 finite differences. It took about a day to get these results on a single CPU.
+Calculating these results took 39*2 finite differences. It took about a day to get these results on a single CPU. It pays to use constraints to minimize the number of these calculations.
+
+*** Vibrations of the bridge site
+
+#+BEGIN_SRC python :results output  :exports both
+from jasp import *
+from ase.constraints import FixAtoms
+
+with jasp('surfaces/Pt-slab-O-bridge-xy-constrained') as calc:
+    calc.clone('surfaces/Pt-slab-O-bridge-vib')
+    atoms = calc.get_atoms()
+
+del atoms.constraints
+constraint = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
+atoms.set_constraint([constraint])
+
+with jasp('surfaces/Pt-slab-O-bridge-vib') as calc:
+    calc.set(ibrion=5,# finite differences with selective dynamics
+             nfree=2, # central differences (default)
+             potim=0.015,# default as well
+             ediff=1e-8,
+             nsw=1)
+    atoms.set_calculator(calc) # reset atoms
+    atoms.get_potential_energy()
+    #print calc.get_vibrational_frequencies()
+    f,v = calc.get_vibrational_modes(2)
+    print calc.get_vibrational_modes()[0]
+
+from ase.units import *
+c = 3e10 # cm/s
+h = 4.135667516e-15 # eV*s
+
+print 'vibrational energy = {0} eV'.format(f)
+print 'vibrational energy = {0} meV'.format(f/meV)
+print 'vibrational freq   = {0} 1/s'.format(f/h)
+print 'vibrational freq   = {0} cm^(-1)'.format(f/(h*c))
+#+END_SRC
+
+#+RESULTS:
+: [0.065486063999999997, 0.045079206000000004, (0.019955987000000001+0j)]
+: vibrational energy = (0.019955987+0j) eV
+: vibrational energy = (19.955987+0j) meV
+: vibrational freq   = (4.82533639921e+12+0j) 1/s
+: vibrational freq   = (160.84454664+0j) cm^(-1)
+
+Note that we have one imaginary mode. This corresponds to the motion of the O atom falling into one of the neighboring 3-fold sites. It also indicates this position is not a stable minimum, but rather a saddle point. This position is a transition state for hopping between the fcc and hcp sites.
 
 ** TODO Surface Diffusion barrier
 
