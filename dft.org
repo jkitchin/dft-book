@@ -1,4 +1,4 @@
-# -*- org-export-babel-evaluate: nil -*-
+x# -*- org-export-babel-evaluate: nil -*-
 #+TITLE:     Modeling materials using density functional theory
 #+AUTHOR:    John Kitchin
 #+EMAIL:     jkitchin@cmu.edu
@@ -1156,6 +1156,223 @@ Note the zero-point energy of water is also fairly high. That is because of the 
 
 *** TODO Vibrations through ase
 must set JASPRC['mode']='run' and submit the job to the queue. Also, clone the directory because we will be throwing away the results.
+
+** Simulated infrared spectra
+At http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02 there is a recipe for computing the Infrared vibrational spectroscopy intensities in Vasp. We are going to do that for water here. First, we will relax a water molecule.
+
+#+BEGIN_SRC python :results output :exports both
+from ase import Atoms, Atom
+from jasp import *
+
+atoms = Atoms([Atom('H',[0.5960812,  -0.7677068,   0.0000000]),
+               Atom('O',[0.0000000,   0.0000000,   0.0000000]),
+               Atom('H',[0.5960812,   0.7677068,   0.0000000])],
+               cell=(8,8,8))
+
+with jasp('molecules/h2o_relax',
+          xc='PBE',
+          encut=400,
+          ismear=0,# Gaussian smearing
+          ibrion=2,
+          ediff=1e-8,
+          nsw=10,
+          atoms=atoms) as calc:
+
+    print atoms.get_forces()
+#+END_SRC
+
+#+RESULTS:
+: [[ 0.00033  -0.000422  0.      ]
+:  [-0.00066   0.        0.      ]
+:  [ 0.00033   0.000422  0.      ]]
+
+Next, we instruct Vasp to compute the vibrational modes using density functional perturbation theory with IBRION=7. Note, this is different than in [[Vibrational frequencies]] where finite differences were used.
+
+#+BEGIN_SRC python
+from ase import Atoms, Atom
+from jasp import *
+
+#read in relaxed geometry
+with jasp('molecules/h2o_relax') as calc:
+    atoms = calc.get_atoms()
+
+# now define a new calculator
+with jasp('molecules/h2o_vib_dfpt',
+          xc='PBE',
+          encut=400,
+          ismear=0,# Gaussian smearing
+          ibrion=7, # switches on the DFPT vibrational analysis (with no symmetry constraints)
+          nfree=2,
+          potim=0.015,
+          lepsilon=True, # enables to calculate and to print the BEC tensors
+          lreal=False,
+          nsw=1,
+          nwrite=3, # affects OUTCAR verbosity: explicitly forces SQRT(mass)-divided eigenvectors to be printed
+          atoms=atoms) as calc:
+    calc.calculate(atoms)
+#+END_SRC
+
+#+RESULTS:
+
+To analyze the results, this shell script was provided to extract the results.
+#+BEGIN_SRC sh :results output :dir molecules/h2o_vib_dfpt :exports both
+#!/bin/bash
+# A utility for calculating the vibrational intensities from VASP output (OUTCAR)
+# (C) David Karhanek, 2011-03-25, ICIQ Tarragona, Spain (www.iciq.es)
+
+# extract Born effective charges tensors
+printf "..reading OUTCAR"
+BORN_NROWS=`grep NIONS OUTCAR | awk '{print $12*4+1}'`
+if [ `grep 'BORN' OUTCAR | wc -l` = 0 ] ; then \
+   printf " .. FAILED! Born effective charges missing! Bye! \n\n" ; exit 1 ; fi
+grep "in e, cummulative" -A $BORN_NROWS OUTCAR > born.txt
+
+# extract Eigenvectors and eigenvalues
+if [ `grep 'SQRT(mass)' OUTCAR | wc -l` != 1 ] ; then \
+   printf " .. FAILED! Restart VASP with NWRITE=3! Bye! \n\n" ; exit 1 ; fi
+EIG_NVIBS=`grep -A 2000 'SQRT(mass)' OUTCAR | grep 'cm-1' | wc -l`
+EIG_NIONS=`grep NIONS OUTCAR | awk '{print $12}'`
+EIG_NROWS=`echo "($EIG_NIONS+3)*$EIG_NVIBS+3" | bc`
+grep -A $(($EIG_NROWS+2)) 'SQRT(mass)' OUTCAR | tail -n $(($EIG_NROWS+1)) | sed 's/f\/i/fi /g' > eigenvectors.txt
+printf " ..done\n"
+
+# set up a new directory, split files - prepare for parsing
+printf "..splitting files"
+mkdir intensities ; mv born.txt eigenvectors.txt intensities/
+cd intensities/
+let NBORN_NROWS=BORN_NROWS-1
+let NEIG_NROWS=EIG_NROWS-3
+let NBORN_STEP=4
+let NEIG_STEP=EIG_NIONS+3
+tail -n $NBORN_NROWS born.txt > temp.born.txt
+tail -n $NEIG_NROWS eigenvectors.txt > temp.eige.txt
+mkdir inputs ; mv born.txt eigenvectors.txt inputs/
+split -a 3 -d -l $NEIG_STEP temp.eige.txt temp.ei.
+split -a 3 -d -l $NBORN_STEP temp.born.txt temp.bo.
+mkdir temps01 ; mv temp.born.txt temp.eige.txt temps01/
+for nu in `seq 1 $EIG_NVIBS` ; do
+ let nud=nu-1 ; ei=`printf "%03u" $nu` ; eid=`printf "%03u" $nud` ; mv temp.ei.$eid eigens.vib.$ei
+done
+for s in `seq 1 $EIG_NIONS` ; do
+ let sd=s-1 ; bo=`printf "%03u" $s` ; bod=`printf "%03u" $sd` ; mv temp.bo.$bod borncs.$bo
+done
+printf " ..done\n"
+
+# parse deviation vectors (eig)
+printf "..parsing eigenvectors"
+let sad=$EIG_NIONS+1
+for nu in `seq 1 $EIG_NVIBS` ; do
+ nuu=`printf "%03u" $nu`
+ tail -n $sad eigens.vib.$nuu | head -n $EIG_NIONS | awk '{print $4,$5,$6}' > e.vib.$nuu.allions
+ split -a 3 -d -l 1 e.vib.$nuu.allions temp.e.vib.$nuu.ion.
+ for s in `seq 1 $EIG_NIONS` ; do
+  let sd=s-1; bo=`printf "%03u" $s`; bod=`printf "%03u" $sd`; mv temp.e.vib.$nuu.ion.$bod e.vib.$nuu.ion.$bo
+ done
+done
+printf " ..done\n"
+
+# parse born effective charge matrices (born)
+printf "..parsing eff.charges"
+for s in `seq 1 $EIG_NIONS` ; do
+ ss=`printf "%03u" $s`
+ awk '{print $2,$3,$4}' borncs.$ss | tail -3 > bornch.$ss
+done
+mkdir temps02 ; mv eigens.* borncs.* temps02/
+printf " ..done\n"
+
+# parse matrices, multiply them and collect squares (giving intensities)
+printf "..multiplying matrices, summing "
+for nu in `seq 1 $EIG_NVIBS` ; do
+ nuu=`printf "%03u" $nu`
+ int=0.0
+ for alpha in 1 2 3 ;  do            # summing over alpha coordinates
+  sumpol=0.0
+  for s in `seq 1 $EIG_NIONS` ; do   # summing over atoms
+   ss=`printf "%03u" $s`
+   awk -v a="$alpha" '(NR==a){print}' bornch.$ss > z.ion.$ss.alpha.$alpha
+   # summing over beta coordinates and multiplying Z(s,alpha)*e(s) done by the following awk script
+   paste z.ion.$ss.alpha.$alpha  e.vib.$nuu.ion.$ss | \
+   awk '{pol=$1*$4+$2*$5+$3*$6; print $0,"  ",pol}' > matr-vib-${nuu}-alpha-${alpha}-ion-${ss}
+  done
+  sumpol=`cat matr-vib-${nuu}-alpha-${alpha}-ion-* | awk '{sum+=$7} END {print sum}'`
+  int=`echo "$int+($sumpol)^2" | sed 's/[eE]/*10^/g' |  bc -l`
+ done
+ freq=`awk '(NR==1){print $8}' temps02/eigens.vib.$nuu`
+ echo "$nuu $freq $int">> exact.res.txt
+ printf "."
+done
+printf " ..done\n"
+
+# format results, normalize intensities
+printf "..normalizing intensities"
+max=`awk '(NR==1){max=$3} $3>=max {max=$3} END {print max}' exact.res.txt`
+awk -v max="$max" '{printf "%03u %6.1f %5.3f\n",$1,$2,$3/max}' exact.res.txt > results.txt
+printf " ..done\n"
+
+# clean up, display results
+printf "..finalizing:\n"
+mkdir temps03; mv bornch.* e.vib.*.allions temps03/
+mkdir temps04; mv z.ion* e.vib.*.ion.* temps04/
+mkdir temps05; mv matr-* temps05/
+mkdir results; mv *res*txt results/
+let NMATRIX=$EIG_NVIBS**2
+printf "%5u atoms found\n%5u vibrations found\n%5u matrices evaluated" \
+       $EIG_NIONS $EIG_NVIBS $NMATRIX > results/statistics.txt
+  # fast switch to clean up all temporary files
+  rm -r temps*
+cat results/results.txt
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+..reading OUTCAR ..done
+..splitting files ..done
+..parsing eigenvectors ..done
+..parsing eff.charges ..done
+..multiplying matrices, summing ......... ..done
+..normalizing intensities ..done
+..finalizing:
+001 3827.3 0.227
+002 3713.0 0.006
+003 1587.2 0.312
+004  235.5 1.000
+005   19.1 0.006
+006    2.3 0.000
+007   16.6 0.005
+008   45.0 0.000
+009  136.1 0.345
+#+end_example
+
+
+Note the results above include the rotational and vibrational modes (modes 4-9). The following shell script (also from http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02) removes those, and recalculates the intensities.
+#+BEGIN_SRC sh :results output :dir molecules/h2o_vib_dfpt :exports both
+#!/bin/bash
+# reformat intensities, just normal modes: 3N -> (3N-6)
+printf "..reformatting and normalizing intensities"
+cd intensities/results/
+nlns=`wc -l exact.res.txt | awk '{print $1}' `; let bodylns=nlns-6
+head -n $bodylns exact.res.txt > temp.reform.res.txt
+max=`awk '(NR==1){max=$3} $3>=max {max=$3} END {print max}' temp.reform.res.txt`
+awk -v max="$max" '{print $1,$2,$3/max}' temp.reform.res.txt > exact.reform.res.txt
+awk -v max="$max" '{printf "%03u %6.1f %5.3f\n",$1,$2,$3/max}' temp.reform.res.txt > reform.res.txt
+printf " ..done\n..normal modes:\n"
+rm temp.reform.res.txt
+cat reform.res.txt
+cd ../..
+#+END_SRC
+
+#+RESULTS:
+: ..reformatting and normalizing intensities ..done
+: ..normal modes:
+: 001 3827.3 0.726
+: 002 3713.0 0.019
+: 003 1587.2 1.000
+
+The interpretation of these results is that the mode at 3713 cm^{-1} would be nearly invisible in the IR spectrum. Earlier we interpreted that as the symmetric stretch. In this mode, there is only a small change in the molecule dipole moment, so there is a small IR intensity.
+
+See also \cite{giannozzi:8537}. For HREELS simulations see \cite{0953-8984-22-26-265006}.
+
+*** TODO Shell scripts are rough. One day I should rewrite this in python.
 
 ** Thermochemical properties of molecules
 ase provides a [[https://wiki.fysik.dtu.dk/ase/ase/thermochemistry.html#module-thermochemistry][thermochemistry]] module.
@@ -2436,221 +2653,6 @@ Despite the error in $\Delta G$, the equilibrium constant at 1000K seems reasona
 ***** TODO something is wrong with the thermochemistry I think.
 
 ** TODO Molecular reaction barriers
-
-** Simulated infrared spectra
-At http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02 there is a recipe for computing the Infrared vibrational spectroscopy intensities in Vasp. We are going to do that for water here. First, we will relax a water molecule.
-
-#+BEGIN_SRC python :results output :exports both
-from ase import Atoms, Atom
-from jasp import *
-
-atoms = Atoms([Atom('H',[0.5960812,  -0.7677068,   0.0000000]),
-               Atom('O',[0.0000000,   0.0000000,   0.0000000]),
-               Atom('H',[0.5960812,   0.7677068,   0.0000000])],
-               cell=(8,8,8))
-
-with jasp('molecules/h2o_relax',
-          xc='PBE',
-          encut=400,
-          ismear=0,# Gaussian smearing
-          ibrion=2,
-          ediff=1e-8,
-          nsw=10,
-          atoms=atoms) as calc:
-
-    print atoms.get_forces()
-#+END_SRC
-
-#+RESULTS:
-: [[ 0.00033  -0.000422  0.      ]
-:  [-0.00066   0.        0.      ]
-:  [ 0.00033   0.000422  0.      ]]
-
-Next, we instruct Vasp to compute the vibrational modes using density functional perturbation theory with IBRION=7. Note, this is different than in [[Vibrational frequencies]] where finite differences were used.
-
-#+BEGIN_SRC python
-from ase import Atoms, Atom
-from jasp import *
-
-#read in relaxed geometry
-with jasp('molecules/h2o_relax') as calc:
-    atoms = calc.get_atoms()
-
-# now define a new calculator
-with jasp('molecules/h2o_vib_dfpt',
-          xc='PBE',
-          encut=400,
-          ismear=0,# Gaussian smearing
-          ibrion=7, # switches on the DFPT vibrational analysis (with no symmetry constraints)
-          nfree=2,
-          potim=0.015,
-          lepsilon=True, # enables to calculate and to print the BEC tensors
-          lreal=False,
-          nsw=1,
-          nwrite=3, # affects OUTCAR verbosity: explicitly forces SQRT(mass)-divided eigenvectors to be printed
-          atoms=atoms) as calc:
-    calc.calculate(atoms)
-#+END_SRC
-
-#+RESULTS:
-
-To analyze the results, this shell script was provided to extract the results.
-#+BEGIN_SRC sh :results output :dir molecules/h2o_vib_dfpt :exports both
-#!/bin/bash
-# A utility for calculating the vibrational intensities from VASP output (OUTCAR)
-# (C) David Karhanek, 2011-03-25, ICIQ Tarragona, Spain (www.iciq.es)
-
-# extract Born effective charges tensors
-printf "..reading OUTCAR"
-BORN_NROWS=`grep NIONS OUTCAR | awk '{print $12*4+1}'`
-if [ `grep 'BORN' OUTCAR | wc -l` = 0 ] ; then \
-   printf " .. FAILED! Born effective charges missing! Bye! \n\n" ; exit 1 ; fi
-grep "in e, cummulative" -A $BORN_NROWS OUTCAR > born.txt
-
-# extract Eigenvectors and eigenvalues
-if [ `grep 'SQRT(mass)' OUTCAR | wc -l` != 1 ] ; then \
-   printf " .. FAILED! Restart VASP with NWRITE=3! Bye! \n\n" ; exit 1 ; fi
-EIG_NVIBS=`grep -A 2000 'SQRT(mass)' OUTCAR | grep 'cm-1' | wc -l`
-EIG_NIONS=`grep NIONS OUTCAR | awk '{print $12}'`
-EIG_NROWS=`echo "($EIG_NIONS+3)*$EIG_NVIBS+3" | bc`
-grep -A $(($EIG_NROWS+2)) 'SQRT(mass)' OUTCAR | tail -n $(($EIG_NROWS+1)) | sed 's/f\/i/fi /g' > eigenvectors.txt
-printf " ..done\n"
-
-# set up a new directory, split files - prepare for parsing
-printf "..splitting files"
-mkdir intensities ; mv born.txt eigenvectors.txt intensities/
-cd intensities/
-let NBORN_NROWS=BORN_NROWS-1
-let NEIG_NROWS=EIG_NROWS-3
-let NBORN_STEP=4
-let NEIG_STEP=EIG_NIONS+3
-tail -n $NBORN_NROWS born.txt > temp.born.txt
-tail -n $NEIG_NROWS eigenvectors.txt > temp.eige.txt
-mkdir inputs ; mv born.txt eigenvectors.txt inputs/
-split -a 3 -d -l $NEIG_STEP temp.eige.txt temp.ei.
-split -a 3 -d -l $NBORN_STEP temp.born.txt temp.bo.
-mkdir temps01 ; mv temp.born.txt temp.eige.txt temps01/
-for nu in `seq 1 $EIG_NVIBS` ; do
- let nud=nu-1 ; ei=`printf "%03u" $nu` ; eid=`printf "%03u" $nud` ; mv temp.ei.$eid eigens.vib.$ei
-done
-for s in `seq 1 $EIG_NIONS` ; do
- let sd=s-1 ; bo=`printf "%03u" $s` ; bod=`printf "%03u" $sd` ; mv temp.bo.$bod borncs.$bo
-done
-printf " ..done\n"
-
-# parse deviation vectors (eig)
-printf "..parsing eigenvectors"
-let sad=$EIG_NIONS+1
-for nu in `seq 1 $EIG_NVIBS` ; do
- nuu=`printf "%03u" $nu`
- tail -n $sad eigens.vib.$nuu | head -n $EIG_NIONS | awk '{print $4,$5,$6}' > e.vib.$nuu.allions
- split -a 3 -d -l 1 e.vib.$nuu.allions temp.e.vib.$nuu.ion.
- for s in `seq 1 $EIG_NIONS` ; do
-  let sd=s-1; bo=`printf "%03u" $s`; bod=`printf "%03u" $sd`; mv temp.e.vib.$nuu.ion.$bod e.vib.$nuu.ion.$bo
- done
-done
-printf " ..done\n"
-
-# parse born effective charge matrices (born)
-printf "..parsing eff.charges"
-for s in `seq 1 $EIG_NIONS` ; do
- ss=`printf "%03u" $s`
- awk '{print $2,$3,$4}' borncs.$ss | tail -3 > bornch.$ss
-done
-mkdir temps02 ; mv eigens.* borncs.* temps02/
-printf " ..done\n"
-
-# parse matrices, multiply them and collect squares (giving intensities)
-printf "..multiplying matrices, summing "
-for nu in `seq 1 $EIG_NVIBS` ; do
- nuu=`printf "%03u" $nu`
- int=0.0
- for alpha in 1 2 3 ;  do            # summing over alpha coordinates
-  sumpol=0.0
-  for s in `seq 1 $EIG_NIONS` ; do   # summing over atoms
-   ss=`printf "%03u" $s`
-   awk -v a="$alpha" '(NR==a){print}' bornch.$ss > z.ion.$ss.alpha.$alpha
-   # summing over beta coordinates and multiplying Z(s,alpha)*e(s) done by the following awk script
-   paste z.ion.$ss.alpha.$alpha  e.vib.$nuu.ion.$ss | \
-   awk '{pol=$1*$4+$2*$5+$3*$6; print $0,"  ",pol}' > matr-vib-${nuu}-alpha-${alpha}-ion-${ss}
-  done
-  sumpol=`cat matr-vib-${nuu}-alpha-${alpha}-ion-* | awk '{sum+=$7} END {print sum}'`
-  int=`echo "$int+($sumpol)^2" | sed 's/[eE]/*10^/g' |  bc -l`
- done
- freq=`awk '(NR==1){print $8}' temps02/eigens.vib.$nuu`
- echo "$nuu $freq $int">> exact.res.txt
- printf "."
-done
-printf " ..done\n"
-
-# format results, normalize intensities
-printf "..normalizing intensities"
-max=`awk '(NR==1){max=$3} $3>=max {max=$3} END {print max}' exact.res.txt`
-awk -v max="$max" '{printf "%03u %6.1f %5.3f\n",$1,$2,$3/max}' exact.res.txt > results.txt
-printf " ..done\n"
-
-# clean up, display results
-printf "..finalizing:\n"
-mkdir temps03; mv bornch.* e.vib.*.allions temps03/
-mkdir temps04; mv z.ion* e.vib.*.ion.* temps04/
-mkdir temps05; mv matr-* temps05/
-mkdir results; mv *res*txt results/
-let NMATRIX=$EIG_NVIBS**2
-printf "%5u atoms found\n%5u vibrations found\n%5u matrices evaluated" \
-       $EIG_NIONS $EIG_NVIBS $NMATRIX > results/statistics.txt
-  # fast switch to clean up all temporary files
-  rm -r temps*
-cat results/results.txt
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-..reading OUTCAR ..done
-..splitting files ..done
-..parsing eigenvectors ..done
-..parsing eff.charges ..done
-..multiplying matrices, summing ......... ..done
-..normalizing intensities ..done
-..finalizing:
-001 3827.3 0.227
-002 3713.0 0.006
-003 1587.2 0.312
-004  235.5 1.000
-005   19.1 0.006
-006    2.3 0.000
-007   16.6 0.005
-008   45.0 0.000
-009  136.1 0.345
-#+end_example
-
-
-Note the results above include the rotational and vibrational modes (modes 4-9). The following shell script (also from http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02) removes those, and recalculates the intensities.
-#+BEGIN_SRC sh :results output :dir molecules/h2o_vib_dfpt :exports both
-#!/bin/bash
-# reformat intensities, just normal modes: 3N -> (3N-6)
-printf "..reformatting and normalizing intensities"
-cd intensities/results/
-nlns=`wc -l exact.res.txt | awk '{print $1}' `; let bodylns=nlns-6
-head -n $bodylns exact.res.txt > temp.reform.res.txt
-max=`awk '(NR==1){max=$3} $3>=max {max=$3} END {print max}' temp.reform.res.txt`
-awk -v max="$max" '{print $1,$2,$3/max}' temp.reform.res.txt > exact.reform.res.txt
-awk -v max="$max" '{printf "%03u %6.1f %5.3f\n",$1,$2,$3/max}' temp.reform.res.txt > reform.res.txt
-printf " ..done\n..normal modes:\n"
-rm temp.reform.res.txt
-cat reform.res.txt
-cd ../..
-#+END_SRC
-
-#+RESULTS:
-: ..reformatting and normalizing intensities ..done
-: ..normal modes:
-: 001 3827.3 0.726
-: 002 3713.0 0.019
-: 003 1587.2 1.000
-
-The interpretation of these results is that the mode at 3713 cm^{-1} would be nearly invisible in the IR spectrum. Earlier we interpreted that as the symmetric stretch. In this mode, there is only a small change in the molecule dipole moment, so there is a small IR intensity.
-
-*** TODO Shell scripts are rough. One day I should rewrite this in python.
 
 ** Bader analysis
 \cite{Henkelman2006354}
@@ -4589,6 +4591,7 @@ You can see that even though the total magnetic moment is 0, there is a spin on 
 
 *** TODO NiO-FeO formation energies with magnetism
 ** TODO phonons
+\cite{RevModPhys.73.515}
 * Surfaces
 ** Surface structures
 
@@ -5468,37 +5471,147 @@ Some final notes about the equations above:
 
 - It is not necessary to perform a symmetric slab calculation to determine the effect of adsorption on the surface energy! You can examine $\gamma - \gamma_{clean}$ with knowledge of only the adsorption energies!
 
-** TODO Adsorbate vibrations
+** Adsorbate vibrations
+
+Note: you can limit the number of modes calculated with constraints (FixAtoms or FixScaled) and you use [[incar:IBRION][IBRION]]=5. The other settings (6, 7, 8) do not respect the selective dynamics constraints.
+
 #+BEGIN_SRC python :results output  :exports both
 from jasp import *
 
 with jasp('surfaces/Pt-slab-O-fcc') as calc:
     calc.clone('surfaces/Pt-slab-O-fcc-vib')
 
-
-
 with jasp('surfaces/Pt-slab-O-fcc-vib') as calc:
+    calc.set(ibrion=5,# finite differences with selective dynamics
+             nfree=2, # central differences (default)
+             potim=0.015,# default as well
+             ediff=1e-8,
+             nsw=1)
+    atoms = calc.get_atoms()
+    f,v = calc.get_vibrational_modes(0)
+    print calc.get_vibrational_modes()[0]
+
+from ase.units import *
+c = 3e10 # cm/s
+h = 4.135667516e-15 # eV*s
+
+print 'vibrational energy = {0} eV'.format(f)
+print 'vibrational energy = {0} meV'.format(f/meV)
+print 'vibrational freq   = {0} 1/s'.format(f/h)
+print 'vibrational freq   = {0} cm^(-1)'.format(f/(h*c))
+
+#+END_SRC
+
+#+RESULTS:
+: [ 0.062  0.044  0.044]
+: vibrational energy = 0.061606647 eV
+: vibrational energy = 61.606647 meV
+: vibrational freq   = 1.48964216204e+13 1/s
+: vibrational freq   = 496.547387346 cm^(-1)
+
+There are three modes for the free oxygen atom. One of them is a mode normal to the surface (the one with highest frequency. The other two are called frustrated translations. Note that we did not include the surface Pt atoms in the calculation, and this will have an effect on the result because the O atom could be coupled to the surface modes. It is typical to neglect this coupling because of the large difference in mass between O and Pt.  Next we look at the difference in results when we calculate all the modes. Let us compare to IBRION=6.
+
+#+BEGIN_SRC python :results output  :exports both
+from jasp import *
+
+with jasp('surfaces/Pt-slab-O-fcc') as calc:
+    calc.clone('Pt-slab-O-fcc-vib-ibrion=6')
+
+with jasp('surfaces/Pt-slab-O-fcc-vib-ibrion=6') as calc:
     calc.set(ibrion=6,# finite differences with symmetry
              nfree=2, # central differences (default)
              potim=0.015,# default as well
              ediff=1e-8,
              nsw=1)
     atoms = calc.get_atoms()
-    print atoms.get_forces()
-    print calc.get_vibrational_frequencies()
+    #print calc.get_vibrational_frequencies()
+    f,m = calc.get_vibrational_modes(0)
+    allfreq = calc.get_vibrational_modes()[0]
+    print len(allfreq), allfreq
+from ase.units import *
+c = 3e10 # cm/s
+h = 4.135667516e-15 # eV*s
+
+print 'vibrational energy = {0} eV'.format(f)
+print 'vibrational energy = {0} meV'.format(f/meV)
+print 'vibrational freq   = {0} 1/s'.format(f/h)
+print 'vibrational freq   = {0} cm^(-1)'.format(f/(h*c))
 #+END_SRC
+
+#+RESULTS:
+: 39 [ 0.064  0.046  0.046  0.024  0.024  0.023  0.023  0.023  0.022  0.022
+:   0.02   0.02   0.02   0.015  0.015  0.015  0.015  0.015  0.014  0.013
+:   0.013  0.012  0.012  0.012  0.012  0.012  0.011  0.011  0.011  0.01   0.01
+:   0.01   0.009  0.009  0.004  0.004  0.     0.     0.   ]
+: vibrational energy = 0.063537929 eV
+: vibrational energy = 63.537929 meV
+: vibrational freq   = 1.53634035507e+13 1/s
+: vibrational freq   = 512.113451691 cm^(-1)
+
+Note that now there are 39 modes, which is 3*N where N=13 atoms in the unit cell. Many of the modes are low in frequency, which correspond to slab modes that are essentially phonons. The O frequencies are not that different from the previous calculation (497 vs 512 cm^(-1)). This is why it is common to keep the slab atoms frozen.
+
+Calculating these results took 39*2 finite differences. It took about a day to get these results on a single CPU.
+
 ** TODO Surface Diffusion barrier
 
 See this review \cite{ANIE.ANIE200602223} of diffusion on transition metal surfaces.
 
 http://cms.mpi.univie.ac.at/wiki/index.php/Collective_jumps_of_a_Pt_adatom_on_fcc-Pt_%28001%29:_Nudged_Elastic_Band_Calculation
 
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.neb import NEB
+from ase.visualize import view
 
+with jasp('surfaces/Pt-slab-O-fcc') as calc:
+    initial_atoms = calc.get_atoms()
+
+with jasp('surfaces/Pt-slab-O-hcp') as calc:
+    final_atoms = calc.get_atoms()
+
+# here is our estimated transition state. we use vector geometry to
+# define the bridge position, and add 1.451 Ang to z based on our
+# previous bridge calculation.
+ts = initial_atoms.copy()
+ts.positions[-1] = 0.5*(ts.positions[9] + ts.positions[10]) + [0,0,1.451]
+
+# construct the band
+images = [initial_atoms]
+images += [initial_atoms.copy()]
+images += [ts.copy()]  # this is the TS
+
+neb = NEB(images)
+# Interpolate linearly the positions of the three middle images:
+neb.interpolate()
+
+# now add the second half
+images2 = [ts.copy()]
+images2 += [ts.copy()]
+images2 += [final_atoms]
+
+neb2 = NEB(images2)
+neb2.interpolate()
+
+# collect final band. Note we do not repeat the TS in the second half
+final_images = images + images2[1:]
+
+with jasp('surfaces/Pt-O-fcc-hcp-neb',
+          ibrion=2,
+          nsw=50,
+          spring=-5,
+          atoms=final_images) as calc:
+
+    images, energies = calc.get_neb()
+    print energies
+
+#+END_SRC
+
+#+RESULTS:
 
 
 *** TODO climbing image NEB
 *** TODO use vibrations to confirm transition state
-** TODO Diffusion rates
+** TODO Diffusion rates with transition state theory
 * Atomistic thermodynamics
 
 Let's consider how much the Gibbs free energy of an O2 molecule changes as a function of temperature, at 1 atm. We use the Shomate polynomials to approximate the temperature dependent entropy and enthalpy, and use the parameters from the [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447&Units=SI&Mask=1#Thermo-Gas][Nist Webbook]] for O2.
