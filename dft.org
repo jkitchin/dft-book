@@ -5606,7 +5606,7 @@ http://cms.mpi.univie.ac.at/wiki/index.php/Collective_jumps_of_a_Pt_adatom_on_fc
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase.neb import NEB
-from ase.visualize import view
+import matplotlib.pyplot as plt
 
 with jasp('surfaces/Pt-slab-O-fcc') as calc:
     initial_atoms = calc.get_atoms()
@@ -5626,7 +5626,7 @@ images += [initial_atoms.copy()]
 images += [ts.copy()]  # this is the TS
 
 neb = NEB(images)
-# Interpolate linearly the positions of the three middle images:
+# Interpolate linearly the positions of these images:
 neb.interpolate()
 
 # now add the second half
@@ -5641,18 +5641,34 @@ neb2.interpolate()
 final_images = images + images2[1:]
 
 with jasp('surfaces/Pt-O-fcc-hcp-neb',
-          ibrion=2,
-          nsw=50,
-          spring=-5,
+          ibrion=1,
+          nsw=90,
+          spring=-5, debug=logging.DEBUG,
           atoms=final_images) as calc:
 
-    images, energies = calc.get_neb()
-    print energies
-
+    try:
+        images, energies = calc.get_neb()
+        from ase.visualize import view
+        view(images)
+        #p = calc.plot_neb(show=False)
+        #plt.savefig('images/pt-o-fcc-hcp-neb.png')
+        #print energies
+    except (VaspSubmitted, VaspQueued, ValueError):
+        for image in images:
+            print image.numbers
+        pass
 #+END_SRC
 
 #+RESULTS:
+: [78 78 78 78 78 78 78 78 78 78 78 78  8]
+: [ 8 78 78 78 78 78 78 78 78 78 78 78 78]
+: [78 78 78 78 78 78 78 78 78 78 78 78  8]
 
+
+
+
+#+caption: Energy pathway for O diffusion from an fcc to hcp site
+[[./images/pt-o-fcc-hcp-neb.png]]
 
 *** TODO climbing image NEB
 *** TODO use vibrations to confirm transition state
