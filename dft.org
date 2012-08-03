@@ -15,7 +15,7 @@
 #+LINK_HOME:
 #+XSLT:
 #+latex_header: \usepackage{makeidx}
-# #+latex_header: \usepackage[section]{placeins}
+#+latex_header: \usepackage[section]{placeins}
 #+latex_header: \makeindex
 
 
@@ -335,11 +335,11 @@ mod:ase.io.read supports reading in many different formats:
 You can read xyz-coordinate files to create mod:ase.Atoms objects.  Here is
 what an xyz file might look like:
 
-#+include: isobutane.xyz
+#+include: molecules/isobutane.xyz
 
 Note that the xyz format does not have unit cell information in it, so
 you will have to figure out a way to provide it. In this example, we
-center the atoms in a box with vacuum on all sides (Figure \ref{fig:isobutane}.
+center the atoms in a box with vacuum on all sides (Figure \ref{fig:isobutane}).
 
 #+BEGIN_SRC python
 from ase.io import read,write
@@ -467,7 +467,7 @@ write('images/bothatoms.png', bothatoms, show_unit_cell=2, rotation='90x')
 ** Simple properties
 Simple properties do not require a DFT calculation. They are typically only functions of the atom types and geometries.
 *** Getting cartesian positions
-If you want the $x$,$y$,$z$ coordinates of the atoms, use the func:ase.Atoms.get_positions. If you are interested in the fractional coordinates, use func:ase.Atoms.get_scaled_positions.
+If you want the $(x,y,z)$ coordinates of the atoms, use the func:ase.Atoms.get_positions. If you are interested in the fractional coordinates, use func:ase.Atoms.get_scaled_positions.
 
 #+BEGIN_SRC python :results output :exports both
 from ase import Atoms
@@ -791,7 +791,6 @@ geometry is not close to the ground state geometry. Note that the
 forces are only along the $x$-axis, which is along the molecular axis. We will see how to minimize this force in sections [[*Manual%20determination][Manual determination]] and [[*Automatic%20geometry%20optimization%20with%20vasp][Automatic geometry optimization with vasp]].
 
 #+BEGIN_SRC python :results output :exports both
-#!/usr/bin/env python
 from ase import Atoms,Atom
 from jasp import *
 import numpy as np
@@ -820,12 +819,11 @@ with jasp('molecules/simple-co', #output dir
 
 *** The density of states
 #+BEGIN_SRC python
-#!/usr/bin/env python
 from ase.dft.dos import *
 from jasp import *
 from pylab import *
 
-with jasp('molecules/co-qn') as calc:
+with jasp('molecules/co-cg') as calc:
     dos = DOS(calc)
     plot(dos.get_energies(),dos.get_dos())
     xlabel('Energy - $E_f$ (eV)')
@@ -842,54 +840,6 @@ savefig('images/co-dos.png')
 The electron density is a 3d quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure \ref{fig:cd1}) of plotting the charge density.
 
 **** TODO explain different charge densities? total vs pseudo, etc...
-**** TODO replace the co-qn calculation.
-#+BEGIN_SRC python
-#!/usr/bin/env python
-from enthought.mayavi import mlab
-from jasp import *
-
-with jasp('molecules/co-qn') as calc:
-    x,y,z,cd = calc.get_charge_density()
-
-mlab.contour3d(x,y,z,cd)
-
-mlab.savefig('images/co-cd.png')
-
-mlab.show()
-#+END_SRC
-
-#+RESULTS:
-: None
-
-#+caption: Charge density of a CO molecule with an atom at the origin. Due to periodic boundary conditions, part of the charge is at each corner of the unit cell.
-#+label: fig:cd1
-#+ATTR_LaTeX: placement={H}
-[[./images/co-cd.png]]
-
-The figure looks strange because the density is split into the corners due to periodic boundary conditions. That is one of many reasons why it is better to center the molecules in the unit cell. Here is a better example (Figure \ref{fig:cd2}).
-
-#+BEGIN_SRC python
-#!/usr/bin/env python
-from enthought.mayavi import mlab
-from jasp import *
-
-with jasp('molecules/co-centered') as calc:
-    x,y,z,cd = calc.get_charge_density()
-
-mlab.contour3d(x,y,z,cd)
-
-mlab.savefig('images/co-cd-centered.png')
-
-mlab.show()
-#+END_SRC
-
-#+RESULTS:
-: None
-
-#+caption: Charge density of a CO molecule centered in the unit cell.
-#+label: fig:cd2
-#+ATTR_LaTeX: placement={H}
-[[./images/co-cd-centered.png]]
 
 *** TODO Visualizing Kohn-Sham orbitals
 need to read wavecar files!
@@ -984,12 +934,11 @@ with jasp('molecules/co-centered',
 
     dipole_moment = ((dipole_vector**2).sum())**0.5/Debye
 
-    print 'The dipole moment is {0:1.2f}'.format(dipole_moment)
+    print 'The dipole moment is {0:1.2f} Debye'.format(dipole_moment)
 #+END_SRC
 
 #+RESULTS:
-: -14.794112
-: The dipole moment is 0.10
+: The dipole moment is 0.10 Debye
 
 Note that a convenience function using the code above exists in jasp:
 #+BEGIN_SRC python :results output :exports both
@@ -1013,7 +962,6 @@ with jasp('molecules/co-centered') as calc:
 The equilibrium bond length of a CO molecule is approximately the bond length that minimizes the total energy. We can find that by computing the total energy as a function of bond length, and noting where the minimum is. Here is an example in VASP. There are a few features to point out here. We want to compute 5 bond lengths, and each calculation is independent of all the others. mod:jasp is setup to automatically handle jobs for you by submitting them to the queue. It raises a variety of exceptions to let you know what has happened, and you must handle these to control the workflow. We will illustrate this by examples.
 
 #+BEGIN_SRC python :results output :exports both
-#!/usr/bin/env python
 from ase import *
 from jasp import *
 import numpy as np
@@ -1088,16 +1036,14 @@ forces = (eV/ang)
 
 #+end_example
 
-#+caption: Energy vs CO bondlength. The minimum appears to be near 1.15 \AA by inspection.
+#+caption: Energy vs CO bond length. The minimum appears to be near 1.15 \AA by inspection.
 #+ATTR_LaTeX: placement={H}
 [[./images/co-bondlengths.png]]
 
 **** Automatic geometry optimization with vasp
 VASP has built in geometry optimization using the [[incar:IBRION][IBRION]] and [[incar:NSW][NSW]] tags. Here we compute the bond length for a CO molecule, letting VASP do the geometry optimization for us.
 
-- TODO change co-qn to co-cg
 #+BEGIN_SRC python :results output :exports both
-#!/usr/bin/env python
 from ase import *
 from jasp import *
 import numpy as np
@@ -1106,7 +1052,7 @@ co = Atoms([Atom('C',[0,0,0]),
             Atom('O',[1.2,0,0])],
             cell=(6,6,6))
 
-with jasp('molecules/co-qn',
+with jasp('molecules/co-cg',
           xc='PBE',
           nbands=6,
           encut=350,
@@ -1126,8 +1072,10 @@ with jasp('molecules/co-qn',
 #+END_SRC
 
 #+RESULTS:
-: [[ 0.003307  0.        0.      ]
-:  [-0.003307  0.        0.      ]]
+: Forces
+: =======
+: [[ 0.003  0.     0.   ]
+:  [-0.003  0.     0.   ]]
 : Bondlength = 1.14 angstroms
 
 **** Relaxation of a water molecule
@@ -1150,13 +1098,17 @@ with jasp('molecules/h2o_relax',
           nsw=10,
           atoms=atoms) as calc:
 
+    print "forces"
+    print '======='
     print atoms.get_forces()
 #+END_SRC
 
 #+RESULTS:
-: [[ 0.00033  -0.000422  0.      ]
-:  [-0.00066   0.        0.      ]
-:  [ 0.00033   0.000422  0.      ]]
+: forces
+: =======
+: [[ 0.    -0.     0.   ]
+:  [-0.001  0.     0.   ]
+:  [ 0.     0.     0.   ]]
 
 ** Vibrational frequencies
 *** Manual calculation of vibrational frequency
@@ -1248,6 +1200,7 @@ Vasp has built-in capability for performing vibrational calculations.
 #adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
 from ase import Atoms, Atom
 from jasp import *
+import ase.units
 
 atoms = Atoms([Atom('H',[0.5960812,  -0.7677068,   0.0000000]),
                Atom('O',[0.0000000,   0.0000000,   0.0000000]),
@@ -1265,15 +1218,23 @@ with jasp('molecules/h2o_vib',
           nsw=1,
           atoms=atoms) as calc:
 
+    print 'Forces'
+    print '======'
     print atoms.get_forces()
-    print calc.get_vibrational_frequencies()
+
+    # vibrational energies are in eV
+    energies, modes = calc.get_vibrational_modes()
+
+    print energies
 #+END_SRC
 
 #+RESULTS:
-: [[ 0.006474 -0.021573 -0.001509]
-:  [-0.012948  0.        0.003019]
-:  [ 0.006474  0.021573 -0.001509]]
-: [3836.1533119999999, 3722.659114, 1583.004226, 35.646208999999999, 21.378951000000001, (2.4811570000000001+0j), (94.092513999999994+0j), (96.601394999999997+0j), (122.151211+0j)]
+: Forces
+: ======
+: [[ 0.006 -0.022 -0.002]
+:  [-0.013  0.     0.003]
+:  [ 0.006  0.022 -0.002]]
+: [0.47562256400000003, 0.46155107200000001, 0.19626758000000002, 0.0044195680000000005, 0.0026506530000000002, (0.00030762399999999999+0j), (0.011665989+0j), (0.011977050999999999+0j), (0.015144825000000001+0j)]
 
 Note we get 9 frequencies here. Water has 3 atoms, with three degrees of freedom each. Three of those degrees of freedom are translations, and three are rotations. That leaves 3N-6 = 3 degrees of vibrational freedom. The modes of water vibration are (with our calculated values in parentheses):
 
@@ -1322,8 +1283,55 @@ print 'The ZPE of water is {0:1.3f} eV'.format(ZPE)
 
 Note the zero-point energy of water is also fairly high (more than 0.5 eV). That is because of the high frequency O-H stretches.
 
-*** TODO Vibrations through ase
-must set JASPRC['mode']='run' and submit the job to the queue. Also, clone the directory because we will be throwing away the results.
+*** Vibrations through ase                                         :noexport:
+=jasp= is not designed to work with mod:ase.vibrations. You can do it, but you have to work around =jasp=. The trick is to set JASPRC['mode']='run' and submit the job to the queue. You do not want to run this in a directory with a relaxed geometry, because all your output files will be overwritten. instead, either clone the directory, or do something like this example:
+
+# (org-babel-tangle)
+#+BEGIN_SRC python :results output  :exports both :tangle h2ovib.py
+#!/usr/bin/env python
+from ase import Atoms, Atom
+from ase.vibrations import Vibrations
+from jasp import *
+JASPRC['mode'] = 'run'
+
+import os
+os.chdir(os.environ.get('PBS_O_WORKDIR','.'))
+
+atoms = Atoms([Atom('H',[0.5960812,  -0.7677068,   0.0000000]),
+               Atom('O',[0.0000000,   0.0000000,   0.0000000]),
+               Atom('H',[0.5960812,   0.7677068,   0.0000000])],
+               cell=(8,8,8))
+
+with jasp('molecules/h2o_vib_ase',
+          xc='PBE',
+          encut=400,
+          ismear=0,# Gaussian smearing
+          atoms=atoms) as calc:
+
+    vib = Vibrations(atoms)
+    vib.run()
+    vib.summary()
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+---------------------
+  #    meV     cm^-1
+---------------------
+  0    0.0       0.0
+  1    0.0       0.0
+  2    0.0       0.0
+  3    0.0       0.0
+  4    0.0       0.0
+  5    0.0       0.0
+  6    0.0       0.0
+  7    0.0       0.0
+  8    0.0       0.0
+---------------------
+Zero-point energy: 0.000 eV
+#+end_example
+
+It strikes me that this is clearly an error! I guess this happened because after the first calculation somehow VASP does not see a difference in geometries for subsequent calculations.
 
 ** Simulated infrared spectra
 At http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02 there is a recipe for computing the Infrared vibrational spectroscopy intensities in Vasp. We are going to do that for water here. First, we will relax a water molecule.
@@ -6818,7 +6826,6 @@ it is not that hard to define your own derived units though.
 Note these  are only conversion factors. No unit algebra is enforced!
 
 #+BEGIN_SRC python :results output
-#!/usr/bin/env python
 from ase.units import *
 
 d = 1*Angstrom
@@ -6894,7 +6901,6 @@ The expression x$>2$ returns an array of booleans (True where the element of $x$
 *** Statistics
 **** Confidence intervals
 #+BEGIN_SRC python :results output :exports both
-#!/usr/bin/env python
 from numpy import *
 from scipy.stats.distributions import  t
 
@@ -7543,6 +7549,7 @@ show()
 : None
 
 #+caption: Comparison of different numerical derivatives.
+#+ATTR_LaTeX: placement={H}
 [[./images/vectorized-diffs.png]]
 
 If your data is very noisy, you will have a hard time getting good derivatives; derivatives tend to magnify noise. In these cases, you have to employ smoothing techniques, either implicitly by using a multipoint derivative formula, or explicitly by smoothing the data yourself, or taking the derivative of a function that has been fit to the data in the neighborhood you are interested in.
@@ -7595,6 +7602,7 @@ show()
 : None
 
 #+caption: Comparison of 2 point and 4 point numerical derivatives.
+#+ATTR_LaTeX: placement={H}
 [[./images/multipt-diff.png]]
 
 The derivative is still noisy, but the four-point derivative is a little better than the two-pt formula.
@@ -7643,6 +7651,7 @@ show()
 : None
 
 #+caption: Comparison of FFT numerical derivatives.
+#+ATTR_LaTeX: placement={H}
 [[./images/fft-der.png]]
 
 This example does not show any major advantage in the quality of the derivative, and it is almost certain I would never remember how to do this off the top of my head.
@@ -7816,7 +7825,7 @@ the primitive lattice vectors (before relaxation, and assuming one
 atom is at the origin, and the unit cell is aligned with the primitive
 basis!)
 
-#!/usr/bin/env python
+
 #+BEGIN_SRC python :results output
 from ase.lattice.cubic import BodyCenteredCubic
 from ase.calculators.jacapo import *
@@ -8203,8 +8212,6 @@ The following example illustrates one approach to this problem for the
 Murnaghan equation of state:
 
 #+BEGIN_SRC python :results output
-#!/usr/bin/env python
-
 '''Example of fitting the Birch-Murnaghan EOS to data'''
 
 from pylab import * #this includes numpy as np!
