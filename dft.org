@@ -15,13 +15,19 @@
 #+LINK_HOME:
 #+XSLT:
 #+latex_header: \usepackage{makeidx}
+# #+latex_header: \usepackage[section]{placeins}
 #+latex_header: \makeindex
+
 
 # custom link for incar:ISMEAR
 #+LINK: incar http://cms.mpi.univie.ac.at/wiki/index.php/%s
 
 # export code and results. need to figure out how to handle org environments
 ##+PROPERTY: exports both
+* List of figures
+#+latex: \listoffigures
+* List of tables
+#+latex: \listoftables
 
 * Introduction to this book
 This book serves two purposes: 1) to provide worked examples of using DFT to model materials properties, and 2) to provide references to more advanced treatments of these topics in the literature. It is not a definitive reference on density functional theory. Along the way to learning how to perform the calculations, you will learn how to analyze the data, make plots, and how to interpret the results. This book is very much "recipe" oriented, with the intention of giving you enough information and knowledge to start your research. In that sense, many of the computations are not publication quality with respect to convergence of calculation parameters.
@@ -78,7 +84,7 @@ The DFT code used primarily in this book is [[http://cms.mpi.univie.ac.at/vasp/g
 
 Similar code would be used for other calculators, e.g. GPAW, Jacapo, etc... you would just have to import the python modules for those codes, and replace the code that defines the calculator.
 
-* TODO Introduction to DFT
+* TODO Introduction to DFT                                         :noexport:
 All calculations were performed using VASP \cite{Kresse199615, PhysRevB.54.11169, PhysRevB.49.14251, PhysRevB.47.558}, the Perdew-Burke-Ernzerhof (PBE) \cite{PhysRevLett.77.3865} exchange correlation functional with projector augmented wave (PAW) potentials provided in VASP \cite{PhysRevB.50.17953,PhysRevB.59.1758}.
 
 Monkhorst-Pack k-points \cite{PhysRevB.13.5188}
@@ -97,7 +103,6 @@ PAW in GPAW \cite{PhysRevB.71.035109}
 In this chapter we consider how to construct models of molecules, how to manipulate them, and how to calculate many properties of molecules.
 ** Defining and visualizing molecules
 We start by learning how to define a molecule and visualize it.
-
 *** Predefined molecules
 ASE defines a number of molecular geometries in the molecules
 database.  Data for the G2 database are from Raghavachari, Redfern,
@@ -109,6 +114,7 @@ MP2(full)/6-31G(d) optimized geometries. Here is a list of all the species avail
 #+BEGIN_SRC python :results output :exports both
 from ase.data import g2
 keys = g2.data.keys()
+# print in 3 columns
 for i in range(len(keys)/3):
     print '{0:25s}{1:25s}{2:25s}'.format(*tuple(keys[i*3:i*3+3]))
 #+END_SRC
@@ -173,7 +179,7 @@ CH3SCH3                  H2CO                     CH3CN
 
 Some other databases include the mod:ase.data.s22 for weakly interacting dimers and complexes, and mod:ase.data.extra_molecules which has a few extras like biphenyl and C60.
 
-Here is an example of getting the geometry of an acetonitrile molecule and writing an image to a file. Note that the default unit cell is a $1 \text{\AA} \times 1 \text{\AA} \times 1 \text{\AA}$ cubic cell. That is too small to use if your calculator uses periodic boundary conditions. We center the atoms in the unit cell and add vacuum on each side. We will add 6 \AA of vacuum on each side. In the write command we use the option show_unit_cell=2 to draw the unit cell boundaries. See Figure \ref{fig:ch3cn}.
+Here is an example of getting the geometry of an acetonitrile molecule and writing an image to a file. Note that the default unit cell is a $1 \mathrm{\AA} \times 1 \mathrm{\AA} \times 1 \mathrm{\AA}$ cubic cell. That is too small to use if your calculator uses periodic boundary conditions. We center the atoms in the unit cell and add vacuum on each side. We will add 6 \AA of vacuum on each side. In the write command we use the option show_unit_cell=2 to draw the unit cell boundaries. See Figure \ref{fig:ch3cn}.
 
 #+BEGIN_SRC python :results output :exports both
 from ase import Atoms
@@ -199,6 +205,7 @@ write('images/ch3cn.png', c60, show_unit_cell=2)
 
 #+caption: A CH$_3$CN molecule in a box.
 #+label: fig:ch3cn
+#+ATTR_LaTeX: placement={H}
 [[./images/ch3cn.png]]
 
 
@@ -229,6 +236,7 @@ write('images/ch3cn-rotated.png', atoms,
 
 #+caption: The rotated version of CH$_3$CN.
 #+label: fig:ch3cn-rot
+#+ATTR_LaTeX: placement={H}
 [[./images/ch3cn-rotated.png]]
 
 If you actually want to rotate the coordinates, there is a nice way to do that to, with the func:ase.Atoms.rotate method. Actually there are some subtelties in rotation. One rotates the molecule an angle (in radians) around a vector, but you have to choose whether the center of mass should be fixed or not. You also must decide whether the unit cell should be rotated or not. In the next example you can see the coordinates have changed due to the rotations. Note that the write function uses the rotation angle in degrees, while the rotate function uses radians.
@@ -269,6 +277,7 @@ for i,d in enumerate(diff):
 : 5 [-0.8340703   1.33495444  1.2092413 ]
 
 #+caption: Rotated CH$_3$CN molecule
+#+ATTR_LaTeX: placement={H}
 [[./images/ch3cn-rotated-2.png]]
 
 Note in this last case the unit cell is oriented differently than the previous example, since we chose not to rotate the unit cell.
@@ -346,6 +355,7 @@ write('images/isobutane_xyz.png', atoms, show_unit_cell=2)
 
 #+caption: An isobutane molecule read in from an xyz data file.
 #+label: fig:isobutane
+#+ATTR_LaTeX: placement={H}
 [[./images/isobutane_xyz.png]]
 
 *** From scratch
@@ -370,6 +380,7 @@ write('images/simple-cubic-cell.png',atoms,show_unit_cell=2)
 
 #+caption: Image of a CO molecule with the C at the origin.
 #+label: fig:co-origin
+#+ATTR_LaTeX: placement={H}
 [[./images/simple-cubic-cell.png]]
 
 There are two inconvenient features of the simple cubic cell:
@@ -400,6 +411,7 @@ write('images/fcc-cell.png',atoms2,show_unit_cell=2)
 
 #+caption: CO in an fcc cell.
 #+label: fig:co-fcc
+#+ATTR_LaTeX: placement={H}
 [[./images/fcc-cell.png]]
 
 At this point you might ask "How do you know the distance to the neighboring image?" The =ag= viewer lets you compute this graphically, but we can use code to determine this too. All we have to do is figure out the length of each lattice vector. We use the mod:numpy module to compute the distance of a vector as the square root of the sum of squared elements.
@@ -449,6 +461,7 @@ write('images/bothatoms.png', bothatoms, show_unit_cell=2, rotation='90x')
 
 #+caption: Image of the combined ammonia and oxygen molecule.
 #+label: fig:combined-atoms
+#+ATTR_LaTeX: placement={H}
 [[./images/bothatoms.png]]
 
 ** Simple properties
@@ -705,6 +718,7 @@ print 'theta = %1.1f degrees' % (theta_rad*180./pi)
 : theta = 106.3 degrees
 
 #+caption: Schematic of the vectors defining the H-N-H angle.
+#+ATTR_LaTeX: placement={H}
 [[./images/NH3-vectors.png]]
 
 Alternatively you could use the func:ase.Atoms.get_angle. Note we want the angle between atoms 1-0-2 to get the H-N-H angle.
@@ -762,6 +776,7 @@ dihedral angle = 60.00 degrees
 
 #+caption: Schematic of the calculated ethane dihedral angle.
 #+label: fig:ethane-dihedral
+#+ATTR_LaTeX: placement={H}
 [[./images/ethane-dihedral.png]]
 
 *** Energy and forces
@@ -824,7 +839,7 @@ savefig('images/co-dos.png')
 [[./images/co-dos.png]]
 
 *** Visualizing electron density
-The electron density is a 3d quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure \ref{fig:cd}) of plotting the charge density.
+The electron density is a 3d quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure \ref{fig:cd1}) of plotting the charge density.
 
 **** TODO explain different charge densities? total vs pseudo, etc...
 **** TODO replace the co-qn calculation.
@@ -848,9 +863,10 @@ mlab.show()
 
 #+caption: Charge density of a CO molecule with an atom at the origin. Due to periodic boundary conditions, part of the charge is at each corner of the unit cell.
 #+label: fig:cd1
+#+ATTR_LaTeX: placement={H}
 [[./images/co-cd.png]]
 
-The figure looks strange because the density is split into the corners due to periodic boundary conditions. That is one of many reasons why it is better to center the molecules in the unit cell. Here is a better example (Figure \ref{fig-cd2}).
+The figure looks strange because the density is split into the corners due to periodic boundary conditions. That is one of many reasons why it is better to center the molecules in the unit cell. Here is a better example (Figure \ref{fig:cd2}).
 
 #+BEGIN_SRC python
 #!/usr/bin/env python
@@ -872,6 +888,7 @@ mlab.show()
 
 #+caption: Charge density of a CO molecule centered in the unit cell.
 #+label: fig:cd2
+#+ATTR_LaTeX: placement={H}
 [[./images/co-cd-centered.png]]
 
 *** TODO Visualizing Kohn-Sham orbitals
@@ -1034,7 +1051,7 @@ if not None in energies:
     plt.plot(bond_lengths, energies, 'bo-')
     plt.xlabel('Bond length ($\AA$)')
     plt.ylabel('Total energy (eV)')
-    plt.savefig('molecules/co-bondlengths.png')
+    plt.savefig('images/co-bondlengths.png')
 #+END_SRC
 
 #+RESULTS:
@@ -1068,9 +1085,11 @@ energy = -14.351675 eV
 forces = (eV/ang)
 [[ 8.141  0.     0.   ]
  [-8.141  0.     0.   ]]
+
 #+end_example
 
 #+caption: Energy vs CO bondlength. The minimum appears to be near 1.15 \AA by inspection.
+#+ATTR_LaTeX: placement={H}
 [[./images/co-bondlengths.png]]
 
 **** Automatic geometry optimization with vasp
@@ -1747,6 +1766,7 @@ plt.savefig('images/O2-sp-dos.png')
 
 #+caption: Spin-polarized density of states for the O$_2$ molecule.
 #+label: fig:o2-sp-dos
+#+ATTR_LaTeX: placement={H}
 [[./images/O2-sp-dos.png]]
 
 You can see in Figure \ref{fig:o2-sp-dos} that there are two different densities of states for the two spins. One has 7 electrons in it, and the other has 5 electrons in it. The difference of two electrons leads to the magnetic moment of 2 which we calculated earlier.
@@ -1814,6 +1834,7 @@ plt.savefig('images/O2-dissociation-convergence.png')
 
 #+caption: Convergence study of the O$_2$ dissociation energy as a function of ENCUT.
 #+label: fig:o2-encut
+#+ATTR_LaTeX: placement={H}
 [[./images/O2-dissociation-convergence.png]]
 
 Based on these results (Figure \ref{fig:o2-encut}), you could argue the dissociation energy is converged to about 2 meV at a planewave cutoff of 450 eV, and within 50 meV at 350 eV cutoff. You have to decide what an appropriate level of convergence is. Note that increasing the planewave cutoff significantly increases the computational time, so you are balancing level of convergence with computational speed. It would appear that planewave cutoff is not the cause for the discrepancy between our calculations and literature values.
@@ -1916,6 +1937,7 @@ O2 -> 2O sigma = 0.01  D = 6.815 eV
 =
 
 #+caption: Effect of SIGMA on the oxygen dissociation energy.
+#+ATTR_LaTeX: placement={H}
 [[./images/O2-dissociation-sigma-convergence.png]]
 
 Clearly SIGMA has an effect, but it does not move the dissociation energy closer to the literature values!
@@ -2374,7 +2396,7 @@ We [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-n
 
 It is a good idea to verify your calculations and structures are what you expected. Let us print them here. Inspection of these results shows the geometries were all relaxed.
 
-#+BEGIN_SRC python :results output org :exports both
+#+BEGIN_SRC python :results output raw :exports both
 from jasp import *
 
 print '**** calculation summaries'
@@ -2404,7 +2426,6 @@ with jasp('molecules/wgs/H2O') as calc:
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_ORG
 **** calculation summaries
 ***** CO
 #+begin_example
@@ -2422,9 +2443,9 @@ with jasp('molecules/wgs/H2O') as calc:
   Unit cell volume = 512.000 Ang^3
   Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
              0.005  0.005  0.005 -0.000 -0.000 -0.000
- Atom#  sym       position [x,y,z]        rmsForce
-   0    O   [0.000      0.000      0.490] 0.01
-   1    C   [0.000      0.000      7.346] 0.01
+ Atom#  sym       position [x,y,z]         tag  rmsForce constraints
+   0    O   [0.000      0.000      0.490]   0   0.01      T T T
+   1    C   [0.000      0.000      7.346]   0   0.01      T T T
 --------------------------------------------------
 
 INCAR Parameters:
@@ -2446,7 +2467,7 @@ Pseudopotentials used:
 C: potpaw_PBE/C/POTCAR (git-hash: 2272d6745da89a3d872983542cef1d18750fc952)
 O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
 #+end_example
-***** CO2
+***** CO$_2$
 #+begin_example
 : -----------------------------
   VASP calculation from /home/jkitchin/dft-org/molecules/wgs/CO2
@@ -2462,10 +2483,10 @@ O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
   Unit cell volume = 512.000 Ang^3
   Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
              0.009  0.009  0.008 -0.000 -0.000 -0.000
- Atom#  sym       position [x,y,z]        rmsForce
-   0    C   [0.000      0.000      0.000] 0.00
-   1    O   [0.000      0.000      1.177] 0.01
-   2    O   [0.000      0.000      6.823] 0.01
+ Atom#  sym       position [x,y,z]         tag  rmsForce constraints
+   0    C   [0.000      0.000      0.000]   0   0.00      T T T
+   1    O   [0.000      0.000      1.177]   0   0.01      T T T
+   2    O   [0.000      0.000      6.823]   0   0.01      T T T
 --------------------------------------------------
 
 INCAR Parameters:
@@ -2503,9 +2524,9 @@ O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
   Unit cell volume = 512.000 Ang^3
   Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
              0.000  0.000  0.000 -0.000 -0.000 -0.000
- Atom#  sym       position [x,y,z]        rmsForce
-   0    H   [0.000      0.000      0.376] 0.00
-   1    H   [0.000      0.000      7.624] 0.00
+ Atom#  sym       position [x,y,z]         tag  rmsForce constraints
+   0    H   [0.000      0.000      0.376]   0   0.00      T T T
+   1    H   [0.000      0.000      7.624]   0   0.00      T T T
 --------------------------------------------------
 
 INCAR Parameters:
@@ -2526,7 +2547,7 @@ Pseudopotentials used:
 ----------------------
 H: potpaw_PBE/H/POTCAR (git-hash: fbc0773b08b32f553234b0b50cc6ad6f5085c816)
 #+end_example
-***** H2O
+***** H$_2$O
 #+begin_example
 : -----------------------------
   VASP calculation from /home/jkitchin/dft-org/molecules/wgs/H2O
@@ -2542,10 +2563,10 @@ H: potpaw_PBE/H/POTCAR (git-hash: fbc0773b08b32f553234b0b50cc6ad6f5085c816)
   Unit cell volume = 512.000 Ang^3
   Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
              0.005  0.004  0.005 -0.000 -0.000 -0.000
- Atom#  sym       position [x,y,z]        rmsForce
-   0    O   [0.000      0.000      0.122] 0.06
-   1    H   [0.000      0.766      7.522] 0.04
-   2    H   [0.000      7.234      7.522] 0.04
+ Atom#  sym       position [x,y,z]         tag  rmsForce constraints
+   0    O   [0.000      0.000      0.122]   0   0.06      T T T
+   1    H   [0.000      0.766      7.522]   0   0.04      T T T
+   2    H   [0.000      7.234      7.522]   0   0.04      T T T
 --------------------------------------------------
 
 INCAR Parameters:
@@ -2567,7 +2588,6 @@ Pseudopotentials used:
 H: potpaw_PBE/H/POTCAR (git-hash: fbc0773b08b32f553234b0b50cc6ad6f5085c816)
 O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
 #+end_example
-#+END_ORG
 
 *** Temperature dependent water gas shift equilibrium constant
 To correct the reaction energy for temperature effects, we must compute the vibrational frequencies of each species, and estimate the temperature dependent contributions to vibrational energy and entropy. We will break these calculations into several pieces. First we do each vibrational calculation. After those are done, we can get the data and construct the thermochemistry objects we need to estimate the reaction energy as a function of temperature (at constant pressure).
@@ -2787,6 +2807,7 @@ plt.show()
 : None
 
 #+caption: Thermodynamic energies of the water gas shift reaction as a function of temperature.
+#+ATTR_LaTeX: placement={H}
 [[./images/wgs-dG-T.png]]
 You can see a few things here. One is that at near 298K, the Gibbs free energy is about -40 kJ/mol. This is too negative for a standard state free energy, which we estimated to be about -29 kJ/mol from the [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-nist-webbook/#7][NIST webbook. ]]There could be several reasons for this disagreement, but the most likely one is errors in the exchange-correlation functional. Second, it appears the reaction enthalpy gets slightly more exothermic with temperature. This does not seem correct.
 
@@ -3019,11 +3040,12 @@ write('images/AgPd-bulk.png',atoms,show_unit_cell=2)
 : None
 
 #+caption: A simple fcc Ag bulk structure.
+#+ATTR_LaTeX: placement={H}
 
 [[./images/Ag-bulk.png]]
 
 #+caption: A simple Ag$_3$Pd bulk structure.
-
+#+ATTR_LaTeX: placement={H}
 [[./images/AgPd-bulk.png]]
 
 *** Using http://materialsproject.org
@@ -3093,7 +3115,7 @@ write('images/Ru2O4.png', atoms, show_unit_cell=2)
 #+END_SRC
 
 #+caption: An RuO$_2$ unit cell prepared from a cif file.
-
+#+ATTR_LaTeX: placement={H}
 [[./images/Ru2O4.png]]
 
 You can also download the VASP files. I have copied these files (INCAR, POSCAR, KPOINTS) to a directory, and now we can run a calculation like this:
@@ -3213,6 +3235,7 @@ plt.savefig('images/Cu-fcc.png')
 #+RESULTS:
 
 #+caption: Total energy vs. fcc lattice contant for Cu. It appears the minimum is near 3.65 \AA.
+#+ATTR_LaTeX: placement={H}
 [[./images/Cu-fcc.png]]
 
 If you want to know the lattice constant that gives the lowest energy, you would fit an [[Equations of State][equation of state]] to the data. Here is an example:
@@ -3241,6 +3264,7 @@ eos.plot('images/Cu-fcc-eos.png')
 : 12.0167187475 -3.72468102446 0.858998381274
 
 #+caption: Total energy vs. volume for fcc Cu with  fitted cubic polynomial equation of state.
+#+ATTR_LaTeX: placement={H}
 [[./images/Cu-fcc-eos.png]]
 
 Before we jump into the bcc calculations, let's consider what range of lattice constants we should choose. The fcc lattice is close-packed, and the volume of the primitive cell is $V = 1/4 a^3$ or about 11.8 \AA$^3$/atom. The volume of the equilibrium bcc primitive cell will probably be similar to that. The question is: what bcc lattice constant gives that volume? The simplest way to answer this is to compute the answer. We will make a bcc crystal at the fcc lattice constant, and then compute the scaling factor needed to make it the right volume.
@@ -3325,6 +3349,7 @@ plt.show()
 : None
 
 #+caption: Comparison of energies between fcc and bcc Cu. The fcc structure is lower in energy.
+#+ATTR_LaTeX: placement={H}
 [[./images/Cu-bcc-fcc.png]]
 
 Note we plot the energy vs. atomic volume. That is because the lattice constants of the two crystal structures are very different. It also shows that the atomic volumes in the two structures are similar.
@@ -3678,6 +3703,7 @@ plt.show()
 #+RESULTS:
 
 #+caption: Effects of SIGMA on the occupancies of the Cu system.
+#+ATTR_LaTeX: placement={H}
 [[./images/occ-sigma.png]]
 
 ** Cohesive energy
@@ -3804,7 +3830,7 @@ So far we have only considered relative stability at a pressure of 0 Pa. We now 
 
 The pressure is defined by: $P = -\left(\frac{\partial E}{\partial V}\right)_T$. So if we have an equation of state $E(V)$ we can calculate the pressure at any volume, or alternatively, given a pressure, compute the volume. Pressure can affect the energy of two phases differently, so that one may become stable under pressure. The condition where a phase transition occurs is when the pressure in the two phases is the same, which occurs at a common tangent.
 
-To show this, we need $E_{rutile}(V)$ and $E_{anatase{(V)$.
+To show this, we need $E_{rutile}(V)$ and $E_{anatase}(V)$.
 
 #+BEGIN_SRC python :results output :exports both
 # run the rutile calculations
@@ -3994,6 +4020,7 @@ P_rutile(V) =  0.00374040625*V^2 + 0.00374040625*V + 5.33239732738
 #+end_example
 
 #+caption: Equations of state (E(V)) for anatase and rutile TiO$_2$.
+#+ATTR_LaTeX: placement={H}
 [[./images/rutile-anatase-eos.png]]
 
 To find the conditions where a phase transition occurs, we have to find the common tangent line between the rutile and anatase phases. In other words we have to solve these two equations:
@@ -4058,6 +4085,7 @@ At a pressure of 4.5 GPa, we expect that anatase will start converting into ruti
 
 #+caption: Illustration of the common tangent that shows the pressure where anatase and rutile coexist before anatase converts to rutile.
 #+label: fig:tio2-cotangent
+#+ATTR_LaTeX: placement={H}
 [[./images/eos-common-tangent.png]]
 
 ** Bulk reaction energies
@@ -4225,6 +4253,7 @@ The answer is yes. Both structures are energetically more favorable than an equa
 
 #+caption: Conceptual picture of two alloys with exothermic formation energies.
 #+label: fig:alloy1
+#+ATTR_LaTeX: placement={H}
 [[./images/alloy-stability.png]]
 
 We will now examine another structure at another composition and its stability.
@@ -4297,6 +4326,7 @@ We find the weighted composition formation energy of pure Cu and cupd-1 is more 
 # inkscape images/alloy-phase-stability.svg
 #+caption: Illustration of phase separation.
 #+label: fig:alloy-phase-separation
+#+ATTR_LaTeX: placement={H}
 [[./images/alloy-phase-stability.png]]
 
 Finally, let us consider one more structure with the Cu3Pd stoichiometry.
@@ -4349,6 +4379,7 @@ This looks promising: the formation energy is much more favorable than cu3pd-1, 
 # convert ./images/alloy-phase-stability-2.svg ./images/alloy-phase-stability-2.png
 #+caption: Illustration of phase separation.
 #+label: fig:alloy-phase-separation-2
+#+ATTR_LaTeX: placement={H}
 [[./images/alloy-phase-stability-2.png]]
 
 The construction of alloy phase diagrams is difficult. You are always faced with the possibility that there is a phase that you have not calculated that is more stable than the ones you did calculate. One approach is to use a tool that automates the discovery of relevant structures such as the Alloy Theoretic Automated Toolkit (ATAT) \cite{vandeWalle2002539,vandeWalle2009266} which uses a cluster expansion methodology.
@@ -4544,7 +4575,7 @@ print rxn_energy
 #+RESULTS:
 : -1.966168
 
-There are a few reasons why our number does not agree with the experimental reaction energy. One reason is related to errors in the O2 dissociation energy, and another reason is related to localization of electrons in the Cu 3d orbitals \cite{PhysRevB.73.195107}. The first error of incorrect O$_2$ dissociation error is a systematic error that can be corrected empirically \cite{PhysRevB.73.195107}. Fixing the second error requires the application of DFT+U (see [[*DFT%2BU%20\index{DFT%2BU}][DFT+U]]).
+There are a few reasons why our number does not agree with the experimental reaction energy. One reason is related to errors in the O2 dissociation energy, and another reason is related to localization of electrons in the Cu 3d orbitals \cite{PhysRevB.73.195107}. The first error of incorrect O$_2$ dissociation error is a systematic error that can be corrected empirically \cite{PhysRevB.73.195107}. Fixing the second error requires the application of DFT+U (see [[*DFT%2BU][DFT+U]])
 
 ** Bulk density of states
 The density of states refers to the number of electronic states in a particular energy range.
@@ -4591,6 +4622,7 @@ plt.savefig('images/pd-dos.png')
 : None
 
 #+caption: Total DOS for bulk Pd.
+#+ATTR_LaTeX: placement={H}
 [[./images/pd-dos.png]]
 
 This DOS looks roughly like you would expect. The peak between -5 to 0 eV is the Pd d-band.
@@ -4623,6 +4655,7 @@ plt.savefig('images/pd-dos-ismear-5.png')
 #+RESULTS:
 
 #+caption: Total DOS for Pd computed with ISMEAR=-5
+#+ATTR_LaTeX: placement={H}
 [[./images/pd-dos-ismear-5.png]]
 This is not that different from the regular ISMEAR, so I am not sure this is correct. Maybe there is another way to compute DOS when the tetrahedral method is used? This looks like the eigenvalue spectrum.
 
@@ -4631,7 +4664,7 @@ In this example, we consider how to get the atom-projected density of states (AD
 
 It is important to note that these projected density of states are not physical observables. They are the wavefunctions projected onto atomic orbitals. For some situations this makes sense, e.g. the $d$ orbitals are fairly localized and reasonably approximated by atomic orbitals. The $s$ orbitals in a metal, in contrast, are totally delocalized. Depending on the cutoff radius (RWIGS) you choose, you can see very different ADOS.
 
-#+BEGIN_SRC python :results output org :exports bothh
+#+BEGIN_SRC python :results output :exports bothh
 from ase import Atoms, Atom
 from jasp import *
 from ase.calculators.vasp import VaspDos
@@ -4697,14 +4730,13 @@ savefig('images/pd-ados.png')
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_ORG
-Total # states = 9.29
-number of occupied states = 8.18
-d-band center = -2.00 eV
-d-band width  = 2.72 eV
-#+END_ORG
+: Total # states = 9.29
+: number of occupied states = 8.18
+: d-band center = -2.00 eV
+: d-band width  = 2.72 eV
 
 #+caption: Atom projected $d$-band for bulk Pd. The shaded area corresponds to the occupied states below the Fermi level.
+#+ATTR_LaTeX: placement={H}
 [[./images/pd-ados.png]]
 
 ** Band structures
@@ -4803,13 +4835,14 @@ ax.set_xticks([]) # no tick marks
 plt.xlabel('k-vector')
 ax.set_xticks([0,10,19])
 ax.set_xticklabels(['$L$', '$\Gamma$', '$X$'])
-plt.savefig('images/Si-bandstructure/bandstructure.png')
+plt.savefig('images/Si-bandstructure.png')
 #+END_SRC
 
 #+RESULTS:
 
 #+caption: Calculated band-structure for Si.
-[[./images/Si-bandstructure/bandstructure.png]]
+#+ATTR_LaTeX: placement={H}
+[[./images/Si-bandstructure.png]]
 
 ** Simulated XRD spectra                                           :noexport:
 You do not really need a DFT calculation for this, except to get the optimized structure. A few notes on using this module:
@@ -4887,6 +4920,7 @@ plt.savefig('images/Fe-fixedmagmom.png')
 #+END_SRC
 
 #+caption: Total energy vs. total magnetic moment for bcc Fe.
+#+ATTR_LaTeX: placement={H}
 [[./images/Fe-fixedmagmom.png]]
 
 You can see here there is a minimum in energy at a total magnetic moment somewhere between 4 and 5. There are two Fe atoms in the unit cell, which means the magnetic moment on each atom must be about 2.5 Bohr-magnetons. This is a good guess for a real calculation. Note that VASP [[http://cms.mpi.univie.ac.at/vasp/guide/node100.html#SECTION00099000000000000000][recommends]] you overestimate the magnetic moment guesses if you are looking for ferromagnetic solutions.
@@ -4955,6 +4989,7 @@ You can see that even though the total magnetic moment is 0, there is a spin on 
 *** TODO NiO-FeO formation energies with magnetism
 ** TODO phonons
 \cite{RevModPhys.73.515}
+
 * Surfaces
 ** Surface structures
 As with molecules and bulk systems mod:ase provides several convenience functions for making surfaces.
@@ -4974,6 +5009,7 @@ write('images/Al-slab.png', slab, rotation='90x',show_unit_cell=2)
 : None
 
 #+caption: An Al(111) slab with three layers and 20 \AA of vacuum.
+#+ATTR_LaTeX: placement={H}
 [[./images/Al-slab.png]]
 
 *** vicinal surfaces
@@ -4999,6 +5035,7 @@ write('images/Au-211.png',
 : None
 
 #+caption: An Au(211) surface constructed with mod:ase.
+#+ATTR_LaTeX: placement={H}
 [[./images/Au-211.png]]
 
 ** Surface relaxation
@@ -5223,6 +5260,7 @@ print ' The workfunction is {0:1.2f} eV'.format(wf)
 The workfunction of Al is listed as 4.08 at http://hyperphysics.phy-astr.gsu.edu/hbase/tables/photoelec.html.
 
 #+caption: $xy$ averaged local electrostatic potential of an Al(111) slab.
+#+ATTR_LaTeX: placement={H}
 [[./images/Al-wf.png]]
 
 ** Surface energy
@@ -5235,6 +5273,7 @@ where $E_{slab}$ is the total energy of a symmetric slab (i.e. one with inversio
 
 # inkscape images/surface-construction.svg
 #+caption: Schematic figure illustrating the calculation of a surface energy.
+#+ATTR_LaTeX: placement={H}
 [[./images/surface-construction.png]]
 
 Unfortunately, this approach does not always work. The bulk system is treated subtly different than the slab system, particularly in the $z$-direction where the vacuum is (where typically only one $k$-point is used in slabs). Consequently, the $k$-point sampling is not equivalent in the two systems, and one can in general expect some errors due to this, with the best case being cancellation of the errors due to total $k$-point convergence. In the worst case, one can get a linear divergence in the surface energy with slab thickness \cite{PhysRevB.49.16798}.
@@ -5304,6 +5343,7 @@ plt.savefig('images/Cu-unrelaxed-surface-energy.png')
 : sigma = 0.401526 eV/atom
 
 #+caption: Surface energy of an Al(111) slab as a function of thickness.
+#+ATTR_LaTeX: placement={H}
 [[./images/Cu-unrelaxed-surface-energy.png]]
 One reason for the oscillations may be quantum size effects \cite{Fiolhais2003209}. In \cite{PhysRevB.75.115131} the surface energy of Cu(111) is reported as 0.48 eV/atom, or 1.36 J/m$^2$. Here is an example showing a conversion between these two units. We use ase to compute the area of the unit cell from the norm of the cross-product of the vectors defining the surface unit cell.
 
@@ -5469,6 +5509,7 @@ savefig('images/dip-vs-nodip-esp.png')
 : The difference in energy is 0.006389 eV.
 
 #+caption: comparison of the electrostatic potentials with a dipole correction and without it.
+#+ATTR_LaTeX: placement={H}
 [[./images/dip-vs-nodip-esp.png]]
 
 The key points to notice in this figure are:
@@ -5628,17 +5669,20 @@ You can see the hcp site is not as energetically favorable as the fcc site. Inte
 
 #+caption: Final geometry of the fcc site.
 #+label: fig:fcc
+#+ATTR_LaTeX: placement={H}
 [[./images/pt-slab-fcc-o.png]]
 
 
 #+caption: Final geometry of the hcp site.
 #+label: fig:hcp
+#+ATTR_LaTeX: placement={H}
 [[./images/pt-slab-hcp-o.png]]
 
 The bridge site (Figure \ref{fig:bridge}, however, is clearly not at a bride site!
 
 #+caption: Final geometry of the bridge site. You can see that the oxygen atom ended up in the fcc site.
 #+label: fig:bridge
+#+ATTR_LaTeX: placement={H}
 [[./images/pt-slab-bridge-o.png]]
 
 Let us see what the original geometry and final geometry for the bridge site were. The POSCAR contains the initial geometry (as long as you haven't copied CONTCAR to POSCAR), and the CONTCAR contains the final geometry.
@@ -5654,9 +5698,11 @@ write('images/Pt-o-brige-final.png', atoms, show_unit_cell=2)
 #+END_SRC
 
 #+caption: Initial geometry of the bridge site. It is definitely on the bridge.
+#+ATTR_LaTeX: placement={H}
  [[./images/Pt-o-brige-ori.png]]
 
 #+caption: Final geometry of the bridge site. It has fallen into the fcc site.
+#+ATTR_LaTeX: placement={H}
 [[./images/Pt-o-brige-final.png]]
 
 You can see the problem. We should not call the adsorption energy from this calculation a bridge site adsorption energy because the O atom is actually in an fcc site! This kind of result can happen with relaxation, and you should always check that the result you get makes sense. Next, we consider how to get a bridge site adsorption energy by using constraints.
@@ -5726,9 +5772,11 @@ print 'Hads (bridge) = {0:1.3f} eV/O'.format(Hads_bridge)
 You can see that only the z-position of the O atom changed. Also, the adsorption energy of O on the bridge site is *much* less favorable than on the fcc or hcp sites.
 
 #+caption: Initial state of the O atom on the bridge site.
+#+ATTR_LaTeX: placement={H}
 [[./images/Pt-O-bridge-constrained-initial.png]]
 
 #+caption: Final state of the constrained O atom, still on the bridge site.
+#+ATTR_LaTeX: placement={H}
 [[./images/Pt-O-bridge-constrained-final.png]]
 
 *** Coverage dependence
@@ -5818,6 +5866,7 @@ The adsorption energy is *much* less favorable at 1ML coverage than at 0.25 ML c
 There is a small point to make here about what adsorption does to surface energies. Let us define a general surface formation energy scheme like this:
 
 #+caption: Schematic of forming a surface with adsorbates. First we form two clean surfaces by cleaving the bulk, then allow adsorption to occur on the surfaces.
+#+ATTR_LaTeX: placement={H}
 [[./images/adsorbate-surface-energy.png]]
 
 Let us presume the surfaces are symmetric, and that each surface contributes half of the energy change. The overall change in energy:
@@ -5917,7 +5966,7 @@ print 'vibrational freq   = {0} cm^(-1)'.format(f/(h*c))
 : vibrational freq   = 1.53634035507e+13 1/s
 : vibrational freq   = 512.113451691 cm^(-1)
 
-Note that now there are 39 modes, which is 3*N where N=13 atoms in the unit cell. Many of the modes are low in frequency, which correspond to slab modes that are essentially phonons. The O frequencies are not that different from the previous calculation (497 vs 512 cm^(-1)). This is why it is common to keep the slab atoms frozen.
+Note that now there are 39 modes, which is 3*N where N=13 atoms in the unit cell. Many of the modes are low in frequency, which correspond to slab modes that are essentially phonons. The O frequencies are not that different from the previous calculation (497 vs 512 cm$^{-1}$. This is why it is common to keep the slab atoms frozen.
 
 Calculating these results took 39*2 finite differences. It took about a day to get these results on a single CPU. It pays to use constraints to minimize the number of these calculations.
 
@@ -5966,16 +6015,16 @@ print 'vibrational freq   = {0} cm^(-1)'.format(f/(h*c))
 
 Note that we have one imaginary mode. This corresponds to the motion of the O atom falling into one of the neighboring 3-fold sites. It also indicates this position is not a stable minimum, but rather a saddle point. This position is a transition state for hopping between the fcc and hcp sites.
 
-** TODO Surface Diffusion barrier
+** Surface Diffusion barrier
 
 See this review \cite{ANIE.ANIE200602223} of diffusion on transition metal surfaces.
-
-http://cms.mpi.univie.ac.at/wiki/index.php/Collective_jumps_of_a_Pt_adatom_on_fcc-Pt_%28001%29:_Nudged_Elastic_Band_Calculation
 
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase.neb import NEB
 import matplotlib.pyplot as plt
+from scipy import interpolate
+import numpy as np
 
 with jasp('surfaces/Pt-slab-O-fcc') as calc:
     initial_atoms = calc.get_atoms()
@@ -6012,36 +6061,46 @@ final_images = images + images2[1:]
 with jasp('surfaces/Pt-O-fcc-hcp-neb',
           ibrion=1,
           nsw=90,
-          spring=-5, debug=logging.DEBUG,
+          spring=-5,
           atoms=final_images) as calc:
 
     try:
         images, energies = calc.get_neb()
-        from ase.visualize import view
-        view(images)
-        #p = calc.plot_neb(show=False)
-        #plt.savefig('images/pt-o-fcc-hcp-neb.png')
-        #print energies
-    except (VaspSubmitted, VaspQueued, ValueError):
-        for image in images:
-            print image.numbers
+        p = calc.plot_neb(show=False)
+
+        # let's fit a spline to this data
+        tck = interpolate.splrep(range(len(images)), energies-energies[0], s=0)
+        xfit = np.linspace(0,len(images)-1)
+        yfit = interpolate.splev(xfit, tck, der=0)
+
+        plt.plot(xfit, yfit, label='Fitted barrier')
+
+        imaxe = np.argmax(yfit) # index of approximate max energy
+
+        plt.plot([xfit[imaxe], xfit[imaxe]],
+                 [0.0, yfit[imaxe]],
+                 label='Barrier')
+        plt.legend(loc='best')
+
+        s = ['$\Delta$ E = {0:1.3f} eV'.format(energies[-1] - energies[0])]
+        s += ['Barrier = {0:1.3f} eV'.format(yfit[imaxe])]
+        plt.title('\n'.join(s))
+
+        plt.savefig('../../images/pt-o-fcc-hcp-neb.png')
+    except (VaspSubmitted, VaspQueued):
         pass
 #+END_SRC
 
 #+RESULTS:
-: [78 78 78 78 78 78 78 78 78 78 78 78  8]
-: [ 8 78 78 78 78 78 78 78 78 78 78 78 78]
-: [78 78 78 78 78 78 78 78 78 78 78 78  8]
 
-
-
-
-#+caption: Energy pathway for O diffusion from an fcc to hcp site
+#+caption: Energy pathway for O diffusion from an fcc to hcp site with a spline fit to determine the barrier
+#+ATTR_LaTeX: placement={H}
 [[./images/pt-o-fcc-hcp-neb.png]]
 
 *** TODO climbing image NEB
 *** TODO use vibrations to confirm transition state
 ** TODO Diffusion rates with transition state theory
+
 * Atomistic thermodynamics
 
 Let's consider how much the Gibbs free energy of an O$_2$ molecule changes as a function of temperature, at 1 atm. We use the Shomate polynomials to approximate the temperature dependent entropy and enthalpy, and use the parameters from the [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447&Units=SI&Mask=1#Thermo-Gas][NIST Webbook]] for O$_2$.
@@ -6083,6 +6142,7 @@ plt.savefig('images/O2-mu.png')
 #+RESULTS:
 
 #+caption: Effect of temperature on the Gibbs free energy of an O$_2$ molecule at 1 atm.
+#+ATTR_LaTeX: placement={H}
 [[./images/O2-mu.png]]
 
 This is clearly a big effect! Between 500-600K, the energy has dropped by nearly 1 eV.
@@ -6111,6 +6171,7 @@ plt.savefig('images/O2-g-p.png')
 : None
 
 #+caption: Effects of pressure on the ideal gas Gibbs free energy of O$_2$.
+#+ATTR_LaTeX: placement={H}
 [[./images/O2-g-p.png]]
 
 Similarly, you can see that simply changing the pressure has a large effect on the Gibbs free energy of an ideal gas through the term: $kT\ln(P/P_0)$, and that this effect is also temperature dependent. This leads us to the final formula we will use for the chemical potential of oxgyen:
@@ -6218,6 +6279,7 @@ plt.savefig('images/O2-mu.png')
 
 #+caption: $\Delta \mu_{O_2}(T,p)$ at different pressures and temperatures.
 #+label: fig:mu-o2
+#+ATTR_LaTeX: placement={H}
 [[./images/O2-mu.png]]
 
 #+BEGIN_SRC python :results output :exports both
@@ -6274,6 +6336,7 @@ plt.savefig('images/Ag2O-decomposition.png')
 #+RESULTS:
 
 #+caption: Temperature dependent decomposition pressure for Ag$_2$O.
+#+ATTR_LaTeX: placement={H}
 [[./images/Ag2O-decomposition.png]]
 
 This shows that at high temperature and low p_{O_2} metallic silver is stable, but if the  p_{O_2} gets high enough, the oxide becomes thermodynamically favorable. Here is another way to look at it.
@@ -6355,7 +6418,7 @@ plt.savefig('images/atomistic-thermo-adsorption.png')
 : None
 
 #+caption: Effect of oxygen chemical potential on the adsorption energy.
-
+#+ATTR_LaTeX: placement={H}
 [[./images/atomistic-thermo-adsorption.png]]
 ** Atomistic therodynamics and multiple reactions
 
@@ -6389,7 +6452,7 @@ $\mu_{gas}(T,p) = E_{gas}(0K) + \delta \mu + kT\ln\left (p/p^0\right )$, as we h
 [[http://cms.mpi.univie.ac.at/vasp/vasp/On_site_Coulomb_interaction_L_S_DA_U.html][VASP manual on DFT+U]]
 
 *** Metal oxide oxidation energies with DFT+U
-We will reconsider here the reaction (see [[*Metal%20oxide%20oxidation%20energies][Metal oxide oxidation energies]]) $2 Cu_2O + O_2 \rightleftharpoons 4 CuO$. We need to compute the energy of each species, now with DFT+U. In \cite{PhysRevB.73.195107} they use a U parameter of 4 eV for Cu which gave the best agreement with the experimental value. We will also try that.
+We will reconsider here the reaction (see [[Metal oxide oxidation energies][Metal oxide oxidation energies]]) $2 Cu_2O + O_2 \rightleftharpoons 4 CuO$. We need to compute the energy of each species, now with DFT+U. In \cite{PhysRevB.73.195107} they use a U parameter of 4 eV for Cu which gave the best agreement with the experimental value. We will also try that.
 
 **** Cu2O calculation with U=4.0
 #+BEGIN_SRC python :results output :exports both
@@ -6637,7 +6700,7 @@ for U in [2.0, 4.0, 6.0]:
 
 In \cite{PhysRevB.73.195107}, the difference in reaction energy from U=2 eV to U=4 eV was about 0.5 eV (estimated from graph). Here we see a range of 0.48 eV from U=2 eV to U=4 eV. Note that for U=0 eV, we had a (corrected reaction energy of -3.96 eV). Overall, the effect of adding U decreases this reaction energy.
 
-This example highlights the challenge of using an approach like DFT+U. On one hand, U has a clear effect of changing the reaction energy. On the other hand, so does the correction factor for the O$_$2 binding energy. In \cite{PhysRevB.73.195107} the authors tried to get the O$_2$ binding energy correction from oxide calculations where U is not important, so that it is decoupled from the non-cancelling errors that U fixes. See \cite{PhysRevB.84.045115} for additional discussion of how to mix GGA and GGA+U results.
+This example highlights the challenge of using an approach like DFT+U. On one hand, U has a clear effect of changing the reaction energy. On the other hand, so does the correction factor for the O$_2$ binding energy. In \cite{PhysRevB.73.195107} the authors tried to get the O$_2$ binding energy correction from oxide calculations where U is not important, so that it is decoupled from the non-cancelling errors that U fixes. See \cite{PhysRevB.84.045115} for additional discussion of how to mix GGA and GGA+U results.
 
 In any case, you should be careful to use well converged results to avoid compensating for convergence errors with U.
 
@@ -6708,6 +6771,7 @@ plt.savefig('images/ni-dos-pbe-pbe0-hse06.png')
 : HSE06 energy -6.293369
 
 #+caption: Comparison of DOS from GGA, and two hybrid GGAs (PBE0 ad HSE06).
+#+ATTR_LaTeX: placement={H}
 [[./images/ni-dos-pbe-pbe0-hse06.png]]
 
 ** TODO vdW
@@ -6823,6 +6887,7 @@ savefig('images/np-array-slice.png')
 : None
 
 #+caption: Example of slicing out part of an array. The solid line represents the whole array, and the symbols are the array between $2 < x < 4$.
+#+ATTR_LaTeX: placement={H}
 [[./images/np-array-slice.png]]
 The expression x$>2$ returns an array of booleans (True where the element of $x$ is greater than 2, and False where it is not) equal in size to $x$. Similarly $x<4$ returns a boolean array where $x$ is less than 4. We take the logical =and= of these two boolean arrays to get another boolean array where both conditions are True (i.e. $x<2$ and $x>4$). This final boolean array is True for the part of the arrays we are interested in, and we can use it to extract the subarrays we want.
 
@@ -7316,7 +7381,7 @@ Some notes:
 1) opening a file in 'w' mode clobbers any existing file, so do that
 with care!
 
-2) when writing to a file you have to add \n to each line. This is the
+2) when writing to a file you have to add \\n to each line. This is the
 carriage return.
 
 3) Manually writing and reading files is pretty tedious. Whenever
