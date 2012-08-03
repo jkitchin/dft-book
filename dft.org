@@ -6076,8 +6076,11 @@ with jasp('surfaces/Pt-O-fcc-hcp-neb',
         images, energies = calc.get_neb()
         p = calc.plot_neb(show=False)
 
+        print energies-energies[0]
+
         # let's fit a spline to this data
-        tck = interpolate.splrep(range(len(images)), energies-energies[0], s=0)
+        tck = interpolate.splrep(range(len(images)),
+                                 energies-energies[0], s=0)
         xfit = np.linspace(0,len(images)-1)
         yfit = interpolate.splev(xfit, tck, der=0)
 
@@ -6094,18 +6097,38 @@ with jasp('surfaces/Pt-O-fcc-hcp-neb',
         s += ['Barrier = {0:1.3f} eV'.format(yfit[imaxe])]
         plt.title('\n'.join(s))
 
+        # remember you are in surfaces/Pt-O-fcc-hcp-neb, so to save in
+        # the images directory you need ../../ in the path to get you
+        # back up.
         plt.savefig('../../images/pt-o-fcc-hcp-neb.png')
     except (VaspSubmitted, VaspQueued):
         pass
 #+END_SRC
 
 #+RESULTS:
+: [ 0.     0.308  0.55   0.546  0.44 ]
 
 #+caption: Energy pathway for O diffusion from an fcc to hcp site with a spline fit to determine the barrier
 #+ATTR_LaTeX: placement={H}
 [[./images/pt-o-fcc-hcp-neb.png]]
 
 *** TODO climbing image NEB
+One issue with the standard NEB method is there is no image that is exactly at the transition state. That means there is some uncertainty of the true energy of the transition state, and there is no way to verify the transition state by vibrational analysis. The climbing image NEB method solves that problem by making one image climb to the top. You set [[incar:LCLIMB][LCIMB]]=True in =jasp= to turn on the climbing image method.
+
+#+BEGIN_SRC python :results output
+# perform a climbing image NEB calculation
+from jasp import *
+with jasp('surfaces/Pt-O-fcc-hcp-neb') as calc:
+    calc.clone('surfaces/Pt-O-fcc-hcp-cineb')
+
+with jasp('surfaces/Pt-O-fcc-hcp-cineb',debug=logging.DEBUG) as calc:
+    calc.set(lclimb=True)
+
+    images, energies = calc.get_neb()
+#+END_SRC
+
+#+RESULTS:
+
 *** TODO use vibrations to confirm transition state
 ** TODO Diffusion rates with transition state theory
 
@@ -7071,6 +7094,45 @@ savefig('images/nonlinear-fitting-lsq.png')
 
 #+caption: Fitting a nonlinear function.
 [[./images/nonlinear-fitting-lsq.png]]
+
+*** Interpolation with splines
+When you do not know the functional form of data to fit an equation, you can still fit/interpolate with splines.
+#+BEGIN_SRC python
+# use splines to fit and interpolate data
+from scipy.interpolate import interp1d
+from scipy.optimize import fmin
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+x = np.array([ 0,      1,      2,      3,      4    ])
+y = np.array([ 0.,     0.308,  0.55,   0.546,  0.44 ])
+
+# create the interpolating function
+f = interp1d(x, y, kind='cubic', bounds_error=False)
+
+# to find the maximum, we minimize the negative of the function. We cannot just multiply f by -1, so we create a new function here.
+f2 = interp1d(x, -y, kind='cubic')
+xmax = fmin(f2, 2.5)
+
+xfit = np.linspace(0,4)
+
+plt.plot(x,y,'bo')
+plt.plot(xfit, f(xfit),'r-')
+plt.plot(xmax, f(xmax),'g*')
+plt.legend(['data','fit','max'], loc='best', numpoints=1)
+plt.xlabel('x data')
+plt.ylabel('y data')
+plt.title('Max point = ({0:1.2f}, {1:1.2f})'.format(float(xmax),
+                                                    float(f(xmax))))
+plt.savefig('images/splinefit.png')
+#+END_SRC
+
+#+caption: Illustration of a spline fit to data and finding the maximum point.
+[[./images/splinefit.png]]
+
+There are other good examples at http://docs.scipy.org/doc/scipy/reference/tutorial/interpolate.html
+
 
 *** Interpolation in 3D
 
@@ -8535,9 +8597,9 @@ with jasp('bulk/alloy/cu') as calc:
 #+end_example
 
 * Python
-** TODO easy_install as a user
+** easy_install as a user
 
-This usually works if that directory is on your PYTHONPATH
+This usually works if the directory is on your PYTHONPATH
 
 easy_install -d ~/lib/python2.6/site-packages/ pymatgen
 ** Integer division math gotchas
