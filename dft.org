@@ -18,12 +18,12 @@
 #+latex_header: \usepackage[section]{placeins}
 #+latex_header: \makeindex
 
-
 # custom link for incar:ISMEAR
 #+LINK: incar http://cms.mpi.univie.ac.at/wiki/index.php/%s
 
 # export code and results. need to figure out how to handle org environments
-##+PROPERTY: exports both
+#+PROPERTY: exports both
+
 * List of figures
 #+latex: \listoffigures
 * List of tables
@@ -839,7 +839,24 @@ savefig('images/co-dos.png')
 *** Visualizing electron density
 The electron density is a 3d quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure \ref{fig:cd1}) of plotting the charge density.
 
-**** TODO explain different charge densities? total vs pseudo, etc...
+#+BEGIN_SRC python
+from enthought.mayavi import mlab
+from jasp import *
+
+with jasp('molecules/co-cg') as calc:
+    x,y,z,cd = calc.get_charge_density()
+
+mlab.contour3d(x,y,z,cd)
+mlab.savefig('images/co-cd.png')
+mlab.show()
+#+END_SRC
+
+#+RESULTS:
+: None
+
+#+caption: Charge density of a CO molecule.
+#+label: fig:cd1
+[[./images/co-cd.png]]
 
 *** TODO Visualizing Kohn-Sham orbitals
 need to read wavecar files!
@@ -2829,6 +2846,105 @@ Despite the error in $\Delta G$, the equilibrium constant at 1000K seems reasona
 
 ** TODO Molecular reaction barriers
 
+#+BEGIN_SRC python
+from ase import Atoms
+from ase.data.molecules import molecule
+from ase.visualize import view
+import numpy as np
+from ase.neb import NEB
+from jasp import *
+from ase.constraints import FixAtoms
+
+atoms = molecule('NH3')
+constraint = FixAtoms(mask=[atom.symbol == 'N' for atom in atoms])
+atoms.set_constraint(constraint)
+
+Npos = atoms.positions[0]
+
+# move N to origin
+atoms.translate(-Npos)
+atoms.set_cell((10,10,10),scale_atoms=False)
+
+atoms2 = atoms.copy()
+pos2 = atoms2.positions
+
+for i,atom in enumerate(atoms2):
+    if atom.symbol == 'H':
+        # reflect through z
+        pos2[i] *= np.array([1,1,-1])
+atoms2.positions = pos2
+
+#now move N to center of box
+atoms.translate([5,5,5])
+atoms2.translate([5,5,5])
+
+with jasp('molecules/nh3-initial',
+          xc='PBE',
+          encut=350,
+          ibrion=1,
+          nsw=10,
+          atoms=atoms) as calc:
+    try:
+        calc.calculate()
+    except (VaspSubmitted, VaspQueued):
+        pass
+
+
+with jasp('molecules/nh3-final',
+          xc='PBE',
+          encut=350,
+          ibrion=1,
+          nsw=10,
+          atoms=atoms2) as calc:
+    try:
+        calc.calculate()
+    except (VaspSubmitted, VaspQueued):
+        pass
+
+#+END_SRC
+
+#+RESULTS:
+: None
+
+Now we do the band calculation.
+#+BEGIN_SRC python
+# Run NH3 NEB calculations
+from ase.neb import NEB
+from jasp import *
+
+with jasp('molecules/nh3-initial') as calc:
+    atoms = calc.get_atoms()
+
+with jasp('molecules/nh3-final') as calc:
+    atoms2 = calc.get_atoms()
+
+# 5 images including endpoints
+images = [atoms]
+images += [atoms.copy() for i in range(3)]
+images += [atoms2]
+
+neb = NEB(images)
+neb.interpolate()
+
+with jasp('molecules/nh3-neb',
+          xc='PBE',
+          ibrion=1,
+          nsw=90,
+          spring=-5, debug=logging.DEBUG,
+          atoms=images) as calc:
+    images,energies = calc.get_neb()
+
+    calc.plot_neb(show=False)
+import matplotlib.pyplot as plt
+plt.savefig('images/nh3-neb.png')
+#+END_SRC
+
+#+RESULTS:
+: None
+
+
+#+caption: NEB for ammonia flipping. Note the artifacts of spline fitting.
+[[./images/nh3-neb.png]]
 
 ** Simulated infrared spectra
 At http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02 there is a recipe for computing the Infrared vibrational spectroscopy intensities in VASP. We are going to do that for water here. We instruct Vasp to compute the vibrational modes using density functional perturbation theory with [[incar:IBRION][IBRION]]=7. Note, this is different than in [[Vibrational frequencies]] where finite differences were used with IBRION=5 or 6. Remember we already relaxed the water molecule in a previous section ([[*Relaxation%20of%20a%20water%20molecule][Relaxation of a water molecule]]). We will reuse that calculation here.
@@ -6076,27 +6192,6 @@ with jasp('surfaces/Pt-O-fcc-hcp-neb',
         images, energies = calc.get_neb()
         p = calc.plot_neb(show=False)
 
-        print energies-energies[0]
-
-        # let's fit a spline to this data
-        tck = interpolate.splrep(range(len(images)),
-                                 energies-energies[0], s=0)
-        xfit = np.linspace(0,len(images)-1)
-        yfit = interpolate.splev(xfit, tck, der=0)
-
-        plt.plot(xfit, yfit, label='Fitted barrier')
-
-        imaxe = np.argmax(yfit) # index of approximate max energy
-
-        plt.plot([xfit[imaxe], xfit[imaxe]],
-                 [0.0, yfit[imaxe]],
-                 label='Barrier')
-        plt.legend(loc='best')
-
-        s = ['$\Delta$ E = {0:1.3f} eV'.format(energies[-1] - energies[0])]
-        s += ['Barrier = {0:1.3f} eV'.format(yfit[imaxe])]
-        plt.title('\n'.join(s))
-
         # remember you are in surfaces/Pt-O-fcc-hcp-neb, so to save in
         # the images directory you need ../../ in the path to get you
         # back up.
@@ -6106,14 +6201,17 @@ with jasp('surfaces/Pt-O-fcc-hcp-neb',
 #+END_SRC
 
 #+RESULTS:
-: [ 0.     0.308  0.55   0.546  0.44 ]
+: Optimization terminated successfully.
+:          Current function value: -0.575389
+:          Iterations: 12
+:          Function evaluations: 24
 
 #+caption: Energy pathway for O diffusion from an fcc to hcp site with a spline fit to determine the barrier
 #+ATTR_LaTeX: placement={H}
 [[./images/pt-o-fcc-hcp-neb.png]]
 
 *** TODO climbing image NEB
-One issue with the standard NEB method is there is no image that is exactly at the transition state. That means there is some uncertainty of the true energy of the transition state, and there is no way to verify the transition state by vibrational analysis. The climbing image NEB method solves that problem by making one image climb to the top. You set [[incar:LCLIMB][LCIMB]]=True in =jasp= to turn on the climbing image method.
+One issue with the standard NEB method is there is no image that is exactly at the transition state. That means there is some uncertainty of the true energy of the transition state, and there is no way to verify the transition state by vibrational analysis. The climbing image NEB method solves that problem by making one image climb to the top. You set [[incar:LCLIMB][LCLIMB]]=True in =jasp= to turn on the climbing image method. Here we use the previous calculation as a starting point and turn on the climbing image method.
 
 #+BEGIN_SRC python :results output
 # perform a climbing image NEB calculation
@@ -6124,7 +6222,8 @@ with jasp('surfaces/Pt-O-fcc-hcp-neb') as calc:
 with jasp('surfaces/Pt-O-fcc-hcp-cineb',debug=logging.DEBUG) as calc:
     calc.set(lclimb=True)
 
-    images, energies = calc.get_neb()
+    images, energies = calc.get_neb(npi=4)
+    calc.plot_neb()
 #+END_SRC
 
 #+RESULTS:
@@ -6808,11 +6907,59 @@ plt.savefig('images/ni-dos-pbe-pbe0-hse06.png')
 ** TODO vdW
 http://cms.mpi.univie.ac.at/vasp/vasp/vdW_DF_functional_Langreth_Lundqvist_et_al.html
 
-** [[http://cms.mpi.univie.ac.at/vasp/vasp/DFT_D2_method_Grimme.html][TODO DFT+D]]
+** TODO DFT+D
+http://cms.mpi.univie.ac.at/vasp/vasp/DFT_D2_method_Grimme.html
 \cite{PhysRevB.82.081101}
-** TODO ELF
+** ELF
+
+Need better intro here.
+
+
+#+BEGIN_SRC python
+# compute ELF for CF4
+from jasp import *
+from ase.data.molecules import molecule
+from enthought.mayavi import mlab
+
+atoms = molecule('CF4')
+atoms.center(vacuum=5)
+
+with jasp('molecules/cf4-elf',
+          encut=350,
+          prec='high',
+          ismear=0,
+          sigma=0.01,
+          xc='PBE',
+          lelf=True,
+          atoms=atoms) as calc:
+    calc.calculate()
+
+    x,y,z,elf = calc.get_elf()
+    mlab.contour3d(x,y,z,elf,contours=[0.3])
+    mlab.savefig('../../images/cf4-elf-3.png')
+
+    mlab.figure()
+    mlab.contour3d(x,y,z,elf,contours=[0.75])
+    mlab.savefig('../../images/cf4-elf-75.png')
+#+END_SRC
+
+#+RESULTS:
+: None
+
+
+#+caption: ELF for an isosurface of 0.3 for CF$_4$.
+#+label: fig:elf1
+[[./images/cf4-elf-3.png]]
+
+
+#+caption: ELF for an isosurface of 0.75 for CF$_4$.
+#+label: fig:elf2
+[[./images/cf4-elf-75.png]]
+
+These images (Figure \ref{fig:elf1} and \ref{fig:elf2}) are basically consistent with those in Reference \cite{silvi1994}.
+
 ** TODO Charge partitioning schemes
-** TODO COOP/COHP
+** TODO COOP/COHP                                                  :noexport:
 maybe Mike Widom can show me how he did this with VASP?
 * Acknowledgments
 I would like to thank Zhongnan Xu for sending me some examples on magnetism. Alan McGaughey for sending me some NEB examples.
