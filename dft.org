@@ -24,6 +24,9 @@
 # export code and results. need to figure out how to handle org environments
 #+PROPERTY: exports both
 
+# http://orgmode.org/worg/org-contrib/org-special-blocks.html
+# http://en.wikibooks.org/wiki/LaTeX/Customizing_LaTeX#New_Environments
+
 * List of figures
 #+latex: \listoffigures
 * List of tables
@@ -100,7 +103,7 @@ Kohn's Nobel Lecture \cite{RevModPhys.71.1253}, Pople's Nobel Lecture \cite{RevM
 PAW in GPAW \cite{PhysRevB.71.035109}
 
 * Molecules
-In this chapter we consider how to construct models of molecules, how to manipulate them, and how to calculate many properties of molecules.
+In this chapter we consider how to construct models of molecules, how to manipulate them, and how to calculate many properties of molecules. For a nice comparison of VASP and Gaussian see \cite{paier:234102}.
 ** Defining and visualizing molecules
 We start by learning how to define a molecule and visualize it.
 *** Predefined molecules
@@ -2845,13 +2848,13 @@ Despite the error in $\Delta G$, the equilibrium constant at 1000K seems reasona
 ***** TODO something is wrong with the thermochemistry I think.
 
 ** TODO Molecular reaction barriers
+We will consider a simple example of the barrier for NH$_3$ inversion. We have to create an NH$_3$ molecule in the initial and inverted state (these have exactly the same energy), and then interpolate a band of images. Then, we use the NEB method to compute the barrier to inversion.
 
 #+BEGIN_SRC python
+# compute initial and final states
 from ase import Atoms
 from ase.data.molecules import molecule
-from ase.visualize import view
 import numpy as np
-from ase.neb import NEB
 from jasp import *
 from ase.constraints import FixAtoms
 
@@ -2889,7 +2892,6 @@ with jasp('molecules/nh3-initial',
     except (VaspSubmitted, VaspQueued):
         pass
 
-
 with jasp('molecules/nh3-final',
           xc='PBE',
           encut=350,
@@ -2900,7 +2902,6 @@ with jasp('molecules/nh3-final',
         calc.calculate()
     except (VaspSubmitted, VaspQueued):
         pass
-
 #+END_SRC
 
 #+RESULTS:
@@ -2909,8 +2910,8 @@ with jasp('molecules/nh3-final',
 Now we do the band calculation.
 #+BEGIN_SRC python
 # Run NH3 NEB calculations
-from ase.neb import NEB
 from jasp import *
+from ase.neb import NEB
 
 with jasp('molecules/nh3-initial') as calc:
     atoms = calc.get_atoms()
@@ -2943,7 +2944,7 @@ plt.savefig('images/nh3-neb.png')
 : None
 
 
-#+caption: NEB for ammonia flipping. Note the artifacts of spline fitting.
+#+caption: NEB for ammonia flipping.
 [[./images/nh3-neb.png]]
 
 ** Simulated infrared spectra
@@ -5114,6 +5115,9 @@ You can see that even though the total magnetic moment is 0, there is a spin on 
 ** TODO phonons
 \cite{RevModPhys.73.515}
 
+** TODO solid state NEB
+\cite{Caspersen10052005} Carter paper
+\cite{sheppard:074103} recent Henkelman paper
 * Surfaces
 ** Surface structures
 As with molecules and bulk systems mod:ase provides several convenience functions for making surfaces.
@@ -6143,6 +6147,8 @@ Note that we have one imaginary mode. This corresponds to the motion of the O at
 
 See this review \cite{ANIE.ANIE200602223} of diffusion on transition metal surfaces.
 
+*** Standard nudged elastic band method
+Here we illustrate a standard NEB method. You need an initial and final state to start with.
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase.neb import NEB
@@ -6210,7 +6216,7 @@ with jasp('surfaces/Pt-O-fcc-hcp-neb',
 #+ATTR_LaTeX: placement={H}
 [[./images/pt-o-fcc-hcp-neb.png]]
 
-*** TODO climbing image NEB
+*** Climbing image NEB
 One issue with the standard NEB method is there is no image that is exactly at the transition state. That means there is some uncertainty of the true energy of the transition state, and there is no way to verify the transition state by vibrational analysis. The climbing image NEB method solves that problem by making one image climb to the top. You set [[incar:LCLIMB][LCLIMB]]=True in =jasp= to turn on the climbing image method. Here we use the previous calculation as a starting point and turn on the climbing image method.
 
 #+BEGIN_SRC python :results output
@@ -6220,13 +6226,24 @@ with jasp('surfaces/Pt-O-fcc-hcp-neb') as calc:
     calc.clone('surfaces/Pt-O-fcc-hcp-cineb')
 
 with jasp('surfaces/Pt-O-fcc-hcp-cineb',debug=logging.DEBUG) as calc:
-    calc.set(lclimb=True)
+    calc.set(ichain=0,lclimb=True)
 
     images, energies = calc.get_neb(npi=4)
-    calc.plot_neb()
+    calc.plot_neb(show=False)
+import matplotlib.pyplot as plt
+plt.savefig('images/pt-o-cineb.png')
 #+END_SRC
 
 #+RESULTS:
+: Optimization terminated successfully.
+:          Current function value: -0.575288
+:          Iterations: 12
+:          Function evaluations: 24
+
+#+caption: Climbing image NEB
+[[./images/pt-o-cineb.png]]
+
+This did not do exactly what I expected. I thought there would be an image that had climbed to the top. Maybe this is an artifact of the spline fitting. More band points would probably clarify that.
 
 *** TODO use vibrations to confirm transition state
 ** TODO Diffusion rates with transition state theory
@@ -6960,7 +6977,9 @@ These images (Figure \ref{fig:elf1} and \ref{fig:elf2}) are basically consistent
 
 ** TODO Charge partitioning schemes
 ** TODO COOP/COHP                                                  :noexport:
-maybe Mike Widom can show me how he did this with VASP?
+
+\cite{doi.10.1021/jp202489s}
+
 * Acknowledgments
 I would like to thank Zhongnan Xu for sending me some examples on magnetism. Alan McGaughey for sending me some NEB examples.
 * Appendices
@@ -7241,6 +7260,75 @@ savefig('images/nonlinear-fitting-lsq.png')
 
 #+caption: Fitting a nonlinear function.
 [[./images/nonlinear-fitting-lsq.png]]
+
+*** Nonlinear curve fitting with confidence intervals
+#+BEGIN_SRC python :results output
+# Nonlinear curve fit with confidence interval
+from numpy import *
+from scipy.optimize import curve_fit
+from scipy.stats.distributions import  t
+
+'''
+fit this equation to data
+y = c1 exp(-x) + c2*x
+
+this is actually a linear regression problem, but it is convenient to
+use the nonlinear fitting routine because it makes it easy to get
+confidence intervals. The downside is you need an initial gues.
+
+from Matlab
+b =
+
+    4.9671
+    2.1100
+
+
+bint =
+
+    4.6267    5.3075
+    1.7671    2.4528
+'''
+
+x = array([ 0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9,  1. ])
+y = array([ 4.70192769,  4.46826356,  4.57021389,  4.29240134,  3.88155125,
+            3.78382253,  3.65454727,  3.86379487,  4.16428541,  4.06079909])
+
+# this is the function we want to fit to our data
+def func(x,c0, c1):
+    return c0*exp(-x) + c1*x
+
+pars, pcov = curve_fit(func, x, y, p0=[4.96, 2.11])
+
+alpha = 0.05 # 95% confidence interval
+
+n = len(y)    # number of data points
+p = len(pars) # number of parameters
+
+dof = max(0, n-p) # number of degrees of freedom
+
+tval = t.ppf(1.0-alpha/2., dof) # student-t value for the dof and confidence level
+
+for i, p,var in zip(range(n), pars, diag(pcov)):
+    sigma = var**0.5
+    print 'c{0}: {1} [{2}  {3}]'.format(i, p,
+                                  p - sigma*tval,
+                                  p + sigma*tval)
+
+import matplotlib.pyplot as plt
+plt.plot(x,y,'bo ')
+xfit = linspace(0,1)
+yfit = func(xfit, pars[0], pars[1])
+plt.plot(xfit,yfit,'b-')
+plt.legend(['data','fit'],loc='best')
+plt.savefig('images/nonlin-fit-ci.png')
+#+END_SRC
+
+#+RESULTS:
+: c0: 4.96713966556 [4.62674477087  5.30753456025]
+: c1: 2.10995112466 [1.76711622383  2.45278602549]
+
+#+caption: Nonlinear fit to data.
+[[./images/nonlin-fit-ci.png]]
 
 *** Interpolation with splines
 When you do not know the functional form of data to fit an equation, you can still fit/interpolate with splines.
