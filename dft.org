@@ -2847,9 +2847,10 @@ Despite the error in $\Delta G$, the equilibrium constant at 1000K seems reasona
 
 ***** TODO something is wrong with the thermochemistry I think.
 
-** TODO Molecular reaction barriers
+** Molecular reaction barriers
 We will consider a simple example of the barrier for NH$_3$ inversion. We have to create an NH$_3$ molecule in the initial and inverted state (these have exactly the same energy), and then interpolate a band of images. Then, we use the NEB method to compute the barrier to inversion.
 
+*** Get initial and final states
 #+BEGIN_SRC python
 # compute initial and final states
 from ase import Atoms
@@ -2907,6 +2908,7 @@ with jasp('molecules/nh3-final',
 #+RESULTS:
 : None
 
+*** Run band calculation
 Now we do the band calculation.
 #+BEGIN_SRC python
 # Run NH3 NEB calculations
@@ -2946,6 +2948,31 @@ plt.savefig('images/nh3-neb.png')
 
 #+caption: NEB for ammonia flipping.
 [[./images/nh3-neb.png]]
+*** Make a movie of the animation
+#+BEGIN_SRC python :results output
+# make neb movie
+from ase.io import write
+from ase.visualize import view
+from jasp import *
+
+with jasp('molecules/nh3-neb') as calc:
+    images,energies = calc.get_neb()
+
+# this rotates the atoms 90 degrees about the y-axis
+[atoms.rotate('y', np.pi/2.) for atoms in images]
+
+for i,atoms in enumerate(images):
+    write('images/00{0}-nh3.png'.format(i), atoms, show_unit_cell=2)
+
+# animated gif
+os.system('convert -delay 50 -loop 0 images/00*-nh3.png nh3-neb.gif')
+
+# Shockwave flash
+os.system('png2swf -o nh3-neb.swf images/00*-nh3.png ')
+
+#+END_SRC
+
+#+RESULTS:
 
 ** Simulated infrared spectra
 At http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02 there is a recipe for computing the Infrared vibrational spectroscopy intensities in VASP. We are going to do that for water here. We instruct Vasp to compute the vibrational modes using density functional perturbation theory with [[incar:IBRION][IBRION]]=7. Note, this is different than in [[Vibrational frequencies]] where finite differences were used with IBRION=5 or 6. Remember we already relaxed the water molecule in a previous section ([[*Relaxation%20of%20a%20water%20molecule][Relaxation of a water molecule]]). We will reuse that calculation here.
@@ -7004,6 +7031,102 @@ Sometimes it is convenient to create an Atoms object by deleting atoms from an e
 : [3, 4, 5, 6, 7, 8]
 : Atoms(symbols='C2O', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False, False, False])
 
+*** Advanced tagging
+We can label atoms with integer tags to help identify them later, e.g. which atoms are adsorbates, or surface atoms, or near an adsorbate, etc... We might want to refer to those atoms later for electronic structure, geometry analysis, etc...
+
+The method uses integer tags that are powers of two, and then uses binary operators to check for matches. & is a bitwise AND. The key to understanding this is to look at the tags in binary form. The tags [1 2 4 8] can be represented by a binary string:
+
+#+begin_example
+1 = [1 0 0 0]
+2 = [0 1 0 0]
+4 = [0 0 1 0]
+8 = [0 0 0 1]
+#+end_example
+
+so, an atom tagged with 1 and 2 would have a tag of [1 1 0 0] or a tag of 3.
+
+#+begin_src python :results output
+'''
+adapted from https://listserv.fysik.dtu.dk/pipermail/campos/2004-September/001155.html
+'''
+
+from ase import *
+from ase.io import write
+from ase.lattice.surface import *
+from ase.constraints import FixAtoms
+
+# the bcc111 function automatically tags atoms
+slab = bcc111('W',
+              a=3.92,       # W lattice constant
+              size=(2,2,6), #6-layer slab in 2x2 configuration
+              vacuum=10.0)
+
+#reset tags to be powers of two
+slab.set_tags([2**a.get_tag() for a in slab])
+
+# we had 6 layers, so we create new tags starting at 7
+# Note you must use powers of two for all the tags!
+LAYER1 = 2
+ADSORBATE = 2**7
+FREE = 2**8
+NEARADSORBATE = 2**9
+
+
+# let's tag LAYER1 atoms to be FREE too. we can address it by LAYER1 or FREE
+tags = slab.get_tags()
+for i,tag in enumerate(tags):
+    if tag == LAYER1:
+        tags[i] += FREE
+slab.set_tags(tags)
+
+#create a CO molecule
+co= Atoms([Atom('C',[0., 0., 0. ], tag=ADSORBATE),
+           Atom('O',[0., 0., 1.1], tag=ADSORBATE+FREE)]) #we will relax only O
+
+add_adsorbate(slab,co,height=1.2,position='hollow')
+
+#the adsorbate is centered between atoms 20, 21 and 22 (use
+#view(slab)) and over atom12 lets label those atoms, so it is easy to
+#do electronic structure analysis on them later.
+tags = slab.get_tags() # len(tags) changed, so we reget them.
+tags[12]+=NEARADSORBATE
+tags[20]+=NEARADSORBATE
+tags[21]+=NEARADSORBATE
+tags[22]+=NEARADSORBATE
+slab.set_tags(tags)
+#update the tags
+slab.set_tags(tags)
+
+#extract pieces of the slab based on tags
+#atoms in the adsorbate
+ads = slab[(slab.get_tags() & ADSORBATE) == ADSORBATE]
+
+#atoms in LAYER1
+layer1 = slab[(slab.get_tags() & LAYER1) == LAYER1]
+
+#atoms defined as near the adsorbate
+nearads = slab[(slab.get_tags() & NEARADSORBATE) == NEARADSORBATE]
+
+#atoms that are free
+free = slab[(slab.get_tags() & FREE) == FREE]
+
+#atoms that are FREE and part of the ADSORBATE
+freeads = slab[(slab.get_tags() & FREE+ADSORBATE) == FREE+ADSORBATE]
+
+#atoms that are NOT FREE
+notfree = slab[(slab.get_tags() & FREE) != FREE]
+
+constraint = FixAtoms(mask = (slab.get_tags() & FREE) != FREE)
+slab.set_constraint(constraint)
+write('images/tagged-bcc111.png',slab,rotation='-90x',show_unit_cell=2)
+#+end_src
+
+#+RESULTS:
+: [ 64  64  64  64  32  32  32  32  16  16  16  16 520   8   8   8   4   4
+:    4   4 770 770 770 258 128 384]
+
+
+[[./images/tagged-bcc111.png]]
 *** Using units in ase
 mod:ase uses a base set of atomic units. Other units are defined in terms of those units, and you can easily convert to alternative units by dividing your quantity in atomic units by the units you want.
 
@@ -7367,7 +7490,6 @@ plt.savefig('images/splinefit.png')
 [[./images/splinefit.png]]
 
 There are other good examples at http://docs.scipy.org/doc/scipy/reference/tutorial/interpolate.html
-
 
 *** Interpolation in 3D
 
@@ -8018,7 +8140,12 @@ module is more powerful than I have shown here, so one day checkout
 The mod:pickle and mod:shelve modules of python also offer some
 data storage functionality. Check them out some day too.
 
-*** reading and writing excel files
+*** TODO reading and writing excel files
+*** TODO making movies
+1. using animate
+2. using swftools (png2swf, pdf2swf)
+http://wiki.swftools.org/wiki/Main_Page#SWF_Tools_0.9.2_.28_Current_Stable_Version_.29_Documentation
+
 ** Computational geometry
 *** Changing coordinate systems
 Let A, B, C be the unit cell vectors
