@@ -3,8 +3,8 @@
 #+AUTHOR:    John Kitchin
 #+EMAIL:     jkitchin@cmu.edu
 #+DATE:      2012-07-11 Wed
-#+DESCRIPTION:
-#+KEYWORDS:
+#+DESCRIPTION: A book on using density functional theory to model materials.
+#+KEYWORDS: Density functional theory, materials, VASP
 #+LANGUAGE:  en
 #+OPTIONS:   H:8 num:t toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t
 #+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
@@ -16,6 +16,9 @@
 #+XSLT:
 #+latex_header: \usepackage{makeidx}
 #+latex_header: \usepackage[section]{placeins}
+#+latex_header: \usepackage{xcolor}
+#+latex_header: \usepackage{adjustbox}
+
 #+latex_header: \makeindex
 
 # custom link for incar:ISMEAR
@@ -26,6 +29,23 @@
 
 # http://orgmode.org/worg/org-contrib/org-special-blocks.html
 # http://en.wikibooks.org/wiki/LaTeX/Customizing_LaTeX#New_Environments
+
+# http://en.wikibooks.org/wiki/LaTeX/Colors
+
+#+begin_latex
+% environment to put exercises in a gray, numbered box
+\newcounter{ExerciseCount}
+\setcounter{ExerciseCount}{0}
+\definecolor{MyGray}{rgb}{0.96,0.97,0.98}
+
+\newenvironment{exercise}[0]{%
+\stepcounter{ExerciseCount} \begin{adjustbox}{minipage=[b]{380px},margin=1ex,bgcolor=MyGray,env=center}%
+        \textbf{Exercise \thesection.\theExerciseCount}\\
+}{%
+    \end{adjustbox}%
+}
+#+end_latex
+
 
 * List of figures
 #+latex: \listoffigures
@@ -86,6 +106,10 @@ The DFT code used primarily in this book is [[http://cms.mpi.univie.ac.at/vasp/g
   - [[http://cms.mpi.univie.ac.at/wiki/index.php/The_VASP_Manual][VASP Manual]]
 
 Similar code would be used for other calculators, e.g. GPAW, Jacapo, etc... you would just have to import the python modules for those codes, and replace the code that defines the calculator.
+
+#+begin_exercise
+Review all the hyperlinks in this chapter.
+#+end_exercise
 
 * TODO Introduction to DFT                                         :noexport:
 All calculations were performed using VASP \cite{Kresse199615, PhysRevB.54.11169, PhysRevB.49.14251, PhysRevB.47.558}, the Perdew-Burke-Ernzerhof (PBE) \cite{PhysRevLett.77.3865} exchange correlation functional with projector augmented wave (PAW) potentials provided in VASP \cite{PhysRevB.50.17953,PhysRevB.59.1758}.
@@ -7122,8 +7146,6 @@ write('images/tagged-bcc111.png',slab,rotation='-90x',show_unit_cell=2)
 #+end_src
 
 #+RESULTS:
-: [ 64  64  64  64  32  32  32  32  16  16  16  16 520   8   8   8   4   4
-:    4   4 770 770 770 258 128 384]
 
 
 [[./images/tagged-bcc111.png]]
