@@ -1,7 +1,8 @@
 EMACS=emacs
 BATCH_EMACS=$(EMACS) --batch -l ~/Dropbox/.emacs.d/init.el dft.org
 REQUIREMENTS=python
-
+PDFLATEX=pdflatex -shell-escape
+LATEX=latex -shell-escape
 org:
 	emacs dft.org &
 
@@ -20,11 +21,8 @@ pdf: tex
 html:
 	$(BATCH_EMACS) -f org-export-as-html
 
-xhtml:
-	mk4ht htlatex dft.tex '-shell-escape,xhtml,charset=utf-8,pmathml' ' -cunihtf -utf8 -cvalidate'
-
 mobi: html
 	/home/jkitchin/kindlegen/kindlegen dft.html
 
 clean:
-	rm -f *.aux *.log *.dvi *.blg *.bbl *.toc *~ *.out *.idx *.ilg *.ind *.lof *.lot
+	rm -f *.aux *.log *.dvi *.blg *.bbl *.toc *~ *.out *.idx *.ilg *.ind *.lof *.lot *.css *.idv *.lg *.tmp *.xref *.4ct *.4tc
