@@ -8,6 +8,7 @@
 #+LANGUAGE:  en
 #+OPTIONS:   H:8 num:t toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t
 #+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+OPTIONS: LaTeX:mathjax
 #+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
@@ -41,6 +42,32 @@
 \newenvironment{exercise}[0]{%
 \stepcounter{ExerciseCount} \begin{adjustbox}{minipage=[b]{380px},margin=1ex,bgcolor=MyGray,env=center}%
         \textbf{Exercise \thesection.\theExerciseCount}\\
+}{%
+    \end{adjustbox}%
+}
+#+end_latex
+
+#+begin_latex
+% environment to put notes a light blue box 173-216-230
+% see http://www.tayloredmktg.com/rgb/ for colors
+\definecolor{LightBlue}{rgb}{0.68,0.85,0.90}
+
+\newenvironment{note}[0]{%
+\begin{adjustbox}{minipage=[b]{380px},margin=1ex,bgcolor=LightBlue,env=center}%
+        \textbf{Note: }\\
+}{%
+    \end{adjustbox}%
+}
+#+end_latex
+
+#+begin_latex
+% environment to put warnings a pink box 255-192-203
+% see http://www.tayloredmktg.com/rgb/ for colors
+\definecolor{Pink}{rgb}{1.0,0.75,0.80}
+
+\newenvironment{warning}[0]{%
+\begin{adjustbox}{minipage=[b]{380px},margin=1ex,bgcolor=Pink,env=center}%
+        \textbf{Warning: }\\
 }{%
     \end{adjustbox}%
 }
@@ -863,6 +890,68 @@ savefig('images/co-dos.png')
 
 [[./images/co-dos.png]]
 
+*** Atom-projected density of states on molecules
+Let us consider which states in the density of states belong to which atoms in a molecule. This can only be a qualitative consideration because the orbitals on the atoms often hybridize to form molecular orbitals, e.g. in methane the $s$ and $p$ orbitals can form what we call $sp_3$ orbitals. We can compute atom-projected density of states in VASP, which is done by projecting the wave function onto localized atomic orbitals. Here is an example. We will consider the CO molecule. To get atom-projected density of states, we must set [[incar:RWIGS][RWIGS]] for each atom. This parameter defines the radius of the sphere around the atom which cuts off the projection.
+
+#+begin_note
+The RWIGS is not uniquely determined for an element. There are various natural choices, e.g. the ionic radius of an atom, or a value that minimizes overlap of neighboring spheres, but these values can change slightly in different environments.
+#+end_note
+
+The total density of states and projected density of states information comes from the DOSCAR file.
+#+begin_note
+You can get spin-polarized atom-projected density of states, and magnetization projected density of states. See http://cms.mpi.univie.ac.at/vasp/vasp/DOSCAR_file.html#doscar for more details.
+#+end_note
+
+#+BEGIN_SRC python
+from ase.dft.dos import *
+from jasp import *
+from pylab import *
+
+with jasp('molecules/co-cg') as calc:
+    atoms = calc.get_atoms()
+
+with jasp('molecules/co-ados',
+    encut=300,
+    xc='PBE',
+    rwigs=[1.0, 1.0],
+    atoms=atoms) as calc:
+    calc.calculate()
+
+    # now get results
+    ados = VaspDos(efermi=calc.get_fermi_level())
+    energies = ados.energy
+
+    plot(energies, ados.dos+8)
+
+    c_s = ados.site_dos(0,'s')
+    c_p = ados.site_dos(0,'p')
+    o_s = ados.site_dos(1, 's')
+    o_p = ados.site_dos(1, 'p')
+
+    c_d = ados.site_dos(0,'d')
+    o_d = ados.site_dos(1,'d')
+
+    plot(energies, c_s+6, energies, o_s+5)
+    plot(energies, c_p+4, energies, o_p+3)
+    plot(energies, c_d, energies,o_d+2)
+    xlabel('Energy - $E_f$ (eV)')
+    ylabel('DOS')
+    legend(['DOS','C$_s$', 'O$_s$',
+            'C$_p$', 'O$_p$', 'C$_d$', 'O$_d$'],
+            ncol=2,loc='best')
+savefig('images/co-ados.png')
+#+end_src
+
+#+RESULTS:
+: None
+
+[[./images/co-ados.png]]
+
+It is not obvious what the character of the states at 9.2 and 9.9 eV are.
+
+#+RESULTS:
+: None
+
 *** Visualizing electron density
 The electron density is a 3d quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure \ref{fig:cd1}) of plotting the charge density.
 
@@ -888,10 +977,175 @@ mlab.show()
 *** TODO Visualizing Kohn-Sham orbitals
 need to read wavecar files!
 
-*** TODO Bader analysis
-\cite{Henkelman2006354}
+*** Bader analysis
+Bader analysis is a charge partitioning scheme where charge is divided by surfaces of zero flux that define atomic basins of charge. The most modern way of calculating the Bader charges is using the =bader= program from Graeme Henkelmen's group \cite{Henkelman2006354,doi.10.1021/ct100125x}. Let us consider a water molecule, centered in a box. The strategy is first to run the calculation, then run the bader program on the results.
 
-\cite{doi.10.1021/ct100125x}
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.structure import molecule
+atoms = molecule('H2O')
+atoms.center(vacuum=6)
+
+with jasp('molecules/h2o-bader',
+          xc='PBE',
+          encut=350,
+          atoms=atoms) as calc:
+    calc.calculate()
+
+    os.system('bader -p all_atom -p atom_index CHG')
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+  GRID BASED BADER ANALYSIS  (Version 0.27e 05/09/11)
+
+  OPEN ... CHG
+  VASP-STYLE INPUT FILE
+ VASP5 format
+  FFT-grid:   112 x 128 x 120
+  CLOSE ... CHG
+
+  RUN TIME:    0.73 SECONDS
+
+  CALCULATING BADER CHARGE DISTRIBUTION
+                 0  10  25  50  75  100
+  PERCENT DONE:  **********************
+
+  REFINING AUTOMATICALLY
+  ITERATION: 1
+  EDGE POINTS:       1400048
+  REASSIGNED POINTS:  111249
+  ITERATION: 2
+  CHECKED POINTS:     913184
+  REASSIGNED POINTS:    1424
+  ITERATION: 3
+  CHECKED POINTS:      15784
+  REASSIGNED POINTS:     362
+  ITERATION: 4
+  CHECKED POINTS:       3190
+  REASSIGNED POINTS:     176
+  ITERATION: 5
+  CHECKED POINTS:       1228
+  REASSIGNED POINTS:      99
+  ITERATION: 6
+  CHECKED POINTS:        688
+  REASSIGNED POINTS:      21
+  ITERATION: 7
+  CHECKED POINTS:        267
+  REASSIGNED POINTS:       1
+  ITERATION: 8
+  CHECKED POINTS:         26
+  REASSIGNED POINTS:       0
+
+  RUN TIME:      27.04 SECONDS
+
+  CALCULATING MINIMUM DISTANCES TO ATOMS
+                 0  10  25  50  75  100
+  PERCENT DONE:  **********************
+
+  RUN TIME:    1.30 SECONDS
+
+  WRITING BADER ATOMIC CHARGES TO ACF.dat
+  WRITING BADER VOLUME CHARGES TO BCF.dat
+
+  NUMBER OF BADER MAXIMA FOUND:           5407
+      SIGNIFICANT MAXIMA FOUND:             10
+           NUMBER OF ELECTRONS:        7.99999
+
+  WRITING ATOMIC VOLUMES
+                 0  10  25  50  75  100
+  PERCENT DONE:  **********************
+
+  RUN TIME:    4.06 SECONDS
+
+  WRITING BADER ATOMIC INDEX TO AtIndex.dat
+
+#+end_example
+
+#+BEGIN_src sh :dir /home/jkitchin/dft-org/molecules/h2o-bader :results output
+cat ACF.dat
+#+END_SRC
+
+#+RESULTS:
+:     #         X           Y           Z        CHARGE     MIN DIST    ATOMIC VOL
+:  --------------------------------------------------------------------------------
+:     1      6.0000      7.5265      6.0000      0.0007      1.6422    759.8654
+:     2      6.0000      6.0000      6.0000      0.0003      1.6422    640.1559
+:     3      6.0000      6.7632      6.5963      7.9990      2.2193    644.5831
+:  --------------------------------------------------------------------------------
+:     VACUUM CHARGE:               0.0000
+:     VACUUM VOLUME:               0.0000
+:     NUMBER OF ELECTRONS:         8.0000
+
+
+This script should work, but only if displacement is set to
+None. Otherwise, the positions do not match because of a Bohr/Angstrom
+units problem in an assertions statement. Note the complex sorting
+that has to be done, because the order of atoms in the Atoms object is
+not the same as in the POSCAR file.
+
+#+BEGIN_SRC python :results output
+from ase.io.bader import attach_charges
+from ase.units import Bohr
+from jasp import *
+
+with jasp('molecules/h2o-bader') as calc:
+    print calc
+    atoms = calc.get_atoms()
+
+    symbols = np.array(atoms.get_chemical_symbols())[calc.sort]
+    pos = atoms.positions[calc.sort]*Bohr
+    newatoms = Atoms(symbols, positions=pos, cell=atoms.get_cell())
+
+    attach_charges(newatoms, 'ACF.dat')
+
+    for atom in newatoms:
+        print 'Atom', atom.symbol, 'Bader charge', atom.charge
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+: -----------------------------
+  VASP calculation from /home/jkitchin/dft-org/molecules/h2o-bader
+  converged: True
+  Energy = -14.219613 eV
+
+  Unit cell vectors (angstroms)
+        x       y     z      length
+  a0 [ 12.000  0.000  0.000] 12.000
+  a1 [ 0.000  13.526  0.000] 13.526
+  a2 [ 0.000  0.000  12.596] 12.596
+  a,b,c,alpha,beta,gamma (deg): 12.000 13.526 12.596 90.0 90.0 90.0
+  Unit cell volume = 2044.604 Ang^3
+  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
+             0.001  0.001  0.001 -0.000 -0.000 -0.000
+ Atom#  sym       position [x,y,z]         tag  rmsForce constraints
+   0    O   [6.000      6.763      6.596]   0   0.19      T T T
+   1    H   [6.000      7.526      6.000]   0   0.23      T T T
+   2    H   [6.000      6.000      6.000]   0   0.23      T T T
+--------------------------------------------------
+
+INCAR Parameters:
+-----------------
+        nbands: 8
+         encut: 350.0
+          prec: Normal
+          kpts: [1 1 1]
+    reciprocal: False
+            xc: PBE
+           txt: -
+         gamma: False
+
+Pseudopotentials used:
+----------------------
+H: potpaw_PBE/H/POTCAR (git-hash: fbc0773b08b32f553234b0b50cc6ad6f5085c816)
+O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
+Atom H Bader charge 0.9993
+Atom H Bader charge 0.9997
+Atom O Bader charge 0.001
+#+end_example
+
 *** Dipole moments
 The [[http://en.wikipedia.org/wiki/Molecular_dipole_moment#Molecular_dipoles][dipole moment]] is a vector describing the separation of nuclear (positive) and electrical (negative) charge. Whether a molecule has a dipole moment or not depends on its symmetry. Below we compute the dipole moment of CO. We must integrate the electron density to find the center of electrical charge, and sum over the nuclei to find the center of positive charge.
 
@@ -997,8 +1251,6 @@ with jasp('molecules/co-centered') as calc:
 
 #+RESULTS:
 : The dipole moment is 0.10 Debye
-
-*** TODO Atom-projected density of states
 
 ** Geometry optimization
 *** Bond lengths
@@ -4838,7 +5090,7 @@ This is not that different from the regular ISMEAR, so I am not sure this is cor
 ** Atom projected density of states
 In this example, we consider how to get the atom-projected density of states (ADOS). We are interested in properties of the $d$-band on Pd, such as the $d$-band center and $d$-band width. You must set the [[incar:RWIGS][RWIGS]] tag to get ADOS, and these are the Wigner-Seitz radii for each atom.
 
-It is important to note that these projected density of states are not physical observables. They are the wavefunctions projected onto atomic orbitals. For some situations this makes sense, e.g. the $d$ orbitals are fairly localized and reasonably approximated by atomic orbitals. The $s$ orbitals in a metal, in contrast, are totally delocalized. Depending on the cutoff radius (RWIGS) you choose, you can see very different ADOS.
+It is important to note that these projected density of states are not physical observables. They are the wavefunctions projected onto atomic orbitals. For some situations this makes sense, e.g. the $d$ orbitals are fairly localized and reasonably approximated by atomic orbitals. The $s$ valence orbitals in a metal, in contrast, are almost totally delocalized. Depending on the cutoff radius (RWIGS) you choose, you can see very different ADOS.
 
 #+BEGIN_SRC python :results output :exports bothh
 from ase import Atoms, Atom
