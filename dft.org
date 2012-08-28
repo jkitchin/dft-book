@@ -194,7 +194,7 @@ SiF4                     H2CCO                    PH2
 OCS                      HF                       NO2
 SH2                      C3H4_C2v                 H2O2
 CH3CH2Cl                 isobutane                CH3COF
-HCOOH                    CH3ONO                   C5H5N
+HCOOH                    CH3ONO                   C5H8
 2-butyne                 SH                       NF3
 HOCl                     CS2                      P2
 C                        CH3S                     O
@@ -224,7 +224,7 @@ B                        CH3SH                    CF4
 C3H6_Cs                  C2H6NH                   N2O
 LiF                      H2COH                    cyclobutene
 LiH                      SiO                      Si2
-C2H6SO                   C5H8                     trans-butane
+C2H6SO                   C5H5N                    trans-butane
 Na2                      C4H4O                    SO2
 NH3                      NH2                      CH2_s3B1d
 ClNO                     C3H6_D3h                 Al
@@ -707,7 +707,7 @@ unsymmetric rotors Ia != Ib != Ic
 ** Simple properties that require computations
 In this section we cover properties that require simple calculations, but not yet DFT calculations.
 *** Computing bond lengths and angles
-It is a common to compute bond lengths. The Atoms object contains a func:ase.Atoms.get_distance method to make this easy. You have to specify the indices of the two atoms you want the distance between. Don't forget the indices start at 0.
+A typical question we might ask is what is the structure of a molecule? By that we mean what are the bond lengths, angles between bonds, etc... The Atoms object contains a func:ase.Atoms.get_distance method to make this easy. You have to specify the indices of the two atoms you want the distance between. Don't forget that the indices start at 0.
 
 #+BEGIN_SRC python :results output :exports both
 from ase import Atoms
@@ -844,44 +844,57 @@ molecule. The forces in this case are very high,indicating that this
 geometry is not close to the ground state geometry. Note that the
 forces are only along the $x$-axis, which is along the molecular axis. We will see how to minimize this force in sections [[*Manual%20determination][Manual determination]] and [[*Automatic%20geometry%20optimization%20with%20vasp][Automatic geometry optimization with vasp]].
 
+#+begin_note
+This is your first DFT calculation in the book! see [[incar:ISMEAR][ISMEAR]]
+#+end_note
+
 #+BEGIN_SRC python :results output :exports both
 from ase import Atoms,Atom
 from jasp import *
 import numpy as np
-np.set_printoptions(precision=3,suppress=True)
+np.set_printoptions(precision=3, suppress=True)
 
 co = Atoms([Atom('C',[0,   0, 0]),
             Atom('O',[1.2, 0, 0])],
             cell=(6., 6., 6.))
 
 with jasp('molecules/simple-co', #output dir
-          xc='PBE',
-          nbands=6,
-          encut=350,
-          ismear=1,
-          sigma=0.01,
+          xc='PBE',  # the exchange-correlation functional
+          nbands=6,  # number of bands
+          encut=350, # planewave cutoff
+          ismear=1,  # Methfessel-Paxton smearing
+          sigma=0.01,# very small smearing factor for a molecule
           atoms=co):
 
-    print co.get_potential_energy()
+    print 'energy = {0} eV'.format(co.get_potential_energy())
     print co.get_forces()
 #+END_SRC
 
 #+RESULTS:
-: -14.687906
+: energy = -14.687906 eV
 : [[ 5.095  0.     0.   ]
 :  [-5.095  0.     0.   ]]
 
 *** The density of states
+The density of states gives you the number of electronic states (i.e. orbitals) that have a particular energy. We can get this information from the last calculation we just ran without having to run another DFT calculation.
+
+#+begin_warning
+One way that =jasp= is unintuitive is that whenever you are "inside" (indented) a with statement, the current working directory may be different than where your script started. In this example that can lead to your figure not being saved where you expect it!
+#+end_warning
+
 #+BEGIN_SRC python
 from ase.dft.dos import *
 from jasp import *
 from pylab import *
 
-with jasp('molecules/co-cg') as calc:
+with jasp('molecules/simple-co') as calc:
     dos = DOS(calc)
     plot(dos.get_energies(),dos.get_dos())
     xlabel('Energy - $E_f$ (eV)')
     ylabel('DOS')
+
+# make sure you save the figure outside the with statement, or provide
+# the correct relative or absolute path to where you want it.
 savefig('images/co-dos.png')
 #+END_SRC
 
@@ -893,8 +906,10 @@ savefig('images/co-dos.png')
 *** Atom-projected density of states on molecules
 Let us consider which states in the density of states belong to which atoms in a molecule. This can only be a qualitative consideration because the orbitals on the atoms often hybridize to form molecular orbitals, e.g. in methane the $s$ and $p$ orbitals can form what we call $sp_3$ orbitals. We can compute atom-projected density of states in VASP, which is done by projecting the wave function onto localized atomic orbitals. Here is an example. We will consider the CO molecule. To get atom-projected density of states, we must set [[incar:RWIGS][RWIGS]] for each atom. This parameter defines the radius of the sphere around the atom which cuts off the projection.
 
+Note that unlike the DOS, here we must run another calculation because we did not specify the atom-projected keywords above. Our strategy is to get the atoms from the previous calculation, and use them in a new calculation. You could redo the calculation in the same directory, but
+
 #+begin_note
-The RWIGS is not uniquely determined for an element. There are various natural choices, e.g. the ionic radius of an atom, or a value that minimizes overlap of neighboring spheres, but these values can change slightly in different environments.
+The [[incar:RWIGS][RWIGS]] is not uniquely determined for an element. There are various natural choices, e.g. the ionic radius of an atom, or a value that minimizes overlap of neighboring spheres, but these values can change slightly in different environments.
 #+end_note
 
 The total density of states and projected density of states information comes from the DOSCAR file.
@@ -907,37 +922,44 @@ from ase.dft.dos import *
 from jasp import *
 from pylab import *
 
-with jasp('molecules/co-cg') as calc:
+# get the geometry from another calculation
+with jasp('molecules/simple-co') as calc:
     atoms = calc.get_atoms()
 
 with jasp('molecules/co-ados',
     encut=300,
     xc='PBE',
-    rwigs=[1.0, 1.0],
+    rwigs=[1.0, 1.0],     # these are the cutoff radii for projected states
     atoms=atoms) as calc:
     calc.calculate()
 
     # now get results
+
+    dos = DOS(calc)
+    plot(dos.get_energies(), dos.get_dos() + 10)
+
     ados = VaspDos(efermi=calc.get_fermi_level())
     energies = ados.energy
 
-    plot(energies, ados.dos+8)
+    plot(energies, ados.dos + 8) # these are the total DOS
 
-    c_s = ados.site_dos(0,'s')
-    c_p = ados.site_dos(0,'p')
+    c_s = ados.site_dos(0, 's')
+    c_p = ados.site_dos(0, 'p')
     o_s = ados.site_dos(1, 's')
     o_p = ados.site_dos(1, 'p')
 
     c_d = ados.site_dos(0,'d')
     o_d = ados.site_dos(1,'d')
 
-    plot(energies, c_s+6, energies, o_s+5)
-    plot(energies, c_p+4, energies, o_p+3)
-    plot(energies, c_d, energies,o_d+2)
+    plot(energies, c_s + 6, energies, o_s + 5)
+    plot(energies, c_p + 4, energies, o_p + 3)
+    plot(energies, c_d, energies, o_d + 2)
     xlabel('Energy - $E_f$ (eV)')
     ylabel('DOS')
-    legend(['DOS','C$_s$', 'O$_s$',
-            'C$_p$', 'O$_p$', 'C$_d$', 'O$_d$'],
+    legend(['DOS',
+            'C$_s$', 'O$_s$',
+            'C$_p$', 'O$_p$',
+            'C$_d$', 'O$_d$'],
             ncol=2,loc='best')
 savefig('images/co-ados.png')
 #+end_src
@@ -947,7 +969,6 @@ savefig('images/co-ados.png')
 
 [[./images/co-ados.png]]
 
-It is not obvious what the character of the states at 9.2 and 9.9 eV are.
 
 #+RESULTS:
 : None
@@ -959,7 +980,7 @@ The electron density is a 3d quantity: for every $(x,y,z)$ point, there is a cha
 from enthought.mayavi import mlab
 from jasp import *
 
-with jasp('molecules/co-cg') as calc:
+with jasp('molecules/simple-co') as calc:
     x,y,z,cd = calc.get_charge_density()
 
 mlab.contour3d(x,y,z,cd)
@@ -974,7 +995,26 @@ mlab.show()
 #+label: fig:cd1
 [[./images/co-cd.png]]
 
-*** TODO Visualizing Kohn-Sham orbitals
+#+BEGIN_SRC python
+from enthought.mayavi import mlab
+from jasp import *
+
+with jasp('molecules/co-centered') as calc:
+    x,y,z,cd = calc.get_charge_density()
+
+mlab.contour3d(x,y,z,cd)
+mlab.savefig('images/co-centered-cd.png')
+mlab.show()
+#+END_SRC
+
+#+RESULTS:
+: None
+
+#+caption: Charge density of a CO molecule centered in the unit cell.
+#+label: fig:cd2
+[[./images/co-centered-cd.png]]
+
+*** TODO Visualizing Kohn-Sham orbitals                            :noexport:
 need to read wavecar files!
 
 *** Bader analysis
@@ -1079,11 +1119,12 @@ cat ACF.dat
 :     NUMBER OF ELECTRONS:         8.0000
 
 
-This script should work, but only if displacement is set to
-None. Otherwise, the positions do not match because of a Bohr/Angstrom
-units problem in an assertions statement. Note the complex sorting
-that has to be done, because the order of atoms in the Atoms object is
-not the same as in the POSCAR file.
+This script should work, but only if displacement is set to None or we
+convert the positions to Bohr. Otherwise, the positions do not match
+because of a Bohr/Angstrom units problem in an assertions
+statement. Note the complex sorting that has to be done, because the
+order of atoms in the Atoms object is not the same as in the POSCAR
+file.
 
 #+BEGIN_SRC python :results output
 from ase.io.bader import attach_charges
@@ -1091,7 +1132,6 @@ from ase.units import Bohr
 from jasp import *
 
 with jasp('molecules/h2o-bader') as calc:
-    print calc
     atoms = calc.get_atoms()
 
     symbols = np.array(atoms.get_chemical_symbols())[calc.sort]
@@ -1105,46 +1145,9 @@ with jasp('molecules/h2o-bader') as calc:
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-: -----------------------------
-  VASP calculation from /home/jkitchin/dft-org/molecules/h2o-bader
-  converged: True
-  Energy = -14.219613 eV
-
-  Unit cell vectors (angstroms)
-        x       y     z      length
-  a0 [ 12.000  0.000  0.000] 12.000
-  a1 [ 0.000  13.526  0.000] 13.526
-  a2 [ 0.000  0.000  12.596] 12.596
-  a,b,c,alpha,beta,gamma (deg): 12.000 13.526 12.596 90.0 90.0 90.0
-  Unit cell volume = 2044.604 Ang^3
-  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
-             0.001  0.001  0.001 -0.000 -0.000 -0.000
- Atom#  sym       position [x,y,z]         tag  rmsForce constraints
-   0    O   [6.000      6.763      6.596]   0   0.19      T T T
-   1    H   [6.000      7.526      6.000]   0   0.23      T T T
-   2    H   [6.000      6.000      6.000]   0   0.23      T T T
---------------------------------------------------
-
-INCAR Parameters:
------------------
-        nbands: 8
-         encut: 350.0
-          prec: Normal
-          kpts: [1 1 1]
-    reciprocal: False
-            xc: PBE
-           txt: -
-         gamma: False
-
-Pseudopotentials used:
-----------------------
-H: potpaw_PBE/H/POTCAR (git-hash: fbc0773b08b32f553234b0b50cc6ad6f5085c816)
-O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
-Atom H Bader charge 0.9993
-Atom H Bader charge 0.9997
-Atom O Bader charge 0.001
-#+end_example
+: Atom H Bader charge 0.9993
+: Atom H Bader charge 0.9997
+: Atom O Bader charge 0.001
 
 *** Dipole moments
 The [[http://en.wikipedia.org/wiki/Molecular_dipole_moment#Molecular_dipoles][dipole moment]] is a vector describing the separation of nuclear (positive) and electrical (negative) charge. Whether a molecule has a dipole moment or not depends on its symmetry. Below we compute the dipole moment of CO. We must integrate the electron density to find the center of electrical charge, and sum over the nuclei to find the center of positive charge.
@@ -1335,6 +1338,53 @@ forces = (eV/ang)
 #+caption: Energy vs CO bond length. The minimum appears to be near 1.15 \AA by inspection.
 #+ATTR_LaTeX: placement={H}
 [[./images/co-bondlengths.png]]
+To find the minimum we could run more calculations, but a simpler and faster way is to fit a polynomial to the data, and find the analytical minimum.
+
+#+BEGIN_SRC python :results output :exports both
+from jasp import *
+import numpy as np
+import matplotlib.pyplot as plt
+np.set_printoptions(precision=3,suppress=True)
+
+bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
+energies = []
+
+for d in bond_lengths: #possible bond lengths
+
+    with jasp('molecules/co-{0}'.format(d)) as calc:
+        atoms = calc.get_atoms()
+        energies.append(atoms.get_potential_energy())
+
+# Now we fit an equation - cubic polynomial
+pp = np.polyfit(bond_lengths, energies, 3)
+dp = np.polyder(pp)  # first derivative - quadratic
+
+# we expect two roots from the quadratic eqn. These are where the
+# first derivative is equal to zero.
+roots = np.roots(dp)
+
+# The minimum is where the second derivative is positive.
+dpp = np.polyder(dp) # second derivative - line
+secd = np.polyval(dpp, roots)
+
+minV = roots[secd > 0]
+minE = np.polyval(pp, minV)
+
+print 'The minimum energy is {0} eV at V = {1} Ang^3'.format(minE,minV)
+
+# plot the fit
+x = np.linspace(1.05, 1.25)
+fit = np.polyval(pp, x)
+
+plt.plot(bond_lengths, energies, 'bo ')
+plt.plot(x,fit, 'r-')
+plt.plot(minV, minE, 'm* ')
+plt.legend(['DFT','fit','minimum'])
+plt.xlabel('Bond length ($\AA$)')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/co-bondlengths.png')
+plt.show()
+#+END_SRC
 
 **** Automatic geometry optimization with vasp
 VASP has built in geometry optimization using the [[incar:IBRION][IBRION]] and [[incar:NSW][NSW]] tags. Here we compute the bond length for a CO molecule, letting VASP do the geometry optimization for us.
@@ -7283,6 +7333,7 @@ These images (Figure \ref{fig:elf1} and \ref{fig:elf2}) are basically consistent
 
 \cite{doi.10.1021/jp202489s}
 
+** TODO Modeling Core level shifts
 * Acknowledgments
 I would like to thank Zhongnan Xu for sending me some examples on magnetism. Alan McGaughey for sending me some NEB examples.
 * Appendices
