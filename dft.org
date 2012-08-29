@@ -6,15 +6,16 @@
 #+DESCRIPTION: A book on using density functional theory to model materials.
 #+KEYWORDS: Density functional theory, materials, VASP
 #+LANGUAGE:  en
-#+OPTIONS:   H:8 num:t toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t
+#+OPTIONS:   H:8 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
 #+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
-#+OPTIONS: LaTeX:mathjax
+#+OPTIONS:   LaTeX:mathjax
 #+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
 #+LINK_UP:
 #+LINK_HOME:
 #+XSLT:
+#+latex_header: \usepackage{underscore}
 #+latex_header: \usepackage{makeidx}
 #+latex_header: \usepackage[section]{placeins}
 #+latex_header: \usepackage{xcolor}
@@ -73,6 +74,7 @@
 }
 #+end_latex
 
+[[./images/cover-page.png]]
 
 * List of figures
 #+latex: \listoffigures
@@ -389,7 +391,9 @@ mod:ase.io.read supports reading in many different formats:
 You can read xyz-coordinate files to create mod:ase.Atoms objects.  Here is
 what an xyz file might look like:
 
+#+begin_example
 #+include: molecules/isobutane.xyz
+#+end_example
 
 Note that the xyz format does not have unit cell information in it, so
 you will have to figure out a way to provide it. In this example, we
@@ -401,7 +405,7 @@ import numpy as np
 
 atoms = read('molecules/isobutane.xyz')
 atoms.center(vacuum=5)
-write('images/isobutane_xyz.png', atoms, show_unit_cell=2)
+write('images/isobutane-xyz.png', atoms, show_unit_cell=2)
 #+END_SRC
 
 #+RESULTS:
@@ -410,7 +414,7 @@ write('images/isobutane_xyz.png', atoms, show_unit_cell=2)
 #+caption: An isobutane molecule read in from an xyz data file.
 #+label: fig:isobutane
 #+ATTR_LaTeX: placement=[H]
-[[./images/isobutane_xyz.png]]
+[[./images/isobutane-xyz.png]]
 
 *** From scratch
     When there is no data file for the molecule you want, or no database to get it from, you have to define your atoms geometry by hand. Here is how that is done for a CO molecule (Figure \ref{fig:co-origin}).
@@ -439,7 +443,8 @@ write('images/simple-cubic-cell.png',atoms,show_unit_cell=2)
 
 There are two inconvenient features of the simple cubic cell:
 
-1. Since the CO atom is at the corner, its electron density is spread over the 8 corners of the box, which is not convenient for visualization later.
+1. Since the CO atom is at the corner, its electron density is spread over the 8 corners of the box, which is not convenient for visualization later (see section \ref{sec:vis-ed}).
+
 2. Due to the geometry of the cube, you need fairly large cubes to decouple the molecule from its images. Here, the CO molecule has 6 images due to periodic boundary conditions that are 10 \AA away. The volume of the unit cell is 1000 \AA$^3$.
 
 The first problem is easy to solve by centering the atoms in the unit cell. The second problem can be solved by using an fcc lattice. Below we show the result in Figure \ref{fig:co-fcc}, where we have guessed values for $b$ until the CO molecules are on average 10 \AA apart. Note the final volume is only about 715 \AA$^3$, which is smaller than the cube. This will result in less computational time to compute properties.
@@ -842,10 +847,10 @@ it knows how to get the data, and then a DFT calculation must be run.
 Here is an example of getting the energy and forces from a CO
 molecule. The forces in this case are very high,indicating that this
 geometry is not close to the ground state geometry. Note that the
-forces are only along the $x$-axis, which is along the molecular axis. We will see how to minimize this force in sections [[*Manual%20determination][Manual determination]] and [[*Automatic%20geometry%20optimization%20with%20vasp][Automatic geometry optimization with vasp]].
+forces are only along the $x$-axis, which is along the molecular axis. We will see how to minimize this force in sections \ref{sec:manual-determination} and \ref{sec:auto-geo}.
 
 #+begin_note
-This is your first DFT calculation in the book! see [[incar:ISMEAR][ISMEAR]]
+This is your first DFT calculation in the book! see [[incar:ISMEAR][ISMEAR]], incar:SIGMA, incar:NBANDS, and incar:ENCUT to learn more about these VASP keywords.
 #+end_note
 
 #+BEGIN_SRC python :results output :exports both
@@ -879,7 +884,7 @@ with jasp('molecules/simple-co', #output dir
 The density of states gives you the number of electronic states (i.e. orbitals) that have a particular energy. We can get this information from the last calculation we just ran without having to run another DFT calculation.
 
 #+begin_warning
-One way that =jasp= is unintuitive is that whenever you are "inside" (indented) a with statement, the current working directory may be different than where your script started. In this example that can lead to your figure not being saved where you expect it!
+One way that =jasp= is unintuitive is that whenever you are "inside" (indented) a =with= statement, the current working directory may be different than where your script started. In this example that can lead to your figure not being saved where you expect it!
 #+end_warning
 
 #+BEGIN_SRC python
@@ -913,6 +918,7 @@ The [[incar:RWIGS][RWIGS]] is not uniquely determined for an element. There are 
 #+end_note
 
 The total density of states and projected density of states information comes from the DOSCAR file.
+
 #+begin_note
 You can get spin-polarized atom-projected density of states, and magnetization projected density of states. See http://cms.mpi.univie.ac.at/vasp/vasp/DOSCAR_file.html#doscar for more details.
 #+end_note
@@ -974,6 +980,7 @@ savefig('images/co-ados.png')
 : None
 
 *** Visualizing electron density
+# <<sec:vis-ed>>
 The electron density is a 3d quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure \ref{fig:cd1}) of plotting the charge density.
 
 #+BEGIN_SRC python
@@ -1016,6 +1023,112 @@ mlab.show()
 
 *** TODO Visualizing Kohn-Sham orbitals                            :noexport:
 need to read wavecar files!
+
+*** Dipole moments
+The [[http://en.wikipedia.org/wiki/Molecular_dipole_moment#Molecular_dipoles][dipole moment]] is a vector describing the separation of nuclear (positive) and electrical (negative) charge. Whether a molecule has a dipole moment or not depends on its symmetry. Below we compute the dipole moment of CO. We must integrate the electron density to find the center of electrical charge, and sum over the nuclei to find the center of positive charge.
+
+#+BEGIN_SRC python :results output :exports both
+from jasp import *
+from ase.calculators.vasp import *
+from ase.units import Debye
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('C',[2.422,0,0]),
+               Atom('O',[3.578,0,0])],
+            cell=(10,10,10))
+
+atoms.center()
+
+with jasp('molecules/co-centered',
+          encut=350,
+          xc='PBE',
+          atoms=atoms) as calc:
+    atoms.get_potential_energy()
+
+    vcd = VaspChargeDensity()
+
+    cd = np.array(vcd.chg[0])
+    n0, n1, n2 = cd.shape
+
+    s0 = 1.0/n0
+    s1 = 1.0/n1
+    s2 = 1.0/n2
+
+    X, Y, Z = np.mgrid[0.0:1.0:s0,
+                       0.0:1.0:s1,
+                       0.0:1.0:s2]
+
+    C = np.column_stack([X.ravel(),
+                         Y.ravel(),
+                         Z.ravel()])
+
+    atoms = calc.get_atoms()
+    uc = atoms.get_cell()
+    real = np.dot(C, uc)
+
+    #now convert arrays back to unitcell shape
+    x = np.reshape(real[:, 0], (n0, n1, n2))
+    y = np.reshape(real[:, 1], (n0, n1, n2))
+    z = np.reshape(real[:, 2], (n0, n1, n2))
+
+    nelements = n0*n1*n2
+    voxel_volume = atoms.get_volume()/nelements
+    total_electron_charge = -cd.sum()*voxel_volume
+
+
+    electron_density_center = np.array([(cd*x).sum(),
+                                        (cd*y).sum(),
+                                        (cd*z).sum()])
+    electron_density_center *= voxel_volume
+    electron_density_center /= total_electron_charge
+
+    electron_dipole_moment = -electron_density_center*total_electron_charge
+
+    # now the ion charge center. We only need the Zval listed in the potcar
+    from jasp.POTCAR import get_ZVAL
+
+    LOP = calc.get_pseudopotentials()
+    ppp = os.environ['VASP_PP_PATH']
+
+    zval = {}
+    for sym, ppath, hash in LOP:
+        fullpath = os.path.join(ppp, ppath)
+        z = get_ZVAL(fullpath)
+        zval[sym] = z
+    ion_charge_center = np.array([0.0, 0.0, 0.0])
+    total_ion_charge = 0.0
+    for atom in atoms:
+        Z = zval[atom.symbol]
+        total_ion_charge += Z
+        pos = atom.position
+        ion_charge_center += Z*pos
+
+    ion_charge_center /= total_ion_charge
+    ion_dipole_moment = ion_charge_center*total_ion_charge
+
+    dipole_vector = (ion_dipole_moment + electron_dipole_moment)
+
+    dipole_moment = ((dipole_vector**2).sum())**0.5/Debye
+
+    print 'The dipole moment is {0:1.2f} Debye'.format(dipole_moment)
+#+END_SRC
+
+#+RESULTS:
+: The dipole moment is 0.10 Debye
+
+Note that a convenience function using the code above exists in jasp:
+#+BEGIN_SRC python :results output :exports both
+from jasp import *
+from ase.units import Debye
+
+with jasp('molecules/co-centered') as calc:
+    dipole_vector = calc.get_dipole_moment()
+    dipole_moment = ((dipole_vector**2).sum())**0.5/Debye
+    print 'The dipole moment is {0:1.2f} Debye'.format(dipole_moment)
+#+END_SRC
+
+#+RESULTS:
+: The dipole moment is 0.10 Debye
 
 *** Bader analysis
 Bader analysis is a charge partitioning scheme where charge is divided by surfaces of zero flux that define atomic basins of charge. The most modern way of calculating the Bader charges is using the =bader= program from Graeme Henkelmen's group \cite{Henkelman2006354,doi.10.1021/ct100125x}. Let us consider a water molecule, centered in a box. The strategy is first to run the calculation, then run the bader program on the results.
@@ -1126,7 +1239,7 @@ statement. Note the complex sorting that has to be done, because the
 order of atoms in the Atoms object is not the same as in the POSCAR
 file.
 
-#+BEGIN_SRC python :results output
+#+BEGIN_SRC python :results output org raw
 from ase.io.bader import attach_charges
 from ase.units import Bohr
 from jasp import *
@@ -1140,124 +1253,27 @@ with jasp('molecules/h2o-bader') as calc:
 
     attach_charges(newatoms, 'ACF.dat')
 
+    print '#+tblname: bader'
+    print '#+caption: Bader charges for a water molecule'
+    print '| atom | Bader charge|'
+    print '|-'
     for atom in newatoms:
-        print 'Atom', atom.symbol, 'Bader charge', atom.charge
+        print '|{0} | {1} |'.format(atom.symbol, atom.charge)
 #+END_SRC
 
 #+RESULTS:
-: Atom H Bader charge 0.9993
-: Atom H Bader charge 0.9997
-: Atom O Bader charge 0.001
-
-*** Dipole moments
-The [[http://en.wikipedia.org/wiki/Molecular_dipole_moment#Molecular_dipoles][dipole moment]] is a vector describing the separation of nuclear (positive) and electrical (negative) charge. Whether a molecule has a dipole moment or not depends on its symmetry. Below we compute the dipole moment of CO. We must integrate the electron density to find the center of electrical charge, and sum over the nuclei to find the center of positive charge.
-
-#+BEGIN_SRC python :results output :exports both
-from jasp import *
-from ase.calculators.vasp import *
-from ase.units import Debye
-from ase import Atom, Atoms
-
-atoms = Atoms([Atom('C',[2.422,0,0]),
-               Atom('O',[3.578,0,0])],
-            cell=(10,10,10))
-
-atoms.center()
-
-with jasp('molecules/co-centered',
-          encut=350,
-          xc='PBE',
-          atoms=atoms) as calc:
-    atoms.get_potential_energy()
-
-    vcd = VaspChargeDensity()
-
-    cd = np.array(vcd.chg[0])
-    n0, n1, n2 = cd.shape
-
-    s0 = 1.0/n0
-    s1 = 1.0/n1
-    s2 = 1.0/n2
-
-    X, Y, Z = np.mgrid[0.0:1.0:s0,
-                       0.0:1.0:s1,
-                       0.0:1.0:s2]
-
-    C = np.column_stack([X.ravel(),
-                         Y.ravel(),
-                         Z.ravel()])
-
-    atoms = calc.get_atoms()
-    uc = atoms.get_cell()
-    real = np.dot(C, uc)
-
-    #now convert arrays back to unitcell shape
-    x = np.reshape(real[:, 0], (n0, n1, n2))
-    y = np.reshape(real[:, 1], (n0, n1, n2))
-    z = np.reshape(real[:, 2], (n0, n1, n2))
-
-    nelements = n0*n1*n2
-    voxel_volume = atoms.get_volume()/nelements
-    total_electron_charge = -cd.sum()*voxel_volume
-
-
-    electron_density_center = np.array([(cd*x).sum(),
-                                        (cd*y).sum(),
-                                        (cd*z).sum()])
-    electron_density_center *= voxel_volume
-    electron_density_center /= total_electron_charge
-
-    electron_dipole_moment = -electron_density_center*total_electron_charge
-
-    # now the ion charge center. We only need the Zval listed in the potcar
-    from jasp.POTCAR import get_ZVAL
-
-    LOP = calc.get_pseudopotentials()
-    ppp = os.environ['VASP_PP_PATH']
-
-    zval = {}
-    for sym, ppath, hash in LOP:
-        fullpath = os.path.join(ppp, ppath)
-        z = get_ZVAL(fullpath)
-        zval[sym] = z
-    ion_charge_center = np.array([0.0, 0.0, 0.0])
-    total_ion_charge = 0.0
-    for atom in atoms:
-        Z = zval[atom.symbol]
-        total_ion_charge += Z
-        pos = atom.position
-        ion_charge_center += Z*pos
-
-    ion_charge_center /= total_ion_charge
-    ion_dipole_moment = ion_charge_center*total_ion_charge
-
-    dipole_vector = (ion_dipole_moment + electron_dipole_moment)
-
-    dipole_moment = ((dipole_vector**2).sum())**0.5/Debye
-
-    print 'The dipole moment is {0:1.2f} Debye'.format(dipole_moment)
-#+END_SRC
-
-#+RESULTS:
-: The dipole moment is 0.10 Debye
-
-Note that a convenience function using the code above exists in jasp:
-#+BEGIN_SRC python :results output :exports both
-from jasp import *
-from ase.units import Debye
-
-with jasp('molecules/co-centered') as calc:
-    dipole_vector = calc.get_dipole_moment()
-    dipole_moment = ((dipole_vector**2).sum())**0.5/Debye
-    print 'The dipole moment is {0:1.2f} Debye'.format(dipole_moment)
-#+END_SRC
-
-#+RESULTS:
-: The dipole moment is 0.10 Debye
+#+tblname: bader
+#+caption: Bader charges for a water molecule
+| atom | Bader charge |
+|------+--------------|
+| H    |       0.9993 |
+| H    |       0.9997 |
+| O    |        0.001 |
 
 ** Geometry optimization
 *** Bond lengths
 **** Manual determination
+#+label: sec:manual-determination
 The equilibrium bond length of a CO molecule is approximately the bond length that minimizes the total energy. We can find that by computing the total energy as a function of bond length, and noting where the minimum is. Here is an example in VASP. There are a few features to point out here. We want to compute 5 bond lengths, and each calculation is independent of all the others. mod:jasp is setup to automatically handle jobs for you by submitting them to the queue. It raises a variety of exceptions to let you know what has happened, and you must handle these to control the workflow. We will illustrate this by examples.
 
 #+BEGIN_SRC python :results output :exports both
@@ -1387,6 +1403,7 @@ plt.show()
 #+END_SRC
 
 **** Automatic geometry optimization with vasp
+#+label: sec-auto-geo
 VASP has built in geometry optimization using the [[incar:IBRION][IBRION]] and [[incar:NSW][NSW]] tags. Here we compute the bond length for a CO molecule, letting VASP do the geometry optimization for us.
 
 #+BEGIN_SRC python :results output :exports both
@@ -1425,6 +1442,7 @@ with jasp('molecules/co-cg',
 : Bondlength = 1.14 angstroms
 
 **** Relaxation of a water molecule
+#+label: sec:relax-h2o
 It is not more complicated to relax more atoms, it just may take longer. Here we relax a water molecule.
 #+BEGIN_SRC python :results output :exports both
 from ase import Atoms, Atom
@@ -1463,7 +1481,7 @@ The principle idea in calculating vibrational frequencies is that we consider a 
 
 $\nu = \frac{1}{2\pi}\sqrt{k/\mu}$ where $\frac{1}{\mu} = \frac{1}{m_C} + \frac{1}{m_O}$ and $k$ is the spring constant. We will compute the value of $k$ from DFT calculations as follows:
 
-$k = \frac{\partial^2E}{\partial x^2}$ at the equilibrium bond length. We actually already have the data to do this from section [[*Manual%20determination][Manual determination]]. We only need to fit an equation to the energy vs. bond-length data, find the minimum energy bond-length, and then evaluate the second derivative of the fitted function at the minimum. We will use a cubic polynomial for demonstration here. Polynomials are numerically convenient because they are easy to fit, and it is trivial to get the roots and derivatives of the polynomials, as well as to evaluate them at other points using func:numpy.polyfit, func:numpy.polyder, and func:numpy.polyval.
+$k = \frac{\partial^2E}{\partial x^2}$ at the equilibrium bond length. We actually already have the data to do this from section \ref{sec:manual-determination}. We only need to fit an equation to the energy vs. bond-length data, find the minimum energy bond-length, and then evaluate the second derivative of the fitted function at the minimum. We will use a cubic polynomial for demonstration here. Polynomials are numerically convenient because they are easy to fit, and it is trivial to get the roots and derivatives of the polynomials, as well as to evaluate them at other points using func:numpy.polyfit, func:numpy.polyder, and func:numpy.polyval.
 
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -1488,7 +1506,7 @@ dpars = np.polyder(pars)
 # minimum we need.
 print 'roots of first derivative are {0}'.format(np.roots(dpars))
 
-d_min = 1.14425395
+d_min = 1.14425395 # we manually copy this from the output to here
 # second derivative
 ddpars = np.polyder(dpars)
 
@@ -1517,7 +1535,7 @@ plt.show()
 : roots of first derivative are [ 1.43384501  1.14425395]
 : The frequency is 2143.60766258 cm^{-1}
 
-This result is in good agreement with [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C630080&Units=SI&Type=IR-SPEC&Index=0#IR-SPEC][experiment]]. The procedure used above is how many vibrational calculations are done. With more atoms, you have to determine a force constant matrix and diagonalize it. For more details, see \cite{wilson1955}. In practice, we usually allow a packaged code to automate this, which we cover in the next section.
+This result is in good agreement with [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C630080&Units=SI&Type=IR-SPEC&Index=0#IR-SPEC][experiment]]. The procedure used above is how many vibrational calculations are done. With more atoms, you have to determine a force constant matrix and diagonalize it. For more details, see \cite{wilson1955}. In practice, we usually allow a packaged code to automate this, which we cover in section \ref{sec:automated-vib}.
 
 We now consider how much energy is in this vibration. This is commonly called zero-point energy (ZPE) and it is defined as $E_{ZPE} = \frac{1}{2} h \nu$ for a single mode, and $h$ is Planck's constant (4.135667516e-15 eV/s).
 
@@ -1541,6 +1559,7 @@ This is a reasonable amount of energy! Zero-point energy increases with increasi
 A final note is that this analysis is in the "harmonic approximation". The frequency equation is the solution to a harmonic oscillator. If the spring is non-linear, then there are anharmonic effects that may become important, especially at higher temperatures.
 
 *** Automated vibrational  calculations
+#+label: sec:automated-vib
 Vasp has built-in capability for performing vibrational calculations.
 #+BEGIN_SRC python :results output  :exports both
 #adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
@@ -1570,17 +1589,31 @@ with jasp('molecules/h2o_vib',
 
     # vibrational energies are in eV
     energies, modes = calc.get_vibrational_modes()
+    print 'energies\n========'
+    for i,e in enumerate(energies):
+        print '{0:02d}: {1} eV'.format(i,e)
 
-    print energies
 #+END_SRC
 
 #+RESULTS:
-: Forces
-: ======
-: [[ 0.006 -0.022 -0.002]
-:  [-0.013  0.     0.003]
-:  [ 0.006  0.022 -0.002]]
-: [0.47562256400000003, 0.46155107200000001, 0.19626758000000002, 0.0044195680000000005, 0.0026506530000000002, (0.00030762399999999999+0j), (0.011665989+0j), (0.011977050999999999+0j), (0.015144825000000001+0j)]
+#+begin_example
+Forces
+======
+[[ 0.006 -0.022 -0.002]
+ [-0.013  0.     0.003]
+ [ 0.006  0.022 -0.002]]
+energies
+==========
+00: 0.475622564 eV
+01: 0.461551072 eV
+02: 0.19626758 eV
+03: 0.004419568 eV
+04: 0.002650653 eV
+05: (0.000307624+0j) eV
+06: (0.011665989+0j) eV
+07: (0.011977051+0j) eV
+08: (0.015144825+0j) eV
+#+end_example
 
 Note we get 9 frequencies here. Water has 3 atoms, with three degrees of freedom each. Three of those degrees of freedom are translations, and three are rotations. That leaves 3N-6 = 3 degrees of vibrational freedom. The modes of water vibration are (with our calculated values in parentheses):
 
@@ -1680,7 +1713,7 @@ Zero-point energy: 0.000 eV
 It strikes me that this is clearly an error! I guess this happened because after the first calculation somehow VASP does not see a difference in geometries for subsequent calculations.
 
 ** Simulated infrared spectra
-At http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02 there is a recipe for computing the Infrared vibrational spectroscopy intensities in Vasp. We are going to do that for water here. First, we will relax a water molecule.
+At http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02 there is a recipe for computing the Infrared vibrational spectroscopy intensities in VASP. We are going to do that for water here. First, we will relax a water molecule.
 
 #+BEGIN_SRC python :results output :exports both
 from ase import Atoms, Atom
@@ -1723,13 +1756,16 @@ with jasp('molecules/h2o_vib_dfpt',
           xc='PBE',
           encut=400,
           ismear=0,# Gaussian smearing
-          ibrion=7, # switches on the DFPT vibrational analysis (with no symmetry constraints)
+          ibrion=7, # switches on the DFPT vibrational analysis (with
+                    # no symmetry constraints)
           nfree=2,
           potim=0.015,
-          lepsilon=True, # enables to calculate and to print the BEC tensors
+          lepsilon=True, # enables to calculate and to print the BEC
+                         # tensors
           lreal=False,
           nsw=1,
-          nwrite=3, # affects OUTCAR verbosity: explicitly forces SQRT(mass)-divided eigenvectors to be printed
+          nwrite=3, # affects OUTCAR verbosity: explicitly forces
+                    # SQRT(mass)-divided eigenvectors to be printed
           atoms=atoms) as calc:
     calc.calculate(atoms)
 #+END_SRC
@@ -1894,7 +1930,15 @@ The interpretation of these results is that the mode at 3713 cm^{-1} would be ne
 
 See also \cite{giannozzi:8537}. For HREELS simulations see \cite{0953-8984-22-26-265006}.
 
-*** TODO Shell scripts are rough. One day I should rewrite this in python.
+The shell script above has been translated to a convenient python function in mod:jasp.
+#+BEGIN_SRC python :results output
+from jasp import *
+with jasp('molecules/h2o_vib_dfpt') as calc:
+    print calc.get_infrared_intensities()
+#+END_SRC
+
+#+RESULTS:
+: [ 0.227  0.006  0.312  1.     0.006  0.     0.005  0.     0.345]
 
 ** Thermochemical properties of molecules
 ase provides a [[https://wiki.fysik.dtu.dk/ase/ase/thermochemistry.html#module-thermochemistry][thermochemistry]] module.
@@ -1933,7 +1977,9 @@ with jasp('molecules/n2-vib',
     h = 4.1356675e-15 # eV*s
     c = 3.0e10 #cm/s
     vib_energies = [h*c*nu for nu in vib_freq]
-    print vib_energies
+    print 'vibrational energies\n===================='
+    for i,e in enumerate(vib_energies):
+        print '{0:02d}: {1} eV'.format(i,e)
 
 # # now we can get some properties. Note we only need one vibrational
 # energy since there is only one mode. This example does not work if
@@ -1949,7 +1995,14 @@ G = thermo.get_free_energy(temperature=298.15, pressure=101325.)
 
 #+RESULTS:
 #+begin_example
-[0.29159234323953859, 0.016977524105896053, 0.016977524105896053, 2.8536105750000002e-09, 8.6849017500000002e-10, 0.0]
+vibrational energies
+====================
+00: 0.29159234324 eV
+01: 0.0169775241059 eV
+02: 0.0169775241059 eV
+03: 2.853610575e-09 eV
+04: 8.68490175e-10 eV
+05: 0.0 eV
 Enthalpy components at T = 298.15 K:
 ===============================
 E_elec               -16.478 eV
@@ -1984,7 +2037,7 @@ Free energy components at T = 298.15 K and P = 101325.0 Pa:
 #+end_example
 
 ** Molecular reaction energies
-*** O$_2$ dissociation
+*** O_{2} dissociation
 The first reaction we consider is a simple dissociation of oxygen molecule into two oxygen atoms: $O_2 \rightarrow 2 O$. The dissociation energy is pretty straightforward to define: it is the energy of the products minus the energy of the reactant. $D = 2*E_O - E_{O_2}$. It would appear that we simply calculate the energy of an oxygen atom, and the energy of an oxygen molecule and evaluate the formula. Let's do that.
 
 **** Simple estimate of O$_2$ dissociation energy
@@ -2032,7 +2085,7 @@ if None not in (E_O, E_O2):
 
 The answer we have obtained is way too high! Experimentally the dissociation energy is more like 5.2 eV (need reference).
 
-We implicitly neglected spin-polarization in the example above. That could be a problem, since the O$_2$ molecule can be in one of two spin states, a singlet or a triplet, and these should have different energies. Furthermore, the oxygen atom can be a singlet or a triplet, and these would have different energies. To account for spin polarization, we have to tell Vasp to use spin-polarization, and give initial guesses for the magnetic moments of the atoms. Let's try again with spin polarization.
+We implicitly neglected spin-polarization in the example above. That could be a problem, since the O$_2$ molecule can be in one of two spin states, a singlet or a triplet, and these should have different energies. Furthermore, the oxygen atom can be a singlet or a triplet, and these would have different energies. To account for spin polarization, we have to tell VASP to use spin-polarization, and give initial guesses for the magnetic moments of the atoms. Let's try again with spin polarization.
 
 **** Estimating O$_2$ dissociation energy with spin polarization in triplet ground states
 To tell VASP to use spin-polarization we use [[incar:ISPIN][INCAR]]=2, and we set initial guesses for magnetic moments on the atoms with the magmom keyword. In a triplet state there are two electrons with spins of the same sign.
@@ -2283,12 +2336,14 @@ plt.savefig('images/O2-dissociation-sigma-convergence.png')
 #+END_SRC
 
 #+RESULTS:
-=O2 -> 2O sigma = 0.2  D = 6.668 eV
-O2 -> 2O sigma = 0.1  D = 6.746 eV
-O2 -> 2O sigma = 0.05  D = 6.784 eV
-O2 -> 2O sigma = 0.02  D = 6.807 eV
-O2 -> 2O sigma = 0.01  D = 6.815 eV
-=
+: O2 -> 2O sigma = 0.2  D = 6.668 eV
+: O2 -> 2O sigma = 0.1  D = 6.746 eV
+: O2 -> 2O sigma = 0.05  D = 6.784 eV
+: O2 -> 2O sigma = 0.02  D = 6.807 eV
+: O2 -> 2O sigma = 0.01  D = 6.815 eV
+: O2 -> 2O sigma = 0.001  D = 6.822 eV
+
+
 
 #+caption: Effect of SIGMA on the oxygen dissociation energy.
 #+ATTR_LaTeX: placement=[H]
@@ -2543,8 +2598,8 @@ with jasp('molecules/O2-sp-triplet') as calc:
 #+END_SRC
 
 #+RESULTS:
-: -8.830101
-: -9.848287
+: singlet:  -8.830101
+: triplet:  -9.848238
 
 You can see here the triplet state has an energy that is 1 eV more stable than the singlet state.
 
@@ -2736,9 +2791,9 @@ if None in (eCO2, eH2, eCO, eH2O):
     pass
 else:
     dE = eCO2 + eH2 - eCO - eH2O
-    print '\Delta E = {0:1.3f} eV'.format(dE)
-    print '\Delta E = {0:1.3f} kcal/mol'.format(dE*23.06035)
-    print '\Delta E = {0:1.3f} kJ/mol'.format(dE*96.485)
+    print 'Delta E = {0:1.3f} eV'.format(dE)
+    print 'Delta E = {0:1.3f} kcal/mol'.format(dE*23.06035)
+    print 'Delta E = {0:1.3f} kJ/mol'.format(dE*96.485)
 #+END_SRC
 
 #+RESULTS:
@@ -2966,11 +3021,17 @@ with jasp('molecules/wgs/CO-vib',
           atoms=CO) as calc:
     calc.calculate()
     vib_freq = calc.get_vibrational_frequencies()
-    print vib_freq
+    for i,f in enumerate(vib_freq):
+        print '{0:02d}: {1} cm^(-1)'.format(i,f)
 #+END_SRC
 
 #+RESULTS:
-: [2115.528894, 60.594878000000001, 60.594878000000001, (0.987178+0j), (17.958586+0j), (17.958586+0j)]
+: 00: 2115.528894 cm^(-1)
+: 01: 60.594878 cm^(-1)
+: 02: 60.594878 cm^(-1)
+: 03: (0.987178+0j) cm^(-1)
+: 04: (17.958586+0j) cm^(-1)
+: 05: (17.958586+0j) cm^(-1)
 
 CO has only one vibrational mode.
 
@@ -2994,11 +3055,20 @@ with jasp('molecules/wgs/CO2-vib',
           atoms=CO2) as calc:
     calc.calculate()
     vib_freq = calc.get_vibrational_frequencies()
-    print vib_freq
+    for i,f in enumerate(vib_freq):
+        print '{0:02d}: {1} cm^(-1)'.format(i,f)
 #+END_SRC
 
 #+RESULTS:
-: [2352.9012849999999, 1316.6895039999999, 635.01591299999995, 635.01591299999995, (0.344306+0j), (1.7638670000000001+0j), (1.7638670000000001+0j), (62.700411000000003+0j), (62.700411000000003+0j)]
+: 00: 2352.901285 cm^(-1)
+: 01: 1316.689504 cm^(-1)
+: 02: 635.015913 cm^(-1)
+: 03: 635.015913 cm^(-1)
+: 04: (0.344306+0j) cm^(-1)
+: 05: (1.763867+0j) cm^(-1)
+: 06: (1.763867+0j) cm^(-1)
+: 07: (62.700411+0j) cm^(-1)
+: 08: (62.700411+0j) cm^(-1)
 
 CO$_2$ is a linear molecule with 3N-5 = 4 vibrational modes. They are the first four frequencies in the output above.
 
@@ -3022,11 +3092,17 @@ with jasp('molecules/wgs/H2-vib',
           atoms=H2) as calc:
     calc.calculate()
     vib_freq = calc.get_vibrational_frequencies()
-    print vib_freq
+    for i,f in enumerate(vib_freq):
+        print '{0:02d}: {1} cm^(-1)'.format(i,f)
 #+END_SRC
 
 #+RESULTS:
-: [4281.9177490000002, 129.14685499999999, 129.14685499999999, 0.0, 0.0, (1.0000000000000001e-05+0j)]
+: 00: 4281.917749 cm^(-1)
+: 01: 129.146855 cm^(-1)
+: 02: 129.146855 cm^(-1)
+: 03: 0.0 cm^(-1)
+: 04: 0.0 cm^(-1)
+: 05: (1e-05+0j) cm^(-1)
 
 There is only one frequency of importance (the one at 4281 cm$^{-1}$) for the linear H2 molecule.
 
@@ -3050,11 +3126,20 @@ with jasp('molecules/wgs/H2O-vib',
           atoms=H2O) as calc:
     calc.calculate()
     vib_freq = calc.get_vibrational_frequencies()
-    print vib_freq
+    for i,f in enumerate(vib_freq):
+        print '{0:02d}: {1} cm^(-1)'.format(i,f)
 #+END_SRC
 
 #+RESULTS:
-: [3782.0622130000002, 3672.1246000000001, 1586.23055, 135.82763, 16.280411000000001, (0.20858199999999999+0j), (26.297060999999999+0j), (106.869518+0j), (131.286732+0j)]
+: 00: 3782.062213 cm^(-1)
+: 01: 3672.1246 cm^(-1)
+: 02: 1586.23055 cm^(-1)
+: 03: 135.82763 cm^(-1)
+: 04: 16.280411 cm^(-1)
+: 05: (0.208582+0j) cm^(-1)
+: 06: (26.297061+0j) cm^(-1)
+: 07: (106.869518+0j) cm^(-1)
+: 08: (131.286732+0j) cm^(-1)
 
 Water has 3N-6 = 3 vibrational modes.
 
@@ -3177,7 +3262,7 @@ Despite the error in $\Delta G$, the equilibrium constant at 1000K seems reasona
 We will consider a simple example of the barrier for NH$_3$ inversion. We have to create an NH$_3$ molecule in the initial and inverted state (these have exactly the same energy), and then interpolate a band of images. Then, we use the NEB method to compute the barrier to inversion.
 
 *** Get initial and final states
-#+BEGIN_SRC python
+#+BEGIN_SRC python :exports code
 # compute initial and final states
 from ase import Atoms
 from ase.data.molecules import molecule
@@ -3295,197 +3380,9 @@ os.system('convert -delay 50 -loop 0 images/00*-nh3.png nh3-neb.gif')
 
 # Shockwave flash
 os.system('png2swf -o nh3-neb.swf images/00*-nh3.png ')
-
 #+END_SRC
 
 #+RESULTS:
-
-** Simulated infrared spectra
-At http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02 there is a recipe for computing the Infrared vibrational spectroscopy intensities in VASP. We are going to do that for water here. We instruct Vasp to compute the vibrational modes using density functional perturbation theory with [[incar:IBRION][IBRION]]=7. Note, this is different than in [[Vibrational frequencies]] where finite differences were used with IBRION=5 or 6. Remember we already relaxed the water molecule in a previous section ([[*Relaxation%20of%20a%20water%20molecule][Relaxation of a water molecule]]). We will reuse that calculation here.
-
-#+BEGIN_SRC python
-from ase import Atoms, Atom
-from jasp import *
-
-# read in relaxed geometry
-with jasp('molecules/h2o_relax') as calc:
-    atoms = calc.get_atoms()
-
-# now define a new calculator
-with jasp('molecules/h2o_vib_dfpt',
-          xc='PBE',
-          encut=400,
-          ismear=0,# Gaussian smearing
-          ibrion=7, # switches on the DFPT vibrational analysis (with no symmetry constraints)
-          nfree=2,
-          potim=0.015,
-          lepsilon=True, # enables to calculate and to print the BEC tensors
-          lreal=False,
-          nsw=1,
-          nwrite=3, # affects OUTCAR verbosity: explicitly forces SQRT(mass)-divided eigenvectors to be printed
-          atoms=atoms) as calc:
-    calc.calculate(atoms)
-#+END_SRC
-
-#+RESULTS:
-
-To analyze the results, this shell script was provided to extract the results.
-#+BEGIN_SRC sh :results output :dir molecules/h2o_vib_dfpt :exports both
-#!/bin/bash
-# A utility for calculating the vibrational intensities from VASP output (OUTCAR)
-# (C) David Karhanek, 2011-03-25, ICIQ Tarragona, Spain (www.iciq.es)
-
-# extract Born effective charges tensors
-printf "..reading OUTCAR"
-BORN_NROWS=`grep NIONS OUTCAR | awk '{print $12*4+1}'`
-if [ `grep 'BORN' OUTCAR | wc -l` = 0 ] ; then \
-   printf " .. FAILED! Born effective charges missing! Bye! \n\n" ; exit 1 ; fi
-grep "in e, cummulative" -A $BORN_NROWS OUTCAR > born.txt
-
-# extract Eigenvectors and eigenvalues
-if [ `grep 'SQRT(mass)' OUTCAR | wc -l` != 1 ] ; then \
-   printf " .. FAILED! Restart VASP with NWRITE=3! Bye! \n\n" ; exit 1 ; fi
-EIG_NVIBS=`grep -A 2000 'SQRT(mass)' OUTCAR | grep 'cm-1' | wc -l`
-EIG_NIONS=`grep NIONS OUTCAR | awk '{print $12}'`
-EIG_NROWS=`echo "($EIG_NIONS+3)*$EIG_NVIBS+3" | bc`
-grep -A $(($EIG_NROWS+2)) 'SQRT(mass)' OUTCAR | tail -n $(($EIG_NROWS+1)) | sed 's/f\/i/fi /g' > eigenvectors.txt
-printf " ..done\n"
-
-# set up a new directory, split files - prepare for parsing
-printf "..splitting files"
-mkdir intensities ; mv born.txt eigenvectors.txt intensities/
-cd intensities/
-let NBORN_NROWS=BORN_NROWS-1
-let NEIG_NROWS=EIG_NROWS-3
-let NBORN_STEP=4
-let NEIG_STEP=EIG_NIONS+3
-tail -n $NBORN_NROWS born.txt > temp.born.txt
-tail -n $NEIG_NROWS eigenvectors.txt > temp.eige.txt
-mkdir inputs ; mv born.txt eigenvectors.txt inputs/
-split -a 3 -d -l $NEIG_STEP temp.eige.txt temp.ei.
-split -a 3 -d -l $NBORN_STEP temp.born.txt temp.bo.
-mkdir temps01 ; mv temp.born.txt temp.eige.txt temps01/
-for nu in `seq 1 $EIG_NVIBS` ; do
- let nud=nu-1 ; ei=`printf "%03u" $nu` ; eid=`printf "%03u" $nud` ; mv temp.ei.$eid eigens.vib.$ei
-done
-for s in `seq 1 $EIG_NIONS` ; do
- let sd=s-1 ; bo=`printf "%03u" $s` ; bod=`printf "%03u" $sd` ; mv temp.bo.$bod borncs.$bo
-done
-printf " ..done\n"
-
-# parse deviation vectors (eig)
-printf "..parsing eigenvectors"
-let sad=$EIG_NIONS+1
-for nu in `seq 1 $EIG_NVIBS` ; do
- nuu=`printf "%03u" $nu`
- tail -n $sad eigens.vib.$nuu | head -n $EIG_NIONS | awk '{print $4,$5,$6}' > e.vib.$nuu.allions
- split -a 3 -d -l 1 e.vib.$nuu.allions temp.e.vib.$nuu.ion.
- for s in `seq 1 $EIG_NIONS` ; do
-  let sd=s-1; bo=`printf "%03u" $s`; bod=`printf "%03u" $sd`; mv temp.e.vib.$nuu.ion.$bod e.vib.$nuu.ion.$bo
- done
-done
-printf " ..done\n"
-
-# parse born effective charge matrices (born)
-printf "..parsing eff.charges"
-for s in `seq 1 $EIG_NIONS` ; do
- ss=`printf "%03u" $s`
- awk '{print $2,$3,$4}' borncs.$ss | tail -3 > bornch.$ss
-done
-mkdir temps02 ; mv eigens.* borncs.* temps02/
-printf " ..done\n"
-
-# parse matrices, multiply them and collect squares (giving intensities)
-printf "..multiplying matrices, summing "
-for nu in `seq 1 $EIG_NVIBS` ; do
- nuu=`printf "%03u" $nu`
- int=0.0
- for alpha in 1 2 3 ;  do            # summing over alpha coordinates
-  sumpol=0.0
-  for s in `seq 1 $EIG_NIONS` ; do   # summing over atoms
-   ss=`printf "%03u" $s`
-   awk -v a="$alpha" '(NR==a){print}' bornch.$ss > z.ion.$ss.alpha.$alpha
-   # summing over beta coordinates and multiplying Z(s,alpha)*e(s) done by the following awk script
-   paste z.ion.$ss.alpha.$alpha  e.vib.$nuu.ion.$ss | \
-   awk '{pol=$1*$4+$2*$5+$3*$6; print $0,"  ",pol}' > matr-vib-${nuu}-alpha-${alpha}-ion-${ss}
-  done
-  sumpol=`cat matr-vib-${nuu}-alpha-${alpha}-ion-* | awk '{sum+=$7} END {print sum}'`
-  int=`echo "$int+($sumpol)^2" | sed 's/[eE]/*10^/g' |  bc -l`
- done
- freq=`awk '(NR==1){print $8}' temps02/eigens.vib.$nuu`
- echo "$nuu $freq $int">> exact.res.txt
- printf "."
-done
-printf " ..done\n"
-
-# format results, normalize intensities
-printf "..normalizing intensities"
-max=`awk '(NR==1){max=$3} $3>=max {max=$3} END {print max}' exact.res.txt`
-awk -v max="$max" '{printf "%03u %6.1f %5.3f\n",$1,$2,$3/max}' exact.res.txt > results.txt
-printf " ..done\n"
-
-# clean up, display results
-printf "..finalizing:\n"
-mkdir temps03; mv bornch.* e.vib.*.allions temps03/
-mkdir temps04; mv z.ion* e.vib.*.ion.* temps04/
-mkdir temps05; mv matr-* temps05/
-mkdir results; mv *res*txt results/
-let NMATRIX=$EIG_NVIBS**2
-printf "%5u atoms found\n%5u vibrations found\n%5u matrices evaluated" \
-       $EIG_NIONS $EIG_NVIBS $NMATRIX > results/statistics.txt
-  # fast switch to clean up all temporary files
-  rm -r temps*
-cat results/results.txt
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-..reading OUTCAR ..done
-..splitting files ..done
-..parsing eigenvectors ..done
-..parsing eff.charges ..done
-..multiplying matrices, summing ......... ..done
-..normalizing intensities ..done
-..finalizing:
-001 3827.3 0.227
-002 3713.0 0.006
-003 1587.2 0.312
-004  235.5 1.000
-005   19.1 0.006
-006    2.3 0.000
-007   16.6 0.005
-008   45.0 0.000
-009  136.1 0.345
-#+end_example
-
-
-Note the results above include the rotational and vibrational modes (modes 4-9). The following shell script (also from http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02) removes those, and recalculates the intensities.
-#+BEGIN_SRC sh :results output :dir molecules/h2o_vib_dfpt :exports both
-#!/bin/bash
-# reformat intensities, just normal modes: 3N -> (3N-6)
-printf "..reformatting and normalizing intensities"
-cd intensities/results/
-nlns=`wc -l exact.res.txt | awk '{print $1}' `; let bodylns=nlns-6
-head -n $bodylns exact.res.txt > temp.reform.res.txt
-max=`awk '(NR==1){max=$3} $3>=max {max=$3} END {print max}' temp.reform.res.txt`
-awk -v max="$max" '{print $1,$2,$3/max}' temp.reform.res.txt > exact.reform.res.txt
-awk -v max="$max" '{printf "%03u %6.1f %5.3f\n",$1,$2,$3/max}' temp.reform.res.txt > reform.res.txt
-printf " ..done\n..normal modes:\n"
-rm temp.reform.res.txt
-cat reform.res.txt
-cd ../..
-#+END_SRC
-
-#+RESULTS:
-: ..reformatting and normalizing intensities ..done
-: ..normal modes:
-: 001 3827.3 0.726
-: 002 3713.0 0.019
-: 003 1587.2 1.000
-
-The interpretation of these results is that the mode at 3713 cm^{-1} would be nearly invisible in the IR spectrum. Earlier we interpreted that as the symmetric stretch. In this mode, there is only a small change in the molecule dipole moment, so there is a small IR intensity.
-
-*** TODO Shell scripts are rough. One day I should rewrite this in python.
 
 * Bulk systems
 
