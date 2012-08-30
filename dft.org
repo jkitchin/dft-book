@@ -3386,7 +3386,7 @@ os.system('png2swf -o nh3-neb.swf images/00*-nh3.png ')
 
 * Bulk systems
 
-See this paper (http://arxiv.org/pdf/1204.2733.pdf) for a very informative comparison of DFT codes for computing different bulk properties.
+See http://arxiv.org/pdf/1204.2733.pdf for a very informative comparison of DFT codes for computing different bulk properties.
 
 ** Defining and visualizing bulk systems
 *** Built-in functions in ase
@@ -3419,7 +3419,7 @@ write('images/AgPd-bulk.png',atoms,show_unit_cell=2)
 
 [[./images/Ag-bulk.png]]
 
-#+caption: A simple Ag$_3$Pd bulk structure.
+#+caption: A simple Ag_{3}Pd bulk structure.
 #+ATTR_LaTeX: placement=[H]
 [[./images/AgPd-bulk.png]]
 
@@ -3605,6 +3605,11 @@ plt.plot(LC, fcc_energies)
 plt.xlabel('Lattice constant ($\AA$)')
 plt.ylabel('Total energy (eV)')
 plt.savefig('images/Cu-fcc.png')
+
+print '#+tblname: cu-fcc-energies'
+print '| lattice constant ($\AA$) | Total Energy (eV) |'
+for lc, e in zip(LC,fcc_energies):
+    print '| {0} | {1} |'.format(lc, e)
 #+END_SRC
 
 #+RESULTS:
@@ -3642,7 +3647,7 @@ eos.plot('images/Cu-fcc-eos.png')
 #+ATTR_LaTeX: placement=[H]
 [[./images/Cu-fcc-eos.png]]
 
-Before we jump into the bcc calculations, let's consider what range of lattice constants we should choose. The fcc lattice is close-packed, and the volume of the primitive cell is $V = 1/4 a^3$ or about 11.8 \AA$^3$/atom. The volume of the equilibrium bcc primitive cell will probably be similar to that. The question is: what bcc lattice constant gives that volume? The simplest way to answer this is to compute the answer. We will make a bcc crystal at the fcc lattice constant, and then compute the scaling factor needed to make it the right volume.
+Before we jump into the bcc calculations, let's consider what range of lattice constants we should choose. The fcc lattice is close-packed, and the volume of the primitive cell is $V = 1/4 a^3$ or about 11.8 $\AA^3$/atom. The volume of the equilibrium bcc primitive cell will probably be similar to that. The question is: what bcc lattice constant gives that volume? The simplest way to answer this is to compute the answer. We will make a bcc crystal at the fcc lattice constant, and then compute the scaling factor needed to make it the right volume.
 
 #+BEGIN_SRC python :results output :exports both
 from ase import Atom, Atoms
@@ -3730,6 +3735,10 @@ plt.show()
 Note we plot the energy vs. atomic volume. That is because the lattice constants of the two crystal structures are very different. It also shows that the atomic volumes in the two structures are similar.
 
 What can we say here? The fcc structure has a lower energy than the bcc structure, so we can conclude the fcc structure is more favorable. In fact, the fcc structure is the experimentally found structure for Cu. Some caution is in order; if you run these calculations at a $4 \times 4 \times 4$ $k$-point grid, the bcc structure is more stable because the results are not converged!
+
+#+begin_exercise
+Compute the energy vs. volume for fcc and bcc Cu for different $k$-point grids. Determine when each result has converged, and which structure is more stable.
+#+end_exercise
 
 What can we say about the relative stability of fcc to hcp? Nothing, until we calculate the hcp equation of state.
 
@@ -3893,7 +3902,7 @@ plt.savefig('images/tio2-step1.png')
 #+RESULTS:
 : [-52.042192999999997, -52.649554999999999, -52.949852999999997, -52.950336, -52.783493999999997]
 
-#+caption: Total energy vs volume for TIO$_2$ with frozen atoms and frozen shape.
+#+caption: Total energy vs volume for TiO$_2$ with frozen atoms and frozen shape.
 [[./images/tio2-step1.png]]
 
 In step 2 we will actually do some relaxations. We will do a series of relaxations, from 62 to 66 \AA$^3$, and allow the ions and cell shape to relax (ISIF=4) at constant volume.
@@ -4082,7 +4091,7 @@ plt.show()
 [[./images/occ-sigma.png]]
 
 ** Cohesive energy
-The cohesive energy is defined as the energy to separate neutral atoms in their ground electronic state from the solid at 0K at 1 atm. We will compute this rhodium. Rh is normally an fcc metal, so we will use that structure and let VASP find the equilibrium volume for us.
+The cohesive energy is defined as the energy to separate neutral atoms in their ground electronic state from the solid at 0K at 1 atm. We will compute this for rhodium. Rh is normally an fcc metal, so we will use that structure and let VASP find the equilibrium volume for us.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -7398,7 +7407,7 @@ See http://www.scipy.org/Cookbook/BuildingArrays for examples of making numpy ar
 
 When analyzing numerical data you may often want to analyze only a part of the data. For example, suppose you have $x$ and $y$ data, ($x$=time, $y$=signal) and you want to integrate the date between a particular time interval. You can slice a numpy array to extract parts of it. See http://www.scipy.org/Cookbook/Indexing for several examples of this.
 
-In this example we show how to extract the data in an interval. We have $x$ data in the range of 0 to 6, and $y$ data that is the $\cos(x)$. We want to extract the $x$ and $y$ data for 2 < $x$ < 4, and the corresponding y-data. To do this, we utilize the numpy capability of slicing with a boolean array. We also show some customization of matplotlib.
+In this example we show how to extract the data in an interval. We have $x$ data in the range of 0 to 6, and $y$ data that is the $\cos(x)$. We want to extract the $x$ and $y$ data for $2 < x < 4$, and the corresponding y-data. To do this, we utilize the numpy capability of slicing with a boolean array. We also show some customization of matplotlib.
 
 #+BEGIN_SRC python :exports both
 import numpy as np
@@ -7430,7 +7439,7 @@ savefig('images/np-array-slice.png')
 #+caption: Example of slicing out part of an array. The solid line represents the whole array, and the symbols are the array between $2 < x < 4$.
 #+ATTR_LaTeX: placement=[H]
 [[./images/np-array-slice.png]]
-The expression x$>2$ returns an array of booleans (True where the element of $x$ is greater than 2, and False where it is not) equal in size to $x$. Similarly $x<4$ returns a boolean array where $x$ is less than 4. We take the logical =and= of these two boolean arrays to get another boolean array where both conditions are True (i.e. $x<2$ and $x>4$). This final boolean array is True for the part of the arrays we are interested in, and we can use it to extract the subarrays we want.
+The expression x$>2$ returns an array of booleans (True where the element of $x$ is greater than 2, and False where it is not) equal in size to $x$. Similarly $x<4$ returns a boolean array where $x$ is less than 4. We take the logical =and= of these two boolean arrays to get another boolean array where both conditions are True (i.e. $x<2$ and $x>4$). This final boolean array is =True= for the part of the arrays we are interested in, and we can use it to extract the subarrays we want.
 
 *** Statistics
 **** Confidence intervals
