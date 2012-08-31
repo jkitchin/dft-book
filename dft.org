@@ -6,7 +6,7 @@
 #+DESCRIPTION: A book on using density functional theory to model materials.
 #+KEYWORDS: Density functional theory, materials, VASP
 #+LANGUAGE:  en
-#+OPTIONS:   H:10 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+OPTIONS:   H:10 num:t toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t
 #+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
 #+OPTIONS:   LaTeX:mathjax
 #+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
@@ -20,6 +20,7 @@
 #+latex_header: \usepackage[section]{placeins}
 #+latex_header: \usepackage{xcolor}
 #+latex_header: \usepackage{adjustbox}
+
 
 #+latex_header: \makeindex
 
@@ -73,6 +74,9 @@
     \end{adjustbox}%
 }
 #+end_latex
+
+
+
 
 [[./images/cover-page.png]]
 
@@ -2956,7 +2960,7 @@ Pseudopotentials used:
 ----------------------
 H: potpaw_PBE/H/POTCAR (git-hash: fbc0773b08b32f553234b0b50cc6ad6f5085c816)
 #+end_example
-***** H$_2$O
+***** H_{2}O
 #+begin_example
 : -----------------------------
   VASP calculation from /home/jkitchin/dft-org/molecules/wgs/H2O
@@ -3106,7 +3110,7 @@ with jasp('molecules/wgs/H2-vib',
 
 There is only one frequency of importance (the one at 4281 cm$^{-1}$) for the linear H2 molecule.
 
-**** H$_2$O vibrations
+**** H_{2}O vibrations
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 
@@ -3521,13 +3525,11 @@ What we typically mean by determining bulk structures includes the following:
 
 All of these questions can often be addressed by finding the volume, shape and atomic positions that minimize the total energy of a bulk system. This is true at 0K. At higher temperatures, one must consider minimizing the free energy, rather than the internal energy.
 
-*** TODO fcc/bcc crystal structures
-
-jasp is broken here, it thinks a new calculation is required. probably because calculation_required = True. However, jaspsum works fine.
+*** fcc/bcc crystal structures
 
 The fcc and bcc structures are simple. They only have one degree of freedom: the lattice constant. In this section we show how to calculate the equilibrium volume of each structure, and determine which one is more stable. We start with the fcc crystal structure of Cu. We will manually define the crystal structure based on the definitions in Kittel \cite{kittel} (Chapter 1).
 
-#+BEGIN_SRC python :results output org
+#+BEGIN_SRC python :results output org raw
 from jasp import *
 from ase import Atom, Atoms
 
@@ -3545,6 +3547,7 @@ for a in LC:
               encut=350,
               kpts=(8,8,8),
               atoms=atoms) as calc:
+
         e = atoms.get_potential_energy()
         fcc_energies.append(e)
 
@@ -3561,7 +3564,6 @@ for lc, e in zip(LC,fcc_energies):
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_ORG
 #+tblname: cu-fcc-energies
 | lattice constant ($\AA$) | Total Energy (eV) |
 |                      3.5 |         -3.649238 |
@@ -3570,7 +3572,6 @@ for lc, e in zip(LC,fcc_energies):
 |                     3.65 |         -3.723951 |
 |                      3.7 |         -3.711284 |
 |                     3.75 |          -3.68426 |
-#+END_ORG
 
 #+begin_exercise
 Use the data in the table above to plot the total energy as a function of the lattice constant. Fit a cubic polynomial to the data, and find the volume that minimizes the total energy.
@@ -3654,7 +3655,7 @@ for a in LC:
 
 Finally, we will compare the two crystal structures.
 
-#+BEGIN_SRC python :results output org
+#+BEGIN_SRC python :results output org raw
 from jasp import *
 
 bcc_LC = [2.75, 2.8, 2.85, 2.9, 2.95, 3.0]
@@ -3696,7 +3697,6 @@ for lc,e in zip(bcc_LC, bcc_energies):
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_ORG
 #+tblname: bcc-data
 #+caption: Total energy vs. lattice constant for BCC Cu
 | Lattice constant (\AA$^3$) | Total energy (eV) |
@@ -3707,7 +3707,6 @@ for lc,e in zip(bcc_LC, bcc_energies):
 |                        2.9 |         -3.716496 |
 |                       2.95 |         -3.697781 |
 |                        3.0 |         -3.657913 |
-#+END_ORG
 
 #+begin_exercise
 Use the data for FCC and BCC Cu to plot the total energy as a function of the lattice constant.
@@ -3826,7 +3825,7 @@ A unit cell has six degrees of freedom: the lengths of each unit cell vector, an
 
 This multistep process is pretty reasonable to get a converged structure pretty quickly. We will illustrate the process on TiO$_2$ which has two lattice parameters and one internal degree of freedom.
 
-#+BEGIN_SRC python :results output org :exports both
+#+BEGIN_SRC python :results output org raw :exports both
 # step 1 frozen atoms and shape at different volumes
 from ase import *
 import numpy as np
@@ -3892,7 +3891,6 @@ for v,e in zip(volumes, energies):
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_ORG
 #+tblname: tio2-vol-ene
 #+caption: Total energy of TiO_{2} vs. volume.
 | Volume ($\AA^3$) | Energy (eV) |
@@ -3902,7 +3900,6 @@ for v,e in zip(volumes, energies):
 |        62.361576 |  -52.949853 |
 |       65.4796548 |  -52.950336 |
 |       68.5977336 |  -52.783494 |
-#+END_ORG
 
 
 #+caption: Total energy vs volume for TiO$_2$ with frozen atoms and frozen shape.
@@ -5825,7 +5822,7 @@ with jasp('surfaces/Al-Na-dip-step2',
 
 #+RESULTS:
 
-*** TODO Comparing no dipole correction with a dipole correction
+*** Comparing no dipole correction with a dipole correction
 To see the difference in what the dipole correction does, we now plot the potentials from each calculation.
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -5870,7 +5867,7 @@ savefig('images/dip-vs-nodip-esp.png')
 #+END_SRC
 
 #+RESULTS:
-: The difference in energy is 0.006389 eV.
+: The difference in energy is 0.006391 eV.
 
 #+caption: comparison of the electrostatic potentials with a dipole correction and without it.
 #+ATTR_LaTeX: placement=[H]
@@ -7227,20 +7224,20 @@ I would like to thank Zhongnan Xu for sending me some examples on magnetism. Ala
 Sometimes it is convenient to create an Atoms object by deleting atoms from an existing object. Here is a recipe to delete all the hydrogen atoms in a molecule. The idea is to make a list of indices of which atoms to delete using list comprehension, then use list deletion to delete those indices.
 
 #+BEGIN_SRC python :results output :exports both
-  from ase.data.molecules import molecule
-  atoms = molecule('CH3CH2OH')
-  print atoms
+from ase.data.molecules import molecule
+atoms = molecule('CH3CH2OH')
+print atoms
 
-  ind2del = [atom.index for atom in atoms if atom.symbol=='H']
-  print ind2del
+ind2del = [atom.index for atom in atoms if atom.symbol=='H']
+print 'Indices to delete: ',ind2del
 
-  del atoms[ind2del]
-  print atoms
+del atoms[ind2del]
+print atoms
 #+END_SRC
 
 #+RESULTS:
 : Atoms(symbols='C2OH6', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False, False, False])
-: [3, 4, 5, 6, 7, 8]
+: Indices to delete:  [3, 4, 5, 6, 7, 8]
 : Atoms(symbols='C2O', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False, False, False])
 
 *** Advanced tagging
@@ -7255,7 +7252,7 @@ The method uses integer tags that are powers of two, and then uses binary operat
 8 = [0 0 0 1]
 #+end_example
 
-so, an atom tagged with 1 and 2 would have a tag of [1 1 0 0] or a tag of 3.
+So, an atom tagged with 1 and 2 would have a tag of [1 1 0 0] or a tag of 3.
 
 #+begin_src python :results output
 '''
@@ -7343,9 +7340,7 @@ mod:ase uses a base set of atomic units. Other units are defined in terms of tho
 Not too many units are defined:
 ['A', 'AUT', 'Ang', 'Angstrom', 'Bohr', 'C', 'Debye', 'GPa', 'Ha', 'Hartree', 'J', 'Pascal', 'Ry', 'Rydberg', 'alpha', 'cm', 'eV', 'erg', 'fs', 'kB', 'kJ', 'kcal', 'kg', 'm', 'meV', 'mol', 'nm', 's', 'second']
 
-it is not that hard to define your own derived units though.
-
-Note these  are only conversion factors. No unit algebra is enforced!
+It is not that hard to define your own derived units though. Note these  are only conversion factors. No unit algebra is enforced!
 
 #+BEGIN_SRC python :results output
 from ase.units import *
@@ -7457,12 +7452,12 @@ ydata = np.array([0.1, 0.81, 4.03, 9.1, 15.99, 24.2, 37.2])
 #fit a third order polynomial
 from pylab import polyfit, plot, show, legend, savefig
 pars = polyfit(xdata,ydata,3)
-print pars
+print 'pars from polyfit: {0}'.format(pars)
 
 ## numpy method returns more data
 A = np.column_stack([xdata**3,xdata**2,xdata,np.ones(len(xdata),np.float)])
 pars_np,resids,rank,s = np.linalg.lstsq(A,ydata)
-print pars_np
+print 'pars from np.linalg.lstsq: {0}'.format(pars_np)
 
 '''
 we are trying to solve Ax = b for x in the least squares sense. There
@@ -7474,7 +7469,7 @@ x = (A^TA)^-1 A^T b
 '''
 # not as pretty but equivalent!
 pars_man= np.dot(np.linalg.inv(np.dot(A.T,A)), np.dot(A.T,ydata))
-print pars_man
+print 'pars from linear algebra: {0}'.format(pars_man)
 
 #but, it is easy to fit an exponential function to it!
 # y = a*exp(x)+b
@@ -7490,10 +7485,11 @@ savefig('images/curve-fit-1.png')
 #+END_SRC
 
 #+RESULTS:
-: [ 0.04861111  0.63440476  0.61365079 -0.08928571]
-: [ 0.04861111  0.63440476  0.61365079 -0.08928571]
-: [ 0.04861111  0.63440476  0.61365079 -0.08928571]
+: pars from polyfit: [ 0.04861111  0.63440476  0.61365079 -0.08928571]
+: pars from np.linalg.lstsq: [ 0.04861111  0.63440476  0.61365079 -0.08928571]
+: pars from linear algebra: [ 0.04861111  0.63440476  0.61365079 -0.08928571]
 
+#+caption: Example of linear least-squares curve fitting.
 [[./images/curve-fit-1.png]]
 
 *** Nonlinear curve fitting
@@ -7539,6 +7535,7 @@ ylabel('energy')
 savefig('images/nonlinear-curve-fitting.png')
 #+END_SRC
 
+#+caption: Example of least-squares non-linear curve fitting.
 [[./images/nonlinear-curve-fitting.png]]
 
 See additional examples at http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
@@ -7572,7 +7569,7 @@ x0 = [ -56., 0.54, 2., 16.5] #initial guess of parameters
 
 plsq = fmin(objective,x0,args=(volumes,)) #note args is a tuple
 
-print plsq
+print 'parameters = {0}'.format(plsq)
 
 from pylab import *
 plot(volumes,energies,'ro')
@@ -7589,7 +7586,7 @@ savefig('images/nonlinear-fitting-lsq.png')
 :          Current function value: 0.000020
 :          Iterations: 137
 :          Function evaluations: 240
-: [-56.46932645   0.59141447   1.9044796   16.59341303]
+: parameters = [-56.46932645   0.59141447   1.9044796   16.59341303]
 
 #+caption: Fitting a nonlinear function.
 [[./images/nonlinear-fitting-lsq.png]]
@@ -8061,7 +8058,7 @@ mom_2 = np.trapz(rho*E**n,E)/np.trapz(rho,E)
 #+END_SRC
 
 *** Numerical differentiation
-numpy has a function called func:numpy.diff that is similar to the one found in matlab. It calculates the differences between the elements in your list, and returns a list that is one element shorter, which makes it unsuitable for plotting the derivative of a function.
+numpy has a function called func:numpy.diff that is similar to the one found in Matlab. It calculates the differences between the elements in your list, and returns a list that is one element shorter, which makes it unsuitable for plotting the derivative of a function.
 
 **** Simple loops to define finite difference derivatives
 
@@ -8295,18 +8292,14 @@ you must define the dimensions and variables before you can store data
 in them. You can create and read NetCDF files in python using one of
 the following modules:
 
-#. :mod:`Scientific.IO.NetCDF`
+mod:Scientific.IO.NetCDF
 (http://dirac.cnrs-orleans.fr/plone/software/scientificpython/)
 
-:mod:`netCDF3` (http://netcdf4-python.googlecode.com/svn/trunk/docs/netCDF3-module.html)
+mod:netCDF3 (http://netcdf4-python.googlecode.com/svn/trunk/docs/netCDF3-module.html)
 
-:mod:`pycdf` (http://pysclint.sourceforge.net/pycdf/) this is a very
+mod:pycdf (http://pysclint.sourceforge.net/pycdf/) this is a very
 low level module modelled after the C-api. I am not sure it is completely
 bug-free (I have problems with character variables)
-
-
-I suggest you read through the jacapo.py code for many examples of
-reading and writing NetCDF files.
 
 *** python modules
 
@@ -8354,35 +8347,53 @@ data storage functionality. Check them out some day too.
 *** TODO making movies
 1. using animate
 2. using swftools (png2swf, pdf2swf)
-http://wiki.swftools.org/wiki/Main_Page#SWF_Tools_0.9.2_.28_Current_Stable_Version_.29_Documentation
+#http://wiki.swftools.org/wiki/Main_Page#SWF_Tools_0.9.2_.28_Current_Stable_Version_.29_Documentation
 
 ** Computational geometry
 *** Changing coordinate systems
 Let A, B, C be the unit cell vectors
-1) A = A1 x + A2 y + A3 z
-2) B = B1 x + B2 y + B3 z
-3) C = C1 x + C2 y + C3 z
 
-and we want to find the vector [s1 s2 s3] so that
-4) P = s1 A + s2 B + s3 C
-where
-5) P = [p1x + p2y + p3z]
+\begin{eqnarray}
+A = A1 x + A2 y + A3 z \\
+B = B1 x + B2 y + B3 z \\
+C = C1 x + C2 y + C3 z
+\end{eqnarray}
 
-if we expand 4), we get:
-  s1 A1 x + s1 A2 y + s1 A3 z
-+ s2 B1 x + s2 B2 y + s2 B3 z
-+ s3 C1 x + s3 C2 y + s3 C3 z = p1 x + p2 y + p3 z
+and we want to find the vector $[s1 s2 s3]$ so that
+\(P = s1 A + s2 B + s3 C \)
+
+if we expand this, we get:
+
+\begin{align*}
+&s1 A1 x + s1 A2 y + s1 A3 z   \\
+&+ s2 B1 x + s2 B2 y + s2 B3 z \\
+&+ s3 C1 x + s3 C2 y + s3 C3 z = p1 x + p2 y + p3 z
+\end{align*}
 
 If we now match coefficients on x, y, and z, we can write a set of
 linear equations as:
 
-|A1 B1 C1| |s1|   |p1|
-|A2 B2 C2| |s2| = |p2|
-|A3 B3 C3| |s3|   |p3|
+\begin{equation}
+\left [ \begin{array}{ccc}
+A1 & B1 & C1 \\
+A2 & B2 & C2 \\
+A3 & B3 & C3
+\end{array}\right]
+\left [ \begin{array}{c}
+s1 \\
+s2 \\
+s3 \end{array}\right] =
+\left [\begin{array}{c}
+p1 \\ p2 \\ p3 \end{array}\right]
+\end{equation}
+
+# |A1 B1 C1| |s1|   |p1|
+# |A2 B2 C2| |s2| = |p2|
+# |A3 B3 C3| |s3|   |p3|
 
 or, in standard form:
 
-transpose(A) s = p
+$A^T s = p$
 
 and we need to solve for s as:
 
@@ -8413,7 +8424,7 @@ pos = slab.get_positions() #these positions use x,y,z vectors as a basis
 newbasis = slab.get_cell()
 
 s = np.dot(np.linalg.inv(newbasis.T),pos.T).T
-print 'Coordinates in new bases are: \n',s
+print 'Coordinates in new basis are: \n',s
 
 # what we just did is equivalent to the following atoms method
 print 'Scaled coordinates from ase are: \n',slab.get_scaled_positions()
@@ -8421,7 +8432,7 @@ print 'Scaled coordinates from ase are: \n',slab.get_scaled_positions()
 
 #+RESULTS:
 #+begin_example
-Coordinates in new bases are:
+Coordinates in new basis are:
 [[ 0.167  0.167  0.408]
  [ 0.667  0.167  0.408]
  [ 0.167  0.667  0.408]
@@ -8459,11 +8470,9 @@ the primitive lattice vectors (before relaxation, and assuming one
 atom is at the origin, and the unit cell is aligned with the primitive
 basis!)
 
-
 #+BEGIN_SRC python :results output
 from ase.lattice.cubic import BodyCenteredCubic
-from ase.calculators.jacapo import *
-
+import numpy as np
 bulk = BodyCenteredCubic(directions=[[1,0,0],
                                      [0,1,0],
                                      [0,0,1]],
@@ -8513,7 +8522,7 @@ unit cell in terms of the primitive basis
 #+end_example
 
 *** Simple distances, angles
-Scientific.Geometry contains several useful functions for
+=Scientific.Geometry= contains several useful functions for
 performing vector algebra including computing lengths and angles.
 
 #+BEGIN_SRC python :results output
@@ -8560,8 +8569,8 @@ depends on the handedness of the order of the unit cell vectors. If
 they are right-handed the determinant will be positive, and if they
 are left-handed the determinant will be negative. Switching any two
 rows will change the sign of the determinant and the
-handedness. :mod:`ase` implements a convenient function to get the
-volume of an :mod:`Atoms` object: :func:`ase.atoms.get_volume`.
+handedness. mod:ase implements a convenient function to get the
+volume of an mod:Atoms object: func:ase.Atoms.get_volume.
 
 Here are three equivalent ways to compute the unit cell volume.
 
@@ -8616,7 +8625,7 @@ and |g(111)| = 1/d_111
 h,k,l = (1,1,1)
 d = 1./np.linalg.norm(h*b1 + k*b2 + l*b3)
 
-print 'd_111 spacing = %1.3f Angstroms' % d
+print 'd_111 spacing (method 1) = %1.3f Angstroms' % d
 
 #method #2
 hkl = np.array([h,k,l])
@@ -8639,10 +8648,9 @@ Gstar = np.dot(G,G.T)
 
 id2 = np.dot(hkl,np.dot(Gstar,hkl))
 
-print np.sqrt(1/id2)
+print 'd_111 spacing (method 2) =',np.sqrt(1/id2)
 
 # http://books.google.com/books?id=nJHSqEseuIUC&lpg=PA118&ots=YA9TBldoVH&dq=reciprocal%20metric%20tensor&pg=PA119#v=onepage&q=reciprocal%20metric%20tensor&f=false
-
 
 '''Finally, many text books on crystallography use long algebraic
 formulas for computing the d-spacing with sin and cos, vector lengths,
@@ -8667,6 +8675,8 @@ alpha = B.angle(C)
 beta = A.angle(C)
 gamma = A.angle(B)
 
+print
+print 'a   b   c   alpha beta gamma'
 print '%1.3f %1.3f %1.3f %1.3f %1.3f %1.3f\n' % (a,b,c,
                                                  alpha,beta,gamma)
 
@@ -8685,16 +8695,18 @@ id2 = ((h**2/a**2*sin(alpha)**2
 
 d = 1/math.sqrt(id2)
 
-print d
+print 'd_111 spacing (method 3) =',d
 
 #+END_SRC
 
 #+RESULTS:
-: d_111 spacing = 2.309 Angstroms
-: 2.30940107676
+: d_111 spacing (method 1) = 2.309 Angstroms
+: d_111 spacing (method 2) = 2.30940107676
+:
+: a   b   c   alpha beta gamma
 : 4.000 4.000 4.000 1.571 1.571 1.571
 :
-: 2.30940107676
+: d_111 spacing (method 3) = 2.30940107676
 
 *** Center of mass
 The center of mass is a convenient origin for many rotations, and
@@ -8702,12 +8714,12 @@ moment of inertia calculations. The center of mass is computed from:
 
    $COM = \frac{\sum m_i \cdot r_i}{\sum m_i}$
 
-There is a convenience function for this: :func:`ase.atoms.get_center_of_mass`
+There is a convenience function for this: func:ase.atoms.get_center_of_mass
 
 *** Moments of inertia
 Moments of inertia are used in the rotational partition function in
 statistical mechanics. There is a convenience function for this:
-:func:`ase.atoms.get_moments_of_inertia`. Here are examples of using
+func:ase.atoms.get_moments_of_inertia. Here are examples of using
 the function to calculate the moments of inertia for several types of
 molecules.
 
@@ -8756,7 +8768,7 @@ spherical rotors Ia = Ib = Ic
 
 ** Equations of State
 
-The module :mod:`ase.util.eos` uses a simple polynomial equation of
+The module mod:ase.util.eos uses a simple polynomial equation of
 state to find bulk unit cell equilibrium volumes and bulk
 modulus. There are several other choices you could use that are more
 standard in the literature. Here we summarize them and provide
@@ -8820,14 +8832,12 @@ The original Birch equation \cite{Birch} is:
 
    $E(V) = E_\infty + \frac{B V_0}{n+1}\left(\frac{V}{V_0}\right)^{n+1} \left( \ln{\frac{V}{V_0}} - \frac{1}{n+1}\right)$
 
-where :math:$E_\infty$ corresponds to the energy at infinite separation,
+where $E_\infty$ corresponds to the energy at infinite separation,
 although the model they use to derive this equation breaks down at
 large separations so this is usually not a good estimate of the
 cohesive energy. $n$ is in the range of -2.
 
 *** Fitting data to these equations of state
------------------------------------------
-
 To use these equations of state to find the equilibrium cell volume
 and bulk modulus we need a set of calculations that give us the energy
 of the unit cell as a function of the cell volume. We then fit that
@@ -8928,15 +8938,18 @@ text(0.4,0.4,'Bulk modulus = %1.2f eV/$\AA^3$ = %1.2f GPa' % (murnpars[1],
 savefig('images/a-eos.png')
 show()
 
-print 'initial guesses  : ',x0
+np.set_printoptions(precision=3)
+print 'initial guesses  : ', np.array(x0) #array for easy printing
 print 'fitted parameters: ', murnpars
 
 #+END_SRC
 
 #+RESULTS:
-: initial guesses  :  [-56.472134949694016, 0.63066383554976546, 4, 16.789583121285862]
-: fitted parameters:  [-56.46560371   0.48969488   4.75292243  16.57279459]
+: initial guesses  :  [-56.472   0.631   4.     16.79 ]
+: fitted parameters:  [-56.466   0.49    4.753  16.573]
 
+
+#+caption: Fitted equation of state for bulk data. The initial fitted parabola is shown to illustrate how it is useful for making initial guesses of the minimum and bulk modulus.
 [[./images/a-eos.png]]
 
 You can see the Murnaghan equation of state fits the data better than
@@ -8945,21 +8958,24 @@ the parabola.
 Here is a comparison of the initial guesses and final parameters. You
 can see our guesses from the parabola were actually pretty good, and
 are the main reason we converged to a solution. If you try other
-guesses you will probably find the `scipy.optimize.leastsq` function
+guesses you will probably find the =scipy.optimize.leastsq= function
 does not converge.
 
 ** Miscellaneous jasp/Vasp tips
 *** Using a special setup
 Vasp provides [[http://cms.mpi.univie.ac.at/vasp/vasp/PAW_potentials.html][special setups]] for some elements. The following guidelines tell you what is in a potential:
 
-No extension means the standard potential
-_h  means the potential is harder than the standard (i.e. needs a higher cutoff energy)
-_s  means the potential is softer than the standard (i.e. needs a lower cutoff energy)
+No extension means the standard potential. The following extension mean:
+#+ATTR_LaTeX: align= |l|p{10cm}|
+#+caption: Meaning of extensions on POTCAR files for special setups.
+| extension | <40>                                     |
+| _h        | means the potential is harder than the standard (i.e. needs a higher cutoff energy) |
+| _s        | means the potential is softer than the standard (i.e. needs a lower cutoff energy) |
+| _sv       | $s$ and $p$ semi-core states are treated as valence states |
+| _pv       | $p$ semi-core states are treated as valence states |
+| _d        | $d$ semi-core states are treated as valence states |
 
-_sv $s$ and $p$ semi-core states are treated as valence states
-_pv $p$ semi-core states are treated as valence states
-_d  $d$ semi-core states are treated as valence states
-
+Here are some links to information in the VASP manual for the setups.
 [[http://cms.mpi.univie.ac.at/vasp/vasp/st_row_elements.html][- 1st row elements]]
 [[http://cms.mpi.univie.ac.at/vasp/vasp/Alkali_alkali_earth_elements_simple_metals.html][- Alkali and alkali-earth metals]]
 [[http://cms.mpi.univie.ac.at/vasp/vasp/_elements.html][- d-elements]]
@@ -8981,15 +8997,14 @@ with jasp('molecules/O_sv',
           ispin=2,
           ismear=0,
           sigma=0.001,
-          txt='O_test.txt',
           setups={'O':'_sv'}, # specifies O_sv potential
           atoms=atoms) as calc:
 
-    print atoms.get_potential_energy()
+    print 'Total energy = {0} eV'.format(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
-: -1578.61345
+: Total energy = -1578.61345 eV
 
 How do you know you got the right one? We can look at the first line of the POTCAR file in the calculation directory to see.
 #+BEGIN_SRC sh :exports both
@@ -9015,15 +9030,14 @@ with jasp('molecules/O_sv-4nodes',
           ispin=2,
           ismear=0,
           sigma=0.001,
-          txt='O_test.txt',
           setups={'O':'_sv'}, # specifies O_sv potential
           atoms=atoms) as calc:
 
-    print atoms.get_potential_energy()
+    print calc.calculate()
 #+END_SRC
 
 #+RESULTS:
-: -1578.613448
+: None
 
 How do you know it ran on four nodes?
 #+BEGIN_SRC sh :results output :exports both
@@ -9034,7 +9048,7 @@ head molecules/O_sv-4nodes/OUTCAR
 #+begin_example
  vasp.5.2.12 11Nov11 complex
 
- executed on             LinuxIFC date 2012.07.19  21:00:24
+ executed on             LinuxIFC date 2012.08.31  09:10:10
  running on    4 nodes
  distr:  one band on    1 nodes,    4 groups
 
@@ -9090,11 +9104,218 @@ with jasp('bulk/alloy/cu',
 from jasp import *
 
 with jasp('bulk/alloy/cu') as calc:
-    print calc.json
+    print calc.pretty_json
 #+END_SRC
 
 #+RESULTS:
-: {"INCAR": {"ldau": null, "eint": null, "lclimb": null, "iband": null, "timestep": null, "ldau_luj": null, "fnmin": null, "ispin": null, "lcorr": null, "iopt": null, "ichain": null, "ismear": null, "lscalapack": null, "emin": null, "lwave": null, "maxmove": null, "ngxf": null, "ebreak": null, "lplane": null, "npar": null, "istart": null, "nkred": null, "ialgo": null, "ngz": null, "system": null, "prec": "Normal", "luse_vdw": null, "icharg": null, "sdalpha": null, "nfree": null, "lsepb": null, "lorbit": null, "zab_vdw": null, "ngy": null, "kspacing": null, "pomass": null, "magmom": null, "lpard": null, "sdr": null, "aldac": null, "nelm": null, "ldaul": null, "nkredx": null, "nkredy": null, "nkredz": null, "lelf": null, "stol": null, "lvdw": null, "ldauu": null, "zval": null, "nsim": null, "ngyf": null, "deper": null, "lscalu": null, "lglobal": null, "ldipol": null, "ropt": null, "symprec": null, "falphadec": null, "weimin": null, "ftimedec": null, "ldneb": null, "maxmix": null, "vdwgr": null, "nwrite": null, "lmaxmix": null, "param2": null, "param1": null, "lbfgsmem": null, "kgamma": null, "smass": null, "laechg": null, "potim": null, "idipol": null, "lhfcalc": null, "lasph": null, "emax": null, "isym": null, "ldauprint": null, "ferdo": null, "encut": 350.0, "lcharg": null, "nbands": 9, "ngzf": null, "dipol": null, "ediff": null, "enaug": null, "rwigs": null, "nelect": null, "bmix": null, "fdstep": null, "invcurve": null, "isif": 4, "ddr": null, "hfscreen": null, "ftimeinc": null, "lthomas": null, "teend": null, "addgrid": null, "ltangentold": null, "voskown": null, "ediffg": null, "jacobian": null, "vdwrn": null, "nsw": 10, "iniwav": null, "algo": null, "nelmdl": null, "amix_mag": null, "aexx": null, "lnebcell": null, "encutfock": null, "aggac": null, "ftimemax": null, "ldiag": null, "snl": null, "ldauj": null, "drotmax": null, "nbmod": null, "lasync": null, "nblk": null, "gga": null, "kpuse": null, "ferwe": null, "tebeg": null, "bmix_mag": null, "aggax": null, "iwavpr": null, "amin": null, "nupdown": null, "lvhar": null, "loptics": null, "falpha": null, "dfnmax": null, "lvtot": null, "llineopt": null, "ldautype": null, "ngx": null, "dfnmin": null, "ibrion": 2, "amix": null, "time": null, "nelmin": null, "lepsilon": null, "lsepk": null, "sigma": null}, "input": {"kpts": [13, 13, 13], "reciprocal": false, "setups": null, "xc": "PBE", "txt": "-", "gamma": false}, "atoms": {"cell": [[1.8180000000000001, 0.0, 1.8180000000000001], [1.8180000000000001, 1.8180000000000001, 0.0], [0.0, 1.8180000000000001, 1.8180000000000001]], "symbols": ["Cu"], "pbc": [true, true, true], "positions": [[0.0, 0.0, 0.0]]}}
+#+begin_example
+{
+    "INCAR": {
+        "addgrid": null,
+        "aexx": null,
+        "aggac": null,
+        "aggax": null,
+        "aldac": null,
+        "algo": null,
+        "amin": null,
+        "amix": null,
+        "amix_mag": null,
+        "bmix": null,
+        "bmix_mag": null,
+        "ddr": null,
+        "deper": null,
+        "dfnmax": null,
+        "dfnmin": null,
+        "dipol": null,
+        "drotmax": null,
+        "ebreak": null,
+        "ediff": null,
+        "ediffg": null,
+        "eint": null,
+        "emax": null,
+        "emin": null,
+        "enaug": null,
+        "encut": 350.0,
+        "encutfock": null,
+        "encutgw": null,
+        "falpha": null,
+        "falphadec": null,
+        "fdstep": null,
+        "ferdo": null,
+        "ferwe": null,
+        "fnmin": null,
+        "ftimedec": null,
+        "ftimeinc": null,
+        "ftimemax": null,
+        "gga": null,
+        "hfscreen": null,
+        "ialgo": null,
+        "iband": null,
+        "ibrion": 2,
+        "ichain": null,
+        "icharg": null,
+        "idipol": null,
+        "images": null,
+        "iniwav": null,
+        "invcurve": null,
+        "iopt": null,
+        "isif": 4,
+        "ismear": null,
+        "ispin": null,
+        "istart": null,
+        "isym": null,
+        "iwavpr": null,
+        "jacobian": null,
+        "kgamma": null,
+        "kpuse": null,
+        "kspacing": null,
+        "laechg": null,
+        "lasph": null,
+        "lasync": null,
+        "lbfgsmem": null,
+        "lcharg": null,
+        "lclimb": null,
+        "lcorr": null,
+        "ldau": null,
+        "ldau_luj": null,
+        "ldauj": null,
+        "ldaul": null,
+        "ldauprint": null,
+        "ldautype": null,
+        "ldauu": null,
+        "ldiag": null,
+        "ldipol": null,
+        "ldneb": null,
+        "lelf": null,
+        "lepsilon": null,
+        "lglobal": null,
+        "lhfcalc": null,
+        "llineopt": null,
+        "lmaxmix": null,
+        "lnebcell": null,
+        "loptics": null,
+        "lorbit": null,
+        "lpard": null,
+        "lplane": null,
+        "lscalapack": null,
+        "lscalu": null,
+        "lsepb": null,
+        "lsepk": null,
+        "ltangentold": null,
+        "lthomas": null,
+        "luse_vdw": null,
+        "lvdw": null,
+        "lvhar": null,
+        "lvtot": null,
+        "lwave": null,
+        "magmom": null,
+        "maxmix": null,
+        "maxmove": null,
+        "nbands": 9,
+        "nblk": null,
+        "nbmod": null,
+        "nelect": null,
+        "nelm": null,
+        "nelmdl": null,
+        "nelmin": null,
+        "nfree": null,
+        "ngx": null,
+        "ngxf": null,
+        "ngy": null,
+        "ngyf": null,
+        "ngz": null,
+        "ngzf": null,
+        "nkred": null,
+        "nkredx": null,
+        "nkredy": null,
+        "nkredz": null,
+        "nomega": null,
+        "nomegar": null,
+        "npar": null,
+        "nsim": null,
+        "nsw": 10,
+        "nupdown": null,
+        "nwrite": null,
+        "param1": null,
+        "param2": null,
+        "pomass": null,
+        "potim": null,
+        "prec": "Normal",
+        "precfock": null,
+        "ropt": null,
+        "rwigs": null,
+        "sdalpha": null,
+        "sdr": null,
+        "sigma": null,
+        "smass": null,
+        "snl": null,
+        "spring": null,
+        "stol": null,
+        "symprec": null,
+        "system": null,
+        "tebeg": null,
+        "teend": null,
+        "time": null,
+        "timestep": null,
+        "vdwgr": null,
+        "vdwrn": null,
+        "voskown": null,
+        "weimin": null,
+        "zab_vdw": null,
+        "zval": null
+    },
+    "atoms": {
+        "cell": [
+            [
+                1.818,
+                0.0,
+                1.818
+            ],
+            [
+                1.818,
+                1.818,
+                0.0
+            ],
+            [
+                0.0,
+                1.818,
+                1.818
+            ]
+        ],
+        "pbc": [
+            true,
+            true,
+            true
+        ],
+        "positions": [
+            [
+                0.0,
+                0.0,
+                0.0
+            ]
+        ],
+        "symbols": [
+            "Cu"
+        ],
+        "tags": [
+            0
+        ]
+    },
+    "input": {
+        "gamma": false,
+        "kpts": [
+            13,
+            13,
+            13
+        ],
+        "kpts_nintersections": null,
+        "reciprocal": false,
+        "setups": null,
+        "txt": "-",
+        "xc": "PBE"
+    }
+}
+#+end_example
 
 **** xml
 This relies on the pyxser module.
@@ -9181,14 +9402,16 @@ It pays to be careful when dividing by integers because you can get unexpected r
 nPd = 4
 nCu = 5
 x_Cu = nCu/(nPd + nCu)
-print x_Cu
+print 'x_cu = {0} (integer division)'.format(x_Cu)
 
 # now cast as floats
 x_Cu = float(nCu)/float(nPd + nCu)
-print x_Cu
+print 'x_cu = {0} (float division)'.format(x_Cu)
 #+END_SRC
 
 #+RESULTS:
+: x_cu = 0 (integer division)
+: x_cu = 0.555555555556 (float division)
 
 Note that if one of the numbers is a float, python will automatically cast the integer as a float, and return a float.
 #+BEGIN_SRC python :results output :exports both
@@ -9197,11 +9420,11 @@ nCu = 5
 
 # now cast as floats
 x_Cu = float(nCu)/(nPd + nCu)
-print x_Cu
+print 'x_cu = {0}'.format(x_Cu)
 #+END_SRC
 
 #+RESULTS:
-: 0.555555555556
+: x_cu = 0.555555555556
 
 Finally, you can tell python a number is a float by adding a decimal to it. You do not need to put a 0 after the decimal, but you can.
 
@@ -9210,11 +9433,11 @@ nPd = 4.  # this is a float
 nCu = 5
 
 x_Cu = nCu/(nPd + nCu)
-print x_Cu
+print 'x_cu = {0}'.format(x_Cu)
 #+END_SRC
 
 #+RESULTS:
-: 0.555555555556
+: x_cu = 0.555555555556
 
 * References
 \bibliographystyle{plainurl}
