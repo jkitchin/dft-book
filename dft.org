@@ -850,7 +850,7 @@ it knows how to get the data, and then a DFT calculation must be run.
 Here is an example of getting the energy and forces from a CO
 molecule. The forces in this case are very high,indicating that this
 geometry is not close to the ground state geometry. Note that the
-forces are only along the $x$-axis, which is along the molecular axis. We will see how to minimize this force in sections \ref{sec:manual-determination} and \ref{sec:auto-geo}.
+forces are only along the $x$-axis, which is along the molecular axis. We will see how to minimize this force in [[*Manual%20determination][Manual determination]] and [[*Automatic%20geometry%20optimization%20with%20VASP][Automatic geometry optimization with VASP]].
 
 #+begin_note
 This is your first DFT calculation in the book! see [[incar:ISMEAR][ISMEAR]], incar:SIGMA, incar:NBANDS, and incar:ENCUT to learn more about these VASP keywords.
@@ -1410,7 +1410,7 @@ plt.show()
 #+ATTR_LaTeX: placement=[H]
 [[./images/co-bondlengths.png]]
 
-**** Automatic geometry optimization with vasp
+**** Automatic geometry optimization with VASP
 #+label: sec:auto-geo
 VASP has built in geometry optimization using the [[incar:IBRION][IBRION]] and [[incar:NSW][NSW]] tags. Here we compute the bond length for a CO molecule, letting VASP do the geometry optimization for us.
 
@@ -1489,7 +1489,7 @@ The principle idea in calculating vibrational frequencies is that we consider a 
 
 $\nu = \frac{1}{2\pi}\sqrt{k/\mu}$ where $\frac{1}{\mu} = \frac{1}{m_C} + \frac{1}{m_O}$ and $k$ is the spring constant. We will compute the value of $k$ from DFT calculations as follows:
 
-$k = \frac{\partial^2E}{\partial x^2}$ at the equilibrium bond length. We actually already have the data to do this from section \ref{sec:manual-determination}. We only need to fit an equation to the energy vs. bond-length data, find the minimum energy bond-length, and then evaluate the second derivative of the fitted function at the minimum. We will use a cubic polynomial for demonstration here. Polynomials are numerically convenient because they are easy to fit, and it is trivial to get the roots and derivatives of the polynomials, as well as to evaluate them at other points using func:numpy.polyfit, func:numpy.polyder, and func:numpy.polyval.
+$k = \frac{\partial^2E}{\partial x^2}$ at the equilibrium bond length. We actually already have the data to do this from [[*Manual%20determination][Manual determination]]. We only need to fit an equation to the energy vs. bond-length data, find the minimum energy bond-length, and then evaluate the second derivative of the fitted function at the minimum. We will use a cubic polynomial for demonstration here. Polynomials are numerically convenient because they are easy to fit, and it is trivial to get the roots and derivatives of the polynomials, as well as to evaluate them at other points using func:numpy.polyfit, func:numpy.polyder, and func:numpy.polyval.
 
 #+BEGIN_SRC python :results output
 from jasp import *
