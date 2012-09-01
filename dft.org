@@ -8919,7 +8919,7 @@ are the main reason we converged to a solution. If you try other
 guesses you will probably find the =scipy.optimize.leastsq= function
 does not converge.
 
-** Miscellaneous jasp/Vasp tips
+** Miscellaneous =jasp=/VASP tips
 *** Using a special setup
 Vasp provides [[http://cms.mpi.univie.ac.at/vasp/vasp/PAW_potentials.html][special setups]] for some elements. The following guidelines tell you what is in a potential:
 
