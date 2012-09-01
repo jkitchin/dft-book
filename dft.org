@@ -2937,7 +2937,7 @@ Pseudopotentials used:
 C: potpaw_PBE/C/POTCAR (git-hash: 2272d6745da89a3d872983542cef1d18750fc952)
 O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
 #+end_example
-***** H2
+***** H$_2$
 #+begin_example
 : -----------------------------
   VASP calculation from /home/jkitchin/dft-org/molecules/wgs/H2
