@@ -21,7 +21,6 @@
 #+latex_header: \usepackage{xcolor}
 #+latex_header: \usepackage{adjustbox}
 
-
 #+latex_header: \makeindex
 
 ## custom link for incar:ISMEAR
@@ -164,7 +163,7 @@ In this chapter we consider how to construct models of molecules, how to manipul
 ** Defining and visualizing molecules
 We start by learning how to define a molecule and visualize it.
 *** Predefined molecules
-ASE defines a number of molecular geometries in the molecules
+=ase= defines a number of molecular geometries in the molecules
 database.  Data for the G2 database are from Raghavachari, Redfern,
 and Pople, J. Chem. Phys. Vol. 106, 1063 (1997).  See
 http://chemistry.anl.gov/compmat/comptherm.htm for the original files.
@@ -239,7 +238,7 @@ CH3SCH3                  H2CO                     CH3CN
 
 Some other databases include the mod:ase.data.s22 for weakly interacting dimers and complexes, and mod:ase.data.extra_molecules which has a few extras like biphenyl and C60.
 
-Here is an example of getting the geometry of an acetonitrile molecule and writing an image to a file. Note that the default unit cell is a $1 \mathrm{\AA} \times 1 \mathrm{\AA} \times 1 \mathrm{\AA}$ cubic cell. That is too small to use if your calculator uses periodic boundary conditions. We center the atoms in the unit cell and add vacuum on each side. We will add 6 \AA of vacuum on each side. In the write command we use the option show_unit_cell=2 to draw the unit cell boundaries. See Figure \ref{fig:ch3cn}.
+Here is an example of getting the geometry of an acetonitrile molecule and writing an image to a file. Note that the default unit cell is a $1 \mathrm{\AA} \times 1 \mathrm{\AA} \times 1 \mathrm{\AA}$ cubic cell. That is too small to use if your calculator uses periodic boundary conditions. We center the atoms in the unit cell and add vacuum on each side. We will add 6 \AA of vacuum on each side. In the write command we use the option =show_unit_cell= =2 to draw the unit cell boundaries. See Figure \ref{fig:ch3cn}.
 
 #+BEGIN_SRC python :results output :exports both
 from ase import Atoms
@@ -263,7 +262,7 @@ write('images/ch3cn.png', c60, show_unit_cell=2)
 :  [  0.        13.537479   0.      ]
 :  [  0.         0.        15.014576]]
 
-#+caption: A CH$_3$CN molecule in a box.
+#+caption: A CH\(_{3}\)CN molecule in a box.
 #+label: fig:ch3cn
 #+ATTR_LaTeX: placement=[H]
 [[./images/ch3cn.png]]
@@ -294,7 +293,7 @@ write('images/ch3cn-rotated.png', atoms,
 :  [  0.        13.537479   0.      ]
 :  [  0.         0.        15.014576]]
 
-#+caption: The rotated version of CH$_3$CN.
+#+caption: The rotated version of CH\(_3\)CN.
 #+label: fig:ch3cn-rot
 #+ATTR_LaTeX: placement=[H]
 [[./images/ch3cn-rotated.png]]
@@ -336,7 +335,7 @@ for i,d in enumerate(diff):
 : 4 [-1.35405183  1.33495444 -0.04610517]
 : 5 [-0.8340703   1.33495444  1.2092413 ]
 
-#+caption: Rotated CH$_3$CN molecule
+#+caption: Rotated CH\(_3\)CN molecule
 #+ATTR_LaTeX: placement=[H]
 [[./images/ch3cn-rotated-2.png]]
 
@@ -447,7 +446,7 @@ write('images/simple-cubic-cell.png',atoms,show_unit_cell=2)
 
 There are two inconvenient features of the simple cubic cell:
 
-1. Since the CO atom is at the corner, its electron density is spread over the 8 corners of the box, which is not convenient for visualization later (see section \ref{sec:vis-ed}).
+1. Since the CO atom is at the corner, its electron density is spread over the 8 corners of the box, which is not convenient for visualization later (see [[*Visualizing%20electron%20density][Visualizing electron density]]).
 
 2. Due to the geometry of the cube, you need fairly large cubes to decouple the molecule from its images. Here, the CO molecule has 6 images due to periodic boundary conditions that are 10 \AA away. The volume of the unit cell is 1000 \AA$^3$.
 
@@ -503,7 +502,7 @@ print '|a3| = %1.2f Ang' % np.sum(a3**2)**0.5
 : |a3| = 10.04 Ang
 
 *** Combining Atoms objects
-It is frequently useful to combine two Atoms objects, e.g. for computing reaction barriers, or other types of interactions. in ase, we simply add two Atoms objects together. Here is an example of getting an ammonia and oxygen molecule in the same unit cell. See Figure \ref{fig:combined-atoms}.
+It is frequently useful to combine two =Atoms= objects, e.g. for computing reaction barriers, or other types of interactions. in ase, we simply add two Atoms objects together. Here is an example of getting an ammonia and oxygen molecule in the same unit cell. See Figure \ref{fig:combined-atoms}.
 #+BEGIN_SRC python :results output
 from ase import Atoms
 from ase.data.molecules import molecule
@@ -793,11 +792,11 @@ from numpy import pi
 # ammonia
 atoms = molecule('NH3')
 
-print 'theta = ',atoms.get_angle([1,0,2])*180./pi
+print 'theta = {0} degrees'.format(atoms.get_angle([1,0,2])*180./pi)
 #+END_SRC
 
 #+RESULTS:
-: theta =  106.334624232
+: theta = 106.334624232 degrees
 
 
 **** Dihedral angles
@@ -984,8 +983,8 @@ savefig('images/co-ados.png')
 : None
 
 *** Visualizing electron density
-# <<sec:vis-ed>>
-The electron density is a 3d quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure \ref{fig:cd1}) of plotting the charge density.
+
+The electron density is a 3\(d\) quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure \ref{fig:cd1}) of plotting the charge density.
 
 #+BEGIN_SRC python
 from enthought.mayavi import mlab
@@ -1003,6 +1002,7 @@ mlab.show()
 : None
 
 #+caption: Charge density of a CO molecule.
+#+ATTR_LaTeX: placement=[H]
 #+label: fig:cd1
 [[./images/co-cd.png]]
 
@@ -1022,6 +1022,7 @@ mlab.show()
 : None
 
 #+caption: Charge density of a CO molecule centered in the unit cell.
+#+ATTR_LaTeX: placement=[H]
 #+label: fig:cd2
 [[./images/co-centered-cd.png]]
 
@@ -1355,10 +1356,7 @@ forces = (eV/ang)
 
 #+end_example
 
-#+caption: Energy vs CO bond length. The minimum appears to be near 1.15 \AA by inspection.
-#+ATTR_LaTeX: placement=[H]
-[[./images/co-bondlengths.png]]
-To find the minimum we could run more calculations, but a simpler and faster way is to fit a polynomial to the data, and find the analytical minimum.
+To find the minimum we could run more calculations, but a simpler and faster way is to fit a polynomial to the data, and find the analytical minimum. The results are shown in Figure \ref{fig:co-bondlengths}.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -1399,15 +1397,21 @@ fit = np.polyval(pp, x)
 plt.plot(bond_lengths, energies, 'bo ')
 plt.plot(x,fit, 'r-')
 plt.plot(minV, minE, 'm* ')
-plt.legend(['DFT','fit','minimum'])
+plt.legend(['DFT','fit','minimum'], numpoints=1)
 plt.xlabel('Bond length ($\AA$)')
 plt.ylabel('Total energy (eV)')
 plt.savefig('images/co-bondlengths.png')
 plt.show()
 #+END_SRC
 
+
+#+caption: Energy vs CO bond length.
+#+label: fig:co-bondlengths
+#+ATTR_LaTeX: placement=[H]
+[[./images/co-bondlengths.png]]
+
 **** Automatic geometry optimization with vasp
-#+label: sec-auto-geo
+#+label: sec:auto-geo
 VASP has built in geometry optimization using the [[incar:IBRION][IBRION]] and [[incar:NSW][NSW]] tags. Here we compute the bond length for a CO molecule, letting VASP do the geometry optimization for us.
 
 #+BEGIN_SRC python :results output :exports both
@@ -1539,7 +1543,7 @@ plt.show()
 : roots of first derivative are [ 1.43384501  1.14425395]
 : The frequency is 2143.60766258 cm^{-1}
 
-This result is in good agreement with [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C630080&Units=SI&Type=IR-SPEC&Index=0#IR-SPEC][experiment]]. The procedure used above is how many vibrational calculations are done. With more atoms, you have to determine a force constant matrix and diagonalize it. For more details, see \cite{wilson1955}. In practice, we usually allow a packaged code to automate this, which we cover in section \ref{sec:automated-vib}.
+This result is in good agreement with [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C630080&Units=SI&Type=IR-SPEC&Index=0#IR-SPEC][experiment]]. The procedure used above is how many vibrational calculations are done. With more atoms, you have to determine a force constant matrix and diagonalize it. For more details, see \cite{wilson1955}. In practice, we usually allow a packaged code to automate this, which we cover in [[*Automated%20vibrational%20calculations][Automated vibrational  calculations]].
 
 We now consider how much energy is in this vibration. This is commonly called zero-point energy (ZPE) and it is defined as $E_{ZPE} = \frac{1}{2} h \nu$ for a single mode, and $h$ is Planck's constant (4.135667516e-15 eV/s).
 
@@ -1563,7 +1567,6 @@ This is a reasonable amount of energy! Zero-point energy increases with increasi
 A final note is that this analysis is in the "harmonic approximation". The frequency equation is the solution to a harmonic oscillator. If the spring is non-linear, then there are anharmonic effects that may become important, especially at higher temperatures.
 
 *** Automated vibrational  calculations
-#+label: sec:automated-vib
 Vasp has built-in capability for performing vibrational calculations.
 #+BEGIN_SRC python :results output  :exports both
 #adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
@@ -1629,7 +1632,7 @@ http://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=800#Electronic-Spec
 
 The results are not too far off, and more accurate frequencies may be possible using tighter tolerance on [[incar:POTIM][POTIM]], or by using [[incar:IBRION][IBRION]]=7 or 8.
 
-Note: the calc.get_vibrational_frequencies() is only available in jasp (7/12/2012).
+
 **** Zero-point energy for multiple modes
 For a molecule with lots of vibrational modes the zero-point energy is defined as the sum over all the vibrational modes:
 
@@ -1938,11 +1941,24 @@ The shell script above has been translated to a convenient python function in mo
 #+BEGIN_SRC python :results output
 from jasp import *
 with jasp('molecules/h2o_vib_dfpt') as calc:
-    print calc.get_infrared_intensities()
+    print 'mode  Relative intensity'
+    for i, intensity in enumerate(calc.get_infrared_intensities()):
+        print '{0:02d}     {1:1.3f}'.format(i, intensity)
 #+END_SRC
 
 #+RESULTS:
-: [ 0.227  0.006  0.312  1.     0.006  0.     0.005  0.     0.345]
+#+begin_example
+mode  Relative intensity
+00     0.227
+01     0.006
+02     0.312
+03     1.000
+04     0.006
+05     0.000
+06     0.005
+07     0.000
+08     0.345
+#+end_example
 
 ** Thermochemical properties of molecules
 ase provides a [[https://wiki.fysik.dtu.dk/ase/ase/thermochemistry.html#module-thermochemistry][thermochemistry]] module.
@@ -3610,11 +3626,11 @@ eos.plot('images/Cu-fcc-eos.png')
 #+ATTR_LaTeX: placement=[H]
 [[./images/Cu-fcc-eos.png]]
 
-Before we jump into the bcc calculations, let's consider what range of lattice constants we should choose. The fcc lattice is close-packed, and the volume of the primitive cell is $V = 1/4 a^3$ or about 11.8 $\AA^3$/atom. The volume of the equilibrium bcc primitive cell will probably be similar to that. The question is: what bcc lattice constant gives that volume? The simplest way to answer this is to compute the answer. We will make a bcc crystal at the fcc lattice constant, and then compute the scaling factor needed to make it the right volume.
+Before we jump into the bcc calculations, let's consider what range of lattice constants we should choose. The fcc lattice is close-packed, and the volume of the primitive cell is $V = 1/4 a^3$ or about 11.8 \(\AA^3\)/atom. The volume of the equilibrium bcc primitive cell will probably be similar to that. The question is: what bcc lattice constant gives that volume? The simplest way to answer this is to compute the answer. We will make a bcc crystal at the fcc lattice constant, and then compute the scaling factor needed to make it the right volume.
 
 #+BEGIN_SRC python :results output :exports both
 from ase import Atom, Atoms
-
+import numpy as np
 a = 3.61 # lattice constant
 
 atoms = Atoms([Atom('Cu', [0,0,0])],
@@ -3622,11 +3638,11 @@ atoms = Atoms([Atom('Cu', [0,0,0])],
                                    [-1.0, 1.0, 1.0],
                                    [1.0, -1.0, 1.0]]))
 
-print a*(11.8/atoms.get_volume())**(1./3.)
+print 'BCC lattice constant = {0} Ang'.format(a*(11.8/atoms.get_volume())**(1./3.))
 #+END_SRC
 
 #+RESULTS:
-: 2.86838428403
+: BCC lattice constant = 2.86838428403 Ang
 
 Now we run the equation of state calculations.
 
@@ -3648,7 +3664,7 @@ for a in LC:
               encut=350,
               kpts=(8,8,8),
               atoms=atoms) as calc:
-        e = atoms.get_potential_energy()
+        calc.calculate()
 #+END_SRC
 
 #+RESULTS:
@@ -4705,7 +4721,7 @@ We find the weighted composition formation energy of pure Cu and cupd-1 is more 
 #+ATTR_LaTeX: placement=[H]
 [[./images/alloy-phase-stability.png]]
 
-Finally, let us consider one more structure with the Cu_{3}3Pd stoichiometry.
+Finally, let us consider one more structure with the Cu_{3}Pd stoichiometry.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -4758,7 +4774,7 @@ This looks promising: the formation energy is much more favorable than cu3pd-1, 
 #+ATTR_LaTeX: placement=[H]
 [[./images/alloy-phase-stability-2.png]]
 
-The construction of alloy phase diagrams is difficult. You are always faced with the possibility that there is a phase that you have not calculated that is more stable than the ones you did calculate. One approach is to use a tool that automates the discovery of relevant structures such as the Alloy Theoretic Automated Toolkit (ATAT) \cite{vandeWalle2002539,vandeWalle2009266} which uses a cluster expansion methodology.
+The construction of alloy phase diagrams is difficult. You are always faced with the possibility that there is a phase that you have not calculated that is more stable than the ones you did calculate. One approach is to use a tool that automates the discovery of relevant structures such as the Alloy Theoretic Automated Toolkit ([[http://www.its.caltech.edu/~avdw/atat/][ATAT]]) \cite{vandeWalle2002539,vandeWalle2009266} which uses a cluster expansion methodology.
 
 *** Metal oxide oxidation energies
 We will consider here the reaction $2 Cu_2O + O_2 \rightleftharpoons 4 CuO$. The reaction energy is:
@@ -4953,7 +4969,7 @@ print 'Reaction energy = {0} eV'.format(rxn_energy)
 #+RESULTS:
 : Reaction energy = -1.966168 eV
 
-There are a few reasons why our number does not agree with the experimental reaction energy. One reason is related to errors in the O2 dissociation energy, and another reason is related to localization of electrons in the Cu 3d orbitals \cite{PhysRevB.73.195107}. The first error of incorrect O$_2$ dissociation error is a systematic error that can be corrected empirically \cite{PhysRevB.73.195107}. Fixing the second error requires the application of DFT+U (see [[*DFT%2BU][DFT+U]])
+There are a few reasons why our number does not agree with the experimental reaction energy. One reason is related to errors in the O_{2} dissociation energy, and another reason is related to localization of electrons in the Cu 3\(d\) orbitals \cite{PhysRevB.73.195107}. The first error of incorrect O$_2$ dissociation error is a systematic error that can be corrected empirically \cite{PhysRevB.73.195107}. Fixing the second error requires the application of DFT+U (see [[*DFT%2BU][DFT+U]])
 
 ** Bulk density of states
 The density of states refers to the number of electronic states in a particular energy range.
@@ -5695,7 +5711,7 @@ for i in range(len(Nlayers)-1):
     DeltaE_N = energies[i+1] - energies[i]
     sigma = 0.5*(-N*energies[i+1] + (N+1)*energies[i])
     sigmas.append(sigma)
-    print 'sigma = {0} eV/atom'.format(sigma)
+    print 'nlayers = {1:2d} sigma = {0:1.3f} eV/atom'.format(sigma, N)
 
 plt.plot(Nlayers[0:-1], sigmas,'bo-')
 plt.xlabel('Number of layers')
@@ -5704,14 +5720,14 @@ plt.savefig('images/Cu-unrelaxed-surface-energy.png')
 #+END_SRC
 
 #+RESULTS:
-: sigma = 0.5522845 eV/atom
-: sigma = 0.3979905 eV/atom
-: sigma = 0.5903805 eV/atom
-: sigma = 0.3177165 eV/atom
-: sigma = 0.579716 eV/atom
-: sigma = 0.321148 eV/atom
-: sigma = 0.593281 eV/atom
-: sigma = 0.401526 eV/atom
+: nlayers =  3 sigma = 0.552 eV/atom
+: nlayers =  4 sigma = 0.398 eV/atom
+: nlayers =  5 sigma = 0.590 eV/atom
+: nlayers =  6 sigma = 0.318 eV/atom
+: nlayers =  7 sigma = 0.580 eV/atom
+: nlayers =  8 sigma = 0.321 eV/atom
+: nlayers =  9 sigma = 0.593 eV/atom
+: nlayers = 10 sigma = 0.402 eV/atom
 
 #+caption: Surface energy of an Al(111) slab as a function of thickness.
 #+ATTR_LaTeX: placement=[H]
@@ -6133,7 +6149,7 @@ print 'Hads (bridge) = {0:1.3f} eV/O'.format(Hads_bridge)
 
 #+RESULTS:
 
-You can see that only the z-position of the O atom changed. Also, the adsorption energy of O on the bridge site is *much* less favorable than on the fcc or hcp sites.
+You can see that only the \(z\)-position of the O atom changed. Also, the adsorption energy of O on the bridge site is *much* less favorable than on the fcc or hcp sites.
 
 #+caption: Initial state of the O atom on the bridge site.
 #+ATTR_LaTeX: placement=[H]
@@ -6172,7 +6188,7 @@ with jasp('surfaces/Pt-slab-1x1',
 
 #+RESULTS:
 
-**** TODO fcc site at 1 ML coverage
+**** fcc site at 1 ML coverage
 #+BEGIN_SRC python :results output
 from jasp import *
 
@@ -6580,7 +6596,7 @@ You will recognize in this equation the standard formation energy we calculated 
 $G_f \approx H_f - 0.5*\Delta \mu_{O_2}(P,T)$
 
 
-The [[http://materialsproject.org/materials/361/][formation energy of Cu_{2}O]] is -1.9521 eV/formula unit. The [[http://materialsproject.org/materials/353/][formation energy for Ag_{2}O]] is -0.99 eV/formula unit. Let us consider what temperature the oxides decompose at a fixed oxygen pressure of 1 $\times 10^{-10}$ atm. We need to find the temperature where:
+The [[http://materialsproject.org/materials/361/][formation energy of Cu\(_2\)O]] is -1.9521 eV/formula unit. The [[http://materialsproject.org/materials/353/][formation energy for Ag\(_2\)O]] is -0.99 eV/formula unit. Let us consider what temperature the oxides decompose at a fixed oxygen pressure of 1$\times 10^{-10}$ atm. We need to find the temperature where:
 
 $H_f = 0.5*\Delta \mu_{O_2}(P,T)$
 
@@ -6628,13 +6644,13 @@ def func(T):
     'Cu2O'
     return -1.95 - 0.5*DeltaMu(T,P)
 
-print 'Cu2O decomposition temperature is {0} K'.format(fsolve(func, 900))
+print 'Cu2O decomposition temperature is {0:1.0f} K'.format(fsolve(func, 900)[0])
 
 def func(T):
     'Ag2O'
     return -0.99 - 0.5*DeltaMu(T,P)
 
-print 'Ag2O decomposition temperature is {0} K'.format(fsolve(func, 470))
+print 'Ag2O decomposition temperature is {0:1.0f} K'.format(fsolve(func, 470)[0])
 
 # you have use \\times to escape the first \ in pyplot
 plt.plot(T, DeltaMu(T,1e10*atm),label='1$\\times 10^{10}$ atm')
@@ -6650,8 +6666,8 @@ plt.savefig('images/O2-mu.png')
 #+END_SRC
 
 #+RESULTS:
-: Cu2O decomposition temperature is [ 916.90220698] K
-: Ag2O decomposition temperature is [ 478.25748939] K
+: Cu2O decomposition temperature is 917 K
+: Ag2O decomposition temperature is 478 K
 
 #+caption: $\Delta \mu_{O_2}(T,p)$ at different pressures and temperatures.
 #+label: fig:mu-o2
@@ -6715,7 +6731,7 @@ plt.savefig('images/Ag2O-decomposition.png')
 #+ATTR_LaTeX: placement=[H]
 [[./images/Ag2O-decomposition.png]]
 
-This shows that at high temperature and low p_{O_2} metallic silver is stable, but if the  p_{O_2} gets high enough, the oxide becomes thermodynamically favorable. Here is another way to look at it.
+This shows that at high temperature and low p\(_{O_2}\) metallic silver is stable, but if the  p\(_{O_2}\) gets high enough, the oxide becomes thermodynamically favorable. Here is another way to look at it.
 
 #+BEGIN_SRC python
 import numpy as np
@@ -6746,7 +6762,7 @@ plt.savefig('images/atomistic-thermo-hf-mu.png')
 [[./images/atomistic-thermo-hf-mu.png]]
 
 This graph shows graphically the $\Delta \mu_{O_2}$ required to make the metal more stable than the oxide. Anything less than about -2 eV will have the metal more stable. That can be achieved by any one of the following combinations (graphically estimated from Figure \ref{fig:mu-o2}):
-About 500K at 1\times 10^{-10} atm, 600K at 1\times 10^{-5} atm, 900K at 1atm, etc...
+About 500K at 1$\times 10^{-10}$ atm, 600K at 1$\times 10^{-5}$ atm, 900K at 1atm, etc...
 
 ** Effect on adsorption
 We now consider the question: Given a pressure and temperature, what coverage would you expect on a surface? We saw earlier that adsorption energies depend on the site and coverage. We lso know the coverage depends on the pressure and temperature. Above some temperature, desorption occurs, and below some pressure adsorption will not be favorable. We seek to develop a quantitative method to determine those conditions.
@@ -7346,7 +7362,7 @@ It is not that hard to define your own derived units though. Note these  are onl
 from ase.units import *
 
 d = 1*Angstrom
-print d/nm
+print ' d = {0} nm'.format(d/nm)
 
 print '1 eV = %f Hartrees' % (eV/Hartree)
 print '1 eV = %f Rydbergs' % (eV/Rydberg)
@@ -7361,25 +7377,25 @@ minute = 60*s
 hour = 60*minute
 
 #convert 10 hours to minutes
-print 10*hour/minute
+print '10 hours = {0} minutes'.format(10*hour/minute)
 #+END_SRC
 
 #+RESULTS:
-: 0.1
+:  d = 0.1 nm
 : 1 eV = 0.036749 Hartrees
 : 1 eV = 0.073499 Rydbergs
 : 1 eV = 96.485309 kJ/mol
 : 1 eV = 23.060542 kcal/mol
 : 1 Hartree = 627.509541 kcal/mol
 : 1 Rydberg = 13.605698 eV
-: 600.0
+: 10 hours = 600.0 minutes
 
 *** Extracting parts of an array
 
 See http://www.scipy.org/Cookbook/BuildingArrays for examples of making numpy arrays.
 
 
-When analyzing numerical data you may often want to analyze only a part of the data. For example, suppose you have $x$ and $y$ data, ($x$=time, $y$=signal) and you want to integrate the date between a particular time interval. You can slice a numpy array to extract parts of it. See http://www.scipy.org/Cookbook/Indexing for several examples of this.
+When analyzing numerical data you may often want to analyze only a part of the data. For example, suppose you have $x$ and $y$ data, (\(x\)=time, \(y\)=signal) and you want to integrate the date between a particular time interval. You can slice a numpy array to extract parts of it. See http://www.scipy.org/Cookbook/Indexing for several examples of this.
 
 In this example we show how to extract the data in an interval. We have $x$ data in the range of 0 to 6, and $y$ data that is the $\cos(x)$. We want to extract the $x$ and $y$ data for $2 < x < 4$, and the corresponding y-data. To do this, we utilize the numpy capability of slicing with a boolean array. We also show some customization of matplotlib.
 
@@ -8583,19 +8599,19 @@ a3 = [0, 0, 10]
 
 uc = np.array([a1, a2, a3])
 
-print np.dot(np.cross(a1,a2),a3)
-print np.linalg.det(uc)
+print 'V = {0} ang^3 from dot/cross'.format(np.dot(np.cross(a1,a2),a3))
+print 'V = {0} ang^3 from det'.format(np.linalg.det(uc))
 
 from ase import *
 
 atoms = Atoms([],cell=uc) #empty list of atoms
-print atoms.get_volume()
+print 'V = {0} ang^3 from get_volume'.format(atoms.get_volume())
 #+END_SRC
 
 #+RESULTS:
-: 20
-: 20.0
-: 20.0
+: V = 20 ang^3 from dot/cross
+: V = 20.0 ang^3 from det
+: V = 20.0 ang^3 from get_volume
 
 *** d-spacing
 If you like to set up the vacuum in your slab calculations in terms of
@@ -8707,64 +8723,6 @@ print 'd_111 spacing (method 3) =',d
 : 4.000 4.000 4.000 1.571 1.571 1.571
 :
 : d_111 spacing (method 3) = 2.30940107676
-
-*** Center of mass
-The center of mass is a convenient origin for many rotations, and
-moment of inertia calculations. The center of mass is computed from:
-
-   $COM = \frac{\sum m_i \cdot r_i}{\sum m_i}$
-
-There is a convenience function for this: func:ase.atoms.get_center_of_mass
-
-*** Moments of inertia
-Moments of inertia are used in the rotational partition function in
-statistical mechanics. There is a convenience function for this:
-func:ase.atoms.get_moments_of_inertia. Here are examples of using
-the function to calculate the moments of inertia for several types of
-molecules.
-
-#+BEGIN_SRC python :results output
-from ase import *
-from ase.structure import molecule
-from ase.units import *
-
-print 'linear rotors: I = [Ia Ia 0]'
-mlc = 'CO2'
-atoms = molecule(mlc)
-
-print '  %s moments of inertia: ' %(mlc), atoms.get_moments_of_inertia()
-print
-
-print 'symmetric rotors (IA = Ib) < Ic'
-mlc = 'NH3'
-atoms = molecule(mlc)
-print '  %s moments of inertia: ' %(mlc), atoms.get_moments_of_inertia()
-
-mlc = 'C6H6'
-atoms = molecule(mlc)
-print '  %s moments of inertia: ' %(mlc), atoms.get_moments_of_inertia()
-print
-
-print 'spherical rotors Ia = Ib = Ic'
-mlc = 'CH4'
-atoms = molecule(mlc)
-print '  %s moments of inertia: ' %(mlc), atoms.get_moments_of_inertia()
-print
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-linear rotors: I = [Ia Ia 0]
-  CO2 moments of inertia:  [  0.          44.45384271  44.45384271]
-
-symmetric rotors (IA = Ib) < Ic
-  NH3 moments of inertia:  [ 1.71012426  1.71012548  2.67031768]
-  C6H6 moments of inertia:  [  88.77914641   88.77916799  177.5583144 ]
-
-spherical rotors Ia = Ib = Ic
-  CH4 moments of inertia:  [ 3.19145621  3.19145621  3.19145621]
-
-#+end_example
 
 ** Equations of State
 
@@ -8969,6 +8927,7 @@ No extension means the standard potential. The following extension mean:
 #+ATTR_LaTeX: align= |l|p{10cm}|
 #+caption: Meaning of extensions on POTCAR files for special setups.
 | extension | <40>                                     |
+|-----------+------------------------------------------|
 | _h        | means the potential is harder than the standard (i.e. needs a higher cutoff energy) |
 | _s        | means the potential is softer than the standard (i.e. needs a lower cutoff energy) |
 | _sv       | $s$ and $p$ semi-core states are treated as valence states |
@@ -8976,6 +8935,7 @@ No extension means the standard potential. The following extension mean:
 | _d        | $d$ semi-core states are treated as valence states |
 
 Here are some links to information in the VASP manual for the setups.
+
 [[http://cms.mpi.univie.ac.at/vasp/vasp/st_row_elements.html][- 1st row elements]]
 [[http://cms.mpi.univie.ac.at/vasp/vasp/Alkali_alkali_earth_elements_simple_metals.html][- Alkali and alkali-earth metals]]
 [[http://cms.mpi.univie.ac.at/vasp/vasp/_elements.html][- d-elements]]
