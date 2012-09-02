@@ -20,6 +20,7 @@
 #+latex_header: \usepackage[section]{placeins}
 #+latex_header: \usepackage{xcolor}
 #+latex_header: \usepackage{adjustbox}
+#+latex_header: \usepackage{url}
 
 #+latex_header: \makeindex
 
@@ -160,10 +161,10 @@ In this chapter we consider how to construct models of molecules, how to manipul
 ** Defining and visualizing molecules
 We start by learning how to define a molecule and visualize it.
 *** Predefined molecules
-ASE defines a number of molecular geometries in the molecules
+mod:ase defines a number of molecular geometries in the mod:ase.data.molecules
 database.  Data for the G2 database are from Raghavachari, Redfern,
-and Pople, J. Chem. Phys. Vol. 106, 1063 (1997).  See
-http://chemistry.anl.gov/compmat/comptherm.htm for the original files.
+and Pople, J. Chem. Phys. Vol. 106, 1063 (1997).  See [[http://www.cse.anl.gov/OldCHMwebsiteContent/compmat/comptherm.htm][this site]]
+for the original files.
 
 All numbers are experimental values, except for coordinates, which are
 MP2(full)/6-31G(d) optimized geometries. Here is a list of all the species available in mod:ase.data.g2
@@ -295,7 +296,7 @@ write('images/ch3cn-rotated.png', atoms,
 #+ATTR_LaTeX: placement=[H]
 [[./images/ch3cn-rotated.png]]
 
-If you actually want to rotate the coordinates, there is a nice way to do that to, with the func:ase.Atoms.rotate method. Actually there are some subtelties in rotation. One rotates the molecule an angle (in radians) around a vector, but you have to choose whether the center of mass should be fixed or not. You also must decide whether the unit cell should be rotated or not. In the next example you can see the coordinates have changed due to the rotations. Note that the write function uses the rotation angle in degrees, while the rotate function uses radians.
+If you actually want to rotate the coordinates, there is a nice way to do that to, with the func:ase.Atoms.rotate method. Actually there are some subtleties in rotation. One rotates the molecule an angle (in radians) around a vector, but you have to choose whether the center of mass should be fixed or not. You also must decide whether the unit cell should be rotated or not. In the next example you can see the coordinates have changed due to the rotations. Note that the write function uses the rotation angle in degrees, while the rotate function uses radians.
 
 #+BEGIN_SRC python :results output
 from ase import Atoms
@@ -797,7 +798,7 @@ print 'theta = ',atoms.get_angle([1,0,2])*180./pi
 
 
 **** Dihedral angles
-There is support in ase for computing [[http://en.wikipedia.org/wiki/Dihedral_angle][dihedral angles]]. Lets illustrate that for ethane. We will compute the dihedral angle between atoms 5, 1, 0, and 4. That is a H-C-C-H dihedral angle, and one can visually see (although not here) that these atoms have dihedral angle of 60$^\circ$. See Figure \ref{fig:ethane-dihedral}.
+There is support in ase for computing [[http://en.wikipedia.org/wiki/Dihedral_angle][dihedral angles]]. Let us illustrate that for ethane. We will compute the dihedral angle between atoms 5, 1, 0, and 4. That is a H-C-C-H dihedral angle, and one can visually see (although not here) that these atoms have dihedral angle of 60$^\circ$. See Figure \ref{fig:ethane-dihedral}.
 
 #+BEGIN_SRC python :results output :exports both
 # calculate an ethane dihedral angle
@@ -2038,7 +2039,7 @@ Free energy components at T = 298.15 K and P = 101325.0 Pa:
 
 ** Molecular reaction energies
 *** O_{2} dissociation
-The first reaction we consider is a simple dissociation of oxygen molecule into two oxygen atoms: $O_2 \rightarrow 2 O$. The dissociation energy is pretty straightforward to define: it is the energy of the products minus the energy of the reactant. $D = 2*E_O - E_{O_2}$. It would appear that we simply calculate the energy of an oxygen atom, and the energy of an oxygen molecule and evaluate the formula. Let's do that.
+The first reaction we consider is a simple dissociation of oxygen molecule into two oxygen atoms: $O_2 \rightarrow 2 O$. The dissociation energy is pretty straightforward to define: it is the energy of the products minus the energy of the reactant. $D = 2*E_O - E_{O_2}$. It would appear that we simply calculate the energy of an oxygen atom, and the energy of an oxygen molecule and evaluate the formula. Let us do that.
 
 **** Simple estimate of O$_2$ dissociation energy
 #+BEGIN_SRC python :results output :exports both
@@ -2085,7 +2086,7 @@ if None not in (E_O, E_O2):
 
 The answer we have obtained is way too high! Experimentally the dissociation energy is more like 5.2 eV (need reference).
 
-We implicitly neglected spin-polarization in the example above. That could be a problem, since the O$_2$ molecule can be in one of two spin states, a singlet or a triplet, and these should have different energies. Furthermore, the oxygen atom can be a singlet or a triplet, and these would have different energies. To account for spin polarization, we have to tell VASP to use spin-polarization, and give initial guesses for the magnetic moments of the atoms. Let's try again with spin polarization.
+We implicitly neglected spin-polarization in the example above. That could be a problem, since the O$_2$ molecule can be in one of two spin states, a singlet or a triplet, and these should have different energies. Furthermore, the oxygen atom can be a singlet or a triplet, and these would have different energies. To account for spin polarization, we have to tell VASP to use spin-polarization, and give initial guesses for the magnetic moments of the atoms. Let us try again with spin polarization.
 
 **** Estimating O$_2$ dissociation energy with spin polarization in triplet ground states
 To tell VASP to use spin-polarization we use [[incar:ISPIN][INCAR]]=2, and we set initial guesses for magnetic moments on the atoms with the magmom keyword. In a triplet state there are two electrons with spins of the same sign.
@@ -2414,7 +2415,7 @@ with jasp('molecules/O-square-box-random',
 
 There is no difference of significance in these energies. The origin and center are identical (by symmetry too). The meV variation in the random position is probably only due to the atom being off the fft grid points a little bit.
 
-Now, let's consider some non-square boxes.
+Now, let us consider some non-square boxes.
 
 #+BEGIN_SRC python :results output :exports both
 # calculate O atom energy in orthorhombic boxes
@@ -3647,7 +3648,7 @@ eos.plot('images/Cu-fcc-eos.png')
 #+ATTR_LaTeX: placement=[H]
 [[./images/Cu-fcc-eos.png]]
 
-Before we jump into the bcc calculations, let's consider what range of lattice constants we should choose. The fcc lattice is close-packed, and the volume of the primitive cell is $V = 1/4 a^3$ or about 11.8 $\AA^3$/atom. The volume of the equilibrium bcc primitive cell will probably be similar to that. The question is: what bcc lattice constant gives that volume? The simplest way to answer this is to compute the answer. We will make a bcc crystal at the fcc lattice constant, and then compute the scaling factor needed to make it the right volume.
+Before we jump into the bcc calculations, let us consider what range of lattice constants we should choose. The fcc lattice is close-packed, and the volume of the primitive cell is $V = 1/4 a^3$ or about 11.8 $\AA^3$/atom. The volume of the equilibrium bcc primitive cell will probably be similar to that. The question is: what bcc lattice constant gives that volume? The simplest way to answer this is to compute the answer. We will make a bcc crystal at the fcc lattice constant, and then compute the scaling factor needed to make it the right volume.
 
 #+BEGIN_SRC python :results output :exports both
 from ase import Atom, Atoms
@@ -6509,7 +6510,7 @@ This did not do exactly what I expected. I thought there would be an image that 
 
 * Atomistic thermodynamics
 
-Let's consider how much the Gibbs free energy of an O$_2$ molecule changes as a function of temperature, at 1 atm. We use the Shomate polynomials to approximate the temperature dependent entropy and enthalpy, and use the parameters from the [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447&Units=SI&Mask=1#Thermo-Gas][NIST Webbook]] for O$_2$.
+Let us consider how much the Gibbs free energy of an O$_2$ molecule changes as a function of temperature, at 1 atm. We use the Shomate polynomials to approximate the temperature dependent entropy and enthalpy, and use the parameters from the [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447&Units=SI&Mask=1#Thermo-Gas][NIST Webbook]] for O$_2$.
 #+BEGIN_SRC python :results output
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7305,7 +7306,7 @@ FREE = 2**8
 NEARADSORBATE = 2**9
 
 
-# let's tag LAYER1 atoms to be FREE too. we can address it by LAYER1 or FREE
+# let us tag LAYER1 atoms to be FREE too. we can address it by LAYER1 or FREE
 tags = slab.get_tags()
 for i,tag in enumerate(tags):
     if tag == LAYER1:
@@ -7319,7 +7320,7 @@ co= Atoms([Atom('C',[0., 0., 0. ], tag=ADSORBATE),
 add_adsorbate(slab,co,height=1.2,position='hollow')
 
 #the adsorbate is centered between atoms 20, 21 and 22 (use
-#view(slab)) and over atom12 lets label those atoms, so it is easy to
+#view(slab)) and over atom12 let us label those atoms, so it is easy to
 #do electronic structure analysis on them later.
 tags = slab.get_tags() # len(tags) changed, so we reget them.
 tags[12]+=NEARADSORBATE
@@ -8103,7 +8104,7 @@ x = np.linspace(0.78,0.79,100)
 y = np.sin(x)
 dy_analytical = np.cos(x)
 '''
-lets use a forward difference method:
+let us use a forward difference method:
 that works up until the last point, where there is not
 a forward difference to use. there, we use a backward difference.
 '''
@@ -8503,7 +8504,7 @@ s = np.dot(np.linalg.inv(newbasis.T),pos.T).T
 print 'atom positions in primitive basis'
 print s
 
-#let's see the unit cell in terms of the primitive basis too
+#let us see the unit cell in terms of the primitive basis too
 print 'unit cell in terms of the primitive basis'
 print np.dot(np.linalg.inv(newbasis.T),bulk.get_cell().T).T
 #+END_SRC
