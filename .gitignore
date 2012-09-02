@@ -3,3 +3,5 @@ CHG*
 WAVECAR
 *.o[0-9]*
 *~
+archive
+test
