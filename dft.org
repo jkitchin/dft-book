@@ -165,13 +165,17 @@ In this chapter we consider how to construct models of molecules, how to manipul
 We start by learning how to define a molecule and visualize it.
 *** Predefined molecules
 
-mod:ase defines a number of molecular geometries in the mod:ase.data.molecules
-database.  Data for the G2 database are from Raghavachari, Redfern,
-and Pople, J. Chem. Phys. Vol. 106, 1063 (1997).  See [[http://www.cse.anl.gov/OldCHMwebsiteContent/compmat/comptherm.htm][this site]]
-for the original files.
+mod:ase defines a number of molecular geometries in the
+mod:ase.data.molecules database.  For example, the databse includes
+the molecules in the G2/97 database \cite{curtiss:1063}. This database
+contains a broad set of atoms and molecules for which good
+experimental data exists, making them useful for benchmarking studies.
+See [[http://www.cse.anl.gov/OldCHMwebsiteContent/compmat/comptherm.htm][this site]] for the original files.
 
-All numbers are experimental values, except for coordinates, which are
-MP2(full)/6-31G(d) optimized geometries. Here is a list of all the species available in mod:ase.data.g2
+The coordinates for the atoms in the database are [[http://en.wikipedia.org/wiki/M%C3%B8ller-Plesset_perturbation_theory][MP2]](full)/[[http://en.wikipedia.org/wiki/Basis_set_%28chemistry%29][6-31G(d)]]
+optimized geometries. Here is a list of all the species available in
+mod:ase.data.g2. You may be interested in reading about some of the other databases in mod:ase.data too.
+
 #+BEGIN_SRC python :results output :exports both
 from ase.data import g2
 keys = g2.data.keys()
@@ -1545,7 +1549,7 @@ plt.show()
 : roots of first derivative are [ 1.43384501  1.14425395]
 : The frequency is 2143.60766258 cm^{-1}
 
-This result is in good agreement with [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C630080&Units=SI&Type=IR-SPEC&Index=0#IR-SPEC][experiment]]. The procedure used above is how many vibrational calculations are done. With more atoms, you have to determine a force constant matrix and diagonalize it. For more details, see \cite{wilson1955}. In practice, we usually allow a packaged code to automate this, which we cover in [[*Automated%20vibrational%20calculations][Automated vibrational  calculations]].
+This result is in good agreement with [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C630080&Units=SI&Type=IR-SPEC&Index=0#IR-SPEC][experiment]]. The procedure used above is how many vibrational calculations are done. With more atoms, you have to determine a force constant matrix and diagonalize it. For more details, see \cite{wilson1955}. In practice, we usually allow a packaged code to automate this, which we cover in [[*Automated%20vibrational%20calculations][Automated vibrational calculations]]
 
 We now consider how much energy is in this vibration. This is commonly called zero-point energy (ZPE) and it is defined as $E_{ZPE} = \frac{1}{2} h \nu$ for a single mode, and $h$ is Planck's constant (4.135667516e-15 eV/s).
 
@@ -1568,7 +1572,7 @@ This is a reasonable amount of energy! Zero-point energy increases with increasi
 
 A final note is that this analysis is in the "harmonic approximation". The frequency equation is the solution to a harmonic oscillator. If the spring is non-linear, then there are anharmonic effects that may become important, especially at higher temperatures.
 
-*** Automated vibrational  calculations
+*** Automated vibrational calculations
 Vasp has built-in capability for performing vibrational calculations.
 #+BEGIN_SRC python :results output  :exports both
 #adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
@@ -1781,7 +1785,7 @@ with jasp('molecules/h2o_vib_dfpt',
 
 #+RESULTS:
 
-To analyze the results, this shell script was provided to extract the results.
+To analyze the results, this [[http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02][shell script]] was provided to extract the results.
 #+BEGIN_SRC sh :results output :dir molecules/h2o_vib_dfpt :exports both
 #!/bin/bash
 # A utility for calculating the vibrational intensities from VASP output (OUTCAR)
@@ -1911,7 +1915,7 @@ cat results/results.txt
 #+end_example
 
 
-Note the results above include the rotational and vibrational modes (modes 4-9). The following shell script (also from http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02) removes those, and recalculates the intensities.
+Note the results above include the rotational and vibrational modes (modes 4-9). The following [[http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02][shell script]] removes those, and recalculates the intensities.
 #+BEGIN_SRC sh :results output :dir molecules/h2o_vib_dfpt :exports both
 #!/bin/bash
 # reformat intensities, just normal modes: 3N -> (3N-6)
@@ -3629,7 +3633,7 @@ eos.plot('images/Cu-fcc-eos.png')
 [[./images/Cu-fcc-eos.png]]
 
 
-Before we jump into the bcc calculations, let's consider what range of lattice constants we should choose. The fcc lattice is close-packed, and the volume of the primitive cell is $V = 1/4 a^3$ or about 11.8 \(\AA^3\)/atom. The volume of the equilibrium bcc primitive cell will probably be similar to that. The question is: what bcc lattice constant gives that volume? The simplest way to answer this is to compute the answer. We will make a bcc crystal at the fcc lattice constant, and then compute the scaling factor needed to make it the right volume.
+Before we jump into the bcc calculations, let us consider what range of lattice constants we should choose. The fcc lattice is close-packed, and the volume of the primitive cell is $V = 1/4 a^3$ or about 11.8 \(\AA^3\)/atom. The volume of the equilibrium bcc primitive cell will probably be similar to that. The question is: what bcc lattice constant gives that volume? The simplest way to answer this is to compute the answer. We will make a bcc crystal at the fcc lattice constant, and then compute the scaling factor needed to make it the right volume.
 
 #+BEGIN_SRC python :results output :exports both
 from ase import Atom, Atoms
@@ -6593,7 +6597,7 @@ $G_f \approx E_{Cu_2O} -2E_{Cu} - 0.5 (E_{O_2}^{DFT}) - 0.5*\Delta \mu_{O_2}(P,T
 
 with $\Delta \mu_{O_2}(P,T) = \delta \mu (T) + kT \ln(P/P_0)$. We get $\delta \mu (T)$ from the Janaf Tables, or the NIST Webbook.
 
-You will recognize in this equation the standard formation energy we calculated in [[*Metal%20oxide%20formation%20energies][Metal oxide formation energies]], plus a correction for the non standard state pressure and temperature ($\Delta \mu_{O_2}(P,T) = 0$ at standard state).
+You will recognize in this equation the standard formation energy we calculated in [[Metal oxide oxidation energies][Metal oxide oxidation energies]]plus a correction for the non standard state pressure and temperature ($\Delta \mu_{O_2}(P,T) = 0$ at standard state).
 
 
 $G_f \approx H_f - 0.5*\Delta \mu_{O_2}(P,T)$
@@ -7236,7 +7240,10 @@ These images (Figure \ref{fig:elf1} and \ref{fig:elf2}) are basically consistent
 
 ** TODO Modeling Core level shifts
 * Acknowledgments
-I would like to thank Zhongnan Xu for sending me some examples on magnetism. Alan McGaughey for sending me some NEB examples.
+I would like to thank Zhongnan Xu for sending me some examples on magnetism. Alan McGaughey and Lars Grabow for sending me some NEB examples. Matt Curnan for examples of phonons.
+
+Many thanks to students in my class who have pointed out typos, places of confusion, etc... These include:
+- Bruno Alfa
 * Appendices
 ** Recipes
 *** Modifying Atoms by deleting atoms
