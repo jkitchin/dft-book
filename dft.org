@@ -2069,7 +2069,7 @@ Free energy components at T = 298.15 K and P = 101325.0 Pa:
 *** O_{2} dissociation
 The first reaction we consider is a simple dissociation of oxygen molecule into two oxygen atoms: $O_2 \rightarrow 2 O$. The dissociation energy is pretty straightforward to define: it is the energy of the products minus the energy of the reactant. $D = 2*E_O - E_{O_2}$. It would appear that we simply calculate the energy of an oxygen atom, and the energy of an oxygen molecule and evaluate the formula. Let us do that.
 
-**** Simple estimate of O$_2$ dissociation energy
+**** Simple estimate of O_{2} dissociation energy
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 from ase import Atom, Atoms
@@ -2116,7 +2116,7 @@ The answer we have obtained is way too high! Experimentally the dissociation ene
 
 We implicitly neglected spin-polarization in the example above. That could be a problem, since the O$_2$ molecule can be in one of two spin states, a singlet or a triplet, and these should have different energies. Furthermore, the oxygen atom can be a singlet or a triplet, and these would have different energies. To account for spin polarization, we have to tell VASP to use spin-polarization, and give initial guesses for the magnetic moments of the atoms. Let us try again with spin polarization.
 
-**** Estimating O$_2$ dissociation energy with spin polarization in triplet ground states
+**** Estimating O_{2} dissociation energy with spin polarization in triplet ground states
 To tell VASP to use spin-polarization we use [[incar:ISPIN][INCAR]]=2, and we set initial guesses for magnetic moments on the atoms with the magmom keyword. In a triplet state there are two electrons with spins of the same sign.
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -2207,7 +2207,8 @@ plt.savefig('images/O2-sp-dos.png')
 
 You can see in Figure \ref{fig:o2-sp-dos} that there are two different densities of states for the two spins. One has 7 electrons in it, and the other has 5 electrons in it. The difference of two electrons leads to the magnetic moment of 2 which we calculated earlier.
 
-**** Convergence study of the O$_2$ dissociation energy \index{convergence!ENCUT}
+**** Convergence study of the O_{2} dissociation energy
+\index{convergence!ENCUT}
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase import Atom, Atoms
@@ -3064,7 +3065,7 @@ with jasp('molecules/wgs/CO-vib',
 
 CO has only one vibrational mode.
 
-**** CO$_2$ vibrations
+**** CO_{2} vibrations
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 
@@ -3101,7 +3102,7 @@ with jasp('molecules/wgs/CO2-vib',
 
 CO$_2$ is a linear molecule with 3N-5 = 4 vibrational modes. They are the first four frequencies in the output above.
 
-**** H$_2$ vibrations
+**** H_{2} vibrations
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 
