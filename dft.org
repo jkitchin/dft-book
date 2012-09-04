@@ -21,7 +21,8 @@
 #+latex_header: \usepackage{xcolor}
 #+latex_header: \usepackage{adjustbox}
 #+latex_header: \usepackage{url}
-
+#+latex_header: \usepackage{anysize}
+#+latex_header: \marginsize{1in}{1in}{1in}{1in}
 #+latex_header: \makeindex
 
 ## custom link for incar:ISMEAR
@@ -342,7 +343,7 @@ for i,d in enumerate(diff):
 : 5 [-0.8340703   1.33495444  1.2092413 ]
 
 #+caption: Rotated CH\(_3\)CN molecule
-#+ATTR_LaTeX: placement=[H],width=71.bp
+#+ATTR_LaTeX: width=71.bp,placement=[H]
 [[./images/ch3cn-rotated-2.png]]
 
 Note in this last case the unit cell is oriented differently than the previous example, since we chose not to rotate the unit cell.
@@ -786,7 +787,7 @@ print 'theta = %1.1f degrees' % (theta_rad*180./pi)
 : theta = 106.3 degrees
 
 #+caption: Schematic of the vectors defining the H-N-H angle.
-#+ATTR_LaTeX: placement=[H]
+#+ATTR_LaTeX: width=270bp,placement=[H]
 [[./images/NH3-vectors.png]]
 
 Alternatively you could use the func:ase.Atoms.get_angle. Note we want the angle between atoms 1-0-2 to get the H-N-H angle.
@@ -844,7 +845,7 @@ dihedral angle = 60.00 degrees
 
 #+caption: Schematic of the calculated ethane dihedral angle.
 #+label: fig:ethane-dihedral
-#+ATTR_LaTeX: placement=[H]
+#+ATTR_LaTeX: width=86bp,placement=[H]
 [[./images/ethane-dihedral.png]]
 
 *** Energy and forces
@@ -915,6 +916,7 @@ savefig('images/co-dos.png')
 #+RESULTS:
 : None
 
+#+caption: Density of states for a CO molecule.
 [[./images/co-dos.png]]
 
 *** Atom-projected density of states on molecules
@@ -982,6 +984,7 @@ savefig('images/co-ados.png')
 #+RESULTS:
 : None
 
+#+caption: Atom-projected DOS for a CO molecule. The total density of states and the \(s\), \(p\) and \(d\) states on the C and O are shown.
 [[./images/co-ados.png]]
 
 
@@ -1745,14 +1748,17 @@ with jasp('molecules/h2o_relax',
           ediff=1e-8,
           nsw=10,
           atoms=atoms) as calc:
-
+    print 'Forces'
+    print '==========================='
     print atoms.get_forces()
 #+END_SRC
 
 #+RESULTS:
-: [[ 0.00033  -0.000422  0.      ]
-:  [-0.00066   0.        0.      ]
-:  [ 0.00033   0.000422  0.      ]]
+: Forces
+: ===========================
+: [[ 0.    -0.     0.   ]
+:  [-0.001  0.     0.   ]
+:  [ 0.     0.     0.   ]]
 
 Next, we instruct Vasp to compute the vibrational modes using density functional perturbation theory with IBRION=7. Note, this is different than in [[Vibrational frequencies]] where finite differences were used.
 
@@ -3276,8 +3282,9 @@ plt.show()
 [[./images/wgs-dG-T.png]]
 You can see a few things here. One is that at near 298K, the Gibbs free energy is about -40 kJ/mol. This is too negative for a standard state free energy, which we estimated to be about -29 kJ/mol from the [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-nist-webbook/#7][NIST webbook. ]]There could be several reasons for this disagreement, but the most likely one is errors in the exchange-correlation functional. Second, it appears the reaction enthalpy gets slightly more exothermic with temperature. This does not seem correct.
 
-At 1000K we estimate the Gibbs free energy to be about -4 kJ/mol, compared to about -3 kJ/mol estimated from the Nist webbook.
+At 1000K we estimate the Gibbs free energy to be about -4 kJ/mol, compared to about -3 kJ/mol estimated from the NIST webbook.
 
+#+caption: Temperature dependence of the equilibrium constant.
 [[./images/wgs-Keq.png]]
 
 Despite the error in $\Delta G$, the equilibrium constant at 1000K seems reasonable. If you zoom in to 1000K you find the $K_{eq}$ is about 1.5, and it is known to be 1.44 (see [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-nist-webbook/#7][this example]]).
@@ -3441,12 +3448,12 @@ write('images/AgPd-bulk.png',atoms,show_unit_cell=2)
 : None
 
 #+caption: A simple fcc Ag bulk structure.
-#+ATTR_LaTeX: placement=[H]
+#+ATTR_LaTeX: width=114bp,placement=[H]
 
 [[./images/Ag-bulk.png]]
 
 #+caption: A simple Ag_{3}Pd bulk structure.
-#+ATTR_LaTeX: placement=[H]
+#+ATTR_LaTeX: width=114bp,placement=[H]
 [[./images/AgPd-bulk.png]]
 
 *** Using http://materialsproject.org
@@ -3516,7 +3523,7 @@ write('images/Ru2O4.png', atoms, show_unit_cell=2)
 #+END_SRC
 
 #+caption: An RuO$_2$ unit cell prepared from a cif file.
-#+ATTR_LaTeX: placement=[H]
+#+ATTR_LaTeX: width=96bp,placement=[H]
 [[./images/Ru2O4.png]]
 
 You can also download the VASP files. I have copied these files (INCAR, POSCAR, KPOINTS) to a directory, and now we can run a calculation like this:
@@ -5405,7 +5412,7 @@ write('images/Al-slab.png', slab, rotation='90x',show_unit_cell=2)
 : None
 
 #+caption: An Al(111) slab with three layers and 20 \AA of vacuum.
-#+ATTR_LaTeX: placement=[H]
+#+ATTR_LaTeX: width=205bp,placement=[H]
 [[./images/Al-slab.png]]
 
 *** vicinal surfaces
@@ -5430,8 +5437,8 @@ write('images/Au-211.png',
 #+RESULTS:
 : None
 
-#+caption: An Au(211) surface constructed with mod:ase.
-#+ATTR_LaTeX: placement=[H]
+#+caption: An Au(211) surface constructed with =ase=.
+#+ATTR_LaTeX: width=500bp,placement=[H]
 [[./images/Au-211.png]]
 
 ** Surface relaxation
@@ -6059,20 +6066,20 @@ You can see the hcp site is not as energetically favorable as the fcc site. Inte
 
 #+caption: Final geometry of the fcc site.
 #+label: fig:fcc
-#+ATTR_LaTeX: placement=[H]
+#+ATTR_LaTeX: width=203bp,placement=[H]
 [[./images/pt-slab-fcc-o.png]]
 
 
 #+caption: Final geometry of the hcp site.
 #+label: fig:hcp
-#+ATTR_LaTeX: placement=[H]
+#+ATTR_LaTeX: width=203bp,placement=[H]
 [[./images/pt-slab-hcp-o.png]]
 
 The bridge site (Figure \ref{fig:bridge}, however, is clearly not at a bridge site!
 
 #+caption: Final geometry of the bridge site. You can see that the oxygen atom ended up in the fcc site.
 #+label: fig:bridge
-#+ATTR_LaTeX: placement=[H]
+#+ATTR_LaTeX: width=203bp,placement=[H]
 [[./images/pt-slab-bridge-o.png]]
 
 Let us see what the original geometry and final geometry for the bridge site were. The POSCAR contains the initial geometry (as long as you haven't copied CONTCAR to POSCAR), and the CONTCAR contains the final geometry.
@@ -6088,11 +6095,11 @@ write('images/Pt-o-brige-final.png', atoms, show_unit_cell=2)
 #+END_SRC
 
 #+caption: Initial geometry of the bridge site. It is definitely on the bridge.
-#+ATTR_LaTeX: placement=[H]
+#+ATTR_LaTeX: width=203bp,placement=[H]
  [[./images/Pt-o-brige-ori.png]]
 
 #+caption: Final geometry of the bridge site. It has fallen into the fcc site.
-#+ATTR_LaTeX: placement=[H]
+#+ATTR_LaTeX: width=203bp,placement=[H]
 [[./images/Pt-o-brige-final.png]]
 
 You can see the problem. We should not call the adsorption energy from this calculation a bridge site adsorption energy because the O atom is actually in an fcc site! This kind of result can happen with relaxation, and you should always check that the result you get makes sense. Next, we consider how to get a bridge site adsorption energy by using constraints.
@@ -6159,11 +6166,11 @@ print 'Hads (bridge) = {0:1.3f} eV/O'.format(Hads_bridge)
 You can see that only the \(z\)-position of the O atom changed. Also, the adsorption energy of O on the bridge site is *much* less favorable than on the fcc or hcp sites.
 
 #+caption: Initial state of the O atom on the bridge site.
-#+ATTR_LaTeX: placement=[H]
+#+ATTR_LaTeX: width=203bp,placement=[H]
 [[./images/Pt-O-bridge-constrained-initial.png]]
 
 #+caption: Final state of the constrained O atom, still on the bridge site.
-#+ATTR_LaTeX: placement=[H]
+#+ATTR_LaTeX: width=203bp,placement=[H]
 [[./images/Pt-O-bridge-constrained-final.png]]
 
 *** Coverage dependence
@@ -6579,7 +6586,7 @@ Similarly, you can see that simply changing the pressure has a large effect on t
 $\mu_{O_2} = E_{O_2}^{DFT} + E_{O_2}^{ZPE} + \Delta \mu (T) + kT \ln(P/P_0)$
 
 ** Bulk phase stability of oxides
-We will  consider the effects of oxygen pressure and temperature on the formation energy of Ag$_2$O and Cu$_2$O.
+We will  consider the effects of oxygen pressure and temperature on the formation energy of Ag\(_2\)O and Cu\(_2\)O.
 
 $2Cu + 1/2 O_2 \rightarrow Cu_2O$
 
@@ -6597,7 +6604,7 @@ $G_f \approx E_{Cu_2O} -2E_{Cu} - 0.5 (E_{O_2}^{DFT}) - 0.5*\Delta \mu_{O_2}(P,T
 
 with $\Delta \mu_{O_2}(P,T) = \delta \mu (T) + kT \ln(P/P_0)$. We get $\delta \mu (T)$ from the Janaf Tables, or the NIST Webbook.
 
-You will recognize in this equation the standard formation energy we calculated in [[Metal oxide oxidation energies][Metal oxide oxidation energies]]plus a correction for the non standard state pressure and temperature ($\Delta \mu_{O_2}(P,T) = 0$ at standard state).
+You will recognize in this equation the standard formation energy we calculated in [[Metal oxide oxidation energies][Metal oxide oxidation energies ]]plus a correction for the non standard state pressure and temperature ($\Delta \mu_{O_2}(P,T) = 0$ at standard state).
 
 
 $G_f \approx H_f - 0.5*\Delta \mu_{O_2}(P,T)$
@@ -7306,7 +7313,6 @@ ADSORBATE = 2**7
 FREE = 2**8
 NEARADSORBATE = 2**9
 
-
 # let us tag LAYER1 atoms to be FREE too. we can address it by LAYER1 or FREE
 tags = slab.get_tags()
 for i,tag in enumerate(tags):
@@ -7358,7 +7364,8 @@ write('images/tagged-bcc111.png',slab,rotation='-90x',show_unit_cell=2)
 
 #+RESULTS:
 
-
+#+caption: the tagged bcc(111) structure created above.
+#+ATTR_LATEX: width=383bp,placement=[H]
 [[./images/tagged-bcc111.png]]
 *** Using units in ase
 mod:ase uses a base set of atomic units. Other units are defined in terms of those units, and you can easily convert to alternative units by dividing your quantity in atomic units by the units you want.
@@ -7740,6 +7747,7 @@ Solution: Find the cube that contains the point, and is defined by points
 # inkscape images/trilinear-interpolation.svg
 #+caption: Trilinear interpolation scheme.
 #+label: fig:trilinearpinterp
+#+ATTR+LaTeX: width=270bp,placement=[H]
 [[./images/trilinear-interpolation.png]]
 
 We use 1D interpolation formulas to compute the value of the scalar field at points I1 by interpolating between P1 and P2, and the value of the scalar field at I2 by interpolating between P3 and P4. In these points the only variable changing is x, so it is a simple 1D interpolation. We can then compute the value of the scalar field at I5 by interpolating between I1 and I2. We repeat the process on the top of the cube, to obtain points I3, I4 and I5. Finally, we compute the value of the scalar field at point P by interpolating between points I5 and I6. Note that the point I5 has coordinates (a,b,z1) and (a,b,z2), so the final interpolation is again a 1D interpolation along z evaluated at z=c to get the final value of the scalar field at P=(a,b,c).
@@ -7876,13 +7884,14 @@ interpolation.
 
 This function should work for any shape unit cell.
 '''
-from ase.calculators.jacapo import Jacapo
+from jasp import *
 import bisect
 import numpy as np
+from pylab import plot, xlabel, ylabel, savefig, show
 
-atoms = Jacapo.read_atoms('/home/jkitchin/www/dft/source/jacapo/1-molecules/1.2-calculating-simple-properties/1.2.6-dipole-moment/1.6-co-dense.nc')
-calc = atoms.get_calculator()
-x,y,z,cd = calc.get_charge_density()
+with jasp('molecules/co-centered') as calc:
+    atoms = calc.get_atoms()
+    x,y,z,cd = calc.get_charge_density()
 
 def vinterp3d(x,y,z,u,xi,yi,zi):
 
@@ -7939,10 +7948,9 @@ def vinterp3d(x,y,z,u,xi,yi,zi):
 
     return ui7
 
-
 # compute a line with 60 points in it through these two points
-P1 = np.array([0.0, 3.0, 3.0])
-P2 = np.array([5.0, 3.0, 3.0])
+P1 = np.array([0.0, 5.0, 5.0])
+P2 = np.array([10.0, 5.0, 5.0])
 
 npoints = 60
 
@@ -7953,9 +7961,6 @@ R = [np.linalg.norm(p-P1) for p in points]
 
 icd = [vinterp3d(x,y,z,cd,p[0],p[1],p[2]) for p in points]
 
-from pylab import plot, xlabel, ylabel, show
-
-
 plot(R,icd)
 pos = atoms.get_positions()
 cR = np.linalg.norm(pos[0]-P1)
@@ -7964,11 +7969,15 @@ plot([cR,cR],[0,2],'r-') #markers for where the nuclei are
 plot([oR,oR],[0,8],'r-')
 xlabel('|R| ($\AA$)')
 ylabel('Charge density (e/$\AA^3$)')
+savefig('images/interpolated-charge-density.png')
 show()
 #+END_SRC
 
 #+RESULTS:
 : None
+
+#+caption: Interpolated charge density for a CO molecule.
+[[./images/interpolated-charge-density.png]]
 
 *** Reading and writing data
 
@@ -8369,7 +8378,42 @@ module is more powerful than I have shown here, so one day checkout
 The mod:pickle and mod:shelve modules of python also offer some
 data storage functionality. Check them out some day too.
 
-*** TODO reading and writing excel files
+*** Writing and reading Excel files
+**** Writing Excel files
+It is not too uncommon that it is convenient to do some analysis in Excel. We can create Excel files in python with mod:xlwt. Google this module if you need to do this alot.
+#+BEGIN_SRC python
+import numpy as np
+import xlwt
+
+wbk = xlwt.Workbook()
+sheet = wbk.add_sheet('sheet 1')
+
+volumes = np.array([13.72, 14.83, 16.0, 17.23, 18.52])
+energies = np.array([-56.29, -56.41, -56.46, -56.46, -56.42])
+
+for i, pair in enumerate(zip(volumes, energies)):
+    vol = pair[0]
+    energy = pair[1]
+    sheet.write(i,0,vol)
+    sheet.write(i,1,energy)
+wbk.save('images/test-write.xls')
+#+END_SRC
+
+**** Reading Excel files
+We can also read Excel files (even on Linux!) with mod:xlrd. Let us read in the data we just wrote. We wrote 5 volumes to column 0, and 5 energies to column 1.
+
+#+BEGIN_SRC python :results output
+import xlrd
+wbk = xlrd.open_workbook('images/test-write.xls')
+sheet1 = wbk.sheet_by_name('sheet 1')
+print sheet1.col_values(0)
+print sheet1.col_values(1)
+#+END_SRC
+
+#+RESULTS:
+: [13.72, 14.83, 16.0, 17.23, 18.52]
+: [-56.29, -56.41, -56.46, -56.46, -56.42]
+
 *** TODO making movies
 1. using animate
 2. using swftools (png2swf, pdf2swf)
@@ -8742,9 +8786,7 @@ modulus. There are several other choices you could use that are more
 standard in the literature. Here we summarize them and provide
 references to the relevant literature.
 
-
 *** Birch-Murnaghan
-
 This is probably the most common equation of state used most often,
 and is a modification of the original Murnaghan EOS described below. A
 current description of the equation is in reference
@@ -8752,7 +8794,6 @@ current description of the equation is in reference
 Pourier-Tarantola equations of state in that reference.
 
 Birch-Murnaghan EOS:
-
 
    $E(\eta) = E_0 + \frac{9B_0 V_0}{16}(\eta^2-1)^2(6+B'_0(\eta^2-1)-4\eta^2)$
 
@@ -8763,18 +8804,15 @@ literature too.
 
 Two other equations of state in that reference are the Vinet EOS:
 
-
    $E(\eta) = E_0 + \frac{2 B_0 V_0}{(B'_0-1)^2}(2-(5+3B'_0 (\eta-1) e^{-3(B'_0-1)(\eta-1)/2})$
 
 and the Poirier-Tarantola EOS:
-
 
    $E(\varrho) = E_0 + \frac{B_0 V_0 \varrho^2}{6}(3 + \varrho (B'_0-2))$
 
 with $\varrho=-3 \ln(\eta)$.
 
 *** Murnaghan
-
 The equation most often used in the Murnaghan  \cite{Murnaghan1944}
 equation of state is described in \cite{PhysRevB.28.5480}.
 
@@ -8929,7 +8967,7 @@ are the main reason we converged to a solution. If you try other
 guesses you will probably find the =scipy.optimize.leastsq= function
 does not converge.
 
-** Miscellaneous =jasp=/VASP tips
+** Miscellaneous \texttt{jasp}/VASP tips
 *** Using a special setup
 Vasp provides [[http://cms.mpi.univie.ac.at/vasp/vasp/PAW_potentials.html][special setups]] for some elements. The following guidelines tell you what is in a potential:
 
