@@ -342,7 +342,7 @@ for i,d in enumerate(diff):
 : 5 [-0.8340703   1.33495444  1.2092413 ]
 
 #+caption: Rotated CH\(_3\)CN molecule
-#+ATTR_LaTeX: placement=[H]
+#+ATTR_LaTeX: placement=[H],width=71.bp
 [[./images/ch3cn-rotated-2.png]]
 
 Note in this last case the unit cell is oriented differently than the previous example, since we chose not to rotate the unit cell.
