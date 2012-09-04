@@ -8,7 +8,7 @@
 #+LANGUAGE:  en
 #+OPTIONS:   H:10 num:t toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t
 #+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
-#+OPTIONS:   LaTeX:mathjax
+#+OPTIONS:   LaTeX:dvipng
 #+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
@@ -24,9 +24,6 @@
 #+latex_header: \usepackage{anysize}
 #+latex_header: \marginsize{1in}{1in}{1in}{1in}
 #+latex_header: \makeindex
-
-## custom link for incar:ISMEAR
-##+LINK: incar http://cms.mpi.univie.ac.at/wiki/index.php/%s
 
 # export code and results. need to figure out how to handle org environments
 #+PROPERTY: exports both
