@@ -343,7 +343,7 @@ for i,d in enumerate(diff):
 : 5 [-0.8340703   1.33495444  1.2092413 ]
 
 #+caption: Rotated CH\(_3\)CN molecule
-#+ATTR_LaTeX: width=71.bp,placement=[H]
+#+ATTR_LaTeX: width=71bp,placement=[H]
 [[./images/ch3cn-rotated-2.png]]
 
 Note in this last case the unit cell is oriented differently than the previous example, since we chose not to rotate the unit cell.
@@ -3540,6 +3540,61 @@ with jasp('bulk/Ru2O4',
 #+END_SRC
 
 #+RESULTS:
+#+begin_example
+: -----------------------------
+  VASP calculation from /home/jkitchin/dft-org/bulk/Ru2O4
+  converged: True
+  Energy = -44.302690 eV
+
+  Unit cell vectors (angstroms)
+        x       y     z      length
+  a0 [ 3.137  0.000  0.000] 3.137
+  a1 [ 0.000  4.541  0.000] 4.541
+  a2 [ 0.000  0.000  4.541] 4.541
+  a,b,c,alpha,beta,gamma (deg): 3.137 4.541 4.541 90.0 90.0 90.0
+  Unit cell volume = 64.694 Ang^3
+  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
+            -0.002 -0.000 -0.000 -0.000 -0.000 -0.000
+ Atom#  sym       position [x,y,z]         tag  rmsForce constraints
+   0    Ru  [1.569      2.270      2.270]   0   0.00      T T T
+   1    Ru  [0.000      0.000      0.000]   0   0.00      T T T
+   2    O   [0.000      3.153      3.153]   0   0.00      T T T
+   3    O   [1.569      3.659      0.882]   0   0.00      T T T
+   4    O   [0.000      1.388      1.388]   0   0.00      T T T
+   5    O   [1.569      0.882      3.659]   0   0.00      T T T
+--------------------------------------------------
+
+INCAR Parameters:
+-----------------
+        nbands: 31
+        ismear: 1
+          nelm: 100
+        nelmin: 3
+        icharg: 1
+           nsw: 99
+        ibrion: 2
+          npar: 1
+          isif: 3
+         encut: 520.0
+         sigma: 0.2
+         ediff: 0.0003
+         lwave: True
+        magmom: [0.6, 0.6, 0.6, 0.6, 0.6, 0.6]
+          prec: Accurate
+          algo: Fast
+         lreal: Auto
+          kpts: [8, 6, 6]
+    reciprocal: False
+        setups: {'Ru': '_pv'}
+            xc: PBE
+           txt: -
+         gamma: False
+
+Pseudopotentials used:
+----------------------
+Ru: potpaw_PBE/Ru_pv/POTCAR (git-hash: c29610ef9b7bfa353e710b09dfadcd2b0fb0d274)
+O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
+#+end_example
 
 Some notes: we had to specify the PBE functional. That is good habit, since the default may be something else. We also had to specify the special setups used, since those were not defaults either.
 
@@ -3550,7 +3605,7 @@ What we typically mean by determining bulk structures includes the following:
 
 - What is the most stable crystal structure for a material?
 - What is the lattice constant of fcc Cu?
-- What are the lattice parameters and internal atom parameters for TiO$_2$?
+- What are the lattice parameters and internal atom parameters for TiO\(_2\)?
 
 All of these questions can often be addressed by finding the volume, shape and atomic positions that minimize the total energy of a bulk system. This is true at 0K. At higher temperatures, one must consider minimizing the free energy, rather than the internal energy.
 
@@ -5020,10 +5075,9 @@ with jasp('bulk/pd-dos',
 
 import pylab as plt
 plt.plot(e,d)
-plt.xlabel('energy [eV]')
+plt.xlabel('energy (eV)')
 plt.ylabel('DOS')
 plt.savefig('images/pd-dos.png')
-
 #+END_SRC
 
 #+RESULTS:
@@ -5381,8 +5435,8 @@ with jasp('bulk/afm-feo',
 #+END_SRC
 
 #+RESULTS:
-: [ 2.652 -2.652  0.     0.   ]
-: 0.0
+: Magnetic moments =  [ 2.652 -2.652  0.     0.   ]
+: Total magnetic moment =  0.0
 
 You can see that even though the total magnetic moment is 0, there is a spin on both Fe atoms, and they are pointing in opposite directions.
 
@@ -6929,7 +6983,8 @@ INCAR Parameters:
          ldaul: [-1.0, 2.0]
          ldauj: [0.0, 0.0]
          ldauu: [0.0, 4.0]
-      ldau_luj: {'O': {'J': 0.0, 'U': 0.0, 'L': -1}, 'Cu': {'J': 0.0, 'U': 4.0, 'L': 2}}
+      ldau_luj: {'O': {'J': 0.0, 'U': 0.0, 'L': -1}, 'Cu': {'J': 0.0,
+                 'U': 4.0, 'L': 2}}
           prec: Normal
           kpts: [8, 8, 8]
     reciprocal: False
@@ -7013,7 +7068,8 @@ INCAR Parameters:
          ldaul: [-1.0, 2.0]
          ldauj: [0.0, 0.0]
          ldauu: [0.0, 4.0]
-      ldau_luj: {'O': {'J': 0.0, 'U': 0.0, 'L': -1}, 'Cu': {'J': 0.0, 'U': 4.0, 'L': 2}}
+      ldau_luj: {'O': {'J': 0.0, 'U': 0.0, 'L': -1}, 'Cu': {'J': 0.0,
+                 'U': 4.0, 'L': 2}}
           prec: Normal
           kpts: [8, 8, 8]
     reciprocal: False
@@ -7257,21 +7313,30 @@ Many thanks to students in my class who have pointed out typos, places of confus
 Sometimes it is convenient to create an Atoms object by deleting atoms from an existing object. Here is a recipe to delete all the hydrogen atoms in a molecule. The idea is to make a list of indices of which atoms to delete using list comprehension, then use list deletion to delete those indices.
 
 #+BEGIN_SRC python :results output :exports both
+import textwrap
 from ase.data.molecules import molecule
+
 atoms = molecule('CH3CH2OH')
-print atoms
+
+# we use textwrap to
+print textwrap.fill(str(atoms),
+                    subsequent_indent='      ')
 
 ind2del = [atom.index for atom in atoms if atom.symbol=='H']
 print 'Indices to delete: ',ind2del
 
 del atoms[ind2del]
-print atoms
+
+print textwrap.fill(repr(atoms),
+                    subsequent_indent='      ')
 #+END_SRC
 
 #+RESULTS:
-: Atoms(symbols='C2OH6', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False, False, False])
+: Atoms(symbols='C2OH6', positions=..., cell=[1.0, 1.0, 1.0],
+:       pbc=[False, False, False])
 : Indices to delete:  [3, 4, 5, 6, 7, 8]
-: Atoms(symbols='C2O', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False, False, False])
+: Atoms(symbols='C2O', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False,
+:       False, False])
 
 *** Advanced tagging
 We can label atoms with integer tags to help identify them later, e.g. which atoms are adsorbates, or surface atoms, or near an adsorbate, etc... We might want to refer to those atoms later for electronic structure, geometry analysis, etc...
