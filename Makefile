@@ -18,6 +18,9 @@ pdf: tex
 	makeindex dft
 	pdflatex -shell-escape dft
 
+xhtml:
+	htlatex dft.tex "xhtml,mathml" " -cunihtf" "-cvalidate"
+
 html:
 	$(BATCH_EMACS) -f org-export-as-html
 
