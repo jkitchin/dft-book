@@ -15,7 +15,8 @@
 #+LINK_UP:
 #+LINK_HOME:
 #+XSLT:
-
+#+latex_header: \usepackage[super,sort&compress]{natbib}
+#+latex_header: \usepackage{natmove}
 #+latex_header: \usepackage{underscore}
 #+latex_header: \usepackage{makeidx}
 #+latex_header: \usepackage[section]{placeins}
@@ -144,60 +145,57 @@ Similar code would be used for other calculators, e.g. GPAW, Jacapo, etc... you 
 Review all the hyperlinks in this chapter.
 #+end_exercise
 
-* TODO Introduction to DFT                                         :noexport:
-All calculations were performed using VASP \cite{Kresse199615, PhysRevB.54.11169, PhysRevB.49.14251, PhysRevB.47.558}, the Perdew-Burke-Ernzerhof (PBE) \cite{PhysRevLett.77.3865} exchange correlation functional with projector augmented wave (PAW) potentials provided in VASP \cite{PhysRevB.50.17953,PhysRevB.59.1758}.
+* TODO Introduction to DFT
 
-Monkhorst-Pack k-points \cite{PhysRevB.13.5188}
-
-comprehensive overview of DFT is beyond the scope of this
-book, as excellent reviews on these subjects are readily found in
-the literature, and are suggested reading in the following paragraph.
+A comprehensive overview of DFT is beyond the scope of this book, as
+excellent reviews on these subjects are readily found in the
+literature, and are suggested reading in the following paragraph.
 Instead, this chapter is intended to provide a useful starting point
 for a non-expert to begin learning about and using DFT in the manner
-used in this book. Much of the information presented here is
-standard knowledge among experts, but a consequence of this is that it
-is rarely discussed in current papers in the literature. A secondary goal of this
-chapter is to provide new users with a path through the extensive
-literature available and to point out potential difficulties and
-pitfalls in these calculations.
+used in this book. Much of the information presented here is standard
+knowledge among experts, but a consequence of this is that it is
+rarely discussed in current papers in the literature. A secondary goal
+of this chapter is to provide new users with a path through the
+extensive literature available and to point out potential difficulties
+and pitfalls in these calculations.
 
 A fairly standard textbook on DFT is the one written by Parr and Yang
-\cite{parr_yang}.  The Chemist's Guide to DFT \cite{koch2001} is more
+\cite{parr-yang}.  The Chemist's Guide to DFT \cite{koch2001} is more
 readable and contains more practical information for running
 calculations, but both of these books focus on molecular systems.
  The standard texts in this solid state physics are by Kittel \cite{kittel}
-and Ashcroft and Mermin \cite{ashcroft_mermin}., Both have their fine
+and Ashcroft and Mermin \cite{ashcroft-mermin}., Both have their fine
 points, the former being more mathematically rigorous and the latter
 more readable.  However, neither of these books is particularly easy
 to relate to chemistry.  For this, one should consult the
 exceptionally clear writings of Roald Hoffman
 \cite{hoffmann1987,RevModPhys.60.601}, and follow these with the work of
 N{\o}rskov and coworkers
-\cite{hammer2000:_adv_cat,greeley2002:_elect}.
+\cite{hammer2000:adv-cat,greeley2002:elect}.
 
 In this chapter, only the elements of DFT that are relevant to this
 work will be
 discussed.  An excellent review on other implementations of DFT can be
-found in Reference \citealp{freeman1995:_densit}, and details on the
+found in Reference \citealp{freeman1995:densit}, and details on the
 various algorithms used in DFT codes can be found in Refs.
-\citealp{payne1992:_iterat,Kresse199615}.
+\citealp{payne1992:iterat,Kresse199615}.
 
 One of the most useful sources of information has been the
 dissertations of other students, perhaps because the difficulties they
 faced in learning the material are still fresh in their minds. Thomas
 Bligaard, a coauthor of Dacapo, wrote a particularly relevant thesis
 on exchange/correlation functionals
-\cite{bligaard2000:_exchan_correl_funct} and a dissertation
+\cite{bligaard2000:exchan-correl-funct} and a dissertation
 illustrating the use of DFT to design new alloys with desirable
 thermal and mechanical properties
-\cite{bligaard2003:_under_mater_proper_basis_densit}.  The Ph.D.
+\cite{bligaard2003:under-mater-proper-basis-densit}.  The Ph.D.
 thesis of Ari Seitsonen contains several useful appendices on k-point
 setups, and convergence tests of calculations, in addition to a
 thorough description of DFT and analysis of calculation output
 \cite{seitsonen2000:phd}. Finally, another excellent overview of DFT
 and its applications to bimetallic alloy phase diagrams and surface
 reactivity is presented in the PhD thesis of Robin Hirschl
-\cite{hirschl2002:_binar_trans_metal_alloy_their_surfac}.
+\cite{hirschl2002:binar-trans-metal-alloy-their-surfac}.
 
 ** Background
 In 1926, Erwin Schr\"odinger published the first accounts of his now
@@ -221,7 +219,7 @@ necessary for the mathematical theory of a large part of physics and
 the whole of chemistry are thus completely known, and the difficulty
 is only that the application of these laws leads to equations much too
 complicated to be soluble."
-\cite{dirac1929:_quant_mechan_many_elect_system}.
+\cite{dirac1929:quant-mechan-many-elect-system}.
 
 In 1964, Hohenberg and Kohn showed that the ground state total energy
 of a system of interacting electrons is a unique functional of the
@@ -288,6 +286,8 @@ exchange-correlation energy functional is known, Eq.
 exchange-correlation energy functional is not known, thus
 approximations for this functional must be used.
 
+** Exchange correlation functionals
+
 The two main types of exchange/correlation functionals used in DFT are
 the local density approximation (LDA) and the generalized gradient
 approximation (GGA). In the LDA, the exchange-correlation functional
@@ -297,19 +297,19 @@ electron gas, and is anticipated to be valid for slowly varying
 densities. In molecules and solids, however, the density tends to vary
 substantially in space. Despite this, the LDA has been very
 successfully used in many systems. It tends to predict overbonding in
-both molecular and solid systems \cite{fuchs1998:_pseud}, and it tends
+both molecular and solid systems \cite{fuchs1998:pseud}, and it tends
 to make semiconductor systems too metallic (the band gap problem)
-\cite{perdew1982:_elect_kohn_sham}.
+\cite{perdew1982:elect-kohn-sham}.
 
 The generalized gradient approximation includes corrections for
 gradients in the electron density, and is often implemented as a
 corrective function of the LDA.  The form of this corrective function,
 or ``exchange enhancement'' function determines which functional it
-is, e.g. PBE, RPBE, revPBE, etc. \cite{hammer1999:_improv_pbe}. In this book the PBE GGA functional is used the most. N{\o}rskov and coworkers have found that the RPBE
+is, e.g. PBE, RPBE, revPBE, etc. \cite{hammer1999:improv-pbe}. In this book the PBE GGA functional is used the most. N{\o}rskov and coworkers have found that the RPBE
 functional gives superior chemisorption energies for atomic and
 molecular bonding to surfaces, but that it gives worse bulk
 properties, such as lattice constants compared to experimental data
-\cite{hammer1999:_improv_pbe}.
+\cite{hammer1999:improv-pbe}.
 
  Finally, there are increasingly new types of functionals
 in the literature. The so-called hybrid functionals, such as B3LYP,
@@ -318,15 +318,14 @@ are presently inefficient with planewave basis sets. None of these
 other types of functionals were used in this work. For more details
 see Chapter 6 in Ref. \cite{koch2001} and Thomas Bligaard's thesis on
 exchange and correlation functionals
-\cite{bligaard2000:_exchan_correl_funct}.
+\cite{bligaard2000:exchan-correl-funct}.
 
-
-Briefly, VASP
-utilizes planewaves as the basis set to expand the Kohn-Sham orbitals.
-In a periodic solid, one can use Bloch's theorem to show that the
-wave function for an electron can be expressed as the product of a
-planewave and a function with the periodicity of the lattice
-\cite[Ch. 8]{ashcroft_mermin}:
+** Basis sets
+Briefly, VASP utilizes planewaves as the basis set to expand the
+Kohn-Sham orbitals.  In a periodic solid, one can use Bloch's theorem
+to show that the wave function for an electron can be expressed as the
+product of a planewave and a function with the periodicity of the
+lattice \cite[Ch. 8]{ashcroft-mermin}:
 \begin{equation}
 \psi_{n\mathbf{k}}(\mathbf{r})=\exp({i\mathbf{k}\cdot\mathbf{r}})u_{n\mathbf{k}}(\mathbf{r})
 \end{equation}
@@ -338,7 +337,7 @@ character of the wave function. If the periodic function
 $u_{n\mathbf{k}}(\mathbf{r})$ is also expanded in terms of planewaves
 determined by wave vectors of the reciprocal lattice vectors,
 $\mathbf{G}$, then the wave function can be expressed completely in
-terms of a sum of planewaves \cite{payne1992:_iterat}:
+terms of a sum of planewaves \cite{payne1992:iterat}:
 \begin{equation}
 \psi_i(\mathbf{r})=\sum_\mathbf{G} c_{i,\mathbf{k+G}} \exp(i\mathbf{(k+G)\cdot r}).
 \end{equation}
@@ -357,12 +356,9 @@ defects in neighboring supercells. The case of the randomly ordered
 alloy is virtually hopeless as the energy of different configurations
 will fluctuate statistically about an average value.  These systems
 were not considered in this work, and for more detailed discussions
-the reader is referred to Ref. \cite{makov1995:_period_bound_condit}.
+the reader is referred to Ref. \cite{makov1995:period-bound-condit}.
 Once a supercell is chosen, however, Bloch's theorem can be applied to
 the new artificially periodic system.
-
-
-TODO: update this with VASP information
 
 To get a perfect expansion, one needs an infinite number of
 planewaves.  Luckily, the coefficients of the planewaves must go to
@@ -373,7 +369,7 @@ testing of the effect of the cutoff energy on the total energy can be
 done to determine a suitable cutoff energy. The cutoff energy required
 to obtain a particular convergence precision is also element
 dependent, shown in Table \ref{tab:pwcut}. It can also vary with the
-``softness'' of the pseudopotential.  Thus, careful testing should be
+"softness" of the pseudopotential.  Thus, careful testing should be
 done to ensure the desired level of convergence of properties in
 different systems. Table \ref{tab:pwcut} refers to convergence of
 total energies. These energies are rarely considered directly, it is
@@ -383,39 +379,12 @@ energies, due to cancellations of convergence errors.  In this work,
 350 eV was found to be suitable for the H adsorption calculations, but a cutoff
 energy of 450 eV was required for O adsorption calculations.
 
-\begin{table}
-\caption{Planewave cutoff energies required for different convergence
-  precisions for different elements \cite{pseudopotentials}.}\label{tab:pwcut}
-\begin{center}
-\begin{tabular}{|c|c|c|}
-\hline
-Precision  & 0.1 eV & 0.01 eV \\\hline
-Mo & 350  & 680 \\\hline
-Pt & 330 & 410 \\\hline
-O  & 350 & 820 \\\hline
-H  & 205 & 300 \\\hline
-\end{tabular}
-\end{center}
-\end{table}
-
-Finally, there is another subtle cutoff energy to consider that is
-rarely directly addressed in the literature.  Qualitatively, the
-charge density is calculated by squaring the wave functions, meaning
-that the charge density has Fourier components that are up to twice as
-high in frequency as the wave functions.  To obtain a faithful
-representation, the density must be calculated on a Fourier grid that
-is twice as dense as the grid used to calculate the wave functions.
-Thus, the density wave cutoff energy should be twice as high as the
-planewave cutoff energy. Dacapo uses the same planewave cutoff and density
-wave cutoff by default. It is unclear if this will cause significant errors in
-the calculations, or what those errors would be.  In a test
-calculation with an O atom, there was a negligible difference ($<
-0.03$ eV) in energy between the default density wave cutoff and a
-doubled density wave cutoff. However, others have noticed cases where
-it appears to be important \cite{pc_bligaard}.  Unless stated
-otherwise, the majority of calculations in this work used the same
-planewave and density wave cutoff energy.
-
+#+caption: Planewave cutoff energies (in eV) required for different convergence precisions for different elements.
+#+label: tab:pwcut
+| Precision |  Low | High |
+| Mo        |  168 |  293 |
+| O         |  300 |  520 |
+| O_sv      | 1066 | 1847 |
 
 Bloch's theorem eliminates the need to calculate an infinite number of
 wave functions, because there are only a finite number of electrons in
@@ -431,55 +400,17 @@ will be errors in the total energy associated with the finite number
 of $\mathbf{k}$, but these can be reduced and tested for convergence
 by using higher $\mathbf{k}$-point densities. An excellent discussion
 of this for aperiodic systems can be found in Ref.
-\citealp{makov1996:_period_bound_condit}.
+\citealp{makov1996:period-bound-condit}.
 
 The most common schemes for generating $\mathbf{k}$ points are the
-Chadi-Cohen scheme \cite{chadi1973}, and the Monkhorst-Pack scheme
-\cite{monkhorst1976}. The use of these $\mathbf{k}$ point setups
+Chadi-Cohen scheme \cite{PhysRevB.8.5747}, and the Monkhorst-Pack scheme
+\cite{PhysRevB.13.5188}. The use of these $\mathbf{k}$ point setups
 amounts to an expansion of the periodic function in reciprocal space,
 which allows a straight-forward interpolation of the function between
 the points that is more accurate than with other $\mathbf{k}$ point
-generation schemes \cite{monkhorst1976}. Both sets were used in this
-work. Initially, the 18 Chadi-Cohen $\mathbf{k}$ point setup was used
-in Chapters \ref{ch:nipt} and \ref{ch:pseudomorphic}, but the
-Monkhorst-Pack setups (typically $4\times4\times1$) was used for the
-work in Chapters \ref{ch:pt3d} and \ref{ch:carbides} because they
-offer finer convergence checks (for the Chadi-Cohen setup, the next
-largest set contains 54 $\mathbf{k}$ points, where as the
-$6\times6\times1$ Monkhorst-Pack setup contains only 36, and the next
-larger set contains 49). For d-metals, the Dacapo FAQ recommends that
-the minimum number of k-points in a unit cell be determined by $25/a$,
-where $a$ is the length of the unit cell vector in that direction and
-that an even number be used \cite{dacapo_faq}.  The $2\times2$ unit
-cells in this work were on average five to six \AA{} on each side
-parallel to the surface, thus four to six $\mathbf{k}$ points in each
-direction should be sufficient. Convergence with respect to the number
-of $\mathbf{k}$ points was tested and is discussed later. Finally,
-only one $\mathbf{k}$ point is used in the direction normal to the
-surface because there should be no dispersion in electronic states in
-this direction, i.e. the slabs should not be interacting through the
-vacuum gap.
+generation schemes \cite{PhysRevB.13.5188}.
 
-Finally, some of the $\mathbf{k}$ points in a given mesh may be
-equivalent by symmetry. Since calculation time scales linearly with
-the number of $\mathbf{k}$ points, it is computationally efficient to
-reduce the number of $\mathbf{k}$ points by eliminating equivalent
-$\mathbf{k}$ points. The default behavior in Dacapo is to use all of
-the $\mathbf{k}$ points defined, but an option can be set that
-determines the highest possible symmetry group of the unit cell and
-reduces the number of $\mathbf{k}$ points accordingly. It is
-recommended in the documentation that this option always be used when
-the ions are not being relaxed, because it can speed up the
-calculations significantly. However, doing this imposes the determined
-spatial symmetry on the ionic forces and electronic structure, and
-most molecular-dynamics based algorithms will not break this symmetry
-\cite{payne1998:_symmet}.  Consequently, lower energy solutions with
-lower symmetry may not be found during relaxation.
-
-
-
-
-\subsection{Pseudopotentials}
+** Pseudopotentials
 The core electrons of an atom are computationally expensive with
 planewave basis sets because they are highly localized. This means
 that a very large number of planewaves are required to expand their
@@ -490,34 +421,27 @@ functions is to ensure proper orthogonality between the valence
 electrons and core states.  Consequently, it is desirable to replace
 the atomic potential due to the core electrons with a pseudopotential
 that has the same effect on the valence electrons
-\cite{troullier1991:_effic}. There are essentially two kinds of
+\cite{PhysRevB.43.1993}. There are essentially two kinds of
 pseudopotentials, norm-conserving soft pseudopotentials
-\cite{troullier1991:_effic} and Vanderbilt ultrasoft pseudopotentials
-\cite{vanderbilt1990:_soft}. In either case, the pseudopotential
+\cite{PhysRevB.43.1993} and Vanderbilt ultrasoft pseudopotentials
+\cite{PhysRevB.41.7892}. In either case, the pseudopotential
 function is generated from an all-electron calculation of an atom in
 some reference state. In norm-conserving pseudopotentials, the charge
 enclosed in the pseudopotential region is the same as that enclosed by
 the same space in an all-electron calculation. In ultrasoft
 pseudopotentials, this requirement is relaxed and charge augmentation
 functions are used to make up the difference. As its name implies,
-this allows a ``softer'' pseudopotential to be generated, which means
-fewer planewaves are required to expand it. In Dacapo, only the
-Vanderbilt ultrasoft pseudopotentials are used.
+this allows a "softer" pseudopotential to be generated, which means
+fewer planewaves are required to expand it.
 
 The pseudopotentials are not unique, and calculated properties depend
 on them. However, there are standard methods for ensuring the quality
 and transferability (to different chemical environments) of the
-pseudopotentials \cite{moroni1997:_ultras_fe_co_ni}. CAMP maintains a
-database of pseudopotentials for use with Dacapo that have been tested
-extensively. These were used in all the work in this dissertation.
-Finally, the pseudopotentials are generated for a specific
-exchange/correlation functional. Ideally, the same functional is used
-in calculations, but it is fairly standard practice to mix GGA
-pseudopotentials with other GGA functionals
-\cite{hammer1999:_improv_pbe}.  One should not mix LDA
-pseudopotentials with GGA functionals, as this
-can give rise to significant errors \cite{fuchs1998:_pseud}.
+pseudopotentials \cite{PhysRevB.56.15629}.
 
+TODO: PAW description
+
+VASP provides a database of PAW potentials \cite{PhysRevB.50.17953,PhysRevB.59.1758}.
 
 ** Fermi Temperature and band occupation numbers
 At absolute zero, the occupancies of the bands of a system are
@@ -538,97 +462,24 @@ the Brillouin zone integral (which in practice is performed as a sum
 over a finite number of $\mathbf{k}$ points) that defines the band
 energy converges very slowly with the number of $\mathbf{k}$ points
 due to the discontinuity in occupancies in a continuous distribution
-of states for metals \cite{gillan1989:_calcul,kresse1996:_effic}.  The
+of states for metals \cite{gillan1989:calcul,Kresse199615}.  The
 difficulty arises because the temperature in most DFT calculations is
 at absolute zero.  At higher temperatures, the DOS is smeared across
 the Fermi level, resulting in a continuous occupation function over
 the distribution of states. A finite-temperature version of DFT was
-developed \cite{mermin1965}, which is the foundation on which one
+developed \cite{PhysRev.137.A1441}, which is the foundation on which one
 solution to this problem is based. In this solution, the step function
 is replaced by a smoothly varying function such as the Fermi-Dirac
 function at a small, but non-zero temperature
-\cite{kresse1996:_effic}. The total energy is then extrapolated back
+\cite{Kresse199615}. The total energy is then extrapolated back
 to absolute zero.
 
-The consequence of this finite temperature is that additional bands
-must be included in the calculation to allow for the partially
-occupied states above the Fermi level; the number of extra bands depends on
-the temperature used.  An example of the maximum occupancies of the
-bands for an Al(111) slab as a function of the Fermi temperature is
-shown in Figure \ref{fig:dft:occ}. Obviously, as the Fermi temperature
-approaches 0 K, the occupancy approaches a step function. The default
-Fermi temperature in Dacapo is $k_bT=0.20$ eV, and the FAQ at the CAMP
-website recommends at least 10 additional bands. With this number, the occupancy of the highest band was typically in the range of
-0.1 to $1\times 10^{-5}$ electrons for transition metal slabs. It is preferable
-that the occupancy of several of the highest bands be zero (or at
-least of order $1\times 10^{-8}$) to ensure enough variational freedom was
-available in the calculation.  Consequently, it is suggested that fifteen to
-twenty extra bands be used for a Fermi temperature of $k_bT=0.20$ eV, or
-that the Fermi temperature be decreased to $k_bT=0.10$ eV. In any case,
-it should be determined that enough bands were used by examination of
-the occupancies.  It is undesirable to have too many extra bands, as
-this will add computational time.
-
-
-\begin{figure}
-\begin{center}
-\includegraphics{dft/figures/FT_occupancy}
-\caption{Effect of Fermi temperature on the maximum occupancies of the
-  bands for an Al(111) slab.\label{fig:dft:occ}}
-\end{center}
-\end{figure}
-
-The formula for extrapolation of the total energy to absolute zero is
-only valid for a continuous density of states at the Fermi level
-\cite{kresse1996:_effic}. Consequently, it should not be used for
-semiconductors, molecules or atoms. In Dacapo, this means a very small
-Fermi temperature should be used.  The total energy of an oxygen atom
-as a function of the Fermi temperature is shown in Table
-\ref{tab:dft:oatom}. A variation of nearly 0.2 eV is seen from the
-default Fermi temperature of $k_bT=0.2$ eV and the value of
-$k_bT=0.0001$ eV. However, virtually no change was observed for a
-hydrogen atom or molecule or for an oxygen molecule as a function of
-the Fermi temperature. It is recommended that the total energy be
-calculated at several values of the Fermi temperature to make sure the
-total energy is converged with respect to the Fermi temperature.  For
-the O atom, a value of $k_bT=0.001$ eV appears to be sufficient. It is
-useful to note here that the total energy of an atom or molecule
-usually only serves as a reference energy.  Consequently, if one is
-only interested in a trend in adsorption energies, then errors in the
-reference energy will only shift the trend up or down in energy
-because the energy of the gas phase molecule will be the same in all
-of the calculations. If one seeks chemical accuracy though, it is
-critically important to get all of the energies correct.
-
-\begin{table}
-\caption{Effect of Fermi Temperature on total energy of an oxygen
-  atom.}
-\label{tab:dft:oatom}
-\begin{center}
-\begin{tabular}{|c|c|}
-\hline
-Fermi Temperature & Total Energy \\\hline
-0.20 & -432.377 \\\hline
-0.10 & -432.282 \\\hline
-0.05 & -432.234 \\\hline
-0.01 & -432.196 \\\hline
-0.005 & -432.191 \\\hline
-0.001 & -432.187 \\\hline
-0.0001 & -432.186 \\\hline
-\end{tabular}
-\end{center}
-\end{table}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%% Dipole corrections
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%\subsection{Dipole Corrections}
-\subsection{Miscellaneous considerations}
+** Spin polarization and magnetism
 There are two final points that need to be discussed about these
 calculations, spin polarization and dipole corrections. Spin
 polarization is important for systems that contain net spin. For
 example, iron, cobalt and nickel are magnetic because they have more
-electrons with spin ``up'' than spin ``down'' (or vice versa).  Spin
+electrons with spin "up" than spin "down" (or vice versa).  Spin
 polarization must also be considered in atoms and molecules with
 unpaired electrons, such as hydrogen and oxygen atoms, oxygen
 molecules and radicals. For example, there are two spin configurations
@@ -639,21 +490,22 @@ corresponds to the ground state for an oxygen atom. A classically
 known problem involving spin polarization is the dissociation of a
 hydrogen molecule. In this case, the molecule starts with no net spin,
 but it dissociates into two atoms, each of which has an unpaired
-electron.  See section 5.3.5 in Reference \cite{koch2001} for more
+electron.  See section 5.3.5 in Reference \citealp{koch2001} for more
 details on this.
 
-In Dacapo, spin polarization is not considered by default; it must be
+
+In VASP, spin polarization is not considered by default; it must be
 turned on, and an initial guess for the magnetic moment of each atom
 in the unit cell must be provided (typically about one Bohr-magneton
 per unpaired electron). For Fe, Co, and Ni, the experimental values
-are 2.22, 1.72, and 0.61 Bohr-magnetons, respectively \cite[Table 2,
-page 449]{kittel1996} and are usually good initial guesses. See
-Reference \citealp{moroni1997:_ultras_fe_co_ni} for a very thorough
-discussion of the determination of the magnetic properties of these
-metals with DFT. For a hydrogen atom, an initial guess of 1.0
-Bohr-magnetons (corresponding to one unpaired electron) is usually
-good. An oxygen atom has two unpaired electrons, thus an initial guess
-of 2.0 Bohr-magnetons should be used.  The spin-polarized solution is
+are 2.22, 1.72, and 0.61 Bohr-magnetons, respectively \cite{kittel}
+and are usually good initial guesses. See Reference
+\citealp{PhysRevB.56.15629} for a very thorough discussion of
+the determination of the magnetic properties of these metals with
+DFT. For a hydrogen atom, an initial guess of 1.0 Bohr-magnetons
+(corresponding to one unpaired electron) is usually good. An oxygen
+atom has two unpaired electrons, thus an initial guess of 2.0
+Bohr-magnetons should be used.  The spin-polarized solution is
 sensitive to the initial guess, and typically converges to the closest
 solution. Thus, a magnetic initial guess usually must be provided to
 get a magnetic solution.  Finally, unless an adsorbate is on a
@@ -662,207 +514,10 @@ be considered, although the gas-phase reference state calculation may
 need to be done with spin-polarization.
 
 The downside of including spin polarization is that it essentially
-doubles the calculation time. Spin polarized calculations were not
-routinely performed in this work, even when magnetic metals were
-present.  For purposes of examining trends, this was found to be
-sufficient and is discussed in more detail in Chapter \ref{ch:nipt}.
-Inclusion of spin polarization is important if one is interested in
-magnetic properties, or if one seeks chemical accuracy in the
-calculations.
+doubles the calculation time.
 
-A subtle problem can arise when an adsorbate is placed on one side of
-a slab with periodic boundary conditions, which is currently the
-common practice.  The problem is that this gives the slab a dipole
-moment. The array of dipole moments created by the periodic boundary
-conditions generates an electric field that can distort the electron
-density of the slab and change the energy. The existence of this field
-in the vacuum also makes the zero-potential in the vacuum ill-defined,
-thus the work function is not well-defined. One solution to this
-problem is to use slabs with adsorbates on both sides, but then very
-thick (eight to ten layers) slabs must be used to ensure the
-adsorbates do not interact through the slab. An alternative solution,
-the dipole correction scheme, was developed by Neugebauer and
-Scheffler \cite{neugebauer1992} and later corrected by Bengtsson
-\cite{bengtsson1999:_dipol}. In this technique, an external field is
-imposed in the vacuum region that exactly cancels the artificial field
-caused by the slab dipole moment. The advantage of this approach is
-that thinner slabs with adsorbates on only one side can be used.
-
-In this work, it was found that this correction resulted in negligible
-changes in the total energy if three or more layers of vacuum were
-used, even for alkali adsorption on Al, for which the correction was
-originally developed \cite{neugebauer1992}. There are also literature
-reports that the correction is small \cite{morikawa2001:_c2h2_si}.
-Nevertheless, in the literature the use of this correction is fairly
-standard, and it was used in most of this work as well.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%
-%%%%%% Electronic structure characterization
-%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Electronic structure characterization}
-\subsection{Density of states}
-The solution to Eq. \eqref{eq:KS} yields a set of K-S orbitals and an
-associated set of eigenvalues that correspond to the energies of these
-orbitals, neither of which have any known directly observable meaning
-\cite{kohn1999}.  The sum of the squared K-S orbitals, however, is
-equal to the electron density (Eq. \eqref{eq:density}), and the sum of
-the eigenvalues is a significant part of the total energy (Eq.
-\eqref{eq:dftEnergy}). Thus, it seems reasonable to suppose these
-quantities have other significant relationships to physical
-observables. Perdew et al. showed that the highest occupied eigenvalue
-is equal to the ionization energy of a system within an exact density
-functional theory \cite{perdew1982}, but their interpretation has been
-vigorously debated in the literature
-\cite{kleinman1997:_signif_kohn_sham,perdew1997,kleinman1997:_reply_commen_kohn_sham},
-and is only true for the exact exchange/correlation functional, not
-the approximate ones used in practice \cite[Section 5.3.3]{koch2001}.
-Stowasser and Hoffmann discussed an approach to using the K-S orbitals
-in more traditional molecular orbital interpretations, but the results
-were primarily qualitative \cite{stowasser1999:_what_kohn_sham}. More
-recently, a DFT analog of Koopmans' theorem has been developed that
-formally identifies the eigenvalues with vertical ionization
-potentials, which can be measured with photoelectron spectroscopy
-\cite{gritsenko2002}.
-
-Despite the arguments against ascribing physical meaning to the K-S
-orbitals and eigenvalues, it has become fairly standard, especially
-for solids, to use them to calculate the density of states (DOS)
-\cite[Sec.  VI.  B]{jones1989}.  This has been found to yield
-reasonable results for the valence bands in metals, but poor results
-for tightly bound orbitals and band gaps
-\cite{perdew1982:_elect_kohn_sham}. A highly technical discussion of
-this issue can be found in Ref. \citealp{perdew1981:_self}. A
-comparison between experimentally measured DOS and calculated DOS is
-presented in Chapter \ref{ch:carbides}.  The density of states can be
-calculated by a sum over the k-points \cite{seitsonen2000:phd}:
-\begin{equation}\label{eq:dos}
-\rho(\epsilon)=\sum_\mathbf{\mathrm{k}} \omega_\mathbf{\mathrm{k}} \sum_i \beta(\epsilon -\epsilon_{i\mathbf{\mathrm{k}}})
-\end{equation}
-where $\omega_\mathbf{\mathrm{k}}$ is the weight associated with the
-k-point, and $\beta$ is a broadening function, typically a gaussian
-function, to account for the finite number of k-points used in the
-calculations. The amount of broadening is arbitrary, and should tend
-to zero as the number of k-points approaches infinity.
-
-
-\subsection{Atom-projected DOS}
-One major disadvantage of a planewave basis set is that it is
-difficult to relate the completely delocalized planewaves to
-localized phenomena such as bonding. Much insight into bonding has
-been gained by atomic/molecular orbital theory, which has carried over
-to the solid-state arena \cite{hoffmann1988}. Consequently, several
-schemes have been developed to project the one-electron Kohn-Sham wave
-functions onto atomic wave functions
-\cite{sanchez-portal1995:_projec,segall1996:_popul,segall1996:_popul_mp}.
-In Dacapo, the one electron wave functions can be projected onto
-spherical harmonic orbitals. The radial component of the atomic
-orbitals extends to infinity. In a solid, this means that the
-projection on one atom may overlap with the projection on a
-neighboring atom, resulting in double counting of electrons.
-Consequently, a cutoff radius was introduced, beyond which no
-contributions are included.  It is not obvious what the best cutoff
-radius is. If the radius is too small, it might not capture all of the
-electrons associated with the atom. However, if it is too large, it
-may include electrons from neighboring atoms.  One might want to use
-different cutoff radii for different atoms, which have different
-sizes.  Furthermore, the ideal cutoff radius for an atom may change in
-different environments, thus it would require an iterative procedure
-to determine it.  This difficulty arises because the orbital-band
-occupations are not observable, thus how the electrons are divided up
-between atoms is arbitrary and, as will be seen later, is sensitive to
-the cutoff radius (and in other DFT implementations, the basis set).
-However, Mulliken orbital populations have been used successfully for
-many years to examine the qualitative differences between similar
-systems, and that is precisely what these quantities are used for
-here.  Thus, a discussion of the analysis and results is warranted.
-
-The s and p states in a metal are typically delocalized in space and
-more like free-electrons, whereas the d-orbitals are fairly localized
-in space and have been treated successfully with tight-binding
-theories such as extended H{\"u}ckel theory \cite{hoffmann1988}, and
-linear muffin tin orbital theory \cite{ruban1997:_surfac}.
-Consequently, the remaining discussion will be focused on the
-properties of the projected d-states.
-
-The first property of interest is the number of d-electrons, or the
-d-band filling.  By integrating the projected d-band up to the Fermi
-level, the d-band filling can be determined.  It is not obvious what
-the electron count in the d-band should be for an atom in a metal.
-For a gas-phase, neutral metal atom in the ground state, however, the
-d-orbital electron count is well defined, so it will be used as an
-initial reference point for comparison \cite{kittel1996}.  Figure
-\ref{fig:dft:pure:dfilling} shows the calculated d-band filling of the
-surface atoms of three layer slabs of many pure metals for the short
-and infinite cutoff radius versus the ideal d-band filling of a
-gas-phase, neutral metal atom.  There are two points to note here: 1.
-the short cutoff radius consistently undercounts the number of
-d-electrons relative to the ideal count, except in a few cases,
-notably Fe, Co and Ni; and 2.  the infinite cutoff radius consistently
-overcounts the number of d-electrons relative to the ideal count,
-except for the most noble metals.  In calculations performed with
-Dacapo-2.7, which allowed a user-defined cutoff radius, it was found
-that the band filling calculated from the short cutoff radius
-approached the infinite cutoff result asymptotically, and the
-disagreement between them was less than 1\% at a cutoff radius of 2.5
-\AA{} for a Pt slab (see Figure \ref{fig:dft:d:props:radius-a}).  The
-ideal d-band filling may not be the best reference point for
-comparison, but it is obvious that with any choice of reference, the
-short and infinite cutoff radii will give different answers for the
-d-band filling.
-%
-\begin{figure}
-\begin{center}
-\includegraphics{dft/figures/pure_metal_bandfilling}
-\caption{Variations in d-band filling for pure metals with cutoff
-  radius. The ideal d-band filling is for a single atom in the
-  gas-phase, see the inside cover of Kittel \cite{kittel1996}.}
-\label{fig:dft:pure:dfilling}
-\end{center}
-\end{figure}
-%
-
-\begin{figure}
-\begin{center}
-\subfigure[]{
-\label{fig:dft:d:props:radius-a}
-\includegraphics{dft/figures/dband_filling_cutoff_radius}
-}
-\hspace{0cm}
-\subfigure[]{
-\label{fig:dft:d:props:radius-b}
-\includegraphics{dft/figures/dband_center_cutoff_radius}
-}
-\caption{Dependence of d-band properties on the cutoff radius in the
-  projected density of states.}\label{fig:dft:d:properties:radius}
-\end{center}
-\end{figure}
-%
-A powerful method for characterizing distributions is to examine
-various moments of the distribution (see Chapter 4 in Ref.
-\citealp{cottrell1988} and Chapter 6 in Refs. \citealp{ducastelle1991}
-and \citealp{pettifor1992:_elect_theor_alloy_desig}). The $n^{th}$
-order moment, $\mu_n$, of a distribution of states $\rho(\epsilon)$
-with respect to a reference $\epsilon_o$ is defined by
-\begin{equation}
-\mu_n = \frac{\int_{-\infty}^\infty \epsilon^n \rho(\epsilon-\epsilon_o)d\epsilon}
-{\int_{-\infty}^\infty \rho(\epsilon-\epsilon_o)d\epsilon}
-\end{equation}
-In this work, the reference energy is always the Fermi level.  The
-zeroth moment is just the total number of states, in this case it will
-be normalized to unity. The first moment is the average energy of
-distribution, analogous to the center of mass for a mass density
-distribution. The second moment is the mean squared width of the
-distribution. The third moment is a measure of skewness and the fourth
-moment is related to kurtosis, but these moments are rarely used, and
-only the first and second moments are considered in this work.
-
-
-
-
-
-** Recommended reading
+** TODO Recommended reading
+This section needs cleaning up.
 
 Original papers on DFT \cite{PhysRev.136.B864,PhysRev.140.A1133}
 
@@ -871,6 +526,11 @@ Kohn's Nobel Lecture \cite{RevModPhys.71.1253}, Pople's Nobel Lecture \cite{RevM
 \cite{RevModPhys.60.601} Hoffman
 
 PAW in GPAW \cite{PhysRevB.71.035109}
+
+All calculations were performed using VASP \cite{Kresse199615, PhysRevB.54.11169, PhysRevB.49.14251, PhysRevB.47.558} with the projector augmented wave (PAW) potentials provided in VASP .
+
+
+Monkhorst-Pack k-points \cite{PhysRevB.13.5188}
 
 * Molecules
 In this chapter we consider how to construct models of molecules, how to manipulate them, and how to calculate many properties of molecules. For a nice comparison of VASP and Gaussian see \cite{paier:234102}.
@@ -964,12 +624,12 @@ from ase import Atoms
 from ase.data.molecules import molecule
 from ase.io import write
 
-c60 = molecule('CH3CN')
+atoms = molecule('CH3CN')
 
-c60.center(vacuum=6)
+atoms.center(vacuum=6)
 print 'unit cell'
 print '---------'
-print c60.get_cell()
+print atoms.get_cell()
 
 write('images/ch3cn.png', c60, show_unit_cell=2)
 #+END_SRC
@@ -1748,6 +1408,33 @@ mlab.show()
 #+ATTR_LaTeX: placement=[H]
 #+label: fig:cd2
 [[./images/co-centered-cd.png]]
+
+*** TODO Electrostatic potential
+this is an example of the so-called sigma hole in a halogen bond.
+#+BEGIN_SRC python :results output :exports both
+from ase import Atoms
+from ase.data.molecules import molecule
+from ase.io import write
+from jasp import *
+
+atoms = molecule('CH4')
+for i in [1,2,3]:
+    atoms[i].symbol = 'F'
+atoms[-1].symbol = 'Br'
+
+atoms.center(vacuum=6)
+
+with jasp('molecules/CF3Br',
+          encut=350,
+          xc='PBE',
+          ibrion=1,
+          nsw=50,
+          lvtot=True, lvhar=True, atoms=atoms) as calc:
+    calc.calculate()
+#+END_SRC
+
+#+RESULTS:
+
 
 *** TODO Visualizing Kohn-Sham orbitals                            :noexport:
 need to read wavecar files!
@@ -2929,7 +2616,7 @@ plt.savefig('images/O2-sp-dos.png')
 You can see in Figure \ref{fig:o2-sp-dos} that there are two different densities of states for the two spins. One has 7 electrons in it, and the other has 5 electrons in it. The difference of two electrons leads to the magnetic moment of 2 which we calculated earlier.
 
 **** Convergence study of the O_{2} dissociation energy
-\index{convergence!ENCUT}
+index:convergence!ENCUT
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase import Atom, Atoms
@@ -3027,7 +2714,21 @@ for encut in encuts:
 
 #+end_example
 
-**** Illustration of the effect of sigma
+**** Illustration of the effect of SIGMA
+The formula for extrapolation of the total energy to absolute zero is
+only valid for a continuous density of states at the Fermi level
+\cite{Kresse199615}. Consequently, it should not be used for
+semiconductors, molecules or atoms. In VASP, this means a very small
+Fermi temperature (SIGMA) should be used.  The O_{2} dissociation energy
+as a function of SIGMA is shown in Figure
+\ref{fig:sigma-o2-diss}. A variation of nearly 0.2 eV is seen from the
+default Fermi temperature of $k_bT=0.2$ eV and the value of
+$k_bT=0.0001$ eV. However, virtually no change was observed for a
+hydrogen atom or molecule or for an oxygen molecule as a function of
+the Fermi temperature. It is recommended that the total energy be
+calculated at several values of the Fermi temperature to make sure the
+total energy is converged with respect to the Fermi temperature.
+
 We were not careful in selecting a good value for [[incar:SIGMA][SIGMA]] in the calculations above. The default value of SIGMA is 0.2, which may be fine for metals, but it is not correct for molecules. SIGMA is the broadening factor used to smear the electronic density of states at the Fermi level. For a metal with a continuous density of states, this appropriate, but for molecules with discrete energy states it does not make sense. We are somewhat forced to use the machinery designed for metals on molecules. The solution is to use a very small SIGMA. Ideally you would use SIGMA=0, but that is not practical for convergence reasons, so we try to find what is small enough.
 
 Let us examine the effect of SIGMA on the dissociation energy here.
@@ -3097,6 +2798,7 @@ plt.savefig('images/O2-dissociation-sigma-convergence.png')
 
 
 #+caption: Effect of SIGMA on the oxygen dissociation energy.
+#+label: fig:sigma-o2-diss
 #+ATTR_LaTeX: placement=[H]
 [[./images/O2-dissociation-sigma-convergence.png]]
 
@@ -4856,12 +4558,34 @@ The points to note here are the following:
 *** TODO the volume is very small (60) compared to what we expected (64) something may be wrong!
 ** Bulk calculation parameters
 *** Effect of [[incar:SIGMA][SIGMA]]
+index:ISMEAR
+index:SIGMA
 
-In the self-consistent cycle  of a DFT calculation, the total energy is minimized with respect to occupation of the Kohn-Sham orbitals. At absolute zero, a band is either occupied or empty. This discrete occupation results in discontinuous changes in energy with changes in occupation, which makes it difficult to converge. One solution is to artificially broaden the band occupancies, as if they were occupied at a higher temperature where partial occupation is possible. This results in a continuous dependence of energy on the partial occupancy, and dramatically increases the rate of convergence. [[incar:SIGMA][SIGMA]] and [[incar:ISMEAR][ISMEAR]] affect how the partial occupancies of the bands are determined. \index{ISMEAR} \index{SIGMA}
+
+
+In the self-consistent cycle  of a DFT calculation, the total energy is minimized with respect to occupation of the Kohn-Sham orbitals. At absolute zero, a band is either occupied or empty. This discrete occupation results in discontinuous changes in energy with changes in occupation, which makes it difficult to converge. One solution is to artificially broaden the band occupancies, as if they were occupied at a higher temperature where partial occupation is possible. This results in a continuous dependence of energy on the partial occupancy, and dramatically increases the rate of convergence. [[incar:SIGMA][SIGMA]] and [[incar:ISMEAR][ISMEAR]] affect how the partial occupancies of the bands are determined.
 
 Some rules to keep in mind:
 1. The smearing methods were designed for metals. For molecules, semiconductors and insulators you should use a very small SIGMA (e.g. 0.01).
 2. Standard values for metallic systems is SIGMA=0.1, but the best SIGMA may be [[http://cms.mpi.univie.ac.at/vasp/guide/node159.html ][material specific]].
+
+The consequence of this finite temperature is that additional bands
+must be included in the calculation to allow for the partially
+occupied states above the Fermi level; the number of extra bands depends on
+the temperature used.  An example of the maximum occupancies of the
+bands for an Al(111) slab as a function of the Fermi temperature is
+shown in Figure \ref{fig:sigma-occ}. Obviously, as the Fermi temperature
+approaches 0 K, the occupancy approaches a step function.  It is preferable
+that the occupancy of several of the highest bands be zero (or at
+least of order $1\times 10^{-8}$) to ensure enough variational freedom was
+available in the calculation.  Consequently, it is suggested that fifteen to
+twenty extra bands be used for a Fermi temperature of $k_bT=0.20$ eV, or
+that the Fermi temperature be decreased to $k_bT=0.10$ eV. In any case,
+it should be determined that enough bands were used by examination of
+the occupancies.  It is undesirable to have too many extra bands, as
+this will add computational time.
+
+TODO: show we used enough bands.
 
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -4910,6 +4634,7 @@ plt.show()
 #+RESULTS:
 
 #+caption: Effects of SIGMA on the occupancies of the Cu system.
+#+label: fig:sigma-occ
 #+ATTR_LaTeX: placement=[H]
 [[./images/occ-sigma.png]]
 
@@ -4958,14 +4683,21 @@ print 'The cohesive energy is {0:1.3f} eV'.format(cohesive_energy)
 
 According to Kittel, the cohesive energy of Rh is 5.75 eV. There are a few reasons we may have discrepancy here:
 
-1. The k-point grid used in the bulk state is not very dense. However, you can see below that the total energy is pretty converged by a $6 \times 6 \times 6$ $k$-point grid. \index{convergence:KPOINTS}
+1. The k-point grid used in the bulk state is not very dense. However, you can see below that the total energy is pretty converged by a $6 \times 6 \times 6$ $k$-point grid.
+2. We did not check for convergence with the planewave cutoff.
+3. We neglected spin on the atomic state. Rh in the atomic state has this electronic structure:   [Kr] 4d8 5s1 and is a doublet.
 
+First we consider the k-point convergence.
+index:convergence!KPOINTS
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 
+with jasp('bulk/atomic-rh') as calc:
+    atoms = calc.get_atoms()
+    atomic_energy = atoms.get_potential_energy()
+
 with jasp('bulk/bulk-rh') as calc:
     atoms = calc.get_atoms()
-
 
 kpts = [3, 4, 6, 9, 12, 15, 18]
 
@@ -4977,19 +4709,21 @@ for k in kpts:
           atoms=atoms) as calc:
         e = atoms.get_potential_energy()
 
-    print '({0:2d}, {0:2d}, {0:2d}): total energy = {1} eV'.format(k,e)
+    print '({0:2d}, {0:2d}, {0:2d}): cohesive energy = {1} eV'.format(k,e-atomic_energy)
 #+END_SRC
 
 #+RESULTS:
-: ( 3,  3,  3): total energy = -5.891945 eV
-: ( 4,  4,  4): total energy = -7.244046 eV
-: ( 6,  6,  6): total energy = -7.265141 eV
-: ( 9,  9,  9): total energy = -7.263049 eV
-: (12, 12, 12): total energy = -7.26984 eV
-: (15, 15, 15): total energy = -7.269792 eV
-: (18, 18, 18): total energy = -7.270505 eV
+: ( 3,  3,  3): cohesive energy = -4.837472 eV
+: ( 4,  4,  4): cohesive energy = -6.189573 eV
+: ( 6,  6,  6): cohesive energy = -6.210668 eV
+: ( 9,  9,  9): cohesive energy = -6.208576 eV
+: (12, 12, 12): cohesive energy = -6.215367 eV
+: (15, 15, 15): cohesive energy = -6.215319 eV
+: (18, 18, 18): cohesive energy = -6.216032 eV
 
-2. We neglected spin on the atomic state. Rh in the atomic state has this electronic structure:   [Kr] 4d8 5s1 and is a doublet. We will examine this next.
+Using only 1 k-point for the bulk energy is a terrible approximation! It takes at least a 6 \times 6 \times 6 grid to get the total energy converged to less than 10 meV. Note we do not need to check the k-point convergence of the atomic state because it is surrounded by vacuum on all sides, and so there should not be any dispersion in the bands.
+
+We will examine the magnetic state next.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -5781,7 +5515,48 @@ There are a few reasons why our number does not agree with the experimental reac
 
 ** Bulk density of states
 The density of states refers to the number of electronic states in a particular energy range.
-*** TODO discuss why these should not be related to spectrosopy, but often are.
+
+The solution to Eq. \eqref{eq:KS} yields a set of K-S orbitals and an
+associated set of eigenvalues that correspond to the energies of these
+orbitals, neither of which have any known directly observable meaning
+\cite{RevModPhys.71.1253}.  The sum of the squared K-S orbitals,
+however, is equal to the electron density (Eq. \eqref{eq:density}),
+and the sum of the eigenvalues is a significant part of the total
+energy (Eq.  \eqref{eq:dftEnergy}). Thus, it seems reasonable to
+suppose these quantities have other significant relationships to
+physical observables. Perdew et al. showed that the highest occupied
+eigenvalue is equal to the ionization energy of a system within an
+exact density functional theory \cite{perdew1982:elect-kohn-sham}, but
+their interpretation has been vigorously debated in the literature
+\cite{kleinman1997:signif-kohn-sham,perdew1997,kleinman1997:reply-commen-kohn-sham},
+and is only true for the exact exchange/correlation functional, not
+the approximate ones used in practice \cite[Section 5.3.3]{koch2001}.
+Stowasser and Hoffmann discussed an approach to using the K-S orbitals
+in more traditional molecular orbital interpretations, but the results
+were primarily qualitative \cite{stowasser1999:what-kohn-sham}. More
+recently, a DFT analog of Koopmans' theorem has been developed that
+formally identifies the eigenvalues with vertical ionization
+potentials, which can be measured with photoelectron spectroscopy
+\cite{gritsenko2002}.
+
+Despite the arguments against ascribing physical meaning to the K-S
+orbitals and eigenvalues, it has become fairly standard, especially
+for solids, to use them to calculate the density of states (DOS)
+\cite[Sec.  VI.  B]{jones1989}.  This has been found to yield
+reasonable results for the valence bands in metals, but poor results
+for tightly bound orbitals and band gaps
+\cite{perdew1982:elect-kohn-sham}. A highly technical discussion of
+this issue can be found in Ref. \citealp{perdew1981:self}.  The
+density of states can be calculated by a sum over the k-points
+\cite{seitsonen2000:phd}:
+\begin{equation}\label{eq:dos}
+\rho(\epsilon)=\sum_\mathbf{\mathrm{k}} \omega_\mathbf{\mathrm{k}} \sum_i \beta(\epsilon -\epsilon_{i\mathbf{\mathrm{k}}})
+\end{equation}
+where $\omega_\mathbf{\mathrm{k}}$ is the weight associated with the
+k-point, and $\beta$ is a broadening function, typically a gaussian
+function, to account for the finite number of k-points used in the
+calculations. The amount of broadening is arbitrary, and should tend
+to zero as the number of k-points approaches infinity.
 
 #+BEGIN_SRC python
 from ase import Atoms, Atom
@@ -5861,11 +5636,77 @@ plt.savefig('images/pd-dos-ismear-5.png')
 This is not that different from the regular ISMEAR, so I am not sure this is correct. Maybe there is another way to compute DOS when the tetrahedral method is used? This looks like the eigenvalue spectrum.
 
 ** Atom projected density of states
-In this example, we consider how to get the atom-projected density of states (ADOS). We are interested in properties of the $d$-band on Pd, such as the $d$-band center and $d$-band width. You must set the [[incar:RWIGS][RWIGS]] tag to get ADOS, and these are the Wigner-Seitz radii for each atom.
+One major disadvantage of a planewave basis set is that it is
+difficult to relate the completely delocalized planewaves to
+localized phenomena such as bonding. Much insight into bonding has
+been gained by atomic/molecular orbital theory, which has carried over
+to the solid-state arena \cite{RevModPhys.60.601}. Consequently, several
+schemes have been developed to project the one-electron Kohn-Sham wave
+functions onto atomic wave functions
+\cite{sanchez-portal1995:projec,segall1996:popul,segall1996:popul-mp}.
+In VASP, the one electron wave functions can be projected onto
+spherical harmonic orbitals. The radial component of the atomic
+orbitals extends to infinity. In a solid, this means that the
+projection on one atom may overlap with the projection on a
+neighboring atom, resulting in double counting of electrons.
+Consequently, a cutoff radius was introduced, beyond which no
+contributions are included.  It is not obvious what the best cutoff
+radius is. If the radius is too small, it might not capture all of the
+electrons associated with the atom. However, if it is too large, it
+may include electrons from neighboring atoms.  One might want to use
+different cutoff radii for different atoms, which have different
+sizes.  Furthermore, the ideal cutoff radius for an atom may change in
+different environments, thus it would require an iterative procedure
+to determine it.  This difficulty arises because the orbital-band
+occupations are not observable, thus how the electrons are divided up
+between atoms is arbitrary and, as will be seen later, is sensitive to
+the cutoff radius (and in other DFT implementations, the basis set).
+However, Mulliken orbital populations have been used successfully for
+many years to examine the qualitative differences between similar
+systems, and that is precisely what these quantities are used for
+here.  Thus, a discussion of the analysis and results is warranted.
+
+The s and p states in a metal are typically delocalized in space and
+more like free-electrons, whereas the d-orbitals are fairly localized
+in space and have been treated successfully with tight-binding
+theories such as extended H{\"u}ckel theory \cite{RevModPhys.60.601}, and
+linear muffin tin orbital theory \cite{ruban1997:surfac}.
+Consequently, the remaining discussion will be focused on the
+properties of the projected d-states.
+
+In this example, we consider how to get the atom-projected density of
+states (ADOS). We are interested in properties of the $d$-band on Pd,
+such as the $d$-band center and $d$-band width. You must set the [[incar:RWIGS][RWIGS]]
+tag to get ADOS, and these are the Wigner-Seitz radii for each atom.
+By integrating the projected d-band up to the Fermi level, the d-band
+filling can be determined.  It is not obvious what the electron count
+in the d-band should be for an atom in a metal.  For a gas-phase,
+neutral metal atom in the ground state, however, the d-orbital
+electron count is well defined, so it will be used as an initial
+reference point for comparison \cite{kittel}.
+
+A powerful method for characterizing distributions is to examine
+various moments of the distribution (see Chapter 4 in Ref.
+\citealp{cottrell1988} and Chapter 6 in Refs. \citealp{ducastelle1991}
+and \citealp{pettifor1992:elect-theor-alloy-desig}). The $n^{th}$
+order moment, $\mu_n$, of a distribution of states $\rho(\epsilon)$
+with respect to a reference $\epsilon_o$ is defined by
+\begin{equation}
+\mu_n = \frac{\int_{-\infty}^\infty \epsilon^n \rho(\epsilon-\epsilon_o)d\epsilon}
+{\int_{-\infty}^\infty \rho(\epsilon-\epsilon_o)d\epsilon}
+\end{equation}
+In this work, the reference energy is always the Fermi level.  The
+zeroth moment is just the total number of states, in this case it will
+be normalized to unity. The first moment is the average energy of
+distribution, analogous to the center of mass for a mass density
+distribution. The second moment is the mean squared width of the
+distribution. The third moment is a measure of skewness and the fourth
+moment is related to kurtosis, but these moments are rarely used, and
+only the first and second moments are considered in this work.
 
 It is important to note that these projected density of states are not physical observables. They are the wavefunctions projected onto atomic orbitals. For some situations this makes sense, e.g. the $d$ orbitals are fairly localized and reasonably approximated by atomic orbitals. The $s$ valence orbitals in a metal, in contrast, are almost totally delocalized. Depending on the cutoff radius (RWIGS) you choose, you can see very different ADOS.
 
-#+BEGIN_SRC python :results output :exports bothh
+#+BEGIN_SRC python :results output :exports both
 from ase import Atoms, Atom
 from jasp import *
 from ase.calculators.vasp import VaspDos
@@ -5939,10 +5780,87 @@ savefig('images/pd-ados.png')
 #+caption: Atom projected $d$-band for bulk Pd. The shaded area corresponds to the occupied states below the Fermi level.
 #+ATTR_LaTeX: placement=[H]
 [[./images/pd-ados.png]]
+*** Effect of RWIGS on ADOS
+#+BEGIN_SRC python :results output :exports both
+from ase import Atoms, Atom
+from jasp import *
+from ase.calculators.vasp import VaspDos
+import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+a = 3.9  # approximate lattice constant
+b = a / 2.
+bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
+             cell=[(0, b, b),
+                   (b, 0, b),
+                   (b, b, 0)])
+
+RWIGS = [1.0, 1.1, 1.25, 1.5, 2.0, 3.0]
+
+ED, WD, N = [], [], []
+
+for rwigs in RWIGS:
+    with jasp('bulk/pd-ados') as calc:
+        calc.clone('bulk/pd-ados-rwigs-{0}'.format(rwigs))
+
+    with jasp('bulk/pd-ados-rwigs-{0}'.format(rwigs)) as calc:
+        calc.set(rwigs=[rwigs])
+
+        try:
+            calc.calculate()
+        except (VaspSubmitted, VaspQueued):
+            continue
+
+        # now get results
+        ados = VaspDos(efermi=calc.get_fermi_level())
+
+        energies = ados.energy
+        dos = ados.site_dos(0, 'd')
+
+        #we will select energies in the range of -10, 5
+        ind = (energies < 5) & (energies > -10)
+
+        energies = energies[ind]
+        dos = dos[ind]
+
+        Nstates = np.trapz(dos, energies)
+        occupied = energies <= 0.0
+        N_occupied_states = np.trapz(dos[occupied], energies[occupied])
+        ed = np.trapz(energies * dos, energies) / np.trapz(dos, energies)
+        wd2 = np.trapz(energies**2 * dos, energies) / np.trapz(dos, energies)
+
+        N.append(N_occupied_states)
+        ED.append(ed)
+        WD.append(wd2**0.5)
+
+plt.plot(RWIGS, N, 'bo', label='N. occupied states')
+plt.legend(loc='best')
+plt.xlabel('RWIGS ($\AA$)')
+plt.ylabel('# occupied states')
+plt.savefig('images/ados-rwigs-occupation.png')
+
+plt.figure()
+plt.plot(RWIGS, ED, 'bo', label='d-band center (eV)')
+plt.plot(RWIGS, WD, 'gs', label='d-band width (eV)')
+plt.xlabel('RWIGS ($\AA$)')
+plt.legend(loc='best')
+plt.savefig('images/ados-rwigs-moments.png')
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: Effect of the RWIGS on the number of occupied d-states.
+[[./images/ados-rwigs-occupation.png]]
+
+#+caption: Effect of the RWIGS on the d-band center and width.
+[[./images/ados-rwigs-moments.png]]
+
 
 ** Band structures
 [[index:band structure]]
-To compute a band structure we do two things. First, we compute the self-consistent band structure. Then we compute the band structure at the desired $k$-points. We will use Si as an example (adapted from http://bbs.sciencenet.cn/bbs/upload/20083418325986.pdf
+To compute a band structure we do two things. First, we compute the self-consistent band structure. Then we compute the band structure at the desired $k$-points. We will use Si as an example (adapted from http://bbs.sciencenet.cn/bbs/upload/20083418325986.pdf).
 
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -6039,6 +5957,7 @@ plt.savefig('images/Si-bandstructure.png')
 #+ATTR_LaTeX: placement=[H]
 [[./images/Si-bandstructure.png]]
 
+*** TODO create example showing band dispersion with lattice constant
 ** Simulated XRD spectra                                           :noexport:
 You do not really need a DFT calculation for this, except to get the optimized structure. A few notes on using this module:
 
@@ -6403,11 +6322,18 @@ with jasp('surfaces/Al-slab-relaxed') as calc:
 : d_(2,1) = 2.29891157834 angstroms
 : d_(3,2) = 2.34530960922 angstroms
 
-** TODO Surface reconstruction
+** Surface reconstruction
 index:reconstruction
 We will consider the (110) missing row reconstruction \cite{PhysRevB.83.075415}. For some metals, especially Pt and Au, it is energetically favorable to form the so-called missing row reconstruction where every other row in the surface is "missing". It is favorable because it lowers the surface energy. Let us consider how we might calculate and predict that. It is straightforward to compute the energy of a (110) slab, and of a (110) slab with one row missing. However, these slabs contain different numbers of atoms, so we cannot directly compare the total energies to determine which energy is lower.
 
+We have to consider where the missing row atoms have gone, so we can account for their energy. We will consider that they have gone into the bulk, and so we to consider the energy associated with the following transformation:
+
+slab_{110} $\rightarrow$ slab_{missing row} + bulk
+
+Thus, if this change in energy: \(E_{bulk} + E_{slab_{missing row}} - E_{slab_{110}} \) is negative, then the formation of the missing row is expected to be favorable.
+
 *** Au(110) missing row reconstruction
+We first consider the Au(110) case, where the reconstruction is known to be favorable.
 **** Clean Au(110) slab
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -6519,7 +6445,113 @@ print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
 : natoms bulk        = 1
 : dE = -0.070 eV
 
-*** TODO Cu(110) missing row reconstruction
+The missing row formation energy is slightly negative. The magnitude of the formation energy is pretty small, but just slightly bigger than the typical convergence errors observed, so we should cautiously conclude that the reconstruction if favorable for Au(110). We made a lot of shortcuts in computing this quantity, including using the experimental lattice constant of Au, not checking for convergence in k-points or planewave cutoff, and not checking for convergence with respect to slab thickness or number of relaxed layers.
+
+*** Ag(110) missing row reconstruction
+**** Clean Ag(110) slab
+#+BEGIN_SRC python :results output :exports both
+from jasp import *
+from ase.lattice.surface import *
+from ase.io import write
+from ase.constraints import FixAtoms
+
+atoms = fcc110('Ag', size=(2,1,6), vacuum=10.0)
+constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms.set_constraint(constraint)
+
+with jasp('surfaces/Ag-110',
+          xc='PBE',
+          kpts=(6,6,1),
+          encut=350,
+          ibrion=2,
+          isif=2,
+          nsw=10,
+          atoms=atoms) as calc:
+    calc.calculate()
+#+END_SRC
+
+#+RESULTS:
+
+**** Missing row in Ag(110)
+#+BEGIN_SRC python :results output :exports both
+from jasp import *
+from ase.lattice.surface import *
+from ase.io import write
+from ase.constraints import FixAtoms
+
+atoms = fcc110('Ag', size=(2,1,6), vacuum=10.0)
+del atoms[11] # delete surface row
+
+constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms.set_constraint(constraint)
+
+with jasp('surfaces/Ag-110-missing-row',
+          xc='PBE',
+          kpts=(6,6,1),
+          encut=350,
+          ibrion=2,
+          isif=2,
+          nsw=10,
+          atoms=atoms) as calc:
+    calc.calculate()
+#+END_SRC
+
+#+RESULTS:
+
+**** Bulk Ag
+#+BEGIN_SRC python
+from jasp import *
+from ase.visualize import view
+from ase.lattice.cubic import FaceCenteredCubic
+
+atoms = FaceCenteredCubic(directions=[[0,1,1],
+                                      [1,0,1],
+                                      [1,1,0]],
+                                      size=(1,1,1),
+                                      symbol='Ag')
+
+with jasp('bulk/Ag-fcc',
+          xc='PBE',
+          encut=350,
+          kpts=(12,12,12),
+          atoms=atoms) as calc:
+    calc.calculate()
+#+END_SRC
+
+#+RESULTS:
+
+**** Analysis of energies
+#+BEGIN_SRC python :results output
+from jasp import *
+
+with jasp('surfaces/Ag-110') as calc:
+    slab = calc.get_atoms()
+    eslab = slab.get_potential_energy()
+
+with jasp('surfaces/Ag-110-missing-row') as calc:
+    missingrow = calc.get_atoms()
+    emissingrow = missingrow.get_potential_energy()
+
+with jasp('bulk/Ag-fcc') as calc:
+    bulk = calc.get_atoms()
+    ebulk = bulk.get_potential_energy()
+
+print 'natoms slab        = {0}'.format(len(slab))
+print 'natoms missing row = {0}'.format(len(missingrow))
+print 'natoms bulk        = {0}'.format(len(bulk))
+
+print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
+#+END_SRC
+
+#+RESULTS:
+: natoms slab        = 12
+: natoms missing row = 11
+: natoms bulk        = 1
+: dE = -0.008 eV
+
+For Ag(110), the missing row formation energy is practically thermoneutral, i.e. not that favorable. This energy is so close to 0eV, that we cannot confidently say whether the reconstruction is favorable or not. Experimentally, the reconstruction is not seen on very clean Ag(110) although it is reported that some adsorbates may induce the reconstruction \cite{PhysRevLett.59.2307}.
+
+*** Cu(110) missing row reconstruction :noexport:
 **** Clean Cu(110) slab
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -6622,6 +6654,7 @@ print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
 : dE = -0.011 eV
 
 ** Work function
+[[index:work function]]
 To get the work function, we need to have the local potential. this is not written by default in VASP, and we have to tell it to do that with the [[incar:LVTOT][LVTOT]] and [[incar:LVHAR][LVHAR]] keywords.
 
 #+BEGIN_SRC python :results output :exports both
@@ -6782,7 +6815,30 @@ The surface energies can be used to estimate the shapes of nanoparticles using a
 For a classic paper on trends in surface energies see \cite{Vitos1998186} .
 
 ** Dipole correction
-Slabs that are not symmetric (e.g. they have adsorbates on only one side) can develop dipole moments. Periodic dipoles can be problematic, as they create an artificial field that may affect the surface properties such as the work function and the convergence of the calculations. The solution to this problem is to introduce a dipole field in the cell to exactly cancel the dipole moment \cite{PhysRevB.46.16067} (see \cite{PhysRevB.59.12301} for a small correction) to minimize the effect.
+[[index:dipole correction]]
+
+A subtle problem can arise when an adsorbate is placed on one side of
+a slab with periodic boundary conditions, which is currently the
+common practice.  The problem is that this gives the slab a dipole
+moment. The array of dipole moments created by the periodic boundary
+conditions generates an electric field that can distort the electron
+density of the slab and change the energy. The existence of this field
+in the vacuum also makes the zero-potential in the vacuum ill-defined,
+thus the work function is not well-defined. One solution to this
+problem is to use slabs with adsorbates on both sides, but then very
+thick (eight to ten layers) slabs must be used to ensure the
+adsorbates do not interact through the slab. An alternative solution,
+the dipole correction scheme, was developed by Neugebauer and
+Scheffler \cite{PhysRevB.46.16067} and later corrected by Bengtsson
+\cite{PhysRevB.59.12301}. In this technique, an external field is
+imposed in the vacuum region that exactly cancels the artificial field
+caused by the slab dipole moment. The advantage of this approach is
+that thinner slabs with adsorbates on only one side can be used.
+
+There are also literature
+reports that the correction is small \cite{morikawa2001:c2h2-si}.
+Nevertheless, in the literature the use of this correction is fairly
+standard, and it is typical to at least consider the correction.
 
 Here we will just illustrate the effect.
 *** slab with no dipole correction
@@ -6921,6 +6977,7 @@ The key points to notice in this figure are:
 5. The difference in energy with and without the dipole correction here is small.
 
 ** Adsorption energies
+[[index:adsorption energy]]
 *** simple estimate
 Calculating an adsorption energy amounts to computing the energy of the following kind of reaction:
 
@@ -7519,8 +7576,8 @@ This did not do exactly what I expected. I thought there would be an image that 
 ** TODO Diffusion rates with transition state theory
 
 * Atomistic thermodynamics
-
-Let us consider how much the Gibbs free energy of an O$_2$ molecule changes as a function of temperature, at 1 atm. We use the Shomate polynomials to approximate the temperature dependent entropy and enthalpy, and use the parameters from the [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447&Units=SI&Mask=1#Thermo-Gas][NIST Webbook]] for O$_2$.
+[[index:atomistic thermodynamics]]
+Let us consider how much the Gibbs free energy of an O_{2} molecule changes as a function of temperature, at 1 atm. We use the Shomate polynomials to approximate the temperature dependent entropy and enthalpy, and use the parameters from the [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447&Units=SI&Mask=1#Thermo-Gas][NIST Webbook]] for O_{2}.
 #+BEGIN_SRC python :results output
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7872,7 +7929,8 @@ $\mu_{gas}(T,p) = E_{gas}(0K) + \delta \mu + kT\ln\left (p/p^0\right )$, as we h
 
 * Advanced electronic structure methods
 ** DFT+U
-\index{DFT+U}
+index:DFT+U
+
 [[http://cms.mpi.univie.ac.at/vasp/vasp/On_site_Coulomb_interaction_L_S_DA_U.html][VASP manual on DFT+U]]
 
 *** Metal oxide oxidation energies with DFT+U
@@ -10466,7 +10524,7 @@ print 'x_cu = {0}'.format(x_Cu)
 : x_cu = 0.555555555556
 
 * References
-\bibliographystyle{plainurl}
+\bibliographystyle{plainnat}
 \bibliography{dft}
 
 * Index
