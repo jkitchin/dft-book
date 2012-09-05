@@ -15,7 +15,7 @@
 #+LINK_UP:
 #+LINK_HOME:
 #+XSLT:
-#+latex_header: \usepackage{movie15}
+
 #+latex_header: \usepackage{underscore}
 #+latex_header: \usepackage{makeidx}
 #+latex_header: \usepackage[section]{placeins}
@@ -267,7 +267,7 @@ write('images/ch3cn.png', c60, show_unit_cell=2)
 :  [  0.        13.537479   0.      ]
 :  [  0.         0.        15.014576]]
 
-#+caption: A CH\(_{3}\)CN molecule in a box.
+#+caption: A CH_{3}CN molecule in a box.
 #+label: fig:ch3cn
 #+ATTR_LaTeX: placement=[H]
 [[./images/ch3cn.png]]
@@ -298,7 +298,7 @@ write('images/ch3cn-rotated.png', atoms,
 :  [  0.        13.537479   0.      ]
 :  [  0.         0.        15.014576]]
 
-#+caption: The rotated version of CH\(_3\)CN.
+#+caption: The rotated version of CH_{3}CN.
 #+label: fig:ch3cn-rot
 #+ATTR_LaTeX: placement=[H]
 [[./images/ch3cn-rotated.png]]
@@ -340,7 +340,7 @@ for i,d in enumerate(diff):
 : 4 [-1.35405183  1.33495444 -0.04610517]
 : 5 [-0.8340703   1.33495444  1.2092413 ]
 
-#+caption: Rotated CH\(_3\)CN molecule
+#+caption: Rotated CH_{3}CN molecule
 #+ATTR_LaTeX: width=71bp,placement=[H]
 [[./images/ch3cn-rotated-2.png]]
 
@@ -805,7 +805,7 @@ print 'theta = {0} degrees'.format(atoms.get_angle([1,0,2])*180./pi)
 
 
 **** Dihedral angles
-There is support in ase for computing [[http://en.wikipedia.org/wiki/Dihedral_angle][dihedral angles]]. Let us illustrate that for ethane. We will compute the dihedral angle between atoms 5, 1, 0, and 4. That is a H-C-C-H dihedral angle, and one can visually see (although not here) that these atoms have dihedral angle of 60$^\circ$. See Figure \ref{fig:ethane-dihedral}.
+There is support in ase for computing [[http://en.wikipedia.org/wiki/Dihedral_angle][dihedral angles]]. Let us illustrate that for ethane. We will compute the dihedral angle between atoms 5, 1, 0, and 4. That is a H-C-C-H dihedral angle, and one can visually see (although not here) that these atoms have dihedral angle of 60^{\circ}. See Figure \ref{fig:ethane-dihedral}.
 
 #+BEGIN_SRC python :results output :exports both
 # calculate an ethane dihedral angle
@@ -2068,7 +2068,7 @@ Free energy components at T = 298.15 K and P = 101325.0 Pa:
 
 ** Molecular reaction energies
 *** O_{2} dissociation
-The first reaction we consider is a simple dissociation of oxygen molecule into two oxygen atoms: $O_2 \rightarrow 2 O$. The dissociation energy is pretty straightforward to define: it is the energy of the products minus the energy of the reactant. $D = 2*E_O - E_{O_2}$. It would appear that we simply calculate the energy of an oxygen atom, and the energy of an oxygen molecule and evaluate the formula. Let us do that.
+The first reaction we consider is a simple dissociation of oxygen molecule into two oxygen atoms: O_{2} \rightarrow 2O. The dissociation energy is pretty straightforward to define: it is the energy of the products minus the energy of the reactant. $D = 2*E_O - E_{O_2}$. It would appear that we simply calculate the energy of an oxygen atom, and the energy of an oxygen molecule and evaluate the formula. Let us do that.
 
 **** Simple estimate of O_{2} dissociation energy
 #+BEGIN_SRC python :results output :exports both
@@ -2115,7 +2115,7 @@ if None not in (E_O, E_O2):
 
 The answer we have obtained is way too high! Experimentally the dissociation energy is more like 5.2 eV (need reference).
 
-We implicitly neglected spin-polarization in the example above. That could be a problem, since the O$_2$ molecule can be in one of two spin states, a singlet or a triplet, and these should have different energies. Furthermore, the oxygen atom can be a singlet or a triplet, and these would have different energies. To account for spin polarization, we have to tell VASP to use spin-polarization, and give initial guesses for the magnetic moments of the atoms. Let us try again with spin polarization.
+We implicitly neglected spin-polarization in the example above. That could be a problem, since the O_{2} molecule can be in one of two spin states, a singlet or a triplet, and these should have different energies. Furthermore, the oxygen atom can be a singlet or a triplet, and these would have different energies. To account for spin polarization, we have to tell VASP to use spin-polarization, and give initial guesses for the magnetic moments of the atoms. Let us try again with spin polarization.
 
 **** Estimating O_{2} dissociation energy with spin polarization in triplet ground states
 To tell VASP to use spin-polarization we use [[incar:ISPIN][INCAR]]=2, and we set initial guesses for magnetic moments on the atoms with the magmom keyword. In a triplet state there are two electrons with spins of the same sign.
@@ -2201,7 +2201,7 @@ plt.savefig('images/O2-sp-dos.png')
 : number of up states = 7.00000343617
 : number of down states = 5.00001715094
 
-#+caption: Spin-polarized density of states for the O$_2$ molecule.
+#+caption: Spin-polarized density of states for the O_{2} molecule.
 #+label: fig:o2-sp-dos
 #+ATTR_LaTeX: placement=[H]
 [[./images/O2-sp-dos.png]]
@@ -2270,7 +2270,7 @@ plt.savefig('images/O2-dissociation-convergence.png')
 : O2 -> 2O encut = 500  D = 6.648 eV
 : O2 -> 2O encut = 550  D = 6.650 eV
 
-#+caption: Convergence study of the O$_2$ dissociation energy as a function of ENCUT.
+#+caption: Convergence study of the O_{2} dissociation energy as a function of ENCUT.
 #+label: fig:o2-encut
 #+ATTR_LaTeX: placement=[H]
 [[./images/O2-dissociation-convergence.png]]
@@ -2743,7 +2743,7 @@ if None not in (E_O, E_O2):
 *** Water gas shift example
 We consider calculating the reaction energy of the water-gas shift reaction in this example.
 
-$CO + H_2O \leftrightharpoons CO_2 + H_2$
+CO + H_{2}O $\leftrightharpoons$ CO_{2} + H_{2}
 
 We define the reaction energy as the difference in energy between the products and reactants.
 
@@ -3135,7 +3135,7 @@ with jasp('molecules/wgs/H2-vib',
 : 04: 0.0 cm^(-1)
 : 05: (1e-05+0j) cm^(-1)
 
-There is only one frequency of importance (the one at 4281 cm$^{-1}$) for the linear H2 molecule.
+There is only one frequency of importance (the one at 4281 cm$^{-1}$) for the linear H_{2} molecule.
 
 **** H_{2}O vibrations
 #+BEGIN_SRC python :results output :exports both
@@ -3416,9 +3416,6 @@ os.system('png2swf -o nh3-neb.swf images/00*-nh3.png ')
 
 #+RESULTS:
 
-
-
-
 * Bulk systems
 
 See http://arxiv.org/pdf/1204.2733.pdf for a very informative comparison of DFT codes for computing different bulk properties.
@@ -3524,7 +3521,7 @@ atoms = read('bulk/Ru2O4_1.cif')
 write('images/Ru2O4.png', atoms, show_unit_cell=2)
 #+END_SRC
 
-#+caption: An RuO$_2$ unit cell prepared from a cif file.
+#+caption: An RuO_{2} unit cell prepared from a cif file.
 #+ATTR_LaTeX: width=96bp,placement=[H]
 [[./images/Ru2O4.png]]
 
@@ -3685,21 +3682,27 @@ for a in LC:
 eos = EquationOfState(volumes,energies)
 v0, e0, B = eos.fit()
 
-print v0, e0, B
+print '''
+v0 = {0} A^3
+E0 = {1} eV
+B  = {2} eV/A^3'''.format(v0, e0, B)
 
 eos.plot('images/Cu-fcc-eos.png')
 #+END_SRC
 
 
 #+RESULTS:
-: 12.0167187475 -3.72468102446 0.858998381274
+:
+: v0 = 12.0167118546 A^3
+: E0 = -3.7246811445 eV
+: B  = 0.859009528171 eV/A^3
 
 #+caption: Total energy vs. volume for fcc Cu with  fitted cubic polynomial equation of state.
 #+ATTR_LaTeX: placement=[H]
 [[./images/Cu-fcc-eos.png]]
 
 
-Before we jump into the bcc calculations, let us consider what range of lattice constants we should choose. The fcc lattice is close-packed, and the volume of the primitive cell is $V = 1/4 a^3$ or about 11.8 \(\AA^3\)/atom. The volume of the equilibrium bcc primitive cell will probably be similar to that. The question is: what bcc lattice constant gives that volume? The simplest way to answer this is to compute the answer. We will make a bcc crystal at the fcc lattice constant, and then compute the scaling factor needed to make it the right volume.
+Before we jump into the bcc calculations, let us consider what range of lattice constants we should choose. The fcc lattice is close-packed, and the volume of the primitive cell is $V = 1/4 a^3$ or about 11.8 \AA^{3}/atom. The volume of the equilibrium bcc primitive cell will probably be similar to that. The question is: what bcc lattice constant gives that volume? The simplest way to answer this is to compute the answer. We will make a bcc crystal at the fcc lattice constant, and then compute the scaling factor needed to make it the right volume.
 
 #+BEGIN_SRC python :results output :exports both
 from ase import Atom, Atoms
@@ -3982,7 +3985,7 @@ for v,e in zip(volumes, energies):
 #+RESULTS:
 #+tblname: tio2-vol-ene
 #+caption: Total energy of TiO_{2} vs. volume.
-| Volume ($\AA^3$) | Energy (eV) |
+| Volume  $\AA^3$   | Energy (eV) |
 |------------------+-------------|
 |       56.1254184 |  -52.042193 |
 |       59.2434972 |  -52.649555 |
@@ -3991,10 +3994,10 @@ for v,e in zip(volumes, energies):
 |       68.5977336 |  -52.783494 |
 
 
-#+caption: Total energy vs volume for TiO$_2$ with frozen atoms and frozen shape.
+#+caption: Total energy vs volume for TiO_{2} with frozen atoms and frozen shape.
 [[./images/tio2-step1.png]]
 
-In step 2 we will actually do some relaxations. We will do a series of relaxations, from 62 to 66 \AA$^3$, and allow the ions and cell shape to relax (ISIF=4) at constant volume.
+In step 2 we will actually do some relaxations. We will do a series of relaxations, from 62 to 66 \AA^{3}, and allow the ions and cell shape to relax (ISIF=4) at constant volume.
 
 #+BEGIN_SRC python
 # step 2, constant volume, relax shape and atoms
@@ -4850,7 +4853,7 @@ This looks promising: the formation energy is much more favorable than cu3pd-1, 
 The construction of alloy phase diagrams is difficult. You are always faced with the possibility that there is a phase that you have not calculated that is more stable than the ones you did calculate. One approach is to use a tool that automates the discovery of relevant structures such as the Alloy Theoretic Automated Toolkit ([[http://www.its.caltech.edu/~avdw/atat/][ATAT]]) \cite{vandeWalle2002539,vandeWalle2009266} which uses a cluster expansion methodology.
 
 *** Metal oxide oxidation energies
-We will consider here the reaction 2 Cu_{2}O + O_{2} \rightleftharpoons 4 CuO. The reaction energy is:
+We will consider here the reaction 2 Cu_{2}O + O_{2} $\rightleftharpoons$ 4 CuO. The reaction energy is:
 
 $\Delta E = 4E_{CuO} - 2E_{Cu_2O} - E_{O_2}$. We need to compute the energy of each species.
 
@@ -5957,7 +5960,7 @@ savefig('images/dip-vs-nodip-esp.png')
 #+RESULTS:
 : The difference in energy is 0.006391 eV.
 
-#+caption: comparison of the electrostatic potentials with a dipole correction and without it.
+#+caption: Comparison of the electrostatic potentials with a dipole correction and without it.
 #+ATTR_LaTeX: placement=[H]
 [[./images/dip-vs-nodip-esp.png]]
 
@@ -6668,7 +6671,7 @@ You will recognize in this equation the standard formation energy we calculated 
 $G_f \approx H_f - 0.5*\Delta \mu_{O_2}(P,T)$
 
 
-The [[http://materialsproject.org/materials/361/][formation energy of Cu\(_2\)O]] is -1.9521 eV/formula unit. The [[http://materialsproject.org/materials/353/][formation energy for Ag\(_2\)O]] is -0.99 eV/formula unit. Let us consider what temperature the oxides decompose at a fixed oxygen pressure of 1$\times 10^{-10}$ atm. We need to find the temperature where:
+The [[http://materialsproject.org/materials/361/][formation energy of Cu_{2}O]] is -1.9521 eV/formula unit. The [[http://materialsproject.org/materials/353/][formation energy for Ag_{2}O]] is -0.99 eV/formula unit. Let us consider what temperature the oxides decompose at a fixed oxygen pressure of 1$\times 10^{-10}$ atm. We need to find the temperature where:
 
 $H_f = 0.5*\Delta \mu_{O_2}(P,T)$
 
@@ -6741,7 +6744,7 @@ plt.savefig('images/O2-mu.png')
 : Cu2O decomposition temperature is 917 K
 : Ag2O decomposition temperature is 478 K
 
-#+caption: $\Delta \mu_{O_2}(T,p)$ at different pressures and temperatures.
+#+caption: \Delta \mu_{O_{2}}(T,p) at different pressures and temperatures.
 #+label: fig:mu-o2
 #+ATTR_LaTeX: placement=[H]
 [[./images/O2-mu.png]]
@@ -7179,8 +7182,7 @@ In any case, you should be careful to use well converged results to avoid compen
 ** Hybrid functionals
 *** FCC Ni DOS
 This example is adapted from http://cms.mpi.univie.ac.at/wiki/index.php/FccNi_DOS
-\index{HSE06}
-
+[[index:HSE06]]
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 from ase.lattice.cubic import FaceCenteredCubic
@@ -7433,7 +7435,7 @@ write('images/tagged-bcc111.png',slab,rotation='-90x',show_unit_cell=2)
 
 #+RESULTS:
 
-#+caption: the tagged bcc(111) structure created above.
+#+caption: The tagged bcc(111) structure created above.
 #+ATTR_LATEX: width=383bp,placement=[H]
 [[./images/tagged-bcc111.png]]
 *** Using units in ase
@@ -7515,7 +7517,7 @@ savefig('images/np-array-slice.png')
 #+caption: Example of slicing out part of an array. The solid line represents the whole array, and the symbols are the array between $2 < x < 4$.
 #+ATTR_LaTeX: placement=[H]
 [[./images/np-array-slice.png]]
-The expression x$>2$ returns an array of booleans (True where the element of $x$ is greater than 2, and False where it is not) equal in size to $x$. Similarly $x<4$ returns a boolean array where $x$ is less than 4. We take the logical =and= of these two boolean arrays to get another boolean array where both conditions are True (i.e. $x<2$ and $x>4$). This final boolean array is =True= for the part of the arrays we are interested in, and we can use it to extract the subarrays we want.
+The expression \(x>2\) returns an array of booleans (True where the element of $x$ is greater than 2, and False where it is not) equal in size to $x$. Similarly \(x<4\) returns a boolean array where $x$ is less than 4. We take the logical =and= of these two boolean arrays to get another boolean array where both conditions are True (i.e. \(x<2\) and \(x>4\)). This final boolean array is =True= for the part of the arrays we are interested in, and we can use it to extract the subarrays we want.
 
 *** Statistics
 **** Confidence intervals
@@ -9522,14 +9524,3 @@ print 'x_cu = {0}'.format(x_Cu)
 
 * Index
 \printindex
-
-# http://en.wikibooks.org/wiki/LaTeX/Indexing
-#\index{hello} 	hello, 1 	Plain entry
-#\index{hello!Peter} 	  Peter, 3 	Subentry under 'hello'
-#\index{Sam@\textsl{Sam}} 	Sam, 2 	Formatted entry
-#\index{Lin@\textbf{Lin}} 	Lin, 7 	Same as above
-#\index{Jenny|textbf} 	Jenny, 3 	Formatted page number
-#\index{Joe|textit} 	Joe, 5 	Same as above
-#\index{ecole@\'ecole} 	école, 4 	Handling of accents
-#\index{Peter|see{hello}} 	Peter, see hello 	Cross-references
-#\index{Jen|seealso{Jenny}}
