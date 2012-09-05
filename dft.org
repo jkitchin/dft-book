@@ -145,7 +145,7 @@ Similar code would be used for other calculators, e.g. GPAW, Jacapo, etc... you 
 Review all the hyperlinks in this chapter.
 #+end_exercise
 
-* TODO Introduction to DFT
+* Introduction to DFT
 
 A comprehensive overview of DFT is beyond the scope of this book, as
 excellent reviews on these subjects are readily found in the
@@ -535,7 +535,166 @@ Monkhorst-Pack k-points \cite{PhysRevB.13.5188}
 * Molecules
 In this chapter we consider how to construct models of molecules, how to manipulate them, and how to calculate many properties of molecules. For a nice comparison of VASP and Gaussian see \cite{paier:234102}.
 ** Defining and visualizing molecules
-We start by learning how to define a molecule and visualize it.
+We start by learning how to define a molecule and visualize it. We will begin with defining molecules from scratch, then reading molecules from data files, and finally using some built-in databases in =ase=.
+*** From scratch
+When there is no data file for the molecule you want, or no database to get it from, you have to define your atoms geometry by hand. Here is how that is done for a CO molecule (Figure \ref{fig:co-origin}). We must define the type and position of each atom, and the unit cell the atoms are in.
+
+#+BEGIN_SRC python :results output
+from ase import Atoms, Atom
+from ase.io import write
+
+# define an Atoms object
+atoms = Atoms([Atom('C',[0., 0.,0.]),
+               Atom('O',[1.1,0.,0.])],
+            cell=(10,10,10))
+
+print 'V = %1.0f Ang^3' % atoms.get_volume()
+
+write('images/simple-cubic-cell.png',atoms,show_unit_cell=2)
+#+END_SRC
+
+#+RESULTS:
+: V = 1000 Ang^3
+
+#+caption: Image of a CO molecule with the C at the origin.
+#+label: fig:co-origin
+#+ATTR_LaTeX: placement=[H]
+[[./images/simple-cubic-cell.png]]
+
+There are two inconvenient features of the simple cubic cell:
+
+1. Since the CO atom is at the corner, its electron density is spread over the 8 corners of the box, which is not convenient for visualization later (see [[*Visualizing%20electron%20density][Visualizing electron density]]).
+
+2. Due to the geometry of the cube, you need fairly large cubes to decouple the molecule from its images. Here, the CO molecule has 6 images due to periodic boundary conditions that are 10 \AA away. The volume of the unit cell is 1000 \AA$^3$.
+
+The first problem is easy to solve by centering the atoms in the unit cell. The second problem can be solved by using an fcc lattice. Below we show the result in Figure \ref{fig:co-fcc}, where we have guessed values for $b$ until the CO molecules are on average 10 \AA apart. Note the final volume is only about 715 \AA$^3$, which is smaller than the cube. This will result in less computational time to compute properties.
+
+#+BEGIN_SRC python :results output
+from ase import Atoms, Atom
+from ase.io import write
+
+b = 7.1
+atoms = Atoms([Atom('C',[0., 0.,0.]),
+                Atom('O',[1.1,0.,0.])],
+             cell=[[b, b, 0.],
+                   [b, 0., b],
+                   [0., b, b]])
+print 'V = {0:1.1f} Ang^3'.format(atoms.get_volume())
+
+atoms.center() #translate atoms to center of unit cell
+write('images/fcc-cell.png', atoms, show_unit_cell=2)
+#+END_SRC
+
+#+RESULTS:
+: V = 715.8 Ang^3
+
+#+caption: CO in an fcc cell.
+#+label: fig:co-fcc
+#+ATTR_LaTeX: placement=[H]
+[[./images/fcc-cell.png]]
+
+At this point you might ask "How do you know the distance to the neighboring image?" The =ag= viewer lets you compute this graphically, but we can use code to determine this too. All we have to do is figure out the length of each lattice vector, because these are what separate the atoms in the images. We use the mod:numpy module to compute the distance of a vector as the square root of the sum of squared elements.
+
+#+BEGIN_SRC python :results output
+from ase import Atoms, Atom
+import numpy as np
+
+b = 7.1
+atoms = Atoms([Atom('C',[0., 0.,0.]),
+              Atom('O',[1.1,0.,0.])],
+              cell=[[b, b, 0.],
+                    [b, 0., b],
+                    [0., b, b]])
+
+# get unit cell vectors and their lengths
+(a1, a2, a3) = atoms.get_cell()
+print '|a1| = {0:1.2f} Ang'.format(np.sum(a1**2)**0.5)
+print '|a2| = {0:1.2f} Ang'.format(np.linalg.norm(a2))
+print '|a3| = {0:1.2f} Ang'.format(np.sum(a3**2)**0.5)
+#+END_SRC
+
+#+RESULTS:
+: |a1| = 10.04 Ang
+: |a2| = 10.04 Ang
+: |a3| = 10.04 Ang
+
+*** Reading other data formats into a calculation
+
+mod:ase.io.read supports reading in many different formats:
+#+begin_example
+    Known formats:
+
+    =========================  ===========
+    format                     short name
+    =========================  ===========
+    GPAW restart-file          gpw
+    Dacapo netCDF output file  dacapo
+    Old ASE netCDF trajectory  nc
+    Virtual Nano Lab file      vnl
+    ASE pickle trajectory      traj
+    ASE bundle trajectory      bundle
+    GPAW text output           gpaw-text
+    CUBE file                  cube
+    XCrySDen Structure File    xsf
+    Dacapo text output         dacapo-text
+    XYZ-file                   xyz
+    VASP POSCAR/CONTCAR file   vasp
+    VASP OUTCAR file           vasp_out
+    SIESTA STRUCT file         struct_out
+    ABINIT input file          abinit
+    V_Sim ascii file           v_sim
+    Protein Data Bank          pdb
+    CIF-file                   cif
+    FHI-aims geometry file     aims
+    FHI-aims output file       aims_out
+    VTK XML Image Data         vti
+    VTK XML Structured Grid    vts
+    VTK XML Unstructured Grid  vtu
+    TURBOMOLE coord file       tmol
+    TURBOMOLE gradient file    tmol-gradient
+    exciting input             exi
+    AtomEye configuration      cfg
+    WIEN2k structure file      struct
+    DftbPlus input file        dftb
+    CASTEP geom file           cell
+    CASTEP output file         castep
+    CASTEP trajectory file     geom
+    ETSF format                etsf.nc
+    DFTBPlus GEN format        gen
+    CMR db/cmr-file            db
+    CMR db/cmr-file            cmr
+    LAMMPS dump file           lammps
+    Gromacs coordinates        gro
+    =========================  ===========
+#+end_example
+
+You can read xyz-coordinate files to create mod:ase.Atoms objects.  Here is
+what an xyz file might look like:
+
+#+begin_example
+#+include: molecules/isobutane.xyz
+#+end_example
+
+Note that the xyz format does not have unit cell information in it, so
+you will have to figure out a way to provide it. In this example, we
+center the atoms in a box with vacuum on all sides (Figure \ref{fig:isobutane}).
+
+#+BEGIN_SRC python
+from ase.io import read,write
+import numpy as np
+
+atoms = read('molecules/isobutane.xyz')
+atoms.center(vacuum=5)
+write('images/isobutane-xyz.png', atoms, show_unit_cell=2)
+#+END_SRC
+
+#+RESULTS:
+: None
+
+#+caption: An isobutane molecule read in from an xyz data file.
+#+label: fig:isobutane
+#+ATTR_LaTeX: placement=[H]
+[[./images/isobutane-xyz.png]]
 *** Predefined molecules
 
 mod:ase defines a number of molecular geometries in the
@@ -620,7 +779,6 @@ Some other databases include the mod:ase.data.s22 for weakly interacting dimers 
 Here is an example of getting the geometry of an acetonitrile molecule and writing an image to a file. Note that the default unit cell is a $1 \mathrm{\AA} \times 1 \mathrm{\AA} \times 1 \mathrm{\AA}$ cubic cell. That is too small to use if your calculator uses periodic boundary conditions. We center the atoms in the unit cell and add vacuum on each side. We will add 6 \AA of vacuum on each side. In the write command we use the option =show_unit_cell= =2 to draw the unit cell boundaries. See Figure \ref{fig:ch3cn}.
 
 #+BEGIN_SRC python :results output :exports both
-from ase import Atoms
 from ase.data.molecules import molecule
 from ase.io import write
 
@@ -631,7 +789,7 @@ print 'unit cell'
 print '---------'
 print atoms.get_cell()
 
-write('images/ch3cn.png', c60, show_unit_cell=2)
+write('images/ch3cn.png', atoms, show_unit_cell=2)
 #+END_SRC
 
 #+RESULTS:
@@ -650,7 +808,6 @@ write('images/ch3cn.png', c60, show_unit_cell=2)
 It is possible to rotate the atoms with func:ase.io.write if you wanted to see pictures from another angle. In the next example we rotate 45 degrees about the $x$-axis, then 45 degrees about the $y$-axis. Note that this only affects the image, not the actual coordinates. See Figure \ref{fig:ch3cn-rot}
 
 #+BEGIN_SRC python :results output
-from ase import Atoms
 from ase.data.molecules import molecule
 from ase.io import write
 
@@ -680,12 +837,10 @@ write('images/ch3cn-rotated.png', atoms,
 If you actually want to rotate the coordinates, there is a nice way to do that to, with the func:ase.Atoms.rotate method. Actually there are some subtleties in rotation. One rotates the molecule an angle (in radians) around a vector, but you have to choose whether the center of mass should be fixed or not. You also must decide whether the unit cell should be rotated or not. In the next example you can see the coordinates have changed due to the rotations. Note that the write function uses the rotation angle in degrees, while the rotate function uses radians.
 
 #+BEGIN_SRC python :results output
-from ase import Atoms
 from ase.data.molecules import molecule
 from ase.io import write
 from numpy import pi
 
-# ammonia
 atoms = molecule('CH3CN')
 p1 = atoms.get_positions()
 
@@ -720,170 +875,10 @@ for i,d in enumerate(diff):
 
 Note in this last case the unit cell is oriented differently than the previous example, since we chose not to rotate the unit cell.
 
-*** Reading other data formats into a calculation
-
-mod:ase.io.read supports reading in many different formats:
-#+begin_example
-    Known formats:
-
-    =========================  ===========
-    format                     short name
-    =========================  ===========
-    GPAW restart-file          gpw
-    Dacapo netCDF output file  dacapo
-    Old ASE netCDF trajectory  nc
-    Virtual Nano Lab file      vnl
-    ASE pickle trajectory      traj
-    ASE bundle trajectory      bundle
-    GPAW text output           gpaw-text
-    CUBE file                  cube
-    XCrySDen Structure File    xsf
-    Dacapo text output         dacapo-text
-    XYZ-file                   xyz
-    VASP POSCAR/CONTCAR file   vasp
-    VASP OUTCAR file           vasp_out
-    SIESTA STRUCT file         struct_out
-    ABINIT input file          abinit
-    V_Sim ascii file           v_sim
-    Protein Data Bank          pdb
-    CIF-file                   cif
-    FHI-aims geometry file     aims
-    FHI-aims output file       aims_out
-    VTK XML Image Data         vti
-    VTK XML Structured Grid    vts
-    VTK XML Unstructured Grid  vtu
-    TURBOMOLE coord file       tmol
-    TURBOMOLE gradient file    tmol-gradient
-    exciting input             exi
-    AtomEye configuration      cfg
-    WIEN2k structure file      struct
-    DftbPlus input file        dftb
-    CASTEP geom file           cell
-    CASTEP output file         castep
-    CASTEP trajectory file     geom
-    ETSF format                etsf.nc
-    DFTBPlus GEN format        gen
-    CMR db/cmr-file            db
-    CMR db/cmr-file            cmr
-    LAMMPS dump file           lammps
-    Gromacs coordinates        gro
-    =========================  ===========
-#+end_example
-
-You can read xyz-coordinate files to create mod:ase.Atoms objects.  Here is
-what an xyz file might look like:
-
-#+begin_example
-#+include: molecules/isobutane.xyz
-#+end_example
-
-Note that the xyz format does not have unit cell information in it, so
-you will have to figure out a way to provide it. In this example, we
-center the atoms in a box with vacuum on all sides (Figure \ref{fig:isobutane}).
-
-#+BEGIN_SRC python
-from ase.io import read,write
-import numpy as np
-
-atoms = read('molecules/isobutane.xyz')
-atoms.center(vacuum=5)
-write('images/isobutane-xyz.png', atoms, show_unit_cell=2)
-#+END_SRC
-
-#+RESULTS:
-: None
-
-#+caption: An isobutane molecule read in from an xyz data file.
-#+label: fig:isobutane
-#+ATTR_LaTeX: placement=[H]
-[[./images/isobutane-xyz.png]]
-
-*** From scratch
-    When there is no data file for the molecule you want, or no database to get it from, you have to define your atoms geometry by hand. Here is how that is done for a CO molecule (Figure \ref{fig:co-origin}).
-
-#+BEGIN_SRC python :results output
-from ase import Atoms, Atom
-from ase.io import write
-
-#method 1 - simple cubic unit cell
-atoms = Atoms([Atom('C',[0., 0.,0.]),
-             Atom('O',[1.1,0.,0.])],
-            cell=(10,10,10))
-
-print 'V = %1.0f Ang^3' % atoms.get_volume()
-
-write('images/simple-cubic-cell.png',atoms,show_unit_cell=2)
-#+END_SRC
-
-#+RESULTS:
-: V = 1000 Ang^3
-
-#+caption: Image of a CO molecule with the C at the origin.
-#+label: fig:co-origin
-#+ATTR_LaTeX: placement=[H]
-[[./images/simple-cubic-cell.png]]
-
-There are two inconvenient features of the simple cubic cell:
-
-1. Since the CO atom is at the corner, its electron density is spread over the 8 corners of the box, which is not convenient for visualization later (see [[*Visualizing%20electron%20density][Visualizing electron density]]).
-
-2. Due to the geometry of the cube, you need fairly large cubes to decouple the molecule from its images. Here, the CO molecule has 6 images due to periodic boundary conditions that are 10 \AA away. The volume of the unit cell is 1000 \AA$^3$.
-
-The first problem is easy to solve by centering the atoms in the unit cell. The second problem can be solved by using an fcc lattice. Below we show the result in Figure \ref{fig:co-fcc}, where we have guessed values for $b$ until the CO molecules are on average 10 \AA apart. Note the final volume is only about 715 \AA$^3$, which is smaller than the cube. This will result in less computational time to compute properties.
-
-#+BEGIN_SRC python :results output
-from ase import Atoms, Atom
-from ase.io import write
-
-b = 7.1
-atoms2 = Atoms([Atom('C',[0., 0.,0.]),
-              Atom('O',[1.1,0.,0.])],
-             cell=[[b, b, 0.],
-                   [b, 0., b],
-                   [0., b, b]])
-print 'V = %1.1f Ang^3' % atoms2.get_volume()
-
-atoms2.center() #translate atoms to center of unit cell
-write('images/fcc-cell.png',atoms2,show_unit_cell=2)
-#+END_SRC
-
-#+RESULTS:
-: V = 715.8 Ang^3
-
-#+caption: CO in an fcc cell.
-#+label: fig:co-fcc
-#+ATTR_LaTeX: placement=[H]
-[[./images/fcc-cell.png]]
-
-At this point you might ask "How do you know the distance to the neighboring image?" The =ag= viewer lets you compute this graphically, but we can use code to determine this too. All we have to do is figure out the length of each lattice vector. We use the mod:numpy module to compute the distance of a vector as the square root of the sum of squared elements.
-
-#+BEGIN_SRC python :results output
-from ase import Atoms, Atom
-import numpy as np
-
-b = 7.1
-atoms2 = Atoms([Atom('C',[0., 0.,0.]),
-              Atom('O',[1.1,0.,0.])],
-              cell=[[b, b, 0.],
-                    [b, 0., b],
-                    [0., b, b]])
-
-# get unit cell vectors and their lengths
-(a1, a2, a3) = atoms2.get_cell()
-print '|a1| = %1.2f Ang' % np.sum(a1**2)**0.5
-print '|a2| = %1.2f Ang' % np.sum(a2**2)**0.5
-print '|a3| = %1.2f Ang' % np.sum(a3**2)**0.5
-#+END_SRC
-
-#+RESULTS:
-: |a1| = 10.04 Ang
-: |a2| = 10.04 Ang
-: |a3| = 10.04 Ang
-
 *** Combining Atoms objects
 It is frequently useful to combine two =Atoms= objects, e.g. for computing reaction barriers, or other types of interactions. in ase, we simply add two Atoms objects together. Here is an example of getting an ammonia and oxygen molecule in the same unit cell. See Figure \ref{fig:combined-atoms}.
+
 #+BEGIN_SRC python :results output
-from ase import Atoms
 from ase.data.molecules import molecule
 from ase.io import write
 
@@ -911,17 +906,16 @@ Simple properties do not require a DFT calculation. They are typically only func
 If you want the $(x,y,z)$ coordinates of the atoms, use the func:ase.Atoms.get_positions. If you are interested in the fractional coordinates, use func:ase.Atoms.get_scaled_positions.
 
 #+BEGIN_SRC python :results output :exports both
-from ase import Atoms
 from ase.data.molecules import molecule
 from ase.io import write
 
-atoms = molecule('C6H6')
+atoms = molecule('C6H6')  # benzene
 
 # access properties on each atom
 print ' #  sym   p_x     p_y     p_z'
 print '------------------------------'
 for i,atom in enumerate(atoms):
-  print '%3i%3s%8.2f%8.2f%8.2f' % (i,atom.symbol,atom.x,atom.y,atom.z)
+  print '{0:3d}{1:^4s}{2:-8.2f}{3:-8.2f}{4:-8.2f}'.format(i,atom.symbol,atom.x,atom.y,atom.z)
 
 # get all properties in arrays
 sym = atoms.get_chemical_symbols()
@@ -931,65 +925,65 @@ num = atoms.get_atomic_numbers()
 atom_indices = range(len(atoms))
 
 print
-print '  # sym   at#     p_x     p_y     p_z'
+print '  # sym    at#    p_x     p_y     p_z'
 print '-------------------------------------'
 for i,s,n,p in zip(atom_indices,sym,num,pos):
   px,py,pz = p
-  print '%3i%3s%6i%10.2f%8.2f%8.2f' % (i,s,n,px,py,pz)
+  print '{0:3d}{1:>3s}{2:8d}{3:-8.2f}{4:-8.2f}{5:-8.2f}'.format(i,s,n,px,py,pz)
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
  #  sym   p_x     p_y     p_z
 ------------------------------
-  0  C    0.00    1.40    0.00
-  1  C    1.21    0.70    0.00
-  2  C    1.21   -0.70    0.00
-  3  C    0.00   -1.40    0.00
-  4  C   -1.21   -0.70    0.00
-  5  C   -1.21    0.70    0.00
-  6  H    0.00    2.48    0.00
-  7  H    2.15    1.24    0.00
-  8  H    2.15   -1.24    0.00
-  9  H    0.00   -2.48    0.00
- 10  H   -2.15   -1.24    0.00
- 11  H   -2.15    1.24    0.00
+  0 C      0.00    1.40    0.00
+  1 C      1.21    0.70    0.00
+  2 C      1.21   -0.70    0.00
+  3 C      0.00   -1.40    0.00
+  4 C     -1.21   -0.70    0.00
+  5 C     -1.21    0.70    0.00
+  6 H      0.00    2.48    0.00
+  7 H      2.15    1.24    0.00
+  8 H      2.15   -1.24    0.00
+  9 H      0.00   -2.48    0.00
+ 10 H     -2.15   -1.24    0.00
+ 11 H     -2.15    1.24    0.00
 
-  # sym   at#     p_x     p_y     p_z
+  # sym    at#    p_x     p_y     p_z
 -------------------------------------
-  0  C     6      0.00    1.40    0.00
-  1  C     6      1.21    0.70    0.00
-  2  C     6      1.21   -0.70    0.00
-  3  C     6      0.00   -1.40    0.00
-  4  C     6     -1.21   -0.70    0.00
-  5  C     6     -1.21    0.70    0.00
-  6  H     1      0.00    2.48    0.00
-  7  H     1      2.15    1.24    0.00
-  8  H     1      2.15   -1.24    0.00
-  9  H     1      0.00   -2.48    0.00
- 10  H     1     -2.15   -1.24    0.00
- 11  H     1     -2.15    1.24    0.00
+  0  C       6    0.00    1.40    0.00
+  1  C       6    1.21    0.70    0.00
+  2  C       6    1.21   -0.70    0.00
+  3  C       6    0.00   -1.40    0.00
+  4  C       6   -1.21   -0.70    0.00
+  5  C       6   -1.21    0.70    0.00
+  6  H       1    0.00    2.48    0.00
+  7  H       1    2.15    1.24    0.00
+  8  H       1    2.15   -1.24    0.00
+  9  H       1    0.00   -2.48    0.00
+ 10  H       1   -2.15   -1.24    0.00
+ 11  H       1   -2.15    1.24    0.00
 #+end_example
 
 *** Molecular weight and molecular formula
 [[index:molecular weight]]
-We can quickly compute the molecular weight of a molecule with this recipe. We use the func:ase.Atoms.get_masses.
+We can quickly compute the molecular weight of a molecule with this recipe. We use func:ase.Atoms.get_masses to get an array of the atomic masses of each atom in the =Atoms= object, and then just sum them up.
 
 #+BEGIN_SRC python :results output :exports both
-  from ase import Atoms
-  from ase.data.molecules import molecule
+from ase import Atoms
+from ase.data.molecules import molecule
 
-  atoms = molecule('C6H6')
-  masses = atoms.get_masses()
+atoms = molecule('C6H6')
+masses = atoms.get_masses()
 
-  molecular_weight = sum(masses)
+molecular_weight = masses.sum()
 
-  print 'The molecular weight of %s is %f' % (atoms.get_chemical_symbols(reduce=True),
-                                              molecular_weight)
+print 'The molecular weight of {0} is {1:1.2f} gm/mol'.format(atoms.get_chemical_symbols(reduce=True),
+                                                       molecular_weight)
 #+END_SRC
 
 #+RESULTS:
-: The molecular weight of C6H6 is 78.113640
+: The molecular weight of C6H6 is 78.11
 
 Note the argument =reduce=True= for func:ase.Atoms.get_chemical_symbols. This collects all the symbols and provides a molecular formula.
 
@@ -1002,9 +996,9 @@ COM = $\frac{\sum m_i \cdot r_i}{\sum m_i}$
 The center of mass is essentially the average position of the atoms, weighted by the mass of each atom.
 
 #+BEGIN_SRC python :results output :exports both
-from ase import Atoms
 from ase.structure import molecule
 from ase.io import write
+import numpy as np
 
 # ammonia
 atoms = molecule('NH3')
@@ -1012,8 +1006,6 @@ atoms = molecule('NH3')
 print 'COM1 = ',atoms.get_center_of_mass()  # cartesian coordinates
 
 # compute the center of mass by hand
-from ase.data import atomic_masses
-import numpy as np
 pos = atoms.positions
 masses = atoms.get_masses()
 
@@ -1037,13 +1029,11 @@ You can see these are all the same.
 
 *** Moments of inertia
 [[index:moment of inertia]]
-The [[http://en.wikipedia.org/wiki/Moment_of_inertia][moment of inertia]] is a measure of resistance to changes in rotation. It is defined by $I = \sum_{i=1}^N m_i r_i^2$ where $r_i$ is the distance to an axis of rotation. There are typically three moments of inertia, although some may be zero depending on symmetry, and some may be degenerate. There is a convenient function to get the  moments of inertia: func:ase.Atoms.get_moments_of_inertia
+The [[http://en.wikipedia.org/wiki/Moment_of_inertia][moment of inertia]] is a measure of resistance to changes in rotation. It is defined by $I = \sum_{i=1}^N m_i r_i^2$ where $r_i$ is the distance to an axis of rotation. There are typically three moments of inertia, although some may be zero depending on symmetry, and some may be degenerate. There is a convenient function to get the  moments of inertia: func:ase.Atoms.get_moments_of_inertia.
 
 Here are several examples.
 #+BEGIN_SRC python :results output :exports both
-from ase import *
 from ase.structure import molecule
-from ase.units import *
 
 print 'linear rotors: I = [Ia Ia 0]'
 atoms = molecule('CO2')
