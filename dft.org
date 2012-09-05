@@ -1753,6 +1753,7 @@ mlab.show()
 need to read wavecar files!
 
 *** Dipole moments
+[[index:dipole moment]]
 The [[http://en.wikipedia.org/wiki/Molecular_dipole_moment#Molecular_dipoles][dipole moment]] is a vector describing the separation of nuclear (positive) and electrical (negative) charge. Whether a molecule has a dipole moment or not depends on its symmetry. Below we compute the dipole moment of CO. We must integrate the electron density to find the center of electrical charge, and sum over the nuclei to find the center of positive charge.
 
 #+BEGIN_SRC python :results output :exports both
@@ -1859,6 +1860,7 @@ with jasp('molecules/co-centered') as calc:
 : The dipole moment is 0.10 Debye
 
 *** Bader analysis
+index:bader
 Bader analysis is a charge partitioning scheme where charge is divided by surfaces of zero flux that define atomic basins of charge. The most modern way of calculating the Bader charges is using the =bader= program from Graeme Henkelmen's group \cite{Henkelman2006354,doi.10.1021/ct100125x}. Let us consider a water molecule, centered in a box. The strategy is first to run the calculation, then run the bader program on the results.
 
 #+BEGIN_SRC python :results output
@@ -4109,7 +4111,12 @@ plt.savefig('images/nh3-neb.png')
 
 #+caption: NEB for ammonia flipping.
 [[./images/nh3-neb.png]]
-*** Make a movie of the animation
+*** TODO Make a movie of the animation
+
+something was wrong with the script
+
+index:animation
+It is helpful sometimes to animate the Nudged elastic band path. Here is a script to do that. I have not figured out how to embed the movie in this document
 #+BEGIN_SRC python :results output
 # make neb movie
 from ase.io import write
@@ -4126,13 +4133,19 @@ for i,atoms in enumerate(images):
     write('images/00{0}-nh3.png'.format(i), atoms, show_unit_cell=2)
 
 # animated gif
-os.system('convert -delay 50 -loop 0 images/00*-nh3.png nh3-neb.gif')
+os.system('convert -delay 50 -loop 0 images/00*-nh3.png images/nh3-neb.gif')
 
 # Shockwave flash
-os.system('png2swf -o nh3-neb.swf images/00*-nh3.png ')
+os.system('png2swf -o images/nh3-neb.swf images/00*-nh3.png ')
 #+END_SRC
 
 #+RESULTS:
+
+#+caption: In principle this is an animated gif
+[[./images/nh3-neb.gif]]
+
+#+caption: and this is a shockwave flash
+[[./images/nh3-neb.swf]]
 
 * Bulk systems
 
@@ -4901,6 +4914,7 @@ plt.show()
 [[./images/occ-sigma.png]]
 
 ** Cohesive energy
+[[index:cohesive energy]]
 The cohesive energy is defined as the energy to separate neutral atoms in their ground electronic state from the solid at 0K at 1 atm. We will compute this for rhodium. Rh is normally an fcc metal, so we will use that structure and let VASP find the equilibrium volume for us.
 
 #+BEGIN_SRC python :results output :exports both
@@ -5927,6 +5941,7 @@ savefig('images/pd-ados.png')
 [[./images/pd-ados.png]]
 
 ** Band structures
+[[index:band structure]]
 To compute a band structure we do two things. First, we compute the self-consistent band structure. Then we compute the band structure at the desired $k$-points. We will use Si as an example (adapted from http://bbs.sciencenet.cn/bbs/upload/20083418325986.pdf
 
 #+BEGIN_SRC python :results output
@@ -6392,7 +6407,7 @@ with jasp('surfaces/Al-slab-relaxed') as calc:
 index:reconstruction
 We will consider the (110) missing row reconstruction \cite{PhysRevB.83.075415}. For some metals, especially Pt and Au, it is energetically favorable to form the so-called missing row reconstruction where every other row in the surface is "missing". It is favorable because it lowers the surface energy. Let us consider how we might calculate and predict that. It is straightforward to compute the energy of a (110) slab, and of a (110) slab with one row missing. However, these slabs contain different numbers of atoms, so we cannot directly compare the total energies to determine which energy is lower.
 
-*** TODO Au(110) missing row reconstruction
+*** Au(110) missing row reconstruction
 **** Clean Au(110) slab
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -6505,7 +6520,7 @@ print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
 : dE = -0.070 eV
 
 *** TODO Cu(110) missing row reconstruction
-**** TODO Clean Cu(110) slab
+**** Clean Cu(110) slab
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 from ase.lattice.surface import *
@@ -6529,7 +6544,7 @@ with jasp('surfaces/Cu-110',
 
 #+RESULTS:
 
-**** TODO Missing row in Cu(110)
+**** Missing row in Cu(110)
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 from ase.lattice.surface import *
@@ -6575,20 +6590,21 @@ with jasp('bulk/Cu-fcc',
 #+END_SRC
 
 #+RESULTS:
+: None
 
 **** Analysis
 #+BEGIN_SRC python :results output
 from jasp import *
 
-with jasp('surfaces/Ag-110') as calc:
+with jasp('surfaces/Cu-110') as calc:
     slab = calc.get_atoms()
     eslab = slab.get_potential_energy()
 
-with jasp('surfaces/Ag-110-missing-row') as calc:
+with jasp('surfaces/Cu-110-missing-row') as calc:
     missingrow = calc.get_atoms()
     emissingrow = missingrow.get_potential_energy()
 
-with jasp('bulk/Ag-fcc') as calc:
+with jasp('bulk/Cu-fcc') as calc:
     bulk = calc.get_atoms()
     ebulk = bulk.get_potential_energy()
 
@@ -6603,7 +6619,7 @@ print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
 : natoms slab        = 12
 : natoms missing row = 11
 : natoms bulk        = 1
-: dE = -0.008 eV
+: dE = -0.011 eV
 
 ** Work function
 To get the work function, we need to have the local potential. this is not written by default in VASP, and we have to tell it to do that with the [[incar:LVTOT][LVTOT]] and [[incar:LVHAR][LVHAR]] keywords.
