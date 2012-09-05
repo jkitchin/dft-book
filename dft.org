@@ -107,6 +107,7 @@ This book makes heavy use of many computational tools including:
   This book is available at https://github.com/jkitchin/dft-book
 
 - [[https://bitbucket.org/jkitchin/jasp][jasp]]
+index:jasp
 jasp is a sophisticated wrapper to the mod:ase.calculators.vasp python interface to the VASP calculator. It was written by me to facilitate writing this book, and to develop the best possible way to run DFT calculations. The best way to learn to use jasp is from this book. jasp is currently available at https://bitbucket.org/jkitchin/jasp. It probably requires the latest svn version of ase to work since I have been adding new functionality to mod:ase.calculators.vasp as mod:jasp is developed.
 
 The goal in writing mod:jasp was to create a computational environment where you write one script to create, run, and analyze your calculations. The code is smart, and submits jobs to a queue system when required, does not submit jobs more than once, allows many jobs to run in parallel, and gives you answers when available. mod:jasp takes care of changing into VASP calculation directories, and then changing back to where you started from. mod:jasp has an interface to sqlite, and to version control (git) software. mod:jasp has some features that
@@ -3606,7 +3607,7 @@ What we typically mean by determining bulk structures includes the following:
 
 All of these questions can often be addressed by finding the volume, shape and atomic positions that minimize the total energy of a bulk system. This is true at 0K. At higher temperatures, one must consider minimizing the free energy, rather than the internal energy.
 
-*** TODO fcc/bcc crystal structures
+*** fcc/bcc crystal structures
 TODO: add descriptive text
 
 The fcc and bcc structures are simple. They only have one degree of freedom: the lattice constant. In this section we show how to calculate the equilibrium volume of each structure, and determine which one is more stable. We start with the fcc crystal structure of Cu. We will manually define the crystal structure based on the definitions in Kittel \cite{kittel} (Chapter 1).
@@ -5668,8 +5669,223 @@ with jasp('surfaces/Al-slab-relaxed') as calc:
 : d_(2,1) = 2.29891157834 angstroms
 : d_(3,2) = 2.34530960922 angstroms
 
-*** TODO Surface reconstruction
-maybe a 110 missing row reconstruction? \cite{PhysRevB.83.075415}
+** TODO Surface reconstruction
+index:reconstruction
+We will consider the (110) missing row reconstruction \cite{PhysRevB.83.075415}. For some metals, especially Pt and Au, it is energetically favorable to form the so-called missing row reconstruction where every other row in the surface is "missing". It is favorable because it lowers the surface energy. Let us consider how we might calculate and predict that. It is straightforward to compute the energy of a (110) slab, and of a (110) slab with one row missing. However, these slabs contain different numbers of atoms, so we cannot directly compare the total energies to determine which energy is lower.
+
+*** TODO Au(110) missing row reconstruction
+**** Clean Au(110) slab
+#+BEGIN_SRC python :results output :exports both
+from jasp import *
+from ase.lattice.surface import *
+from ase.io import write
+from ase.constraints import FixAtoms
+
+atoms = fcc110('Au', size=(2,1,6), vacuum=10.0)
+constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms.set_constraint(constraint)
+
+write('images/Au-110.png', atoms.repeat((2,2,1)), rotation='-90x', show_unit_cell=2)
+
+with jasp('surfaces/Au-110',
+          xc='PBE',
+          kpts=(6,6,1),
+          encut=350,
+          ibrion=2,
+          isif=2,
+          nsw=10,
+          atoms=atoms) as calc:
+    calc.calculate()
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: The unreconstructed Au(110) surface viewed from the side.
+[[./images/Au-110.png]]
+
+**** Missing row in Au(110)
+#+BEGIN_SRC python :results output :exports both
+from jasp import *
+from ase.lattice.surface import *
+from ase.io import write
+from ase.constraints import FixAtoms
+
+atoms = fcc110('Au', size=(2,1,6), vacuum=10.0)
+del atoms[11] # delete surface row
+
+constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms.set_constraint(constraint)
+
+write('images/Au-110-missing-row.png', atoms.repeat((2,2,1)), rotation='-90x', show_unit_cell=2)
+
+with jasp('surfaces/Au-110-missing-row',
+          xc='PBE',
+          kpts=(6,6,1),
+          encut=350,
+          ibrion=2,
+          isif=2,
+          nsw=10,
+          atoms=atoms) as calc:
+    calc.calculate()
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: Au(110) with the missing row reconstruction.
+[[./images/Au-110-missing-row.png]]
+
+**** Bulk Au
+#+BEGIN_SRC python
+from jasp import *
+from ase.visualize import view
+from ase.lattice.cubic import FaceCenteredCubic
+
+atoms = FaceCenteredCubic(directions=[[0,1,1],
+                                      [1,0,1],
+                                      [1,1,0]],
+                                      size=(1,1,1),
+                                      symbol='Au')
+
+with jasp('bulk/Au-fcc',
+          xc='PBE',
+          encut=350,
+          kpts=(12,12,12),
+          atoms=atoms) as calc:
+    calc.calculate()
+#+END_SRC
+
+#+RESULTS:
+
+**** Analysis of energies
+#+BEGIN_SRC python :results output
+from jasp import *
+
+with jasp('surfaces/Au-110') as calc:
+    slab = calc.get_atoms()
+    eslab = slab.get_potential_energy()
+
+with jasp('surfaces/Au-110-missing-row') as calc:
+    missingrow = calc.get_atoms()
+    emissingrow = missingrow.get_potential_energy()
+
+with jasp('bulk/Au-fcc') as calc:
+    bulk = calc.get_atoms()
+    ebulk = bulk.get_potential_energy()
+
+print 'natoms slab        = {0}'.format(len(slab))
+print 'natoms missing row = {0}'.format(len(missingrow))
+print 'natoms bulk        = {0}'.format(len(bulk))
+
+print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
+#+END_SRC
+
+#+RESULTS:
+: natoms slab        = 12
+: natoms missing row = 11
+: natoms bulk        = 1
+: dE = -0.070 eV
+
+*** TODO Cu(110) missing row reconstruction
+**** TODO Clean Cu(110) slab
+#+BEGIN_SRC python :results output :exports both
+from jasp import *
+from ase.lattice.surface import *
+from ase.visualize import view
+from ase.constraints import FixAtoms
+
+atoms = fcc110('Cu', size=(2,1,6), vacuum=10.0)
+constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms.set_constraint(constraint)
+
+with jasp('surfaces/Cu-110',
+          xc='PBE',
+          kpts=(6,6,1),
+          encut=350,
+          ibrion=2,
+          isif=2,
+          nsw=10,
+          atoms=atoms) as calc:
+    calc.calculate()
+#+END_SRC
+
+#+RESULTS:
+
+**** TODO Missing row in Cu(110)
+#+BEGIN_SRC python :results output :exports both
+from jasp import *
+from ase.lattice.surface import *
+from ase.visualize import view
+from ase.constraints import FixAtoms
+
+atoms = fcc110('Cu', size=(2,1,6), vacuum=10.0)
+del atoms[11] # delete surface row
+
+constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms.set_constraint(constraint)
+with jasp('surfaces/Cu-110-missing-row',
+          xc='PBE',
+          kpts=(6,6,1),
+          encut=350,
+          ibrion=2,
+          isif=2,
+          nsw=10,
+          atoms=atoms) as calc:
+    calc.calculate()
+#+END_SRC
+
+#+RESULTS:
+
+**** Bulk Cu
+#+BEGIN_SRC python
+from jasp import *
+from ase.visualize import view
+from ase.lattice.cubic import FaceCenteredCubic
+
+atoms = FaceCenteredCubic(directions=[[0,1,1],
+                                      [1,0,1],
+                                      [1,1,0]],
+                                      size=(1,1,1),
+                                      symbol='Cu')
+
+with jasp('bulk/Cu-fcc',
+          xc='PBE',
+          encut=350,
+          kpts=(12,12,12),
+          atoms=atoms) as calc:
+    calc.calculate()
+#+END_SRC
+
+#+RESULTS:
+
+**** Analysis
+#+BEGIN_SRC python :results output
+from jasp import *
+
+with jasp('surfaces/Ag-110') as calc:
+    slab = calc.get_atoms()
+    eslab = slab.get_potential_energy()
+
+with jasp('surfaces/Ag-110-missing-row') as calc:
+    missingrow = calc.get_atoms()
+    emissingrow = missingrow.get_potential_energy()
+
+with jasp('bulk/Ag-fcc') as calc:
+    bulk = calc.get_atoms()
+    ebulk = bulk.get_potential_energy()
+
+print 'natoms slab        = {0}'.format(len(slab))
+print 'natoms missing row = {0}'.format(len(missingrow))
+print 'natoms bulk        = {0}'.format(len(bulk))
+
+print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
+#+END_SRC
+
+#+RESULTS:
+: natoms slab        = 12
+: natoms missing row = 11
+: natoms bulk        = 1
+: dE = -0.008 eV
+
 ** Work function
 To get the work function, we need to have the local potential. this is not written by default in VASP, and we have to tell it to do that with the [[incar:LVTOT][LVTOT]] and [[incar:LVHAR][LVHAR]] keywords.
 
