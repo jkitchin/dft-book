@@ -803,7 +803,6 @@ print 'theta = {0} degrees'.format(atoms.get_angle([1,0,2])*180./pi)
 #+RESULTS:
 : theta = 106.334624232 degrees
 
-
 **** Dihedral angles
 There is support in ase for computing [[http://en.wikipedia.org/wiki/Dihedral_angle][dihedral angles]]. Let us illustrate that for ethane. We will compute the dihedral angle between atoms 5, 1, 0, and 4. That is a H-C-C-H dihedral angle, and one can visually see (although not here) that these atoms have dihedral angle of 60^{\circ}. See Figure \ref{fig:ethane-dihedral}.
 
@@ -1638,7 +1637,6 @@ Note we get 9 frequencies here. Water has 3 atoms, with three degrees of freedom
 http://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=800#Electronic-Spec
 
 The results are not too far off, and more accurate frequencies may be possible using tighter tolerance on [[incar:POTIM][POTIM]], or by using [[incar:IBRION][IBRION]]=7 or 8.
-
 
 **** Zero-point energy for multiple modes
 For a molecule with lots of vibrational modes the zero-point energy is defined as the sum over all the vibrational modes:
@@ -2907,7 +2905,7 @@ Pseudopotentials used:
 C: potpaw_PBE/C/POTCAR (git-hash: 2272d6745da89a3d872983542cef1d18750fc952)
 O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
 #+end_example
-***** CO$_2$
+***** CO_{2}
 #+begin_example
 : -----------------------------
   VASP calculation from /home/jkitchin/dft-org/molecules/wgs/CO2
@@ -2948,7 +2946,7 @@ Pseudopotentials used:
 C: potpaw_PBE/C/POTCAR (git-hash: 2272d6745da89a3d872983542cef1d18750fc952)
 O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
 #+end_example
-***** H$_2$
+***** H_{2}
 #+begin_example
 : -----------------------------
   VASP calculation from /home/jkitchin/dft-org/molecules/wgs/H2
@@ -7090,7 +7088,6 @@ O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
 Cu: potpaw_PBE/Cu/POTCAR (git-hash: a44c591415026f53deb16a99ca3f06b1e69be10b)
 #+end_example
 
-
 **** Reaction energy calculation with DFT+U
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -8895,7 +8892,6 @@ modulus and its pressure derivative at the equilibrium volume
 $V_0$. All of these are parameters that are fitted to energy
 vs. unit cell volume ($V$) data. When fitting data to this equation a
 guess of 2-4 for $B'_0$ is usually a good start.
-
 
 *** Birch
 
