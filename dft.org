@@ -15,6 +15,7 @@
 #+LINK_UP:
 #+LINK_HOME:
 #+XSLT:
+#+latex_header: \usepackage{movie15}
 #+latex_header: \usepackage{underscore}
 #+latex_header: \usepackage{makeidx}
 #+latex_header: \usepackage[section]{placeins}
@@ -3415,6 +3416,9 @@ os.system('png2swf -o nh3-neb.swf images/00*-nh3.png ')
 
 #+RESULTS:
 
+
+
+
 * Bulk systems
 
 See http://arxiv.org/pdf/1204.2733.pdf for a very informative comparison of DFT codes for computing different bulk properties.
@@ -3607,7 +3611,8 @@ What we typically mean by determining bulk structures includes the following:
 
 All of these questions can often be addressed by finding the volume, shape and atomic positions that minimize the total energy of a bulk system. This is true at 0K. At higher temperatures, one must consider minimizing the free energy, rather than the internal energy.
 
-*** fcc/bcc crystal structures
+*** TODO fcc/bcc crystal structures
+TODO: add descriptive text
 
 The fcc and bcc structures are simple. They only have one degree of freedom: the lattice constant. In this section we show how to calculate the equilibrium volume of each structure, and determine which one is more stable. We start with the fcc crystal structure of Cu. We will manually define the crystal structure based on the definitions in Kittel \cite{kittel} (Chapter 1).
 
@@ -3684,6 +3689,7 @@ print v0, e0, B
 
 eos.plot('images/Cu-fcc-eos.png')
 #+END_SRC
+
 
 #+RESULTS:
 : 12.0167187475 -3.72468102446 0.858998381274
@@ -4783,7 +4789,7 @@ print 'Composition weighted average  = {0} eV'.format(Hf1 + (x0-x)/(x0-x3)*(Hf3 
 We find the weighted composition formation energy of pure Cu and cupd-1 is more favorable than the formation energy of cu3pd-1. Therefore, we could expect that structure to phase separate into a mixture of pure Cu and cupd-1. Schematically what we are seeing is shown in Figure \ref{fig:alloy-phase-separation}.
 
 # inkscape images/alloy-phase-stability.svg
-#+caption: Illustration of phase separation.
+#+caption: Illustration of phase separation. The point labeled E5 will phase separate into mixtures of the structures at x0 and x3.
 #+label: fig:alloy-phase-separation
 #+ATTR_LaTeX: placement=[H]
 [[./images/alloy-phase-stability.png]]
@@ -4836,7 +4842,7 @@ print 'Delta Hf cu3pd-2 = {0:1.2f} eV/atom'.format(e4)
 This looks promising: the formation energy is much more favorable than cu3pd-1, and it is below the composition weighted formation energy of -0.06 eV/atom. Consequently, we conclude that this structure will not phase separate into a mixture of Cu and CuPd. We cannot say, however, if there is a more stable phase not yet considered, or if it might phase separate into two other phases. We also note here that we have ignored a few other contributions to alloy stability. We have only considered the electronic energy contributions to the formation energy. At temperatures above absolute zero there are additional contributions including configurational and vibrational entropy, which may stabilize some structures more than others. Finally, our analysis is limited to comparisons of the structures computed on the fcc lattice. In fact, it is known that the CuPd alloy forms a bcc structure. We did not calculate that structure, so we can not say if it is more or less stable than the obvious fcc structure we found.
 
 # convert ./images/alloy-phase-stability-2.svg ./images/alloy-phase-stability-2.png
-#+caption: Illustration of phase separation.
+#+caption: The structure E6 is more stable than E5, and lower in energy than a composition weighted average of E1 and E3, so it will not phase separate.
 #+label: fig:alloy-phase-separation-2
 #+ATTR_LaTeX: placement=[H]
 [[./images/alloy-phase-stability-2.png]]
@@ -4844,7 +4850,7 @@ This looks promising: the formation energy is much more favorable than cu3pd-1, 
 The construction of alloy phase diagrams is difficult. You are always faced with the possibility that there is a phase that you have not calculated that is more stable than the ones you did calculate. One approach is to use a tool that automates the discovery of relevant structures such as the Alloy Theoretic Automated Toolkit ([[http://www.its.caltech.edu/~avdw/atat/][ATAT]]) \cite{vandeWalle2002539,vandeWalle2009266} which uses a cluster expansion methodology.
 
 *** Metal oxide oxidation energies
-We will consider here the reaction $2 Cu_2O + O_2 \rightleftharpoons 4 CuO$. The reaction energy is:
+We will consider here the reaction 2 Cu_{2}O + O_{2} \rightleftharpoons 4 CuO. The reaction energy is:
 
 $\Delta E = 4E_{CuO} - 2E_{Cu_2O} - E_{O_2}$. We need to compute the energy of each species.
 
@@ -5036,7 +5042,7 @@ print 'Reaction energy = {0} eV'.format(rxn_energy)
 #+RESULTS:
 : Reaction energy = -1.966168 eV
 
-There are a few reasons why our number does not agree with the experimental reaction energy. One reason is related to errors in the O_{2} dissociation energy, and another reason is related to localization of electrons in the Cu 3\(d\) orbitals \cite{PhysRevB.73.195107}. The first error of incorrect O$_2$ dissociation error is a systematic error that can be corrected empirically \cite{PhysRevB.73.195107}. Fixing the second error requires the application of DFT+U (see [[*DFT%2BU][DFT+U]])
+There are a few reasons why our number does not agree with the experimental reaction energy. One reason is related to errors in the O_{2} dissociation energy, and another reason is related to localization of electrons in the Cu 3\(d\) orbitals \cite{PhysRevB.73.195107}. The first error of incorrect O_{2} dissociation error is a systematic error that can be corrected empirically \cite{PhysRevB.73.195107}. Fixing the second error requires the application of DFT+U (see [[*DFT%2BU][DFT+U]])
 
 ** Bulk density of states
 The density of states refers to the number of electronic states in a particular energy range.
@@ -6638,7 +6644,7 @@ Similarly, you can see that simply changing the pressure has a large effect on t
 $\mu_{O_2} = E_{O_2}^{DFT} + E_{O_2}^{ZPE} + \Delta \mu (T) + kT \ln(P/P_0)$
 
 ** Bulk phase stability of oxides
-We will  consider the effects of oxygen pressure and temperature on the formation energy of Ag\(_2\)O and Cu\(_2\)O.
+We will  consider the effects of oxygen pressure and temperature on the formation energy of Ag_{2}O and Cu_{2}O.
 
 $2Cu + 1/2 O_2 \rightarrow Cu_2O$
 
@@ -6797,7 +6803,7 @@ plt.savefig('images/Ag2O-decomposition.png')
 #+ATTR_LaTeX: placement=[H]
 [[./images/Ag2O-decomposition.png]]
 
-This shows that at high temperature and low p\(_{O_2}\) metallic silver is stable, but if the  p\(_{O_2}\) gets high enough, the oxide becomes thermodynamically favorable. Here is another way to look at it.
+This shows that at high temperature and low p_{O_{2}} metallic silver is stable, but if the p_{O_{2}} gets high enough, the oxide becomes thermodynamically favorable. Here is another way to look at it.
 
 #+BEGIN_SRC python
 import numpy as np
@@ -7634,7 +7640,7 @@ savefig('images/nonlinear-curve-fitting.png')
 #+caption: Example of least-squares non-linear curve fitting.
 [[./images/nonlinear-curve-fitting.png]]
 
-See additional examples at http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html
+See additional examples at \url{http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html}.
 
 *** Nonlinear curve fitting by direct least squares mimimization
 #+BEGIN_SRC python :results output :exports both
