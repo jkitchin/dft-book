@@ -164,13 +164,13 @@ A fairly standard textbook on DFT is the one written by Parr and Yang
 readable and contains more practical information for running
 calculations, but both of these books focus on molecular systems.
  The standard texts in this solid state physics are by Kittel \cite{kittel}
-and Ashcroft and Mermin \cite{ashcroft-mermin}., Both have their fine
+and Ashcroft and Mermin \cite{ashcroft-mermin}. Both have their fine
 points, the former being more mathematically rigorous and the latter
 more readable.  However, neither of these books is particularly easy
 to relate to chemistry.  For this, one should consult the
 exceptionally clear writings of Roald Hoffman
 \cite{hoffmann1987,RevModPhys.60.601}, and follow these with the work of
-N{\o}rskov and coworkers
+N\{o}rskov and coworkers
 \cite{hammer2000:adv-cat,greeley2002:elect}.
 
 In this chapter, only the elements of DFT that are relevant to this
@@ -246,8 +246,9 @@ equations:
 \begin{equation}\label{eq:KS}
 \biggl(-\frac{1}{2}\nabla^2 + v_{eff}(\mathbf{r}) -\epsilon_j\biggr)\varphi_j(\mathbf{r})=0,
 \end{equation}
+
 with
-%
+
 \begin{equation}\label{eq:veff}
 v_{eff}(\mathbf{r})=v(\mathbf{r})+\int \frac{n(\mathbf{r'})}{|\mathbf{r-r'}|}d\mathbf{r'} + v_{xc}(\mathbf{r}),
 \end{equation}
@@ -257,7 +258,7 @@ function. Thus, the density needs to be known in order to define the
 effective potential so that Eq. \eqref{eq:KS} can be solved.
 $\varphi_j(\mathbf{r})$ corresponds to the $j^{th}$ KS orbital of energy
 $\epsilon_j$.
-%
+
 The ground state density is given by:
 \begin{equation}\label{eq:density}
 \displaystyle
@@ -270,7 +271,7 @@ solved for $\varphi_j(\mathbf{r})$ iteratively until the $\varphi_j(\mathbf{r})$
 result from the solution are the same as the $\varphi_j(\mathbf{r})$ that are
 used to define the equations, that is, the solutions are
 self-consistent.  Finally, the ground state energy is given by:
-%
+
 \begin{equation}\label{eq:dftEnergy}
 \displaystyle
 E=\sum_j\epsilon_j + E_{xc}[n(\mathbf{r})]-\int v_{xc}(\mathbf{r}) n(\mathbf{r}) d\mathbf{r}
@@ -400,7 +401,7 @@ will be errors in the total energy associated with the finite number
 of $\mathbf{k}$, but these can be reduced and tested for convergence
 by using higher $\mathbf{k}$-point densities. An excellent discussion
 of this for aperiodic systems can be found in Ref.
-\citealp{makov1996:period-bound-condit}.
+\citealp{makov1995:period-bound-condit}.
 
 The most common schemes for generating $\mathbf{k}$ points are the
 Chadi-Cohen scheme \cite{PhysRevB.8.5747}, and the Monkhorst-Pack scheme
@@ -1400,12 +1401,13 @@ mlab.show()
 [[./images/co-centered-cd.png]]
 
 *** TODO Electrostatic potential
-this is an example of the so-called sigma hole in a halogen bond.
+this is an example of the so-called sigma hole in a [[http://pubs.acs.org/cen/science/87/8738sci2.html][halogen bond]].
 #+BEGIN_SRC python :results output :exports both
-from ase import Atoms
 from ase.data.molecules import molecule
 from ase.io import write
 from jasp import *
+
+from enthought.mayavi import mlab
 
 atoms = molecule('CH4')
 for i in [1,2,3]:
@@ -1421,13 +1423,21 @@ with jasp('molecules/CF3Br',
           nsw=50,
           lvtot=True, lvhar=True, atoms=atoms) as calc:
     calc.calculate()
+
+    x,y,z,lp = calc.get_local_potential()
+
+mlab.contour3d(x,y,z,lp)
+mlab.savefig('images/halogen-ep.png')
+#mlab.show()
 #+END_SRC
 
 #+RESULTS:
 
+# +caption: Plot of the electrostatic potential of CF_{3}Br.
+# [[./images/halogen-ep.png]]
 
 *** TODO Visualizing Kohn-Sham orbitals                            :noexport:
-need to read wavecar files!
+need to read wavecar files! We cannot do this yet. There is some hope at http://www.andrew.cmu.edu/user/feenstra/wavetrans/, but I have not figured out how to use it yet.
 
 *** Dipole moments
 [[index:dipole moment]]
@@ -10514,7 +10524,7 @@ print 'x_cu = {0}'.format(x_Cu)
 : x_cu = 0.555555555556
 
 * References
-\bibliographystyle{plainnat}
+\bibliographystyle{unsrtnat}
 \bibliography{dft}
 
 * Index
