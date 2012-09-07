@@ -170,7 +170,7 @@ more readable.  However, neither of these books is particularly easy
 to relate to chemistry.  For this, one should consult the
 exceptionally clear writings of Roald Hoffman
 \cite{hoffmann1987,RevModPhys.60.601}, and follow these with the work of
-N\{o}rskov and coworkers
+N\o rskov and coworkers
 \cite{hammer2000:adv-cat,greeley2002:elect}.
 
 In this chapter, only the elements of DFT that are relevant to this
@@ -1363,11 +1363,52 @@ The electron density is a 3\(d\) quantity: for every $(x,y,z)$ point, there is a
 #+BEGIN_SRC python
 from enthought.mayavi import mlab
 from jasp import *
+from ase.data import vdw_radii
+from ase.data.colors import cpk_colors
 
 with jasp('molecules/simple-co') as calc:
+    atoms = calc.get_atoms()
     x,y,z,cd = calc.get_charge_density()
 
+mlab.figure(1, bgcolor=(1,1,1)) # make a white figure
+
+# plot the atoms as spheres
+for atom in atoms:
+    mlab.points3d(atom.x,
+                  atom.y,
+                  atom.z,
+                  scale_factor=vdw_radii[atom.number]/2.,
+                  resolution=20,
+                  # a tuple is required for the color
+                  color=tuple(cpk_colors[atom.number]),
+                  scale_mode='none')
+
+# draw the unit cell - there are 8 corners, and 12 connections
+a1, a2, a3 = atoms.get_cell()
+origin = [0,0,0]
+cell_matrix = [[origin,  a1],
+               [origin,  a2],
+               [origin,  a3],
+               [a1,      a1 + a2],
+               [a1,      a1 + a3],
+               [a2,      a2 + a1],
+               [a2,      a2 + a3],
+               [a3,      a1 + a3],
+               [a3,      a2 + a3],
+               [a1 + a2, a1 + a2 + a3],
+               [a2 + a3, a1 + a2 + a3],
+               [a1 + a3, a1 + a3 + a2]]
+
+for p1, p2 in cell_matrix:
+    mlab.plot3d([p1[0], p2[0]], # x-positions
+                [p1[1], p2[1]], # y-positions
+                [p1[2], p2[2]], # z-positions
+                tube_radius=0.02)
+
+# Now plot the charge density
 mlab.contour3d(x,y,z,cd)
+mlab.view(azimuth=-90,  elevation=90, distance='auto')
+
 mlab.savefig('images/co-cd.png')
 mlab.show()
 #+END_SRC
@@ -1375,7 +1416,7 @@ mlab.show()
 #+RESULTS:
 : None
 
-#+caption: Charge density of a CO molecule.
+#+caption: Charge density of a CO molecule that is located at the origin. The electron density that is outside the cell is wrapped around to the other corners.
 #+ATTR_LaTeX: placement=[H]
 #+label: fig:cd1
 [[./images/co-cd.png]]
@@ -1383,11 +1424,52 @@ mlab.show()
 #+BEGIN_SRC python
 from enthought.mayavi import mlab
 from jasp import *
+from ase.data import vdw_radii
+from ase.data.colors import cpk_colors
 
 with jasp('molecules/co-centered') as calc:
+    atoms = calc.get_atoms()
     x,y,z,cd = calc.get_charge_density()
 
+mlab.figure(bgcolor=(1,1,1))
+
+# plot the atoms as spheres
+for atom in atoms:
+    mlab.points3d(atom.x,
+                  atom.y,
+                  atom.z,
+                  scale_factor=vdw_radii[atom.number]/2.,
+                  resolution=20,
+                  # a tuple is required for the color
+                  color=tuple(cpk_colors[atom.number]),
+                  scale_mode='none')
+
+# draw the unit cell - there are 8 corners, and 12 connections
+a1, a2, a3 = atoms.get_cell()
+origin = [0,0,0]
+cell_matrix = [[origin,  a1],
+               [origin,  a2],
+               [origin,  a3],
+               [a1,      a1 + a2],
+               [a1,      a1 + a3],
+               [a2,      a2 + a1],
+               [a2,      a2 + a3],
+               [a3,      a1 + a3],
+               [a3,      a2 + a3],
+               [a1 + a2, a1 + a2 + a3],
+               [a2 + a3, a1 + a2 + a3],
+               [a1 + a3, a1 + a3 + a2]]
+
+for p1, p2 in cell_matrix:
+    mlab.plot3d([p1[0], p2[0]], # x-positions
+                [p1[1], p2[1]], # y-positions
+                [p1[2], p2[2]], # z-positions
+                tube_radius=0.02)
+
+# Now plot the charge density
 mlab.contour3d(x,y,z,cd)
+mlab.view(azimuth=-90,  elevation=90, distance='auto')
+
 mlab.savefig('images/co-centered-cd.png')
 mlab.show()
 #+END_SRC
@@ -1395,46 +1477,83 @@ mlab.show()
 #+RESULTS:
 : None
 
-#+caption: Charge density of a CO molecule centered in the unit cell.
+#+caption: Charge density of a CO molecule centered in the unit cell. Now the electron density is centered in the unit cell.
 #+ATTR_LaTeX: placement=[H]
 #+label: fig:cd2
 [[./images/co-centered-cd.png]]
 
 *** TODO Electrostatic potential
-this is an example of the so-called sigma hole in a [[http://pubs.acs.org/cen/science/87/8738sci2.html][halogen bond]].
+this is an example of the so-called sigma hole in a [[http://pubs.acs.org/cen/science/87/8738sci2.html][halogen bond]]. The coordinates for the CF_{3}Br molecule were found at http://cccbdb.nist.gov/exp2.asp?casno=75638.
+
 #+BEGIN_SRC python :results output :exports both
-from ase.data.molecules import molecule
+from ase import Atom, Atoms
 from ase.io import write
 from jasp import *
 
 from enthought.mayavi import mlab
+from ase.data import vdw_radii
+from ase.data.colors import cpk_colors
 
-atoms = molecule('CH4')
-for i in [1,2,3]:
-    atoms[i].symbol = 'F'
-atoms[-1].symbol = 'Br'
-
-atoms.center(vacuum=6)
+atoms = Atoms([Atom('C',  [ 0.0000, 	0.0000, 	-0.8088]),
+               Atom('Br', [ 0.0000, 	0.0000, 	 1.1146]),
+               Atom('F',  [ 0.0000, 	1.2455, 	-1.2651]),
+               Atom('F',  [ 1.0787,    -0.6228, 	-1.2651]),
+               Atom('F',  [-1.0787,    -0.6228, 	-1.2651])],
+               cell=(10, 10, 10))
+atoms.center()
 
 with jasp('molecules/CF3Br',
           encut=350,
           xc='PBE',
           ibrion=1,
           nsw=50,
-          lvtot=True, lvhar=True, atoms=atoms) as calc:
+          lvtot=True,
+          lvhar=True,
+          atoms=atoms) as calc:
+    calc.set_nbands(f=2)
     calc.calculate()
 
     x,y,z,lp = calc.get_local_potential()
+    x,y,z,cd = calc.get_charge_density()
+
+mlab.figure(1, bgcolor=(1,1,1)) # make a white figure
+
+# plot the atoms as spheres
+for atom in atoms:
+    mlab.points3d(atom.x,
+                  atom.y,
+                  atom.z,
+                  scale_factor=vdw_radii[atom.number]/5.,
+                  resolution=20,
+                  # a tuple is required for the color
+                  color=tuple(cpk_colors[atom.number]),
+                  scale_mode='none')
+# plot the bonds. We want a line from C-Br, C-F, etc...
+# We create a bond matrix showing which atoms are connected.
+bond_matrix = [[0, 1],
+               [0, 2],
+               [0, 3],
+               [0, 4]]
+
+for a1, a2 in bond_matrix:
+    mlab.plot3d(atoms.positions[[a1,a2], 0], # x-positions
+                atoms.positions[[a1,a2], 1], # y-positions
+                atoms.positions[[a1,a2], 2], # z-positions
+                [2,2],
+                tube_radius=0.02,
+                colormap='Reds')
 
 mlab.contour3d(x,y,z,lp)
 mlab.savefig('images/halogen-ep.png')
-#mlab.show()
+mlab.show()
 #+END_SRC
 
 #+RESULTS:
 
-# +caption: Plot of the electrostatic potential of CF_{3}Br.
-# [[./images/halogen-ep.png]]
+#+caption: Plot of the electrostatic potential of CF_{3}Br. TODO: figure out how to do an isosurface of charge, colormapped by the local potential.
+[[./images/halogen-ep.png]]
+
+See http://www.uni-due.de/~hp0058/?file=manual03.html&dir=vmdplugins for examples of using [[http://www.ks.uiuc.edu/Research/vmd/][VMD]] for visualization.
 
 *** TODO Visualizing Kohn-Sham orbitals                            :noexport:
 need to read wavecar files! We cannot do this yet. There is some hope at http://www.andrew.cmu.edu/user/feenstra/wavetrans/, but I have not figured out how to use it yet.
