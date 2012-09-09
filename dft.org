@@ -8468,8 +8468,7 @@ These images (Figure \ref{fig:elf1} and \ref{fig:elf2}) are basically consistent
 * Acknowledgments
 I would like to thank Zhongnan Xu for sending me some examples on magnetism. Alan McGaughey and Lars Grabow for sending me some NEB examples. Matt Curnan for examples of phonons.
 
-Many thanks to students in my class who have pointed out typos, places of confusion, etc... These include:
-- Bruno Calfa
+Many thanks to students in my class who have pointed out typos, places of confusion, etc... These include Bruno Calfa, Matt Curnan, Charlie Janini, Feng Cao, Gamze Gumuslu, Nicholas Chisholm, Prateek Mehta, Qiyang Duan, Shubhaditya Majumdar, Steven Illes, Wee-Liat Ong, Ye Wang, Yichun Sun, Yubing Lu, and Zhongnan Xu.
 * Appendices
 ** Recipes
 *** Modifying Atoms by deleting atoms
