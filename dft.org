@@ -80,15 +80,20 @@
 
 [[./images/cover-page.png]]
 
-* List of figures
+
 #+latex: \listoffigures
-* List of tables
+
 #+latex: \listoftables
+
+* Tasks :noexport:
+** replace all % formating with .format
+
+** make func and mod links un-hyphenatable.
 
 * Introduction to this book
 This book serves two purposes: 1) to provide worked examples of using DFT to model materials properties, and 2) to provide references to more advanced treatments of these topics in the literature. It is not a definitive reference on density functional theory. Along the way to learning how to perform the calculations, you will learn how to analyze the data, make plots, and how to interpret the results. This book is very much "recipe" oriented, with the intention of giving you enough information and knowledge to start your research. In that sense, many of the computations are not publication quality with respect to convergence of calculation parameters.
 
-You will read a lot of python code in this book. That is by design. I believe that computational work should always be scripted. That leaves a record of everything you did, so that you can reproduce it later, or report exactly what you did.
+You will read a lot of python code in this book, as the comprehension of code is an integral part of its design. I believe that computational work should always be scripted. As a result, a written record of everything you have done will be available, allowing you to reproduce your code or report the method of its execution exactly at a later time.
 
 This book makes heavy use of many computational tools including:
 
@@ -103,15 +108,15 @@ This book makes heavy use of many computational tools including:
     emacs in org-mode. This format provides clickable links, easy
     navigation, syntax highlighting, as well as the ability to
     interact with the tables and code. The book is also available in
-    pdf.
+    PDF.
 - [[http://github.org][git]]
   This book is available at https://github.com/jkitchin/dft-book
 
 - [[https://bitbucket.org/jkitchin/jasp][jasp]]
 index:jasp
-jasp is a sophisticated wrapper to the mod:ase.calculators.vasp python interface to the VASP calculator. It was written by me to facilitate writing this book, and to develop the best possible way to run DFT calculations. The best way to learn to use jasp is from this book. jasp is currently available at https://bitbucket.org/jkitchin/jasp. It probably requires the latest svn version of ase to work since I have been adding new functionality to mod:ase.calculators.vasp as mod:jasp is developed.
+=jasp= is a sophisticated wrapper to the mod:ase.calculators.vasp python interface to the VASP calculator. It was written by me to facilitate writing this book and to develop the best possible way to run DFT calculations. The best way to learn to use jasp is from this book. =jasp= is currently available at https://bitbucket.org/jkitchin/jasp. It probably requires the latest svn version of ase to work since I have been adding new functionality to mod:ase.calculators.vasp as mod:jasp is developed.
 
-The goal in writing mod:jasp was to create a computational environment where you write one script to create, run, and analyze your calculations. The code is smart, and submits jobs to a queue system when required, does not submit jobs more than once, allows many jobs to run in parallel, and gives you answers when available. mod:jasp takes care of changing into VASP calculation directories, and then changing back to where you started from. mod:jasp has an interface to sqlite, and to version control (git) software. mod:jasp has some features that
+The goal in writing mod:jasp was to create a computational environment where you write one script to create, run and analyze your calculations. The code is smart, and submits jobs to a queue system when required, does not submit jobs more than once, allows many jobs to run in parallel, and gives you answers when available. mod:jasp takes care of changing into VASP calculation directories, and then changing back to where you started from. mod:jasp has an interface to sqlite, and to version control (git) software. mod:jasp has some features that
 mod:ase.calculators.vasp does not have yet. They may get incorporated into ase one day.
 
 =jaspsum= is a utility program provided in jasp which prints a pretty representation of the state of a calculation, plots the relaxation trajectory, or prints a code representation of a vasp directory.
@@ -122,7 +127,7 @@ with jasp('directory', lotsofkeywords, atoms=atoms) as calc:
     #do stuff
 #+END_src
 
-with this code:
+with code similar to this:
 #+BEGIN_src python
 CWD = os.getcwd()
 os.chdir('directory')
@@ -174,11 +179,10 @@ N\o rskov and coworkers
 \cite{hammer2000:adv-cat,greeley2002:elect}.
 
 In this chapter, only the elements of DFT that are relevant to this
-work will be
-discussed.  An excellent review on other implementations of DFT can be
-found in Reference \citealp{freeman1995:densit}, and details on the
-various algorithms used in DFT codes can be found in Refs.
-\citealp{payne1992:iterat,Kresse199615}.
+work will be discussed.  An excellent review on other implementations
+of DFT can be found in Reference \citealp{freeman1995:densit}, and
+details on the various algorithms used in DFT codes can be found in
+Refs.  \citealp{payne1992:iterat,Kresse199615}.
 
 One of the most useful sources of information has been the
 dissertations of other students, perhaps because the difficulties they
@@ -305,12 +309,13 @@ to make semiconductor systems too metallic (the band gap problem)
 The generalized gradient approximation includes corrections for
 gradients in the electron density, and is often implemented as a
 corrective function of the LDA.  The form of this corrective function,
-or ``exchange enhancement'' function determines which functional it
-is, e.g. PBE, RPBE, revPBE, etc. \cite{hammer1999:improv-pbe}. In this book the PBE GGA functional is used the most. N{\o}rskov and coworkers have found that the RPBE
-functional gives superior chemisorption energies for atomic and
-molecular bonding to surfaces, but that it gives worse bulk
-properties, such as lattice constants compared to experimental data
-\cite{hammer1999:improv-pbe}.
+or "exchange enhancement" function determines which functional it
+is, e.g. PBE, RPBE, revPBE, etc. \cite{hammer1999:improv-pbe}. In this
+book the PBE GGA functional is used the most. N{\o}rskov and coworkers
+have found that the RPBE functional gives superior chemisorption
+energies for atomic and molecular bonding to surfaces, but that it
+gives worse bulk properties, such as lattice constants compared to
+experimental data \cite{hammer1999:improv-pbe}.
 
  Finally, there are increasingly new types of functionals
 in the literature. The so-called hybrid functionals, such as B3LYP,
@@ -534,7 +539,7 @@ All calculations were performed using VASP \cite{Kresse199615, PhysRevB.54.11169
 Monkhorst-Pack k-points \cite{PhysRevB.13.5188}
 
 * Molecules
-In this chapter we consider how to construct models of molecules, how to manipulate them, and how to calculate many properties of molecules. For a nice comparison of VASP and Gaussian see \cite{paier:234102}.
+In this chapter we consider how to construct models of molecules, how to manipulate them, and how to calculate many properties of molecules. For a nice comparison of VASP and Gaussian see \citealp{paier:234102}.
 ** Defining and visualizing molecules
 We start by learning how to define a molecule and visualize it. We will begin with defining molecules from scratch, then reading molecules from data files, and finally using some built-in databases in =ase=.
 *** From scratch
@@ -547,9 +552,9 @@ from ase.io import write
 # define an Atoms object
 atoms = Atoms([Atom('C',[0., 0.,0.]),
                Atom('O',[1.1,0.,0.])],
-            cell=(10,10,10))
+               cell=(10,10,10))
 
-print 'V = %1.0f Ang^3' % atoms.get_volume()
+print 'V = {0:1.0f} Angstrom^3'.format(atoms.get_volume())
 
 write('images/simple-cubic-cell.png',atoms,show_unit_cell=2)
 #+END_SRC
@@ -564,11 +569,11 @@ write('images/simple-cubic-cell.png',atoms,show_unit_cell=2)
 
 There are two inconvenient features of the simple cubic cell:
 
-1. Since the CO atom is at the corner, its electron density is spread over the 8 corners of the box, which is not convenient for visualization later (see [[*Visualizing%20electron%20density][Visualizing electron density]]).
+1. Since the CO molecule is at the corner, its electron density is spread over the 8 corners of the box, which is not convenient for visualization later (see [[*Visualizing%20electron%20density][Visualizing electron density]]).
 
-2. Due to the geometry of the cube, you need fairly large cubes to decouple the molecule from its images. Here, the CO molecule has 6 images due to periodic boundary conditions that are 10 \AA away. The volume of the unit cell is 1000 \AA$^3$.
+2. Due to the geometry of the cube, you need fairly large cubes to make sure the electron density of the molecule does not overlap with that of its images. Here, the CO molecule has 6 images due to periodic boundary conditions that are 10 \AA away. The volume of the unit cell is 1000 \AA$^3$.
 
-The first problem is easy to solve by centering the atoms in the unit cell. The second problem can be solved by using an fcc lattice. Below we show the result in Figure \ref{fig:co-fcc}, where we have guessed values for $b$ until the CO molecules are on average 10 \AA apart. Note the final volume is only about 715 \AA$^3$, which is smaller than the cube. This will result in less computational time to compute properties.
+The first problem is easily solved by centering the atoms in the unit cell. The second problem can be solved by using a face-centered cubic lattice, which is the lattice with the closest packing. We show the results of the centering in Figure \ref{fig:co-fcc}, where we have guessed values for $b$ until the CO molecules are on average 10 \AA apart. Note the final volume is only about 715 \AA$^3$, which is smaller than the cube. This will result in less computational time to compute properties.
 
 #+BEGIN_SRC python :results output
 from ase import Atoms, Atom
@@ -576,25 +581,25 @@ from ase.io import write
 
 b = 7.1
 atoms = Atoms([Atom('C',[0., 0.,0.]),
-                Atom('O',[1.1,0.,0.])],
-             cell=[[b, b, 0.],
-                   [b, 0., b],
-                   [0., b, b]])
-print 'V = {0:1.1f} Ang^3'.format(atoms.get_volume())
+               Atom('O',[1.1,0.,0.])],
+               cell=[[b, b, 0.],
+                     [b, 0., b],
+                     [0., b, b]])
+print 'V = {0:1.0f} Ang^3'.format(atoms.get_volume())
 
 atoms.center() #translate atoms to center of unit cell
 write('images/fcc-cell.png', atoms, show_unit_cell=2)
 #+END_SRC
 
 #+RESULTS:
-: V = 715.8 Ang^3
+: V = 716 Ang^3
 
-#+caption: CO in an fcc cell.
+#+caption: CO in a face-centered cubic unit cell.
 #+label: fig:co-fcc
 #+ATTR_LaTeX: placement=[H]
 [[./images/fcc-cell.png]]
 
-At this point you might ask "How do you know the distance to the neighboring image?" The =ag= viewer lets you compute this graphically, but we can use code to determine this too. All we have to do is figure out the length of each lattice vector, because these are what separate the atoms in the images. We use the mod:numpy module to compute the distance of a vector as the square root of the sum of squared elements.
+At this point you might ask, "How do you know the distance to the neighboring image?" The =ag= viewer lets you compute this graphically, but we can use code to determine this too. All we have to do is figure out the length of each lattice vector, because these are what separate the atoms in the images. We use the mod:numpy module to compute the distance of a vector as the square root of the sum of squared elements.
 
 #+BEGIN_SRC python :results output
 from ase import Atoms, Atom
@@ -621,7 +626,7 @@ print '|a3| = {0:1.2f} Ang'.format(np.sum(a3**2)**0.5)
 
 *** Reading other data formats into a calculation
 
-mod:ase.io.read supports reading in many different formats:
+mod:ase.io.read supports many different file formats:
 #+begin_example
     Known formats:
 
@@ -669,16 +674,19 @@ mod:ase.io.read supports reading in many different formats:
     =========================  ===========
 #+end_example
 
-You can read xyz-coordinate files to create mod:ase.Atoms objects.  Here is
-what an xyz file might look like:
+You can read XYZ file format to create mod:ase.Atoms objects.  Here is
+what an XYZ file format might look like:
 
 #+begin_example
 #+include: molecules/isobutane.xyz
 #+end_example
 
-Note that the xyz format does not have unit cell information in it, so
-you will have to figure out a way to provide it. In this example, we
-center the atoms in a box with vacuum on all sides (Figure \ref{fig:isobutane}).
+The first line is the number of atoms in the file. The second line is
+often a comment. What follows is one line per atom with the symbol and
+Cartesian coordinates in \AA. Note that the XYZ format does not have
+unit cell information in it, so you will have to figure out a way to
+provide it. In this example, we center the atoms in a box with vacuum
+on all sides (Figure \ref{fig:isobutane}).
 
 #+BEGIN_SRC python
 from ase.io import read,write
@@ -692,14 +700,14 @@ write('images/isobutane-xyz.png', atoms, show_unit_cell=2)
 #+RESULTS:
 : None
 
-#+caption: An isobutane molecule read in from an xyz data file.
+#+caption: An isobutane molecule read in from an XYZ formatted data file.
 #+label: fig:isobutane
 #+ATTR_LaTeX: placement=[H]
 [[./images/isobutane-xyz.png]]
 *** Predefined molecules
 
 mod:ase defines a number of molecular geometries in the
-mod:ase.data.molecules database.  For example, the databse includes
+mod:ase.data.molecules database.  For example, the database includes
 the molecules in the G2/97 database \cite{curtiss:1063}. This database
 contains a broad set of atoms and molecules for which good
 experimental data exists, making them useful for benchmarking studies.
@@ -835,7 +843,7 @@ write('images/ch3cn-rotated.png', atoms,
 #+ATTR_LaTeX: placement=[H]
 [[./images/ch3cn-rotated.png]]
 
-If you actually want to rotate the coordinates, there is a nice way to do that to, with the func:ase.Atoms.rotate method. Actually there are some subtleties in rotation. One rotates the molecule an angle (in radians) around a vector, but you have to choose whether the center of mass should be fixed or not. You also must decide whether the unit cell should be rotated or not. In the next example you can see the coordinates have changed due to the rotations. Note that the write function uses the rotation angle in degrees, while the rotate function uses radians.
+If you actually want to rotate the coordinates, there is a nice way to do that too, with the func:ase.Atoms.rotate method. Actually there are some subtleties in rotation. One rotates the molecule an angle (in radians) around a vector, but you have to choose whether the center of mass should be fixed or not. You also must decide whether or not the unit cell should be rotated. In the next example you can see the coordinates have changed due to the rotations. Note that the write function uses the rotation angle in degrees, while the rotate function uses radians.
 
 #+BEGIN_SRC python :results output
 from ase.data.molecules import molecule
@@ -848,14 +856,14 @@ p1 = atoms.get_positions()
 atoms.rotate('x', pi/4, center='COM', rotate_cell=False)
 atoms.rotate('y', pi/4, center='COM', rotate_cell=False)
 
-write('images/ch3cn-rotated-2.png',atoms,show_unit_cell=2)
+write('images/ch3cn-rotated-2.png', atoms, show_unit_cell=2)
 print 'difference in positions after rotating'
 print 'atom    difference vector'
 print '--------------------------------------'
 p2 = atoms.get_positions()
 
 diff = p2 - p1
-for i,d in enumerate(diff):
+for i, d in enumerate(diff):
     print '{0} {1}'.format(i, d)
 #+END_SRC
 
@@ -877,7 +885,7 @@ for i,d in enumerate(diff):
 Note in this last case the unit cell is oriented differently than the previous example, since we chose not to rotate the unit cell.
 
 *** Combining Atoms objects
-It is frequently useful to combine two =Atoms= objects, e.g. for computing reaction barriers, or other types of interactions. in ase, we simply add two Atoms objects together. Here is an example of getting an ammonia and oxygen molecule in the same unit cell. See Figure \ref{fig:combined-atoms}.
+It is frequently useful to combine two =Atoms= objects, e.g. for computing reaction barriers, or other types of interactions. In =ase=, we simply add two =Atoms= objects together. Here is an example of getting an ammonia and oxygen molecule in the same unit cell. See Figure \ref{fig:combined-atoms}. We set the =Atoms= about three \AA apart using the func:ase.Atoms.translate function.
 
 #+BEGIN_SRC python :results output
 from ase.data.molecules import molecule
@@ -886,7 +894,7 @@ from ase.io import write
 atoms1 = molecule('NH3')
 
 atoms2 = molecule('O2')
-atoms2.translate([3,0,0])
+atoms2.translate([3, 0, 0])
 
 bothatoms = atoms1 + atoms2
 bothatoms.center(5)
@@ -896,7 +904,7 @@ write('images/bothatoms.png', bothatoms, show_unit_cell=2, rotation='90x')
 
 #+RESULTS:
 
-#+caption: Image of the combined ammonia and oxygen molecule.
+#+caption: Image featuring ammonia and oxygen molecule in one unit cell.
 #+label: fig:combined-atoms
 #+ATTR_LaTeX: placement=[H]
 [[./images/bothatoms.png]]
@@ -915,8 +923,12 @@ atoms = molecule('C6H6')  # benzene
 # access properties on each atom
 print ' #  sym   p_x     p_y     p_z'
 print '------------------------------'
-for i,atom in enumerate(atoms):
-  print '{0:3d}{1:^4s}{2:-8.2f}{3:-8.2f}{4:-8.2f}'.format(i,atom.symbol,atom.x,atom.y,atom.z)
+for i, atom in enumerate(atoms):
+  print '{0:3d}{1:^4s}{2:-8.2f}{3:-8.2f}{4:-8.2f}'.format(i,
+                                                          atom.symbol,
+                                                          atom.x,
+                                                          atom.y,
+                                                          atom.z)
 
 # get all properties in arrays
 sym = atoms.get_chemical_symbols()
@@ -928,9 +940,10 @@ atom_indices = range(len(atoms))
 print
 print '  # sym    at#    p_x     p_y     p_z'
 print '-------------------------------------'
-for i,s,n,p in zip(atom_indices,sym,num,pos):
-  px,py,pz = p
-  print '{0:3d}{1:>3s}{2:8d}{3:-8.2f}{4:-8.2f}{5:-8.2f}'.format(i,s,n,px,py,pz)
+for i, s, n, p in zip(atom_indices, sym, num, pos):
+  px, py, pz = p
+  print '{0:3d}{1:>3s}{2:8d}{3:-8.2f}{4:-8.2f}{5:-8.2f}'.format(i, s, n,
+                                                                px, py, pz)
 #+END_SRC
 
 #+RESULTS:
@@ -971,30 +984,29 @@ for i,s,n,p in zip(atom_indices,sym,num,pos):
 We can quickly compute the molecular weight of a molecule with this recipe. We use func:ase.Atoms.get_masses to get an array of the atomic masses of each atom in the =Atoms= object, and then just sum them up.
 
 #+BEGIN_SRC python :results output :exports both
-from ase import Atoms
 from ase.data.molecules import molecule
 
 atoms = molecule('C6H6')
 masses = atoms.get_masses()
 
 molecular_weight = masses.sum()
-
-print 'The molecular weight of {0} is {1:1.2f} gm/mol'.format(atoms.get_chemical_symbols(reduce=True),
-                                                       molecular_weight)
+molecular_formula = atoms.get_chemical_symbols(reduce=True)
+print 'The molecular weight of {0} is {1:1.2f} gm/mol'.format(molecular_formula,
+                                                              molecular_weight)
 #+END_SRC
 
 #+RESULTS:
 : The molecular weight of C6H6 is 78.11
 
-Note the argument =reduce=True= for func:ase.Atoms.get_chemical_symbols. This collects all the symbols and provides a molecular formula.
+Note that te argument =reduce=True= for func:ase.Atoms.get_chemical_symbols collects all the symbols to provide a molecular formula.
 
 *** Center of mass
 [[index:center of mass]]
-The center of mass is a helpful quantity to have for a variety of computations, including translating atoms for a rotation, etc...  Here is an example of getting the center of mass from an Atoms object using func:ase.Atoms.get_center_of_mass.
+The center of mass (COM) is defined as:
 
 COM = $\frac{\sum m_i \cdot r_i}{\sum m_i}$
 
-The center of mass is essentially the average position of the atoms, weighted by the mass of each atom.
+The center of mass is essentially the average position of the atoms, weighted by the mass of each atom. Here is an example of getting the center of mass from an =Atoms= object using func:ase.Atoms.get_center_of_mass.
 
 #+BEGIN_SRC python :results output :exports both
 from ase.structure import molecule
@@ -1004,7 +1016,7 @@ import numpy as np
 # ammonia
 atoms = molecule('NH3')
 
-print 'COM1 = ',atoms.get_center_of_mass()  # cartesian coordinates
+print 'COM1 = {0}'.format(atoms.get_center_of_mass())  # cartesian coordinates
 
 # compute the center of mass by hand
 pos = atoms.positions
@@ -1012,27 +1024,29 @@ masses = atoms.get_masses()
 
 COM = np.array([0., 0., 0.])
 for m,p in zip(masses, pos):
-  COM += m*p
-COM /= sum(masses)
+    COM += m*p
+COM /= masses.sum()
 
-print 'COM2 = ', COM
+print 'COM2 = {0}'.format(COM)
 
 # one-line linear algebra definition of COM
-print 'COM3 = ',np.dot(masses, pos)/np.sum(masses)
+print 'COM3 = {0}'.format(np.dot(masses, pos)/np.sum(masses))
 #+END_SRC
 
 #+RESULTS:
-: COM1 =  [  0.00000000e+00   5.91843349e-08   4.75457009e-02]
-: COM2 =  [  0.00000000e+00   5.91843349e-08   4.75457009e-02]
-: COM3 =  [  0.00000000e+00   5.91843349e-08   4.75457009e-02]
+: COM1 = [  0.00000000e+00   5.91843349e-08   4.75457009e-02]
+: COM2 = [  0.00000000e+00   5.91843349e-08   4.75457009e-02]
+: COM3 = [  0.00000000e+00   5.91843349e-08   4.75457009e-02]
 
-You can see these are all the same.
+You can see see that these centers of mass, which are calculated by different methods, are the same.
 
 *** Moments of inertia
 [[index:moment of inertia]]
-The [[http://en.wikipedia.org/wiki/Moment_of_inertia][moment of inertia]] is a measure of resistance to changes in rotation. It is defined by $I = \sum_{i=1}^N m_i r_i^2$ where $r_i$ is the distance to an axis of rotation. There are typically three moments of inertia, although some may be zero depending on symmetry, and some may be degenerate. There is a convenient function to get the  moments of inertia: func:ase.Atoms.get_moments_of_inertia.
+The [[http://en.wikipedia.org/wiki/Moment_of_inertia][moment of inertia]] is a measure of resistance to changes in rotation. It is defined by $I = \sum_{i=1}^N m_i r_i^2$ where $r_i$ is the distance to an axis of rotation. There are typically three moments of inertia, although some may be zero depending on symmetry, and others may be degenerate. There is a convenient function to get the  moments of inertia: func:ase.Atoms.get_moments_of_inertia.
 
-Here are several examples.
+TODO: what are axes of rotation? show for different orientations of  molecule.
+
+Here are several examples:
 #+BEGIN_SRC python :results output :exports both
 from ase.structure import molecule
 
@@ -1086,12 +1100,11 @@ unsymmetric rotors Ia != Ib != Ic
 #+end_example
 
 ** Simple properties that require computations
-In this section we cover properties that require simple calculations, but not yet DFT calculations.
+In this section we cover properties that require simple calculations, but not DFT calculations, to compute.
 *** Computing bond lengths and angles
-A typical question we might ask is what is the structure of a molecule? By that we mean what are the bond lengths, angles between bonds, etc... The Atoms object contains a func:ase.Atoms.get_distance method to make this easy. You have to specify the indices of the two atoms you want the distance between. Don't forget that the indices start at 0.
+A typical question we might ask is, "What is the structure of a molecule?" In other words, what are the bond lengths, angles between bonds, and similar properties. The Atoms object contains an func:ase.Atoms.get_distance method to make this easy. To calculate the distance between two atoms, you have to specify their indices, remembering that the index starts at 0.
 
 #+BEGIN_SRC python :results output :exports both
-from ase import Atoms
 from ase.structure import molecule
 from ase.io import write
 
@@ -1101,7 +1114,7 @@ atoms = molecule('NH3')
 print 'atom symbol'
 print '==========='
 for i, atom in enumerate(atoms):
-  print '%2i %3s' % (i,atom.symbol)
+  print '{0:2d} {1:3s}' .format(i,atom.symbol)
 
 # N-H bond length
 s = 'The N-H distance is {0:1.3f} angstroms'
@@ -1117,10 +1130,9 @@ print s.format(atoms.get_distance(0,1))
 :  3   H
 : The N-H distance is 1.017 angstroms
 
-Bond angles are a little trickier. If we had vectors describing the directions between three atoms, we could use some simple trigonometry: $\vec{a} \cdot \vec{b} = |\vec{a}||\vec{b}| \cos(\theta)$, so we can calculate the angle as $\theta = \arccos\left(\frac{\vec{a} \cdot \vec{b}}{|\vec{a}||\vec{b}|}\right)$, we just have to define our two vectors $\vec{a}$ and $\vec{b}$. We compute these vectors as the difference in positions of two atoms. For example, here we compute the angle H-N-H in an ammonia molecule. This is the angle between N-H$_1$ and N-H$_2$. In the next example, we utilize functions in mod:numpy to perform the calculations, specifically the func:numpy.arccos function, the func:numpy.dot function, and func:numpy.linalg.norm functions.
+Bond angles are a little trickier. If we had vectors describing the directions between two atoms, we could use some simple trigonometry to compute the angle between the vectors: $\vec{a} \cdot \vec{b} = |\vec{a}||\vec{b}| \cos(\theta)$.  So we can calculate the angle as $\theta = \arccos\left(\frac{\vec{a} \cdot \vec{b}}{|\vec{a}||\vec{b}|}\right)$, we just have to define our two vectors $\vec{a}$ and $\vec{b}$. We compute these vectors as the difference in positions of two atoms. For example, here we compute the angle H-N-H in an ammonia molecule. This is the angle between N-H$_1$ and N-H$_2$. In the next example, we utilize functions in mod:numpy to perform the calculations, specifically the func:numpy.arccos function, the func:numpy.dot function, and func:numpy.linalg.norm functions.
 
 #+BEGIN_SRC python :results output :exports both
-from ase import Atoms
 from ase.structure import molecule
 from ase.io import write
 
@@ -1130,7 +1142,7 @@ atoms = molecule('NH3')
 print 'atom symbol'
 print '==========='
 for i, atom in enumerate(atoms):
-  print '%2i %3s' % (i,atom.symbol)
+  print '{0:2d} {1:3s}'.format(i,atom.symbol)
 
 a = atoms.positions[0] - atoms.positions[1]
 b = atoms.positions[0] - atoms.positions[2]
@@ -1140,7 +1152,7 @@ from numpy.linalg import norm
 
 theta_rad = arccos(dot(a,b)/(norm(a)*norm(b))) # in radians
 
-print 'theta = %1.1f degrees' % (theta_rad*180./pi)
+print 'theta = {0:1.1f} degrees'.format(theta_rad*180./pi)
 #+END_SRC
 
 #+RESULTS:
@@ -1156,10 +1168,9 @@ print 'theta = %1.1f degrees' % (theta_rad*180./pi)
 #+ATTR_LaTeX: width=270bp,placement=[H]
 [[./images/NH3-vectors.png]]
 
-Alternatively you could use the func:ase.Atoms.get_angle. Note we want the angle between atoms 1-0-2 to get the H-N-H angle.
+Alternatively you could use func:ase.Atoms.get_angle. Note we want the angle between atoms with indices [1, 0, 2] to get the H-N-H angle.
 
 #+BEGIN_SRC python :results output :exports both
-from ase import Atoms
 from ase.data.molecules import molecule
 from numpy import pi
 # ammonia
@@ -1172,25 +1183,22 @@ print 'theta = {0} degrees'.format(atoms.get_angle([1,0,2])*180./pi)
 : theta = 106.334624232 degrees
 
 **** Dihedral angles
-There is support in ase for computing [[http://en.wikipedia.org/wiki/Dihedral_angle][dihedral angles]]. Let us illustrate that for ethane. We will compute the dihedral angle between atoms 5, 1, 0, and 4. That is a H-C-C-H dihedral angle, and one can visually see (although not here) that these atoms have dihedral angle of 60^{\circ}. See Figure \ref{fig:ethane-dihedral}.
+There is support in ase for computing [[http://en.wikipedia.org/wiki/Dihedral_angle][dihedral angles]]. Let us illustrate that for ethane. We will compute the dihedral angle between atoms 5, 1, 0, and 4. That is a H-C-C-H dihedral angle, and one can visually see (although not here) that these atoms have a dihedral angle of 60^{\circ} (Figure \ref{fig:ethane-dihedral}).
 
 #+BEGIN_SRC python :results output :exports both
 # calculate an ethane dihedral angle
-from ase import Atoms
 from ase.structure import molecule
-from ase.visualize import view
 import numpy as np
 
 atoms = molecule('C2H6')
-view(atoms)
 
 print 'atom symbol'
 print '==========='
 for i, atom in enumerate(atoms):
-  print '%2i %3s' % (i,atom.symbol)
+  print '{0:2d} {1:3s}'.format(i,atom.symbol)
 
 da = atoms.get_dihedral([5,1,0,4])*180./np.pi
-print 'dihedral angle = %1.2f degrees' % da
+print 'dihedral angle = {0:1.2f} degrees'.format(da)
 #+END_SRC
 
 #+RESULTS:
@@ -1215,12 +1223,13 @@ dihedral angle = 60.00 degrees
 
 *** Energy and forces
 Two of the most important quantities we are interested in is the total
-energy and the forces on the atoms. To get these, we have to define a
-calculator and attach it to an mod:ase.Atoms object so that
-it knows how to get the data, and then a DFT calculation must be run.
+energy and the forces on the atoms. To get these quantities, we have
+to define a calculator and attach it to an mod:ase.Atoms object so
+that =ase= knows how to get the data. After defining the calculator a
+DFT calculation must be run.
 
 Here is an example of getting the energy and forces from a CO
-molecule. The forces in this case are very high,indicating that this
+molecule. The forces in this case are very high, indicating that this
 geometry is not close to the ground state geometry. Note that the
 forces are only along the $x$-axis, which is along the molecular axis. We will see how to minimize this force in [[*Manual%20determination][Manual determination]] and [[*Automatic%20geometry%20optimization%20with%20VASP][Automatic geometry optimization with VASP]].
 
@@ -1244,8 +1253,7 @@ with jasp('molecules/simple-co', #output dir
           encut=350, # planewave cutoff
           ismear=1,  # Methfessel-Paxton smearing
           sigma=0.01,# very small smearing factor for a molecule
-          atoms=co):
-
+          atoms=co) as calc:
     print 'energy = {0} eV'.format(co.get_potential_energy())
     print co.get_forces()
 #+END_SRC
@@ -1255,33 +1263,106 @@ with jasp('molecules/simple-co', #output dir
 : [[ 5.095  0.     0.   ]
 :  [-5.095  0.     0.   ]]
 
-*** The density of states
-The density of states gives you the number of electronic states (i.e. orbitals) that have a particular energy. We can get this information from the last calculation we just ran without having to run another DFT calculation.
+**** TODO Convergence with unit cell size
+There are a number of parameters that affect the energy and forces including the calculation parameters and the unit cell. We will first consider the effect of the unit cell on the total energy and forces. The reason that the unit cell affects the total energy is that it can change the distribution of electrons in the molecule.
+
+#+BEGIN_SRC python
+from ase import Atoms,Atom
+from jasp import *
+import numpy as np
+np.set_printoptions(precision=3, suppress=True)
+
+atoms = Atoms([Atom('C',[0,   0, 0]),
+               Atom('O',[1.2, 0, 0])])
+
+L = [3, 4, 5, 6, 8, 10]
+
+volumes, energies = [], []
+for a in L:
+    atoms.set_cell([a,a,a], scale_atoms=False)
+    atoms.center()
+    with jasp('molecules/co-vol-{0}'.format(a),
+              encut=350,
+              xc='PBE',
+              atoms=atoms) as calc:
+        try:
+            volumes.append(atoms.get_volume())
+            energies.append(atoms.get_potential_energy())
+        except (VaspSubmitted, VaspQueued):
+            pass
+import matplotlib.pyplot as plt
+plt.plot(volumes, energies, 'bo')
+plt.xlabel('Volume ($\AA^3$)')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/co-e-v.png')
+#+END_SRC
+
+We have to decide what an appropriate volume for our calculation is, and the choice depends on the goal. We may wish to know the total energy of a molecule that is not interacting with any other molecules, e.g. in the ideal gas limit. In that case we need a large unit cell so the electron density from the molecule does not go outside the unit cell where it would overlap with neighboring images. The overlap is repulsive, which increases the energy. The dependence of the total energy on the unit cell volume is defined by \(P = dE/dV\). When this derivative is equal to zero, we are in the ideal gas limit.
+
+**** Convergence of ENCUT
+The total energy and forces also depend on the computational parameters, notably incar:ENCUT.
+
+#+BEGIN_SRC python
+from ase import Atoms,Atom
+from jasp import *
+import numpy as np
+np.set_printoptions(precision=3, suppress=True)
+
+atoms = Atoms([Atom('C',[0,   0, 0]),
+               Atom('O',[1.2, 0, 0])])
+
+ENCUTS = [250, 300, 350, 400, 450, 500]
+
+energies = []
+for en in ENCUTS:
+    atoms.set_cell([a,a,a], scale_atoms=False)
+    atoms.center()
+
+    with jasp('molecules/co-en-{0}'.format(en),
+              encut=en,
+              xc='PBE',
+              atoms=atoms) as calc:
+        try:
+            energies.append(atoms.get_potential_energy())
+        except (VaspSubmitted, VaspQueued):
+            pass
+import matplotlib.pyplot as plt
+plt.plot(ENCUTS, energies, 'bo')
+plt.xlabel('ENCUT (eV)')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/co-encut-v.png')
+#+END_SRC
+
+Keep in mind that we are generally interested in differences in total energy, and the differences tend to converge faster than a single total energy. Also it is important to note that it is usually a single element that determines the rate of convergence.
+
+*** The density of states (DOS)
+The density of states (DOS) gives you the number of electronic states (i.e. orbitals) that have a particular energy. We can get this information from the last calculation we just ran without having to run another DFT calculation.
 
 #+begin_warning
 One way that =jasp= is unintuitive is that whenever you are "inside" (indented) a =with= statement, the current working directory may be different than where your script started. In this example that can lead to your figure not being saved where you expect it!
 #+end_warning
 
 #+BEGIN_SRC python
-from ase.dft.dos import *
 from jasp import *
-from pylab import *
+from ase.dft.dos import DOS
+import matplotlib.pyplot as plt
 
-with jasp('molecules/simple-co') as calc:
+with jasp('molecules/simple-co') as calc: # we already ran this!
     dos = DOS(calc)
-    plot(dos.get_energies(),dos.get_dos())
-    xlabel('Energy - $E_f$ (eV)')
-    ylabel('DOS')
+    plt.plot(dos.get_energies(),dos.get_dos())
+    plt.xlabel('Energy - $E_f$ (eV)')
+    plt.ylabel('DOS')
 
 # make sure you save the figure outside the with statement, or provide
 # the correct relative or absolute path to where you want it.
-savefig('images/co-dos.png')
+plt.savefig('images/co-dos.png')
 #+END_SRC
 
 #+RESULTS:
 : None
 
 #+caption: Density of states for a CO molecule.
+#+ATTR_LaTeX: placement=[H]
 [[./images/co-dos.png]]
 
 *** Atom-projected density of states on molecules
@@ -1296,34 +1377,33 @@ The [[incar:RWIGS][RWIGS]] is not uniquely determined for an element. There are 
 The total density of states and projected density of states information comes from the DOSCAR file.
 
 #+begin_note
-You can get spin-polarized atom-projected density of states, and magnetization projected density of states. See http://cms.mpi.univie.ac.at/vasp/vasp/DOSCAR_file.html#doscar for more details.
+You can get spin-polarized atom-projected DOS, and magnetization projected DOS. See http://cms.mpi.univie.ac.at/vasp/vasp/DOSCAR_file.html#doscar for more details.
 #+end_note
 
 #+BEGIN_SRC python
-from ase.dft.dos import *
 from jasp import *
-from pylab import *
+from ase.dft.dos import DOS
+import matplotlib.pyplot as plt
 
 # get the geometry from another calculation
 with jasp('molecules/simple-co') as calc:
     atoms = calc.get_atoms()
 
 with jasp('molecules/co-ados',
-    encut=300,
-    xc='PBE',
-    rwigs=[1.0, 1.0],     # these are the cutoff radii for projected states
-    atoms=atoms) as calc:
+          encut=300,
+          xc='PBE',
+          rwigs=[1.0, 1.0],     # these are the cutoff radii for projected states
+          atoms=atoms) as calc:
     calc.calculate()
 
     # now get results
-
     dos = DOS(calc)
-    plot(dos.get_energies(), dos.get_dos() + 10)
+    plt.plot(dos.get_energies(), dos.get_dos() + 10)
 
     ados = VaspDos(efermi=calc.get_fermi_level())
     energies = ados.energy
 
-    plot(energies, ados.dos + 8) # these are the total DOS
+    plt.plot(energies, ados.dos + 8) # these are the total DOS
 
     c_s = ados.site_dos(0, 's')
     c_p = ados.site_dos(0, 'p')
@@ -1333,44 +1413,43 @@ with jasp('molecules/co-ados',
     c_d = ados.site_dos(0,'d')
     o_d = ados.site_dos(1,'d')
 
-    plot(energies, c_s + 6, energies, o_s + 5)
-    plot(energies, c_p + 4, energies, o_p + 3)
-    plot(energies, c_d, energies, o_d + 2)
-    xlabel('Energy - $E_f$ (eV)')
-    ylabel('DOS')
-    legend(['DOS',
-            'C$_s$', 'O$_s$',
-            'C$_p$', 'O$_p$',
-            'C$_d$', 'O$_d$'],
-            ncol=2,loc='best')
-savefig('images/co-ados.png')
+    plt.plot(energies, c_s + 6, energies, o_s + 5)
+    plt.plot(energies, c_p + 4, energies, o_p + 3)
+    plt.plot(energies, c_d, energies, o_d + 2)
+    plt.xlabel('Energy - $E_f$ (eV)')
+    plt.ylabel('DOS')
+    plt.legend(['DOS',
+                'C$_s$', 'O$_s$',
+                'C$_p$', 'O$_p$',
+                'C$_d$', 'O$_d$'],
+                ncol=2,loc='best')
+plt.savefig('images/co-ados.png')
 #+end_src
 
 #+RESULTS:
 : None
 
 #+caption: Atom-projected DOS for a CO molecule. The total density of states and the \(s\), \(p\) and \(d\) states on the C and O are shown.
+#+ATTR_LaTeX: placement=[H]
 [[./images/co-ados.png]]
 
 
-#+RESULTS:
-: None
-
 *** Visualizing electron density
 
-The electron density is a 3\(d\) quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure \ref{fig:cd1}) of plotting the charge density.
+The electron density is a 3\(d\) quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure \ref{fig:cd1}) of plotting the charge density. We will use the results from a previous calculation.
+
 
 #+BEGIN_SRC python
-from enthought.mayavi import mlab
 from jasp import *
+from enthought.mayavi import mlab
 from ase.data import vdw_radii
 from ase.data.colors import cpk_colors
 
 with jasp('molecules/simple-co') as calc:
     atoms = calc.get_atoms()
-    x,y,z,cd = calc.get_charge_density()
+    x, y, z, cd = calc.get_charge_density()
 
-mlab.figure(1, bgcolor=(1,1,1)) # make a white figure
+mlab.figure(1, bgcolor=(1, 1, 1)) # make a white figure
 
 # plot the atoms as spheres
 for atom in atoms:
@@ -1385,7 +1464,7 @@ for atom in atoms:
 
 # draw the unit cell - there are 8 corners, and 12 connections
 a1, a2, a3 = atoms.get_cell()
-origin = [0,0,0]
+origin = [0, 0, 0]
 cell_matrix = [[origin,  a1],
                [origin,  a2],
                [origin,  a3],
@@ -1406,8 +1485,8 @@ for p1, p2 in cell_matrix:
                 tube_radius=0.02)
 
 # Now plot the charge density
-mlab.contour3d(x,y,z,cd)
-mlab.view(azimuth=-90,  elevation=90, distance='auto')
+mlab.contour3d(x, y, z, cd)
+mlab.view(azimuth=-90, elevation=90, distance='auto')
 
 mlab.savefig('images/co-cd.png')
 mlab.show()
@@ -1422,16 +1501,16 @@ mlab.show()
 [[./images/co-cd.png]]
 
 #+BEGIN_SRC python
-from enthought.mayavi import mlab
 from jasp import *
+from enthought.mayavi import mlab
 from ase.data import vdw_radii
 from ase.data.colors import cpk_colors
 
 with jasp('molecules/co-centered') as calc:
     atoms = calc.get_atoms()
-    x,y,z,cd = calc.get_charge_density()
+    x, y, z, cd = calc.get_charge_density()
 
-mlab.figure(bgcolor=(1,1,1))
+mlab.figure(bgcolor=(1, 1, 1))
 
 # plot the atoms as spheres
 for atom in atoms:
@@ -1446,7 +1525,7 @@ for atom in atoms:
 
 # draw the unit cell - there are 8 corners, and 12 connections
 a1, a2, a3 = atoms.get_cell()
-origin = [0,0,0]
+origin = [0, 0, 0]
 cell_matrix = [[origin,  a1],
                [origin,  a2],
                [origin,  a3],
@@ -1467,8 +1546,8 @@ for p1, p2 in cell_matrix:
                 tube_radius=0.02)
 
 # Now plot the charge density
-mlab.contour3d(x,y,z,cd)
-mlab.view(azimuth=-90,  elevation=90, distance='auto')
+mlab.contour3d(x, y, z, cd)
+mlab.view(azimuth=-90, elevation=90, distance='auto')
 
 mlab.savefig('images/co-centered-cd.png')
 mlab.show()
@@ -1483,12 +1562,12 @@ mlab.show()
 [[./images/co-centered-cd.png]]
 
 *** TODO Electrostatic potential
-this is an example of the so-called sigma hole in a [[http://pubs.acs.org/cen/science/87/8738sci2.html][halogen bond]]. The coordinates for the CF_{3}Br molecule were found at http://cccbdb.nist.gov/exp2.asp?casno=75638.
+This is an example of the so-called \sigma hole in a [[http://pubs.acs.org/cen/science/87/8738sci2.html][halogen bond]]. The coordinates for the CF_{3}Br molecule were found at http://cccbdb.nist.gov/exp2.asp?casno=75638.
 
 #+BEGIN_SRC python :results output :exports both
+from jasp import *
 from ase import Atom, Atoms
 from ase.io import write
-from jasp import *
 
 from enthought.mayavi import mlab
 from ase.data import vdw_radii
@@ -1513,10 +1592,10 @@ with jasp('molecules/CF3Br',
     calc.set_nbands(f=2)
     calc.calculate()
 
-    x,y,z,lp = calc.get_local_potential()
-    x,y,z,cd = calc.get_charge_density()
+    x, y, z, lp = calc.get_local_potential()
+    x, y, z, cd = calc.get_charge_density()
 
-mlab.figure(1, bgcolor=(1,1,1)) # make a white figure
+mlab.figure(1, bgcolor=(1, 1, 1)) # make a white figure
 
 # plot the atoms as spheres
 for atom in atoms:
@@ -1539,11 +1618,11 @@ for a1, a2 in bond_matrix:
     mlab.plot3d(atoms.positions[[a1,a2], 0], # x-positions
                 atoms.positions[[a1,a2], 1], # y-positions
                 atoms.positions[[a1,a2], 2], # z-positions
-                [2,2],
+                [2, 2],
                 tube_radius=0.02,
                 colormap='Reds')
 
-mlab.contour3d(x,y,z,lp)
+mlab.contour3d(x, y, z, lp)
 mlab.savefig('images/halogen-ep.png')
 mlab.show()
 #+END_SRC
@@ -1558,19 +1637,20 @@ See http://www.uni-due.de/~hp0058/?file=manual03.html&dir=vmdplugins for example
 *** TODO Visualizing Kohn-Sham orbitals                            :noexport:
 need to read wavecar files! We cannot do this yet. There is some hope at http://www.andrew.cmu.edu/user/feenstra/wavetrans/, but I have not figured out how to use it yet.
 
-*** Dipole moments
+*** TODO Dipole moments
+describe direction and magnitude of the vector
+
 [[index:dipole moment]]
-The [[http://en.wikipedia.org/wiki/Molecular_dipole_moment#Molecular_dipoles][dipole moment]] is a vector describing the separation of nuclear (positive) and electrical (negative) charge. Whether a molecule has a dipole moment or not depends on its symmetry. Below we compute the dipole moment of CO. We must integrate the electron density to find the center of electrical charge, and sum over the nuclei to find the center of positive charge.
+The [[http://en.wikipedia.org/wiki/Molecular_dipole_moment#Molecular_dipoles][dipole moment]] is a vector describing the separation of nuclear (positive) and electrical (negative) charge. The symmetry of a molecule determines if a molecule has a dipole moment or not. Below we compute the dipole moment of CO. We must integrate the electron density to find the center of electrical charge, and sum over the nuclei to find the center of positive charge.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-from ase.calculators.vasp import *
 from ase.units import Debye
 from ase import Atom, Atoms
 
-atoms = Atoms([Atom('C',[2.422,0,0]),
-               Atom('O',[3.578,0,0])],
-            cell=(10,10,10))
+atoms = Atoms([Atom('C', [2.422, 0.0, 0.0]),
+               Atom('O', [3.578, 0.0, 0.0])],
+               cell=(10,10,10))
 
 atoms.center()
 
@@ -1606,18 +1686,18 @@ with jasp('molecules/co-centered',
     y = np.reshape(real[:, 1], (n0, n1, n2))
     z = np.reshape(real[:, 2], (n0, n1, n2))
 
-    nelements = n0*n1*n2
-    voxel_volume = atoms.get_volume()/nelements
-    total_electron_charge = -cd.sum()*voxel_volume
+    nelements = n0 * n1 * n2
+    voxel_volume = atoms.get_volume() / nelements
+    total_electron_charge = -cd.sum() * voxel_volume
 
 
-    electron_density_center = np.array([(cd*x).sum(),
-                                        (cd*y).sum(),
-                                        (cd*z).sum()])
+    electron_density_center = np.array([(cd * x).sum(),
+                                        (cd * y).sum(),
+                                        (cd * z).sum()])
     electron_density_center *= voxel_volume
     electron_density_center /= total_electron_charge
 
-    electron_dipole_moment = -electron_density_center*total_electron_charge
+    electron_dipole_moment = -electron_density_center * total_electron_charge
 
     # now the ion charge center. We only need the Zval listed in the potcar
     from jasp.POTCAR import get_ZVAL
@@ -1639,11 +1719,11 @@ with jasp('molecules/co-centered',
         ion_charge_center += Z*pos
 
     ion_charge_center /= total_ion_charge
-    ion_dipole_moment = ion_charge_center*total_ion_charge
+    ion_dipole_moment = ion_charge_center * total_ion_charge
 
     dipole_vector = (ion_dipole_moment + electron_dipole_moment)
 
-    dipole_moment = ((dipole_vector**2).sum())**0.5/Debye
+    dipole_moment = ((dipole_vector**2).sum())**0.5 / Debye
 
     print 'The dipole moment is {0:1.2f} Debye'.format(dipole_moment)
 #+END_SRC
@@ -1651,7 +1731,7 @@ with jasp('molecules/co-centered',
 #+RESULTS:
 : The dipole moment is 0.10 Debye
 
-Note that a convenience function using the code above exists in jasp:
+Note that a function using the code above exists in =jasp= which makes it trivial to compute the dipole moment. Here is an example of its usage.
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 from ase.units import Debye
@@ -1776,15 +1856,15 @@ order of atoms in the Atoms object is not the same as in the POSCAR
 file.
 
 #+BEGIN_SRC python :results output org raw
+from jasp import *
 from ase.io.bader import attach_charges
 from ase.units import Bohr
-from jasp import *
 
 with jasp('molecules/h2o-bader') as calc:
     atoms = calc.get_atoms()
 
     symbols = np.array(atoms.get_chemical_symbols())[calc.sort]
-    pos = atoms.positions[calc.sort]*Bohr
+    pos = atoms.positions[calc.sort] * Bohr
     newatoms = Atoms(symbols, positions=pos, cell=atoms.get_cell())
 
     attach_charges(newatoms, 'ACF.dat')
@@ -1806,15 +1886,16 @@ with jasp('molecules/h2o-bader') as calc:
 | H    |       0.9997 |
 | O    |        0.001 |
 
+TODO: figure out these charges
+
 ** Geometry optimization
 *** Bond lengths
 **** Manual determination
-#+label: sec:manual-determination
 The equilibrium bond length of a CO molecule is approximately the bond length that minimizes the total energy. We can find that by computing the total energy as a function of bond length, and noting where the minimum is. Here is an example in VASP. There are a few features to point out here. We want to compute 5 bond lengths, and each calculation is independent of all the others. mod:jasp is setup to automatically handle jobs for you by submitting them to the queue. It raises a variety of exceptions to let you know what has happened, and you must handle these to control the workflow. We will illustrate this by examples.
 
 #+BEGIN_SRC python :results output :exports both
-from ase import *
 from jasp import *
+from ase import Atom, Atoms
 import numpy as np
 np.set_printoptions(precision=3,suppress=True)
 
@@ -1823,9 +1904,9 @@ energies = []
 
 for d in bond_lengths: #possible bond lengths
 
-    co = Atoms([Atom('C',[0,0,0]),
-                Atom('O',[d,0,0])],
-               cell=(6,6,6))
+    co = Atoms([Atom('C', [0, 0, 0]),
+                Atom('O', [d, 0, 0])],
+                cell=(6, 6, 6))
 
     with jasp('molecules/co-{0}'.format(d), #output dir
               xc='PBE',
@@ -1837,9 +1918,9 @@ for d in bond_lengths: #possible bond lengths
         try:
             e = co.get_potential_energy()
             energies.append(e)
-            print 'd = %1.2f ang' % d
-            print 'energy = %f eV' % e
-            print 'forces = (eV/ang)\n', co.get_forces()
+            print 'd = {0:1.2f} ang'.format(d)
+            print 'energy = {0:1.3f} eV'.format(e)
+            print 'forces = (eV/ang)\n {0}'.format(co.get_forces())
             print '' #blank line
         except (VaspSubmitted, VaspQueued):
             energies.append(None)
@@ -1942,11 +2023,10 @@ plt.show()
 [[./images/co-bondlengths.png]]
 
 **** Automatic geometry optimization with VASP
-#+label: sec:auto-geo
-VASP has built in geometry optimization using the [[incar:IBRION][IBRION]] and [[incar:NSW][NSW]] tags. Here we compute the bond length for a CO molecule, letting VASP do the geometry optimization for us.
+It is generally the case that the equilibrium geometry of a system is the one that minimizes the total energy and forces. Since each atom has three degrees of freedom, you can quickly get a high dimensional optimization problem. Luckily, VASP has built-in geometry optimization using the [[incar:IBRION][IBRION]] and [[incar:NSW][NSW]] tags. Here we compute the bond length for a CO molecule, letting VASP do the geometry optimization for us.
 
 #+BEGIN_SRC python :results output :exports both
-from ase import *
+from ase import Atom, Atoms
 from jasp import *
 import numpy as np
 
@@ -1970,7 +2050,7 @@ with jasp('molecules/co-cg',
 
     pos = co.get_positions()
     d = ((pos[0] - pos[1])**2).sum()**0.5
-    print 'Bondlength = %1.2f angstroms' % d
+    print 'Bondlength = {0:1.2f} angstroms'.format(d)
 #+END_SRC
 
 #+RESULTS:
@@ -1990,7 +2070,7 @@ from jasp import *
 atoms = Atoms([Atom('H',[0.5960812,  -0.7677068,   0.0000000]),
                Atom('O',[0.0000000,   0.0000000,   0.0000000]),
                Atom('H',[0.5960812,   0.7677068,   0.0000000])],
-               cell=(8,8,8))
+               cell=(8, 8, 8))
 
 with jasp('molecules/h2o_relax',
           xc='PBE',
@@ -2051,16 +2131,16 @@ d_min = 1.14425395 # we manually copy this from the output to here
 ddpars = np.polyder(dpars)
 
 #curvature at minimum = force constant
-k = np.polyval(ddpars, d_min)/kg*s**2
+k = np.polyval(ddpars, d_min) / kg * s**2
 
 # reduced mass
 from ase.data import atomic_masses
-C_mass = atomic_masses[6]/kg
-O_mass = atomic_masses[8]/kg
+C_mass = atomic_masses[6] / kg
+O_mass = atomic_masses[8] / kg
 
 mu = (C_mass*O_mass)/(C_mass + O_mass)
 
-frequency = 1./(2.*np.pi)*np.sqrt(k/mu)
+frequency = 1. / (2. * np.pi) * np.sqrt(k / mu)
 print 'The CO vibrational frequency is {0} cm^{{-1}}'.format(frequency/3e10)
 
 import matplotlib.pyplot as plt
@@ -2075,7 +2155,7 @@ plt.show()
 : roots of first derivative are [ 1.43384501  1.14425395]
 : The frequency is 2143.60766258 cm^{-1}
 
-This result is in good agreement with [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C630080&Units=SI&Type=IR-SPEC&Index=0#IR-SPEC][experiment]]. The procedure used above is how many vibrational calculations are done. With more atoms, you have to determine a force constant matrix and diagonalize it. For more details, see \cite{wilson1955}. In practice, we usually allow a packaged code to automate this, which we cover in [[*Automated%20vibrational%20calculations][Automated vibrational calculations]]
+This result is in good agreement with [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C630080&Units=SI&Type=IR-SPEC&Index=0#IR-SPEC][experiment]]. The procedure described above is basically how many vibrational calculations are performed. With more atoms, you have to determine a force constant matrix and diagonalize it. For more details, see \cite{wilson1955}. In practice, we usually allow a packaged code to automate this, which we cover in [[*Automated%20vibrational%20calculations][Automated vibrational calculations]]
 
 We now consider how much energy is in this vibration. This is commonly called zero-point energy (ZPE) and it is defined as $E_{ZPE} = \frac{1}{2} h \nu$ for a single mode, and $h$ is Planck's constant (4.135667516e-15 eV/s).
 
@@ -2099,17 +2179,17 @@ This is a reasonable amount of energy! Zero-point energy increases with increasi
 A final note is that this analysis is in the "harmonic approximation". The frequency equation is the solution to a harmonic oscillator. If the spring is non-linear, then there are anharmonic effects that may become important, especially at higher temperatures.
 
 *** Automated vibrational calculations
-Vasp has built-in capability for performing vibrational calculations.
+VASP has built-in capability for performing vibrational calculations.
 #+BEGIN_SRC python :results output  :exports both
 #adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
 from ase import Atoms, Atom
 from jasp import *
 import ase.units
 
-atoms = Atoms([Atom('H',[0.5960812,  -0.7677068,   0.0000000]),
-               Atom('O',[0.0000000,   0.0000000,   0.0000000]),
-               Atom('H',[0.5960812,   0.7677068,   0.0000000])],
-               cell=(8,8,8))
+atoms = Atoms([Atom('H', [0.5960812,  -0.7677068,   0.0000000]),
+               Atom('O', [0.0000000,   0.0000000,   0.0000000]),
+               Atom('H', [0.5960812,   0.7677068,   0.0000000])],
+               cell=(8, 8, 8))
 
 with jasp('molecules/h2o_vib',
           xc='PBE',
@@ -2129,9 +2209,8 @@ with jasp('molecules/h2o_vib',
     # vibrational energies are in eV
     energies, modes = calc.get_vibrational_modes()
     print 'energies\n========'
-    for i,e in enumerate(energies):
-        print '{0:02d}: {1} eV'.format(i,e)
-
+    for i, e in enumerate(energies):
+        print '{0:02d}: {1} eV'.format(i, e)
 #+END_SRC
 
 #+RESULTS:
@@ -2163,6 +2242,8 @@ Note we get 9 frequencies here. Water has 3 atoms, with three degrees of freedom
 http://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=800#Electronic-Spec
 
 The results are not too far off, and more accurate frequencies may be possible using tighter tolerance on [[incar:POTIM][POTIM]], or by using [[incar:IBRION][IBRION]]=7 or 8.
+
+TODO: discuss imaginary modes and how to tell which modes matter.
 
 **** Zero-point energy for multiple modes
 For a molecule with lots of vibrational modes the zero-point energy is defined as the sum over all the vibrational modes:
@@ -2209,10 +2290,6 @@ Note the zero-point energy of water is also fairly high (more than 0.5 eV). That
 from ase import Atoms, Atom
 from ase.vibrations import Vibrations
 from jasp import *
-JASPRC['mode'] = 'run'
-
-import os
-os.chdir(os.environ.get('PBS_O_WORKDIR','.'))
 
 atoms = Atoms([Atom('H',[0.5960812,  -0.7677068,   0.0000000]),
                Atom('O',[0.0000000,   0.0000000,   0.0000000]),
@@ -2248,6 +2325,7 @@ with jasp('molecules/h2o_vib_ase',
 Zero-point energy: 0.000 eV
 #+end_example
 
+TODO: solve this problem.
 It strikes me that this is clearly an error! I guess this happened because after the first calculation somehow VASP does not see a difference in geometries for subsequent calculations.
 
 ** Simulated infrared spectra
@@ -2258,10 +2336,10 @@ At http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02 there is a
 from ase import Atoms, Atom
 from jasp import *
 
-atoms = Atoms([Atom('H',[0.5960812,  -0.7677068,   0.0000000]),
-               Atom('O',[0.0000000,   0.0000000,   0.0000000]),
-               Atom('H',[0.5960812,   0.7677068,   0.0000000])],
-               cell=(8,8,8))
+atoms = Atoms([Atom('H', [0.5960812,  -0.7677068,   0.0000000]),
+               Atom('O', [0.0000000,   0.0000000,   0.0000000]),
+               Atom('H', [0.5960812,   0.7677068,   0.0000000])],
+               cell=(8, 8, 8))
 
 with jasp('molecules/h2o_relax',
           xc='PBE',
@@ -2283,7 +2361,9 @@ with jasp('molecules/h2o_relax',
 :  [-0.001  0.     0.   ]
 :  [ 0.     0.     0.   ]]
 
-Next, we instruct Vasp to compute the vibrational modes using density functional perturbation theory with IBRION=7. Note, this is different than in [[Vibrational frequencies]] where finite differences were used.
+Next, we instruct VASP to compute the vibrational modes using density functional perturbation theory with IBRION=7. Note, this is different than in [[Vibrational frequencies]] where finite differences were used.
+
+TODO: explain perturbation theory and its advantage.
 
 #+BEGIN_SRC python
 from ase import Atoms, Atom
@@ -2514,7 +2594,6 @@ with jasp('molecules/n2-relax',
           ibrion=2,
           nsw=5,
           atoms=atoms) as calc:
-
     electronicenergy = atoms.get_potential_energy()
 
 # next, we get vibrational modes
@@ -2615,7 +2694,6 @@ with jasp('molecules/O',
         E_O = None
 
 # now relaxed O2 dimer
-
 atoms = Atoms([Atom('O',[5,5,5]),
                Atom('O',[6.22, 5,5])],
               cell=(10,10,10))
@@ -2624,7 +2702,7 @@ with jasp('molecules/O2',
           xc='PBE',
           encut=400,
           ismear=0,
-          ibrion=2, # make sure we relax the geometry
+          ibrion=2,
           nsw=10,
           atoms=atoms) as calc:
     try:
@@ -2697,6 +2775,8 @@ if None not in (E_O, E_O2):
 
 This is much closer to accepted literature values for the DFT-GGA O$_2$ dissociation energy. It is still more than 1 eV above an experimental value, but most of that error is due to the GGA exchange correlation functional. Some additional parameters that might need to be checked for convergence are the SIGMA value (it is probably too high for a molecule), as well as the cutoff energy. Oxygen is a "hard" atom that requires a high cutoff energy to achieve high levels of convergence.
 
+TODO: show what "hard or soft" is in the pseudopotential.
+
 ***** Looking at the two spin densities
 In a spin-polarized calculation there are actually two electron densities: one for spin-up and one for spin-down. We will look at the differences in these two through the density of states.
 
@@ -2712,14 +2792,15 @@ with jasp('molecules/O2-sp-triplet') as calc:
 
 ind = e <= 0.0
 # integrate up to 0eV
-print 'number of up states = {0}'.format(np.trapz(d_up[ind],e[ind]))
-print 'number of down states = {0}'.format(np.trapz(d_down[ind],e[ind]))
+print 'number of up states = {0}'.format(np.trapz(d_up[ind], e[ind]))
+print 'number of down states = {0}'.format(np.trapz(d_down[ind], e[ind]))
 
 import pylab as plt
-plt.plot(e, d_up, e, -d_down)
+plt.plot(e, d_up,
+         e, -d_down)
 plt.xlabel('energy [eV]')
 plt.ylabel('DOS')
-plt.legend(['up','down'])
+plt.legend(['up', 'down'])
 plt.savefig('images/O2-sp-dos.png')
 #+END_SRC
 
@@ -2727,12 +2808,14 @@ plt.savefig('images/O2-sp-dos.png')
 : number of up states = 7.00000343617
 : number of down states = 5.00001715094
 
-#+caption: Spin-polarized density of states for the O_{2} molecule.
+TODO: this needs interpretation discussion
+
+#+caption: Spin-polarized DOS for the O_{2} molecule.
 #+label: fig:o2-sp-dos
 #+ATTR_LaTeX: placement=[H]
 [[./images/O2-sp-dos.png]]
 
-You can see in Figure \ref{fig:o2-sp-dos} that there are two different densities of states for the two spins. One has 7 electrons in it, and the other has 5 electrons in it. The difference of two electrons leads to the magnetic moment of 2 which we calculated earlier.
+You can see in Figure \ref{fig:o2-sp-dos} that there are two different densities of states for the two spins. One has 7 electrons in it (the blue lines), and the other has 5 electrons in it (the green line). The difference of two electrons leads to the magnetic moment of 2 which we calculated earlier. Remember that only peaks in the DOS below the Fermi level are occupied. It is customary to set the Fermi level to 0 eV in DOS plots. The peaks roughly correspond to electrons. For example, the blue peak between -25 and -30 eV corresponds to one electron, in a 1s orbital, where as the blue peak between -5 and -10 eV corresponds to three electrons.
 
 **** Convergence study of the O_{2} dissociation energy
 index:convergence!ENCUT
@@ -2767,7 +2850,7 @@ for encut in encuts:
               encut=encut,
               ismear=0,
               ispin=2,  # turn spin-polarization on
-              ibrion=2, # make sure we relax the geometry
+              ibrion=2, # this turns relaxation on
               nsw=10,
               atoms=atoms) as calc:
         try:
@@ -2833,7 +2916,9 @@ for encut in encuts:
 
 #+end_example
 
-**** Illustration of the effect of SIGMA
+**** TODO Illustration of the effect of SIGMA
+put an equation describing sigma and discuss it
+
 The formula for extrapolation of the total energy to absolute zero is
 only valid for a continuous density of states at the Fermi level
 \cite{Kresse199615}. Consequently, it should not be used for
@@ -2914,8 +2999,6 @@ plt.savefig('images/O2-dissociation-sigma-convergence.png')
 : O2 -> 2O sigma = 0.01  D = 6.815 eV
 : O2 -> 2O sigma = 0.001  D = 6.822 eV
 
-
-
 #+caption: Effect of SIGMA on the oxygen dissociation energy.
 #+label: fig:sigma-o2-diss
 #+ATTR_LaTeX: placement=[H]
@@ -2931,8 +3014,8 @@ from jasp import *
 from ase import Atom, Atoms
 
 # square box origin
-atoms = Atoms([Atom('O',[0,0,0],magmom=2)],
-              cell=(10,10,10))
+atoms = Atoms([Atom('O',[0, 0, 0], magmom=2)],
+              cell=(10, 10, 10))
 
 with jasp('molecules/O-square-box-origin',
           xc='PBE',
@@ -2947,8 +3030,8 @@ with jasp('molecules/O-square-box-origin',
         pass
 
 # square box center
-atoms = Atoms([Atom('O',[5,5,5],magmom=2)],
-              cell=(10,10,10))
+atoms = Atoms([Atom('O', [5, 5, 5], magmom=2)],
+              cell=(10, 10, 10))
 
 with jasp('molecules/O-square-box-center',
           xc='PBE',
@@ -2963,8 +3046,8 @@ with jasp('molecules/O-square-box-center',
         pass
 
 # square box random
-atoms = Atoms([Atom('O',[2.13, 7.32, 1.11],magmom=2)],
-              cell=(10,10,10))
+atoms = Atoms([Atom('O', [2.13, 7.32, 1.11], magmom=2)],
+              cell=(10, 10, 10))
 
 with jasp('molecules/O-square-box-random',
           xc='PBE',
@@ -2984,7 +3067,7 @@ with jasp('molecules/O-square-box-random',
 : Square box (center): E = -1.516623 eV
 : Square box (random): E = -1.515359 eV
 
-There is no difference of significance in these energies. The origin and center are identical (by symmetry too). The meV variation in the random position is probably only due to the atom being off the fft grid points a little bit.
+There is no significant difference in these energies. The origin and center are identical (by symmetry too). The meV variation in the random position is probably only due to the atom being off the FFT grid points a little bit. TODO: this needs clarification.
 
 Now, let us consider some non-square boxes.
 
@@ -2994,8 +3077,8 @@ from jasp import *
 from ase import Atom, Atoms
 
 # orthorhombic box origin
-atoms = Atoms([Atom('O',[0,0,0],magmom=2)],
-              cell=(8,9,10))
+atoms = Atoms([Atom('O', [0, 0, 0], magmom=2)],
+              cell=(8, 9, 10))
 
 with jasp('molecules/O-orthorhombic-box-origin',
           xc='PBE',
@@ -3026,7 +3109,7 @@ with jasp('molecules/O-orthorhombic-box-center',
         pass
 
 # orthorhombic box random
-atoms = Atoms([Atom('O',[2.13, 7.32, 1.11],magmom=2)],
+atoms = Atoms([Atom('O',[2.13, 7.32, 1.11], magmom=2)],
               cell=(8, 9, 10))
 
 with jasp('molecules/O-orthorhombic-box-random',
@@ -3054,8 +3137,8 @@ This is a surprisingly large difference in energy! Nearly 0.4 eV. This is precis
 from jasp import *
 from ase import Atom, Atoms
 
-atoms = Atoms([Atom('O',[5.1, 4.2, 6.1],magmom=2)],
-              cell=(8,9,10))
+atoms = Atoms([Atom('O',[5.1, 4.2, 6.1], magmom=2)],
+              cell=(8, 9, 10))
 
 with jasp('molecules/O-sp-triplet-lowsym',
           xc='PBE',
@@ -3071,9 +3154,9 @@ with jasp('molecules/O-sp-triplet-lowsym',
         E_O = None
 
 # now relaxed O2 dimer
-atoms = Atoms([Atom('O',[5,5,5],magmom=1),
-               Atom('O',[6.22, 5,5],magmom=1)],
-              cell=(10,10,10))
+atoms = Atoms([Atom('O', [5,    5, 5], magmom=1),
+               Atom('O', [6.22, 5, 5], magmom=1)],
+              cell=(10, 10, 10))
 
 with jasp('molecules/O2-sp-triplet',
           xc='PBE',
@@ -3103,7 +3186,7 @@ if None not in (E_O, E_O2):
 : E_O:  -1.893571
 : O2 -> 2O  D = 6.061 eV
 
-This actually agrees within 30-50 meV of reported literature values. Note that with a different "random" position, we get the lower energy for the O atom. All the disagreement we had been seeing was apparently in the O atom energy. So, if you don't need D in your analysis, you will not see the error. Also note that this error is specific to there being a spherical atom in a symmetric cell. This is not a problem for most molecules, which are generally non-spherical.
+This actually agrees within 30-50 meV of reported literature values. Note that with a different "random" position, we get the lower energy for the O atom. All the disagreement we had been seeing was apparently in the O atom energy. So, if you do not need the dissociation energy in your analysis, you will not see the error. Also note that this error is specific to there being a spherical atom in a symmetric cell. This is not a problem for most molecules, which are generally non-spherical.
 
 **** Estimating singlet oxygen dissociation energy
 Finally, let us consider the case where each species is in the singlet state.
@@ -3111,8 +3194,8 @@ Finally, let us consider the case where each species is in the singlet state.
 from jasp import *
 from ase import Atom, Atoms
 
-atoms = Atoms([Atom('O',[5,5,5],magmom=0)],
-              cell=(10,10,10))
+atoms = Atoms([Atom('O', [5, 5, 5], magmom=0)],
+              cell=(10, 10, 10))
 
 with jasp('molecules/O-sp-singlet',
           xc='PBE',
@@ -3128,9 +3211,9 @@ with jasp('molecules/O-sp-singlet',
 print 'Magnetic moment on O = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
 
 # now relaxed O2 dimer
-atoms = Atoms([Atom('O',[5,5,5],magmom=1),
-               Atom('O',[6.22, 5,5],magmom=-1)],
-              cell=(10,10,10))
+atoms = Atoms([Atom('O', [5,   5, 5], magmom=1),
+               Atom('O',[6.22, 5, 5], magmom=-1)],
+              cell=(10, 10, 10))
 
 with jasp('molecules/O2-sp-singlet',
           xc='PBE',
@@ -3163,10 +3246,10 @@ Interestingly, Vasp still found a triplet spin state on the oxygen atom, even th
 from jasp import *
 
 with jasp('molecules/O2-sp-singlet') as calc:
-    print 'singlet: ',calc.get_atoms().get_potential_energy()
+    print 'singlet: {0} eV'.format(calc.get_atoms().get_potential_energy())
 
 with jasp('molecules/O2-sp-triplet') as calc:
-    print 'triplet: ',calc.get_atoms().get_potential_energy()
+    print 'triplet: {0} eV'.format(calc.get_atoms().get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
@@ -3236,8 +3319,8 @@ grep ENMIN $VASP_PP_PATH/potpaw_PBE/O_sv/POTCAR
 from jasp import *
 from ase import Atom, Atoms
 
-atoms = Atoms([Atom('O',[4, 4.5, 5],magmom=2)],
-              cell=(8,9,10))
+atoms = Atoms([Atom('O', [4, 4.5, 5], magmom=2)],
+              cell=(8, 9, 10))
 
 with jasp('molecules/O-sp-triplet-lowsym-sv',
           xc='PBE',
@@ -3254,9 +3337,9 @@ with jasp('molecules/O-sp-triplet-lowsym-sv',
 print 'Magnetic moment on O = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
 
 # now relaxed O2 dimer
-atoms = Atoms([Atom('O',[5,5,5],magmom=1),
-               Atom('O',[6.22, 5,5],magmom=1)],
-              cell=(10,10,10))
+atoms = Atoms([Atom('O', [5,    5, 5], magmom=1),
+               Atom('O', [6.22, 5, 5], magmom=1)],
+              cell=(10, 10, 10))
 
 with jasp('molecules/O2-sp-triplet-sv',
           xc='PBE',
@@ -3299,16 +3382,16 @@ from jasp import *
 # first we define our molecules. These will automatically be at the coordinates from the G2 database.
 
 CO =  molecule('CO')
-CO.set_cell([8,8,8], scale_atoms=False)
+CO.set_cell([8, 8, 8], scale_atoms=False)
 
 H2O = molecule('H2O')
-H2O.set_cell([8,8,8], scale_atoms=False)
+H2O.set_cell([8, 8, 8], scale_atoms=False)
 
 CO2 =  molecule('CO2')
-CO2.set_cell([8,8,8], scale_atoms=False)
+CO2.set_cell([8, 8, 8], scale_atoms=False)
 
 H2 = molecule('H2')
-H2.set_cell([8,8,8], scale_atoms=False)
+H2.set_cell([8, 8, 8], scale_atoms=False)
 
 # now the calculators to get the energies
 with jasp('molecules/wgs/CO',
@@ -3373,9 +3456,9 @@ else:
 : \Delta E = -16.614 kcal/mol
 : \Delta E = -69.514 kJ/mol
 
-We [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-nist-webbook/#7][estimated]] the enthalpy of this reaction at standard conditions to be -41 kJ/mol, which is a fair bet lower than we estimated. In the next section we will examine whether additional corrections are needed, such as zero-point and temperature corrections.
+We [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-nist-webbook/#7][estimated]] the enthalpy of this reaction at standard conditions to be -41 kJ/mol using data from the NIST webbook, which is a fair bit lower than we calculated here. In the next section we will examine whether additional corrections are needed, such as zero-point and temperature corrections.
 
-It is a good idea to verify your calculations and structures are what you expected. Let us print them here. Inspection of these results shows the geometries were all relaxed.
+It is a good idea to verify your calculations and structures are what you expected. Let us print them here. Inspection of these results shows the geometries were all relaxed, i.e., the forces on each atom are less than 0.05 eV/\AA.
 
 #+BEGIN_SRC python :results output raw :exports both
 from jasp import *
@@ -3407,7 +3490,7 @@ with jasp('molecules/wgs/H2O') as calc:
 #+END_SRC
 
 #+RESULTS:
-**** calculation summaries
+**** Calculation summaries
 ***** CO
 #+begin_example
 : -----------------------------
@@ -3605,7 +3688,7 @@ with jasp('molecules/wgs/CO-vib',
 : 04: (17.958586+0j) cm^(-1)
 : 05: (17.958586+0j) cm^(-1)
 
-CO has only one vibrational mode.
+CO has only one vibrational mode (3N-5 = 6 - 5 = 1). The other 5 modes are 3 translations and 2 rotations.
 
 **** CO_{2} vibrations
 #+BEGIN_SRC python :results output :exports both
@@ -3715,7 +3798,7 @@ with jasp('molecules/wgs/H2O-vib',
 
 Water has 3N-6 = 3 vibrational modes.
 
-**** TODO thermochemistry
+**** TODO Thermochemistry
 Now we are ready. We have the electronic energies and vibrational frequencies of each species in the reaction.
 
 #+BEGIN_SRC python
@@ -3851,7 +3934,7 @@ Npos = atoms.positions[0]
 
 # move N to origin
 atoms.translate(-Npos)
-atoms.set_cell((10,10,10),scale_atoms=False)
+atoms.set_cell((10, 10, 10), scale_atoms=False)
 
 atoms2 = atoms.copy()
 pos2 = atoms2.positions
@@ -3859,12 +3942,12 @@ pos2 = atoms2.positions
 for i,atom in enumerate(atoms2):
     if atom.symbol == 'H':
         # reflect through z
-        pos2[i] *= np.array([1,1,-1])
+        pos2[i] *= np.array([1, 1, -1])
 atoms2.positions = pos2
 
 #now move N to center of box
-atoms.translate([5,5,5])
-atoms2.translate([5,5,5])
+atoms.translate([5, 5, 5])
+atoms2.translate([5, 5, 5])
 
 with jasp('molecules/nh3-initial',
           xc='PBE',
@@ -3917,7 +4000,7 @@ with jasp('molecules/nh3-neb',
           xc='PBE',
           ibrion=1,
           nsw=90,
-          spring=-5, debug=logging.DEBUG,
+          spring=-5,
           atoms=images) as calc:
     images,energies = calc.get_neb()
 
@@ -3929,8 +4012,7 @@ plt.savefig('images/nh3-neb.png')
 #+RESULTS:
 : None
 
-
-#+caption: NEB for ammonia flipping.
+#+caption: Nudged elastic band results for ammonia flipping.
 [[./images/nh3-neb.png]]
 *** TODO Make a movie of the animation
 
@@ -3979,7 +4061,6 @@ As with molecules, mod:ase provides several helper functions to create bulk stru
 from ase.io import write
 from ase.lattice.cubic import FaceCenteredCubic
 
-
 atoms = FaceCenteredCubic(directions=[[1,0,0],
                                       [0,1,0],
                                       [0,0,1]],
@@ -3991,7 +4072,7 @@ write('images/Ag-bulk.png',atoms,show_unit_cell=2)
 
 # to make an alloy, we can replace one atom with another kind
 atoms[0].symbol = 'Pd'
-write('images/AgPd-bulk.png',atoms,show_unit_cell=2)
+write('images/AgPd-bulk.png', atoms, show_unit_cell=2)
 
 #+END_SRC
 
@@ -4063,7 +4144,7 @@ loop_
    Ru  Ru6  1  0.000000  0.000000  0.000000  0  .  1
 #+end_src
 
-We can read this file in with func:ase.io.read
+We can read this file in with func:ase.io.read. That function automatically recognizes the file type by the extension.
 
 #+BEGIN_SRC python :results output
 from ase.io import read, write
@@ -4077,7 +4158,7 @@ write('images/Ru2O4.png', atoms, show_unit_cell=2)
 #+ATTR_LaTeX: width=96bp,placement=[H]
 [[./images/Ru2O4.png]]
 
-You can also download the VASP files. I have copied these files (INCAR, POSCAR, KPOINTS) to a directory, and now we can run a calculation like this:
+You can also download the VASP files. I have copied these files (INCAR, POSCAR, KPOINTS) to a directory (bulk/Ru2O4), and now we can run a calculation like this:
 
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -4085,8 +4166,7 @@ from jasp import *
 with jasp('bulk/Ru2O4',
           xc='PBE',
           setups={'Ru':'_pv'}) as calc:
-    atoms = calc.get_atoms()
-    atoms.get_potential_energy()
+    calc.calculate()
     print calc
 #+END_SRC
 
@@ -4173,10 +4253,10 @@ from ase import Atom, Atoms
 LC = [3.5, 3.55, 3.6, 3.65, 3.7, 3.75]
 fcc_energies = []
 for a in LC:
-    atoms = Atoms([Atom('Cu',(0,0,0))],
-              cell=0.5*a*np.array([[1.0, 1.0, 0.0],
-                                   [0.0, 1.0, 1.0],
-                                   [1.0, 0.0, 1.0]]))
+    atoms = Atoms([Atom('Cu',(0, 0, 0))],
+              cell=0.5 * a*np.array([[1.0, 1.0, 0.0],
+                                     [0.0, 1.0, 1.0],
+                                     [1.0, 0.0, 1.0]]))
 
     with jasp('bulk/Cu-{0}'.format(a),
               xc='PBE',
@@ -4217,11 +4297,11 @@ Use the data in the table above to plot the total energy as a function of the la
 #+ATTR_LaTeX: placement=[H]
 [[./images/Cu-fcc.png]]
 
-If you want to know the lattice constant that gives the lowest energy, you would fit an [[Equations of State][equation of state]] to the data. Here is an example:
+If you want to know the lattice constant that gives the lowest energy, you would fit an [[Equations of State][equation of state]] to the data. Here is an example using mod:ase.utils.eos. Note that this module only fits a cubic polynomial to the data. There are many other possibilities discussed in the appendix on [[Equations of State][equations of state]].
 
 #+BEGIN_SRC python :results output
 from jasp import *
-from ase.utils.eos import *
+from ase.utils.eos import EquationOfState
 LC = [3.5, 3.55, 3.6, 3.65, 3.7, 3.75]
 energies = []
 volumes = []
@@ -4262,9 +4342,9 @@ import numpy as np
 a = 3.61 # lattice constant
 
 atoms = Atoms([Atom('Cu', [0,0,0])],
-              cell=0.5*a*np.array([[1.0, 1.0, -1.0],
-                                   [-1.0, 1.0, 1.0],
-                                   [1.0, -1.0, 1.0]]))
+              cell=0.5 * a*np.array([[ 1.0,  1.0, -1.0],
+                                     [-1.0,  1.0,  1.0],
+                                     [ 1.0, -1.0,  1.0]]))
 
 print 'BCC lattice constant = {0} Ang'.format(a*(11.8/atoms.get_volume())**(1./3.))
 #+END_SRC
@@ -4282,10 +4362,9 @@ LC = [2.75, 2.8, 2.85, 2.9, 2.95, 3.0]
 
 for a in LC:
     atoms = Atoms([Atom('Cu', [0,0,0])],
-                  cell=0.5*a*np.array([[1.0, 1.0, -1.0],
-                                       [-1.0, 1.0, 1.0],
-                                       [1.0, -1.0, 1.0]]))
-
+                  cell=0.5 * a * np.array([[ 1.0,  1.0, -1.0],
+                                           [-1.0,  1.0,  1.0],
+                                           [ 1.0, -1.0,  1.0]]))
 
     with jasp('bulk/Cu-bcc-{0}'.format(a),
               xc='PBE',
@@ -4302,6 +4381,7 @@ Finally, we will compare the two crystal structures.
 #+BEGIN_SRC python :results output org raw
 from jasp import *
 
+# bcc energies and volumes
 bcc_LC = [2.75, 2.8, 2.85, 2.9, 2.95, 3.0]
 bcc_volumes = []
 bcc_energies = []
@@ -4311,7 +4391,7 @@ for a in bcc_LC:
         bcc_volumes.append(atoms.get_volume())
         bcc_energies.append(atoms.get_potential_energy())
 
-# fcc
+# fcc energies and volumes
 fcc_LC = [3.5, 3.55, 3.6, 3.65, 3.7, 3.75]
 fcc_volumes = []
 fcc_energies =[]
@@ -4323,20 +4403,19 @@ for a in fcc_LC:
 
 import matplotlib.pyplot as plt
 plt.plot(fcc_volumes, fcc_energies, label='fcc')
-plt.plot(bcc_volumes, bcc_energies,label='bcc')
+plt.plot(bcc_volumes, bcc_energies, label='bcc')
 
 plt.xlabel('Atomic volume ($\AA^3$/atom)')
 plt.ylabel('Total energy (eV)')
 plt.legend()
 plt.savefig('images/Cu-bcc-fcc.png')
-plt.show()
 
 # print table of data
 print '#+tblname: bcc-data'
 print '#+caption: Total energy vs. lattice constant for BCC Cu'
 print '| Lattice constant (\AA$^3$) | Total energy (eV) |'
 print '|-'
-for lc,e in zip(bcc_LC, bcc_energies):
+for lc, e in zip(bcc_LC, bcc_energies):
     print '| {0} | {1} |'.format(lc, e)
 #+END_SRC
 
@@ -4371,7 +4450,7 @@ Compute the energy vs. volume for fcc and bcc Cu for different $k$-point grids. 
 What can we say about the relative stability of fcc to hcp? Nothing, until we calculate the hcp equation of state.
 
 *** hcp
-The hcp lattice is more complicated because there are two lattice parameters: $a$ and $c$ or equivalently: $a$ and $c/a$. We will start by making a grid of values and find the set of parameters that minimizes the energy. See Figure \ref{fig:ru-e-ca}.
+The hcp lattice is more complicated than the fcc/bcc lattices because there are two lattice parameters: $a$ and $c$ or equivalently: $a$ and $c/a$. We will start by making a grid of values and find the set of parameters that minimizes the energy. See Figure \ref{fig:ru-e-ca}.
 
 #+BEGIN_SRC python :results output
 from ase.lattice.hexagonal import HexagonalClosedPacked
@@ -4395,7 +4474,7 @@ for a in a_list:
 
         with jasp(wd,
                   xc='PBE',
-                  kpts=(6,6,4),
+                  kpts=(6, 6, 4), # the c-axis is longer than the a-axis, so we use fewer kpoints.
                   encut=350,
                   atoms=atoms) as calc:
             try:
@@ -4421,12 +4500,12 @@ It looks like there is a minimum in the a=2.7  \AA  curve, at a $c/a$ ratio of a
 #+BEGIN_SRC python :results output
 from jasp import *
 import matplotlib.pyplot as plt
-from pylab import *
+
 
 x = [2.5, 2.6, 2.7, 2.8, 2.9]
 y = [1.4, 1.5, 1.6, 1.7, 1.8]
 
-X,Y = meshgrid(x,y)
+X,Y = meshgrid(x, y)
 Z = np.zeros(X.shape)
 
 for i,a in enumerate(x):
@@ -4441,10 +4520,10 @@ for i,a in enumerate(x):
             except (VaspSubmitted, VaspQueued):
                 pass
 
-cf = plt.contourf(X,Y,Z,20,
+cf = plt.contourf(X, Y, Z, 20,
                   cmap=cm.jet)
 
-cbar = colorbar(cf)
+cbar = plt.colorbar(cf)
 cbar.ax.set_ylabel('Energy (eV)')
 
 plt.xlabel('$a$ ($\AA$)')
@@ -4471,7 +4550,7 @@ This multistep process is pretty reasonable to get a converged structure pretty 
 
 #+BEGIN_SRC python :results output org raw :exports both
 # step 1 frozen atoms and shape at different volumes
-from ase import *
+from ase import Atom, Atoms
 import numpy as np
 from jasp import *
 import matplotlib.pyplot as plt
@@ -4489,13 +4568,13 @@ a1 = a*np.array([1.0, 0.0, 0.0])
 a2 = a*np.array([0.0, 1.0, 0.0])
 a3 = c*np.array([0.0, 0.0, 1.0])
 
-atoms = Atoms([Atom('Ti',[0., 0., 0.]),
-               Atom('Ti',0.5*a1 + 0.5*a2 + 0.5*a3),
-               Atom('O',u*a1+u*a2),
-               Atom('O',-u*a1 -u*a2),
-               Atom('O',(0.5+u)*a1 + (0.5-u)*a2 + 0.5*a3),
-               Atom('O',(0.5-u)*a1 + (0.5+u)*a2 + 0.5*a3)],
-              cell=[a1,a2,a3])
+atoms = Atoms([Atom('Ti', [0., 0., 0.]),
+               Atom('Ti', 0.5 * a1 + 0.5 * a2 + 0.5 * a3),
+               Atom('O', u * a1 + u * a2),
+               Atom('O', -u * a1 - u * a2),
+               Atom('O', (0.5 + u) * a1 + (0.5 - u) * a2 + 0.5 * a3),
+               Atom('O', (0.5 - u) * a1 + (0.5 + u) * a2 + 0.5 * a3)],
+              cell=[a1, a2, a3])
 
 v0 = atoms.get_volume()
 cell0 = atoms.get_cell()
@@ -4505,13 +4584,13 @@ factors = [0.9, 0.95, 1.0, 1.05, 1.1] #to change volume by
 energies, volumes = [], []
 for f in factors:
     v1 = f*v0
-    cell_factor = (v1/v0)**(1./3.)
+    cell_factor = (v1 / v0)**(1. / 3.)
 
-    atoms.set_cell(cell0*cell_factor, scale_atoms=True)
+    atoms.set_cell(cell0 * cell_factor, scale_atoms=True)
 
     with jasp('bulk/tio2/step1-{0:1.2f}'.format(f),
               encut=350,
-              kpts=(4,4,4),
+              kpts=(4, 4, 4),
               xc='PBE',
               sigma=0.05,
               atoms=atoms) as calc:
@@ -4530,20 +4609,20 @@ print '#+tblname: tio2-vol-ene'
 print '#+caption: Total energy of TiO_{2} vs. volume.'
 print '| Volume ($\AA^3$) | Energy (eV) |'
 print '|-'
-for v,e in zip(volumes, energies):
-    print '| {0} | {1} |'.format(v,e)
+for v, e in zip(volumes, energies):
+    print '| {0} | {1} |'.format(v, e)
 #+END_SRC
 
 #+RESULTS:
 #+tblname: tio2-vol-ene
 #+caption: Total energy of TiO_{2} vs. volume.
-| Volume  $\AA^3$   | Energy (eV) |
-|------------------+-------------|
-|       56.1254184 |  -52.042193 |
-|       59.2434972 |  -52.649555 |
-|        62.361576 |  -52.949853 |
-|       65.4796548 |  -52.950336 |
-|       68.5977336 |  -52.783494 |
+| Volume  $\AA^3$ | Energy (eV) |
+|-----------------+-------------|
+|      56.1254184 |  -52.042193 |
+|      59.2434972 |  -52.649555 |
+|       62.361576 |  -52.949853 |
+|      65.4796548 |  -52.950336 |
+|      68.5977336 |  -52.783494 |
 
 
 #+caption: Total energy vs volume for TiO_{2} with frozen atoms and frozen shape.
@@ -4565,10 +4644,10 @@ volumes = [62., 63., 64., 65., 66.]
 
 energies = []
 for v in volumes:
-    atoms.set_cell((v/v0)**(1./3.)*cell0, scale_atoms=True)
+    atoms.set_cell((v / v0)**(1. / 3.) * cell0, scale_atoms=True)
     with jasp('bulk/tio2/step2-{0}'.format(v),
               encut=350,
-              kpts=(4,4,4),
+              kpts=(4, 4, 4),
               xc='PBE',
               sigma=0.05,
               isif=4,     # relax ions, cell shape. not volume
@@ -4674,13 +4753,11 @@ The points to note here are the following:
 3. The agreement with experimental lattice parameters is pretty good.
 4. The spacegroup is still correct.
 
-*** TODO the volume is very small (60) compared to what we expected (64) something may be wrong!
+*** TODO the volume is very small (61) compared to what we expected (64) something may be wrong!
 ** Bulk calculation parameters
 *** Effect of [[incar:SIGMA][SIGMA]]
 index:ISMEAR
 index:SIGMA
-
-
 
 In the self-consistent cycle  of a DFT calculation, the total energy is minimized with respect to occupation of the Kohn-Sham orbitals. At absolute zero, a band is either occupied or empty. This discrete occupation results in discontinuous changes in energy with changes in occupation, which makes it difficult to converge. One solution is to artificially broaden the band occupancies, as if they were occupied at a higher temperature where partial occupation is possible. This results in a continuous dependence of energy on the partial occupancy, and dramatically increases the rate of convergence. [[incar:SIGMA][SIGMA]] and [[incar:ISMEAR][ISMEAR]] affect how the partial occupancies of the bands are determined.
 
@@ -4704,18 +4781,18 @@ it should be determined that enough bands were used by examination of
 the occupancies.  It is undesirable to have too many extra bands, as
 this will add computational time.
 
-TODO: show we used enough bands.
 
+Below we show the effect of SIGMA on the band occupancies.
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase import Atom, Atoms
 import matplotlib.pyplot as plt
 
 a = 3.61
-atoms = Atoms([Atom('Cu',(0,0,0))],
-              cell=0.5*a*np.array([[1.0, 1.0, 0.0],
-                                   [0.0, 1.0, 1.0],
-                                   [1.0, 0.0, 1.0]])).repeat((2,2,2))
+atoms = Atoms([Atom('Cu', (0, 0, 0))],
+              cell=0.5 * a * np.array([[1.0, 1.0, 0.0],
+                                       [0.0, 1.0, 1.0],
+                                       [1.0, 0.0, 1.0]])).repeat((2,2,2))
 
 SIGMA = [0.001, 0.05, 0.1, 0.2, 0.5]
 
@@ -4724,10 +4801,10 @@ for sigma in SIGMA:
     with jasp('bulk/Cu-sigma-{0}'.format(sigma),
               xc='PBE',
               encut=350,
-              kpts=(4,4,4),
+              kpts=(4, 4, 4),
               ismear=-1,
               sigma=sigma,
-              nbands=9*8,
+              nbands=9 * 8,
               atoms=atoms) as calc:
         e = atoms.get_potential_energy()
 
@@ -4783,13 +4860,13 @@ with jasp('bulk/bulk-rh',
     bulk_energy = atoms.get_potential_energy()
 
 # atomic system
-atoms = Atoms([Atom('Rh',[5,5,5])],
-              cell=(7,8,9))
+atoms = Atoms([Atom('Rh',[5, 5, 5])],
+              cell=(7, 8, 9))
 
 with jasp('bulk/atomic-rh',
           xc='PBE',
           encut=350,
-          kpts=(1,1,1),
+          kpts=(1, 1, 1),
           atoms=atoms) as calc:
     atomic_energy = atoms.get_potential_energy()
 
@@ -5446,7 +5523,6 @@ $\Delta E = 4E_{CuO} - 2E_{Cu_2O} - E_{O_2}$. We need to compute the energy of e
 #+BEGIN_SRC python :results output :exports both
 # run Cu2O calculation
 from jasp import *
-from ase.visualize import *
 from ase import Atom, Atoms
 
 #http://phycomp.technion.ac.il/~ira/types.html#Cu2O
@@ -5524,7 +5600,6 @@ Cu: potpaw_PBE/Cu/POTCAR (git-hash: a44c591415026f53deb16a99ca3f06b1e69be10b)
 #+BEGIN_SRC python :results output
 # run CuO calculation
 from jasp import *
-from ase.visualize import *
 from ase import Atom, Atoms
 
 # CuO
@@ -5682,7 +5757,7 @@ from ase import Atoms, Atom
 from jasp import *
 import sys
 
-from pylab import *
+import matplotlib.pyplot as plt
 import numpy as np
 from ase.dft import DOS
 
@@ -5831,7 +5906,7 @@ from jasp import *
 from ase.calculators.vasp import VaspDos
 import sys
 
-from pylab import *
+import matplotlib.pyplot as plt
 import numpy as np
 
 a = 3.9  # approximate lattice constant
@@ -5870,22 +5945,22 @@ with jasp('bulk/pd-ados',
     ed = np.trapz(energies * dos, energies) / np.trapz(dos, energies)
     wd2 = np.trapz(energies**2 * dos, energies) / np.trapz(dos, energies)
 
-    print 'Total # states = %1.2f' % Nstates
-    print 'number of occupied states = %1.2f' % N_occupied_states
-    print 'd-band center = %1.2f eV' % ed
-    print 'd-band width  = %1.2f eV' % np.sqrt(wd2)
+    print 'Total # states = {0:1.2f}'.format(Nstates)
+    print 'number of occupied states = {0:1.2f}'.format(N_occupied_states)
+    print 'd-band center = {0:1.2f} eV'.format(ed)
+    print 'd-band width  = {0:1.2f} eV'.format(np.sqrt(wd2))
 
     # plot the d-band
-    plot(energies, dos, label='$d$-orbitals')
+    plt.plot(energies, dos, label='$d$-orbitals')
 
     # plot the occupied states in shaded gray
-    fill_between(x=energies[occupied],
+    plt.fill_between(x=energies[occupied],
                  y1=dos[occupied],
                  y2=zeros(dos[occupied].shape),
                  color='gray')
 
-    xlabel('$E - E_f$ (eV)')
-    ylabel('DOS (arbitrary units)')
+    plt.xlabel('$E - E_f$ (eV)')
+    plt.ylabel('DOS (arbitrary units)')
 
 savefig('images/pd-ados.png')
 #+END_SRC
@@ -6077,43 +6152,6 @@ plt.savefig('images/Si-bandstructure.png')
 [[./images/Si-bandstructure.png]]
 
 *** TODO create example showing band dispersion with lattice constant
-** Simulated XRD spectra                                           :noexport:
-You do not really need a DFT calculation for this, except to get the optimized structure. A few notes on using this module:
-
-1. You need a large repeat unit cell.
-2. It is is not fast. There is a double loop over the atoms, meaning N^2 operations, and you need large unit cells!
-3. This example is primarily a proof of concept. I have not thought about how good the results are.
-
-#+BEGIN_SRC python :results output
-from ase import Atom,Atoms
-from ase.xrdebye import *
-import numpy as np
-
-wavelength = 1.051967 # in angstroms
-
-XRD = XrDebye(wavelength=wavelength,alpha=1.01,damping=0.0)
-
-a = 3.92  # approximate lattice constant
-b = a / 2.
-atoms = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
-              cell=[(0, b, b),
-                    (b, 0, b),
-                    (b, b, 0)]).repeat((5,5,5))
-
-thetas = np.linspace(0.2, np.pi/4.)
-
-I = [XRD.get(atoms,s=s) for s in 2*np.sin(thetas)/wavelength]
-
-import matplotlib.pyplot as plt
-plt.plot((2*thetas)*180./np.pi,I)
-plt.xlabel('$2\Theta$')
-plt.ylabel('Intensity (arb. units)')
-plt.savefig('images/pd-xrd.png')
-#+END_SRC
-
-#+RESULTS:
-
-[[./images/pd-xrd.png]]
 
 ** Magnetism
 *** Determining if a magnetic solution is energetically favorable
@@ -6232,7 +6270,7 @@ As with molecules and bulk systems mod:ase provides several convenience function
 ase provides many [[https://wiki.fysik.dtu.dk/ase/ase/surface.html#module-ase.lattice.surface][utility functions]] to setup surfaces. Here is a simple example of an fcc111 Al surface. There are built in functions for fcc111, bcc110, bcc111, hcp001 and diamond111.
 
 #+BEGIN_SRC python
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc111
 from ase.io import write
 
 slab = fcc111('Al', size=(2,2,3), vacuum=10.0)
@@ -6278,7 +6316,7 @@ When a surface is created, the bulk symmetry is broken and consequently there wi
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc111
 
 atoms = fcc111('Al', size=(1,1,4), vacuum=10.0)
 
@@ -6334,7 +6372,7 @@ Some points to note. The forces on the atoms have symmetry to them.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc111
 
 atoms = fcc111('Al', size=(1,1,4), vacuum=10.0)
 
@@ -6356,7 +6394,7 @@ Note: the [[https://wiki.fysik.dtu.dk/ase/ase/constraints.html][ase constraints]
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc111
 from ase.constraints import FixAtoms
 
 atoms = fcc111('Al', size=(1,1,4), vacuum=10.0)
@@ -6423,7 +6461,7 @@ You can see that atoms 2 and 3 (the ones we relaxed) now have very low forces on
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc111
 
 atoms = fcc111('Al', size=(1,1,4), vacuum=10.0)
 
@@ -6456,7 +6494,7 @@ We first consider the Au(110) case, where the reconstruction is known to be favo
 **** Clean Au(110) slab
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc110
 from ase.io import write
 from ase.constraints import FixAtoms
 
@@ -6480,12 +6518,13 @@ with jasp('surfaces/Au-110',
 #+RESULTS:
 
 #+caption: The unreconstructed Au(110) surface viewed from the side.
+#+ATTR_LaTeX: placement=[H]
 [[./images/Au-110.png]]
 
 **** Missing row in Au(110)
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc110
 from ase.io import write
 from ase.constraints import FixAtoms
 
@@ -6511,6 +6550,7 @@ with jasp('surfaces/Au-110-missing-row',
 #+RESULTS:
 
 #+caption: Au(110) with the missing row reconstruction.
+#+ATTR_LaTeX: placement=[H]
 [[./images/Au-110-missing-row.png]]
 
 **** Bulk Au
@@ -6570,7 +6610,7 @@ The missing row formation energy is slightly negative. The magnitude of the form
 **** Clean Ag(110) slab
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc110
 from ase.io import write
 from ase.constraints import FixAtoms
 
@@ -6594,7 +6634,7 @@ with jasp('surfaces/Ag-110',
 **** Missing row in Ag(110)
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc110
 from ase.io import write
 from ase.constraints import FixAtoms
 
@@ -6674,7 +6714,7 @@ For Ag(110), the missing row formation energy is practically thermoneutral, i.e.
 **** Clean Cu(110) slab
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc110
 from ase.visualize import view
 from ase.constraints import FixAtoms
 
@@ -6698,7 +6738,7 @@ with jasp('surfaces/Cu-110',
 **** Missing row in Cu(110)
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc110
 from ase.visualize import view
 from ase.constraints import FixAtoms
 
@@ -6778,10 +6818,7 @@ To get the work function, we need to have the local potential. this is not writt
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-from ase.lattice.surface import *
-from ase.constraints import FixAtoms
-from pylab import *
-from jasp.volumetric_data import *
+import matplotlib.pyplot as plt
 
 with jasp('surfaces/Al-slab-relaxed') as calc:
     atoms = calc.get_atoms()
@@ -6806,11 +6843,11 @@ nx, ny, nz = lp.shape
 axy = np.array([np.average(lp[:,:,z]) for z in range(nz)])
 # setup the x-axis in realspace
 uc = atoms.get_cell()
-xaxis = np.linspace(0,uc[2][2],nz)
+xaxis = np.linspace(0, uc[2][2], nz)
 
-plot(xaxis, axy)
-plot([min(xaxis), max(xaxis)], [ef, ef],'k:')
-savefig('images/Al-wf.png')
+plt.plot(xaxis, axy)
+plt.plot([min(xaxis), max(xaxis)], [ef, ef],'k:')
+plt.savefig('images/Al-wf.png')
 
 ind = (xaxis > 0) & (xaxis < 5)
 wf = np.average(axy[ind]) - ef
@@ -6858,8 +6895,7 @@ where $\Delta E_N = E_{slab}^N - E_{slab}^{N-1}$.
 We will examine this approach here. We will use unrelaxed slabs for computational efficiency.
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-from ase.units import *
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc111
 import matplotlib.pyplot as plt
 
 Nlayers = [3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -6911,8 +6947,8 @@ plt.savefig('images/Cu-unrelaxed-surface-energy.png')
 One reason for the oscillations may be quantum size effects \cite{Fiolhais2003209}. In \cite{PhysRevB.75.115131} the surface energy of Cu(111) is reported as 0.48 eV/atom, or 1.36 J/m$^2$. Here is an example showing a conversion between these two units. We use ase to compute the area of the unit cell from the norm of the cross-product of the vectors defining the surface unit cell.
 
 #+BEGIN_SRC python :results output :exports both
-from ase.lattice.surface import *
-from ase.units import *
+from ase.lattice.surface import fcc111
+from ase.units import J, m
 import numpy as np
 
 slab = fcc111('Cu', size=(1,1,3), vacuum=10.0)
@@ -6927,6 +6963,7 @@ print 'sigma = {0} J/m^2'.format(sigma/area/(J/m**2))
 
 #+RESULTS:
 : sigma = 1.3628146074 J/m^2
+
 
 *** Advanced topics in surface energy
 The surface energies can be used to estimate the shapes of nanoparticles using a Wulff construction. See \cite{doi.10.1021/jp200950a} for an example of computing Mo_{2}C surface energies and particle shapes, and \cite{Inoglu2009188} for an example of the influence of adsorbates on surface energies and particle shapes of Cu.
@@ -6964,19 +7001,18 @@ Here we will just illustrate the effect.
 
 #+BEGIN_SRC python
 # compute local potential of slab with no dipole
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc111, add_adsorbate
 from jasp import *
-from jasp.volumetric_data import *
 import matplotlib.pyplot as plt
 slab = fcc111('Al', size=(2,2,2), vacuum=10.0)
-add_adsorbate(slab,'Na',height=1.2,position='fcc')
+add_adsorbate(slab, 'Na', height=1.2, position='fcc')
 
 slab.center()
 
 with jasp('surfaces/Al-Na-nodip',
           xc='PBE',
           encut=340,
-          kpts=(2,2,1),
+          kpts=(2, 2, 1),
           lvtot=True, # write out local potential
           lvhar=True, # write out only electrostatic potential, not xc pot
           atoms=slab) as calc:
@@ -6991,18 +7027,18 @@ with jasp('surfaces/Al-Na-nodip',
 
 #+BEGIN_SRC python :results output :exports both
 # compute local potential with dipole calculation on
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc111, add_adsorbate
 from jasp import *
 
-slab = fcc111('Al', size=(2,2,2), vacuum=10.0)
-add_adsorbate(slab,'Na',height=1.2,position='fcc')
+slab = fcc111('Al', size=(2, 2, 2), vacuum=10.0)
+add_adsorbate(slab, 'Na', height=1.2, position='fcc')
 
 slab.center()
 
 with jasp('surfaces/Al-Na-dip',
           xc='PBE',
           encut=340,
-          kpts=(2,2,1),
+          kpts=(2, 2, 1),
           idipol=3,   # only along z-axis
           lvtot=True, # write out local potential
           lvhar=True, # write out only electrostatic potential, not xc pot
@@ -7010,15 +7046,15 @@ with jasp('surfaces/Al-Na-dip',
 
     calc.calculate()
 
-    x,y,z,cd = calc.get_charge_density()
+    x, y, z, cd = calc.get_charge_density()
     n0, n1, n2 = cd.shape
-    nelements = n0*n1*n2
-    voxel_volume = slab.get_volume()/nelements
-    total_electron_charge = cd.sum()*voxel_volume
+    nelements = n0 * n1 * n2
+    voxel_volume = slab.get_volume() / nelements
+    total_electron_charge = cd.sum() * voxel_volume
 
-    electron_density_center = np.array([(cd*x).sum(),
-                                        (cd*y).sum(),
-                                        (cd*z).sum()])
+    electron_density_center = np.array([(cd * x).sum(),
+                                        (cd * y).sum(),
+                                        (cd * z).sum()])
     electron_density_center *= voxel_volume
     electron_density_center /= total_electron_charge
 
@@ -7041,12 +7077,12 @@ with jasp('surfaces/Al-Na-dip-step2',
 To see the difference in what the dipole correction does, we now plot the potentials from each calculation.
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-from pylab import *
+import matplotlib.pyplot as plt
 
 with jasp('surfaces/Al-Na-nodip') as calc:
     atoms = calc.get_atoms()
 
-    x,y,z,lp = calc.get_local_potential()
+    x, y, z, lp = calc.get_local_potential()
     nx, ny, nz = lp.shape
 
     axy_1 = [np.average(lp[:,:,z]) for z in range(nz)]
@@ -7059,7 +7095,7 @@ with jasp('surfaces/Al-Na-nodip') as calc:
 with jasp('surfaces/Al-Na-dip-step2') as calc:
     atoms = calc.get_atoms()
 
-    x,y,z,lp = calc.get_local_potential()
+    x, y, z, lp = calc.get_local_potential()
     nx, ny, nz = lp.shape
 
     axy_2 = [np.average(lp[:,:,z]) for z in range(nz)]
@@ -7072,13 +7108,13 @@ with jasp('surfaces/Al-Na-dip-step2') as calc:
 
 print 'The difference in energy is {0} eV.'.format(e2-e1)
 
-plot(xaxis_1, axy_1, label='no dipole correction')
-plot(xaxis_2, axy_2, label='dipole correction')
-plot([min(xaxis_2), max(xaxis_2)],[ef2,ef2], 'k:', label='Fermi level')
-xlabel('z ($\AA$)')
-ylabel('xy-averaged electrostatic potential')
-legend(loc='best')
-savefig('images/dip-vs-nodip-esp.png')
+plt.plot(xaxis_1, axy_1, label='no dipole correction')
+plt.plot(xaxis_2, axy_2, label='dipole correction')
+plt.plot([min(xaxis_2), max(xaxis_2)],[ef2,ef2], 'k:', label='Fermi level')
+plt.xlabel('z ($\AA$)')
+plt.ylabel('xy-averaged electrostatic potential')
+plt.legend(loc='best')
+plt.savefig('images/dip-vs-nodip-esp.png')
 #+END_SRC
 
 #+RESULTS:
@@ -7109,7 +7145,7 @@ $\Delta H_{ads} (eV/O) = E_{slab+O} - E_{slab} - 0.5*E_{O_2}$
 ***** clean slab calculation
 #+BEGIN_SRC python :results output
 from jasp import *
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc111
 from ase.constraints import FixAtoms
 
 atoms = fcc111('Pt', size=(2,2,3), vacuum=10.0)
@@ -7128,10 +7164,10 @@ with jasp('surfaces/Pt-slab',
 #+BEGIN_SRC python :results output
 from jasp import *
 
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc111, add_adsorbate
 from ase.constraints import FixAtoms
 
-atoms = fcc111('Pt', size=(2,2,3), vacuum=10.0)
+atoms = fcc111('Pt', size=(2, 2, 3), vacuum=10.0)
 
 # note this function only works when atoms are created by the surface module.
 add_adsorbate(atoms, 'O', height=1.2, position='fcc')
@@ -7141,7 +7177,7 @@ atoms.set_constraint(constraint)
 
 with jasp('surfaces/Pt-slab-O-fcc',
           xc='PBE',
-          kpts=[4,4,1],
+          kpts=[4, 4, 1],
           encut=350,
           ibrion=2,
           nsw=25,
@@ -7155,10 +7191,10 @@ with jasp('surfaces/Pt-slab-O-fcc',
 ***** bridge site
 #+BEGIN_SRC python :results output
 from jasp import *
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc111, add_adsorbate
 from ase.constraints import FixAtoms
 
-atoms = fcc111('Pt', size=(2,2,3), vacuum=10.0)
+atoms = fcc111('Pt', size=(2, 2, 3), vacuum=10.0)
 
 # note this function only works when atoms are created by the surface module.
 add_adsorbate(atoms, 'O', height=1.2, position='bridge')
@@ -7182,7 +7218,7 @@ with jasp('surfaces/Pt-slab-O-bridge',
 ***** hcp site
 #+BEGIN_SRC python :results output
 from jasp import *
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc111, add_adsorbate
 from ase.constraints import FixAtoms
 
 atoms = fcc111('Pt', size=(2,2,3), vacuum=10.0)
@@ -7302,8 +7338,8 @@ To prevent the oxygen atom from sliding down into the fcc site, we have to const
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-JASPRC['mode'] = None
-from ase.lattice.surface import *
+
+from ase.lattice.surface import fcc111, add_adsorbate
 from ase.constraints import FixAtoms, FixScaled
 from ase.io import write
 
@@ -7371,16 +7407,16 @@ For additional reading, see these references from our work:
 **** clean slab calculation
 #+BEGIN_SRC python :results output
 from jasp import *
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc111
 from ase.constraints import FixAtoms
 
-atoms = fcc111('Pt', size=(1,1,3), vacuum=10.0)
+atoms = fcc111('Pt', size=(1, 1, 3), vacuum=10.0)
 constraint = FixAtoms(mask=[True for atom in atoms])
 atoms.set_constraint(constraint)
 
 with jasp('surfaces/Pt-slab-1x1',
           xc='PBE',
-          kpts=(8,8,1),
+          kpts=(8, 8, 1),
           encut=350,
           atoms=atoms) as calc:
     slab_e = atoms.get_potential_energy()
@@ -7392,10 +7428,10 @@ with jasp('surfaces/Pt-slab-1x1',
 #+BEGIN_SRC python :results output
 from jasp import *
 
-from ase.lattice.surface import *
+from ase.lattice.surface import fcc111, add_adsorbate
 from ase.constraints import FixAtoms
 
-atoms = fcc111('Pt', size=(1,1,3), vacuum=10.0)
+atoms = fcc111('Pt', size=(1, 1, 3), vacuum=10.0)
 
 # note this function only works when atoms are created by the surface module.
 add_adsorbate(atoms, 'O', height=1.2, position='fcc')
@@ -7405,7 +7441,7 @@ atoms.set_constraint(constraint)
 
 with jasp('surfaces/Pt-slab-1x1-O-fcc',
           xc='PBE',
-          kpts=(8,8,1),
+          kpts=(8, 8, 1),
           encut=350,
           ibrion=2,
           nsw=25,
@@ -7486,7 +7522,7 @@ with jasp('surfaces/Pt-slab-O-fcc-vib') as calc:
     atoms = calc.get_atoms()
     f,v = calc.get_vibrational_modes(0)
 
-from ase.units import *
+from ase.units import meV
 c = 3e10 # cm/s
 h = 4.135667516e-15 # eV*s
 
@@ -7522,7 +7558,7 @@ with jasp('surfaces/Pt-slab-O-fcc-vib-ibrion=6') as calc:
     f,m = calc.get_vibrational_modes(0)
     allfreq = calc.get_vibrational_modes()[0]
 
-from ase.units import *
+from ase.units import meV
 c = 3e10 # cm/s
 h = 4.135667516e-15 # eV*s
 
@@ -7570,7 +7606,7 @@ with jasp('surfaces/Pt-slab-O-bridge-vib') as calc:
     f,v = calc.get_vibrational_modes(2)
     print calc.get_vibrational_modes()[0]
 
-from ase.units import *
+from ase.units import meV
 c = 3e10 # cm/s
 h = 4.135667516e-15 # eV*s
 
@@ -8058,8 +8094,6 @@ We will reconsider here the reaction (see [[Metal oxide oxidation energies][Meta
 **** Cu_{2}O calculation with U=4.0
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-
-from ase.visualize import *
 from ase import Atom, Atoms
 
 with jasp('bulk/Cu2O') as calc:
@@ -8145,8 +8179,6 @@ grep -A 3 "LDA+U is selected, type is set to LDAUTYPE" bulk/Cu2O-U=4.0/OUTCAR
 **** CuO calculation with U=4.0
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-
-from ase.visualize import *
 from ase import Atom, Atoms
 
 with jasp('bulk/CuO') as calc:
@@ -8437,7 +8469,7 @@ These images (Figure \ref{fig:elf1} and \ref{fig:elf2}) are basically consistent
 I would like to thank Zhongnan Xu for sending me some examples on magnetism. Alan McGaughey and Lars Grabow for sending me some NEB examples. Matt Curnan for examples of phonons.
 
 Many thanks to students in my class who have pointed out typos, places of confusion, etc... These include:
-- Bruno Alfa
+- Bruno Calfa
 * Appendices
 ** Recipes
 *** Modifying Atoms by deleting atoms
@@ -8490,7 +8522,7 @@ adapted from https://listserv.fysik.dtu.dk/pipermail/campos/2004-September/00115
 
 from ase import *
 from ase.io import write
-from ase.lattice.surface import *
+from ase.lattice.surface import bcc111
 from ase.constraints import FixAtoms
 
 # the bcc111 function automatically tags atoms
@@ -8577,13 +8609,13 @@ from ase.units import *
 d = 1*Angstrom
 print ' d = {0} nm'.format(d/nm)
 
-print '1 eV = %f Hartrees' % (eV/Hartree)
-print '1 eV = %f Rydbergs' % (eV/Rydberg)
-print '1 eV = %f kJ/mol' % (eV/(kJ/mol))
-print '1 eV = %f kcal/mol' % (eV/(kcal/mol))
+print '1 eV = {0} Hartrees'.format(eV/Hartree)
+print '1 eV = {0} Rydbergs'.format(eV/Rydberg)
+print '1 eV = {0} kJ/mol'.format(eV/(kJ/mol))
+print '1 eV = {0} kcal/mol'.format(eV/(kcal/mol))
 
-print '1 Hartree = %f kcal/mol' % (1*Hartree/(kcal/mol))
-print '1 Rydberg = %f eV' % (1*Rydberg/eV)
+print '1 Hartree = {0} kcal/mol'.format(1*Hartree/(kcal/mol))
+print '1 Rydberg = {0} eV'.format(1*Rydberg/eV)
 
 # derived units
 minute = 60*s
@@ -8617,23 +8649,23 @@ import numpy as np
 import matplotlib as mpl
 #http://matplotlib.sourceforge.net/users/customizing.html
 mpl.rcParams['legend.numpoints'] = 1 #default is 2
-from pylab import *
+import matplotlib.pyplot as plt
 
 x = np.linspace(0,6,100)
 y = np.cos(x)
 
-plot(x,y,label='full')
+plt.plot(x,y,label='full')
 
 ind = (x>2) & (x<4)
 
 subx = x[ind]
 suby = y[ind]
 
-plot(subx,suby,'bo',label='sliced')
+plt.plot(subx,suby,'bo',label='sliced')
 xlabel('x')
 ylabel('cos(x)')
-legend(loc='lower right')
-savefig('images/np-array-slice.png')
+plt.legend(loc='lower right')
+plt.savefig('images/np-array-slice.png')
 #+END_SRC
 
 #+RESULTS:
@@ -8647,7 +8679,7 @@ The expression \(x>2\) returns an array of booleans (True where the element of $
 *** Statistics
 **** Confidence intervals
 #+BEGIN_SRC python :results output :exports both
-from numpy import *
+import numpy as np
 from scipy.stats.distributions import  t
 
 n = 10 #number of measurements
@@ -8659,7 +8691,7 @@ std_x = 0.01 #standard deviation of measurements
 
 alpha = 1.0 - 0.95
 
-pred_interval = t.ppf(1-alpha/2.,dof)*std_x*sqrt(1.+1./n)
+pred_interval = t.ppf(1-alpha/2., dof) * std_x * np.sqrt(1.+1./n)
 
 s = ['We are 95%% confident the next measurement',
        ' will be between %1.3f and %1.3f']
@@ -8750,19 +8782,22 @@ x0 = [ -56., 0.54, 2., 16.5] #initial guess of parameters
 
 plsq = leastsq(objective, x0, args=(energies,vols))
 
-print plsq
+print 'Fitted parameters = {0}'.format(plsq[0])
 
-from pylab import *
-plot(vols,energies,'ro')
+import matplotlib.pyplot as plt
+plt.plot(vols,energies,'ro')
 
 #plot the fitted curve on top
 x = np.linspace(min(vols),max(vols),50)
 y = Murnaghan(plsq[0],x)
-plot(x,y,'k-')
-xlabel('Volume')
-ylabel('energy')
-savefig('images/nonlinear-curve-fitting.png')
+plt.plot(x,y,'k-')
+plt.xlabel('Volume')
+plt.ylabel('energy')
+plt.savefig('images/nonlinear-curve-fitting.png')
 #+END_SRC
+
+#+RESULTS:
+: Fitted parameters = (array([-56.46839641,   0.57233217,   2.7407944 ,  16.55905648]), 1)
 
 #+caption: Example of least-squares non-linear curve fitting.
 [[./images/nonlinear-curve-fitting.png]]
@@ -8800,14 +8835,16 @@ plsq = fmin(objective,x0,args=(volumes,)) #note args is a tuple
 
 print 'parameters = {0}'.format(plsq)
 
-from pylab import *
-plot(volumes,energies,'ro')
+import matplotlib.pyplot as plt
+plt.plot(volumes,energies,'ro')
 
 #plot the fitted curve on top
 x = np.linspace(min(volumes),max(volumes),50)
 y = Murnaghan(plsq,x)
-plot(x,y,'k-')
-savefig('images/nonlinear-fitting-lsq.png')
+plt.plot(x,y,'k-')
+plt.xlabel('Volume ($\AA^3$)')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/nonlinear-fitting-lsq.png')
 #+END_SRC
 
 #+RESULTS:
@@ -8823,7 +8860,7 @@ savefig('images/nonlinear-fitting-lsq.png')
 *** Nonlinear curve fitting with confidence intervals
 #+BEGIN_SRC python :results output
 # Nonlinear curve fit with confidence interval
-from numpy import *
+import numpy as np
 from scipy.optimize import curve_fit
 from scipy.stats.distributions import  t
 
@@ -8848,13 +8885,13 @@ bint =
     1.7671    2.4528
 '''
 
-x = array([ 0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9,  1. ])
-y = array([ 4.70192769,  4.46826356,  4.57021389,  4.29240134,  3.88155125,
+x = np.array([ 0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9,  1. ])
+y = np.array([ 4.70192769,  4.46826356,  4.57021389,  4.29240134,  3.88155125,
             3.78382253,  3.65454727,  3.86379487,  4.16428541,  4.06079909])
 
 # this is the function we want to fit to our data
 def func(x,c0, c1):
-    return c0*exp(-x) + c1*x
+    return c0 * np.exp(-x) + c1*x
 
 pars, pcov = curve_fit(func, x, y, p0=[4.96, 2.11])
 
@@ -8867,7 +8904,7 @@ dof = max(0, n-p) # number of degrees of freedom
 
 tval = t.ppf(1.0-alpha/2., dof) # student-t value for the dof and confidence level
 
-for i, p,var in zip(range(n), pars, diag(pcov)):
+for i, p,var in zip(range(n), pars, np.diag(pcov)):
     sigma = var**0.5
     print 'c{0}: {1} [{2}  {3}]'.format(i, p,
                                   p - sigma*tval,
@@ -8875,7 +8912,7 @@ for i, p,var in zip(range(n), pars, diag(pcov)):
 
 import matplotlib.pyplot as plt
 plt.plot(x,y,'bo ')
-xfit = linspace(0,1)
+xfit = np.linspace(0,1)
 yfit = func(xfit, pars[0], pars[1])
 plt.plot(xfit,yfit,'b-')
 plt.legend(['data','fit'],loc='best')
@@ -8883,8 +8920,8 @@ plt.savefig('images/nonlin-fit-ci.png')
 #+END_SRC
 
 #+RESULTS:
-: c0: 4.96713966556 [4.62674477087  5.30753456025]
-: c1: 2.10995112466 [1.76711622383  2.45278602549]
+: c0: 4.96713966439 [4.62674476321  5.30753456558]
+: c1: 2.10995112628 [1.76711622067  2.45278603188]
 
 #+caption: Nonlinear fit to data.
 [[./images/nonlin-fit-ci.png]]
@@ -8949,36 +8986,10 @@ Solution: Find the cube that contains the point, and is defined by points
 We use 1D interpolation formulas to compute the value of the scalar field at points I1 by interpolating between P1 and P2, and the value of the scalar field at I2 by interpolating between P3 and P4. In these points the only variable changing is x, so it is a simple 1D interpolation. We can then compute the value of the scalar field at I5 by interpolating between I1 and I2. We repeat the process on the top of the cube, to obtain points I3, I4 and I5. Finally, we compute the value of the scalar field at point P by interpolating between points I5 and I6. Note that the point I5 has coordinates (a,b,z1) and (a,b,z2), so the final interpolation is again a 1D interpolation along z evaluated at z=c to get the final value of the scalar field at P=(a,b,c).
 #+BEGIN_SRC python :exports both
 from jasp import *
-from ase.calculators.vasp import *
 
 with jasp('molecules/co-centered') as calc:
     atoms = calc.get_atoms()
-
-    vcd = VaspChargeDensity()
-
-    cd = np.array(vcd.chg[0])
-    n0, n1, n2 = cd.shape
-
-    s0 = 1.0/n0
-    s1 = 1.0/n1
-    s2 = 1.0/n2
-
-    X, Y, Z = np.mgrid[0.0:1.0:s0,
-                       0.0:1.0:s1,
-                       0.0:1.0:s2]
-
-    C = np.column_stack([X.ravel(),
-                         Y.ravel(),
-                         Z.ravel()])
-
-    atoms = calc.get_atoms()
-    uc = atoms.get_cell()
-    real = np.dot(C, uc)
-
-    #now convert arrays back to unitcell shape
-    x = np.reshape(real[:, 0], (n0, n1, n2))
-    y = np.reshape(real[:, 1], (n0, n1, n2))
-    z = np.reshape(real[:, 2], (n0, n1, n2))
+    x, y, z, cd = calc.get_charge_density()
 
 def interp3d(x,y,z,cd,xi,yi,zi):
     '''
@@ -9047,17 +9058,16 @@ R = [np.linalg.norm(p-P1) for p in points]
 # interpolated line
 icd = [interp3d(x,y,z,cd,p[0],p[1],p[2]) for p in points]
 
-from pylab import *
+import matplotlib.pyplot as plt
 
-plot(R,icd)
+plt.plot(R, icd)
 cR = np.linalg.norm(pos[0]-P1)
 oR = np.linalg.norm(pos[1]-P1)
-plot([cR,cR],[0,2],'r-') #markers for where the nuclei are
-plot([oR,oR],[0,8],'r-')
-xlabel('|R| ($\AA$)')
-ylabel('Charge density (e/$\AA^3$)')
-savefig('images/CO-charge-density.png')
-show()
+plt.plot([cR, cR],[0, 2],'r-') #markers for where the nuclei are
+plt.plot([oR, oR],[0, 8],'r-')
+plt.xlabel('|R| ($\AA$)')
+plt.ylabel('Charge density (e/$\AA^3$)')
+plt.savefig('images/CO-charge-density.png')
 #+END_SRC
 
 #+RESULTS:
@@ -9179,8 +9189,8 @@ show()
 
 **** Builtin io modules
 
-``pylab`` has two convenient and powerful functions for saving and
-reading data, :func:`pylab.save` and :func:`pylab.load`.
+=pylab= has two convenient and powerful functions for saving and
+reading data, func:pylab.save and func:pylab.load.
 
 #+BEGIN_SRC python
 pylab.save('pdat.dat',(x,y))
@@ -9192,8 +9202,8 @@ and later you can read these arrays back in with:
 x,y = pylab.load('pdat.dat')
 #+END_SRC
 
-see also :func:`pylab.csv2rec` and :func:`pylab.loadtxt` and
-:func:`pylab.savetxt`.
+see also func:pylab.csv2rec and func:pylab.loadtxt and
+func:pylab.savetxt.
 
 See http://www.scipy.org/Cookbook/InputOutput for examples of numpy io.
 
@@ -9230,13 +9240,13 @@ for line in lines[2:]: #skip the first two lines
 
 Writing datafiles is easy too.
 #+BEGIN_SRC python
-v1 = ['john','robert','terry']
+v1 = ['john', 'robert', 'terry']
 v2 = [4,5,6]
 f = open('somefile', 'w') #note 'w' = write mode
 f.write('#header\n')
 f.write('#ignore these lines\n')
 for a,b in zip(v1,v2):
-	f.write('%s, %i\n' % (a,b))
+	f.write('{0}, {1}\n'.format(a,b))
 f.close()
 #+END_SRC
 
@@ -9297,7 +9307,7 @@ Loops in python are pretty slow (relatively speaking) but they are usually trivi
 
 #+BEGIN_SRC python :results output :exports both
 import numpy as np
-from pylab import *
+import matplotlob.pyplot as plt
 import time
 
 '''
@@ -9322,7 +9332,7 @@ for i in range(len(y)-1):
 #set last element by backwards difference
 dyf[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
 
-print ' Forward difference took %1.1f seconds' % (time.time() - tf1)
+print ' Forward difference took {0:1.1f} seconds'.format(time.time() - tf1)
 
 '''and now a backwards difference'''
 tb1 = time.time()
@@ -9332,7 +9342,7 @@ dyb[0] = (y[0] - y[1])/(x[0] - x[1])
 for i in range(1,len(y)):
     dyb[i] = (y[i] - y[i-1])/(x[i]-x[i-1])
 
-print ' Backward difference took %1.1f seconds' % (time.time() - tb1)
+print ' Backward difference took {0:1.1f} seconds'.format(time.time() - tb1)
 
 '''and now, a centered formula'''
 tc1 = time.time()
@@ -9342,21 +9352,20 @@ for i in range(1,len(y)-1):
     dyc[i] = (y[i+1] - y[i-1])/(x[i+1]-x[i-1])
 dyc[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
 
-print ' Centered difference took %1.1f seconds' % (time.time() - tc1)
+print ' Centered difference took {0:1.1f} seconds'.format(time.time() - tc1)
 
 '''
 the centered formula is the most accurate formula here
 '''
 
-plot(x,y)
-plot(x,dy_analytical,label='analytical derivative')
-plot(x,dyf,'--',label='forward')
-plot(x,dyb,'--',label='backward')
-plot(x,dyc,'--',label='centered')
+plt.plot(x,y)
+plt.plot(x,dy_analytical,label='analytical derivative')
+plt.plot(x,dyf,'--',label='forward')
+plt.plot(x,dyb,'--',label='backward')
+plt.plot(x,dyc,'--',label='centered')
 
-legend(loc='lower left')
-savefig('images/simple-diffs.png')
-show()
+plt.legend(loc='lower left')
+plt.savefig('images/simple-diffs.png')
 #+END_SRC
 
 #+RESULTS:
@@ -9371,7 +9380,7 @@ Loops are usually not great for performance. Numpy offers some vectorized method
 
 #+BEGIN_SRC python :results output :exports both
 import numpy as np
-from pylab import *
+import matplotlib.pyplot as plt
 
 x = np.linspace(0,2*np.pi,100)
 y = np.sin(x)
@@ -9393,13 +9402,12 @@ dy2[1:-1] = (y[2:] - y[0:-2])/(x[2:] - x[0:-2])
 dy2[0] = (y[1]-y[0])/(x[1]-x[0])
 dy2[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
 
-plot(x,y)
-plot(x,dy_analytical,label='analytical derivative')
-plot(x,dy,label='forward diff')
-plot(x,dy2,'k--',lw=2,label='centered diff')
-legend(loc='lower left')
-savefig('images/vectorized-diffs.png')
-show()
+plt.plot(x,y)
+plt.plot(x,dy_analytical,label='analytical derivative')
+plt.plot(x,dy,label='forward diff')
+plt.plot(x,dy2,'k--',lw=2,label='centered diff')
+plt.legend(loc='lower left')
+plt.savefig('images/vectorized-diffs.png')
 #+END_SRC
 
 #+RESULTS:
@@ -9415,7 +9423,7 @@ Here is an example of a 4-point centered difference of some noisy data:
 
 #+BEGIN_SRC python
 import numpy as np
-from pylab import *
+import matplotlib.pyplot as plt
 
 x = np.linspace(0,2*np.pi,100)
 y = np.sin(x) + 0.1*np.random.random(size=x.shape)
@@ -9446,13 +9454,12 @@ dy[1] = (y[2]-y[1])/(x[2]-x[1])
 dy[-2] = (y[-2] - y[-3])/(x[-2] - x[-3])
 dy[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
 
-plot(x,y)
-plot(x,dy_analytical,label='analytical derivative')
-plot(x,dyf,'r-',label='2pt-forward diff')
-plot(x,dy,'k--',lw=2,label='4pt-centered diff')
-legend(loc='lower left')
-savefig('images/multipt-diff.png')
-show()
+plt.plot(x,y)
+plt.plot(x,dy_analytical,label='analytical derivative')
+plt.plot(x,dyf,'r-',label='2pt-forward diff')
+plt.plot(x,dy,'k--',lw=2,label='4pt-centered diff')
+plt.legend(loc='lower left')
+plt.savefig('images/multipt-diff.png')
 #+END_SRC
 
 #+RESULTS:
@@ -9469,7 +9476,7 @@ The derivative is still noisy, but the four-point derivative is a little better 
 It is possible to perform derivatives using FFT:
 #+BEGIN_SRC python
 import numpy as np
-from pylab import *
+import matplotlib.pyplot as plt
 
 N = 101 #number of points
 L = 2*np.pi #interval of data
@@ -9495,17 +9502,15 @@ k *= 2*np.pi/L
 
 fd = np.fft.ifft(1.j*k * np.fft.fft(y))
 
-plot(x,y)
-plot(x,dy_analytical,label='analytical der')
-plot(x,fd,label='fft der')
-legend(loc='lower left')
+plt.plot(x,y)
+plt.plot(x,dy_analytical,label='analytical der')
+plt.plot(x,fd,label='fft der')
+plt.legend(loc='lower left')
 
-savefig('images/fft-der.png')
-show()
+plt.savefig('images/fft-der.png')
 #+end_src
 
 #+RESULTS:
-: None
 
 #+caption: Comparison of FFT numerical derivatives.
 #+ATTR_LaTeX: placement=[H]
@@ -9674,9 +9679,8 @@ $s = ((A^T)^{-1} p^T)^T$
 Here we implement that in code:
 
 #+BEGIN_SRC python :results output
-from ase import *
-from ase.lattice.surface import *
-
+from ase.lattice.surface import fcc111
+import numpy as np
 np.set_printoptions(precision=3,suppress=True)
 
 slab = fcc111('Pd',
@@ -9793,7 +9797,7 @@ performing vector algebra including computing lengths and angles.
 
 #+BEGIN_SRC python :results output
 import numpy as np
-from Scientific.Geometry import *
+from Scientific.Geometry import Vector
 
 A = Vector([1,1,1])   #Scientfic
 a = np.array([1,1,1]) #numpy
@@ -9813,13 +9817,6 @@ print 'numpy A .cross. B      = ',np.cross(A,B) #you can use Vectors in numpy
 #+END_SRC
 
 #+RESULTS:
-: |A| =  1.73205080757
-: |a| =  1.73205080757
-: |a| =  1.73205080757
-: ScientificPython angle =  0.955316618125
-: numpy angle =             0.955316618125
-: Scientific A .cross. B =  [-1.0, 0.0, 1.0]
-: numpy A .cross. B      =  [-1.  0.  1.]
 
 *** Unit cell properties
 The volume of a unit cell can be calculated from $V = (a_1 \times a_2)
@@ -9852,7 +9849,7 @@ uc = np.array([a1, a2, a3])
 print 'V = {0} ang^3 from dot/cross'.format(np.dot(np.cross(a1,a2),a3))
 print 'V = {0} ang^3 from det'.format(np.linalg.det(uc))
 
-from ase import *
+from ase import Atoms
 
 atoms = Atoms([],cell=uc) #empty list of atoms
 print 'V = {0} ang^3 from get_volume'.format(atoms.get_volume())
@@ -9869,7 +9866,6 @@ equivalent layers of atoms, you need to calculate the d-spacing for
 the hkl plane you are using. The script below shows several ways to
 accomplish that.
 #+BEGIN_SRC python :results output
-from ase import *
 import numpy as np
 from ase.lattice.cubic import FaceCenteredCubic
 
@@ -9891,7 +9887,7 @@ and |g(111)| = 1/d_111
 h,k,l = (1,1,1)
 d = 1./np.linalg.norm(h*b1 + k*b2 + l*b3)
 
-print 'd_111 spacing (method 1) = %1.3f Angstroms' % d
+print 'd_111 spacing (method 1) = {0:1.3f} Angstroms'.format(d)
 
 #method #2
 hkl = np.array([h,k,l])
@@ -9943,8 +9939,8 @@ gamma = A.angle(B)
 
 print
 print 'a   b   c   alpha beta gamma'
-print '%1.3f %1.3f %1.3f %1.3f %1.3f %1.3f\n' % (a,b,c,
-                                                 alpha,beta,gamma)
+print '{0:1.3f} {1:1.3f} {2:1.3f} {3:1.3f} {4:1.3f} {5:1.3f}\n'.format(a,b,c,
+                                                                alpha,beta,gamma)
 
 h,k,l = (1,1,1)
 
@@ -9961,13 +9957,11 @@ id2 = ((h**2/a**2*sin(alpha)**2
 
 d = 1/math.sqrt(id2)
 
-print 'd_111 spacing (method 3) =',d
+print 'd_111 spacing (method 3) = {0}'.format(d)
 
 #+END_SRC
 
 #+RESULTS:
-: d_111 spacing (method 1) = 2.309 Angstroms
-: d_111 spacing (method 2) = 2.30940107676
 :
 : a   b   c   alpha beta gamma
 : 4.000 4.000 4.000 1.571 1.571 1.571
@@ -10059,7 +10053,8 @@ Murnaghan equation of state:
 #+BEGIN_SRC python :results output
 '''Example of fitting the Birch-Murnaghan EOS to data'''
 
-from pylab import * #this includes numpy as np!
+import numpy as np
+import matplotlib.pyplot as plt
 from scipy.optimize import leastsq
 
 # raw data from 2.2.3-al-analyze-eos.py
@@ -10071,7 +10066,7 @@ vfit = np.linspace(min(v),max(v),100)
 
 ### fit a parabola to the data
 # y = ax^2 + bx + c
-a,b,c = polyfit(v,e,2) #this is from pylab
+a,b,c = np.polyfit(v,e,2) #this is from pylab
 
 '''
 the parabola does not fit the data very well, but we can use it to get
@@ -10122,22 +10117,21 @@ x0 = [e0, b0, bP, v0] #initial guesses in the same order used in the Murnaghan f
 murnpars, ier = leastsq(objective, x0, args=(e,v)) #this is from scipy
 
 #now we make a figure summarizing the results
-plot(v,e,'ro')
-plot(vfit, a*vfit**2 + b*vfit + c,'--',label='parabolic fit')
-plot(vfit, Murnaghan(murnpars,vfit), label='Murnaghan fit')
-xlabel('Volume ($\AA^3$)')
-ylabel('Energy (eV)')
-legend(loc='best')
+plt.plot(v,e,'ro')
+plt.plot(vfit, a*vfit**2 + b*vfit + c,'--',label='parabolic fit')
+plt.plot(vfit, Murnaghan(murnpars,vfit), label='Murnaghan fit')
+plt.xlabel('Volume ($\AA^3$)')
+plt.ylabel('Energy (eV)')
+plt.legend(loc='best')
 
 #add some text to the figure in figure coordinates
-ax = gca()
-text(0.4,0.5,'Min volume = %1.2f $\AA^3$' % murnpars[3],
+ax = plt.gca()
+plt.text(0.4, 0.5, 'Min volume = {0:1.2f} $\AA^3$'.format(murnpars[3]),
      transform = ax.transAxes)
-text(0.4,0.4,'Bulk modulus = %1.2f eV/$\AA^3$ = %1.2f GPa' % (murnpars[1],
-                                                              murnpars[1]*160.21773)
-     , transform = ax.transAxes)
-savefig('images/a-eos.png')
-show()
+plt.text(0.4, 0.4, 'Bulk modulus = {0:1.2f} eV/$\AA^3$ = {1:1.2f} GPa'.format(murnpars[1],
+                                                                          murnpars[1]*160.21773),
+     transform = ax.transAxes)
+plt.savefig('images/a-eos.png')
 
 np.set_printoptions(precision=3)
 print 'initial guesses  : ', np.array(x0) #array for easy printing
