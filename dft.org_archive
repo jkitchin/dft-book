@@ -1,0 +1,47 @@
+#    -*- mode: org -*-
+
+
+Archived entries from file c:/users/jkitchin/Dropbox/CMU/classes/06-640-Molecular-Simulations-Fall-2012/dft-book/dft.org
+* Simulated XRD spectra                                            :noexport:
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2012-09-08 Sat 16:05
+  :ARCHIVE_FILE: ~/CMU/classes/06-640-Molecular-Simulations-Fall-2012/dft-book/dft.org
+  :ARCHIVE_OLPATH: Bulk systems
+  :ARCHIVE_CATEGORY: dft
+  :END:
+You do not really need a DFT calculation for this, except to get the optimized structure. A few notes on using this module:
+
+1. You need a large repeat unit cell.
+2. It is is not fast. There is a double loop over the atoms, meaning N^2 operations, and you need large unit cells!
+3. This example is primarily a proof of concept. I have not thought about how good the results are.
+
+#+BEGIN_SRC python :results output
+from ase import Atom,Atoms
+from ase.xrdebye import XRDEBYE
+import numpy as np
+
+wavelength = 1.051967 # in angstroms
+
+XRD = XrDebye(wavelength=wavelength,alpha=1.01,damping=0.0)
+
+a = 3.92  # approximate lattice constant
+b = a / 2.
+atoms = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
+              cell=[(0, b, b),
+                    (b, 0, b),
+                    (b, b, 0)]).repeat((5,5,5))
+
+thetas = np.linspace(0.2, np.pi/4.)
+
+I = [XRD.get(atoms,s=s) for s in 2*np.sin(thetas)/wavelength]
+
+import matplotlib.pyplot as plt
+plt.plot((2*thetas)*180./np.pi,I)
+plt.xlabel('$2\Theta$')
+plt.ylabel('Intensity (arb. units)')
+plt.savefig('images/pd-xrd.png')
+#+END_SRC
+
+#+RESULTS:
+
+[[./images/pd-xrd.png]]
