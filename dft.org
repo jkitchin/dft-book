@@ -4754,7 +4754,9 @@ The points to note here are the following:
 4. The spacegroup is still correct.
 
 *** TODO the volume is very small (61) compared to what we expected (64) something may be wrong!
-** Bulk calculation parameters
+** Effect of calculation parameters on bulk calculations
+Several parameters affect the results in bulk calculations
+*** TODO k-point convergence ?
 *** Effect of [[incar:SIGMA][SIGMA]]
 index:ISMEAR
 index:SIGMA
@@ -5338,7 +5340,7 @@ print 'cupd-2: {0} eV/atom'.format(e2)
 
 After normalizing by number of atoms, we can see that cupd-1 is a more stable structure. However, we are looking at total energies, and we might ask: is cupd-1 more stable than an unreacted mixture of the parent compounds, fcc Cu and Pd? In other words, is the following reaction exothermic:
 
-$2Cu + 2Pd \rightarrow Cu_2Pd_2$ for the two configurations we examined? Below, we show some pretty general code that computes these formation energies, and normalizes them by the number of atoms in the unit cell.
+2Cu + 2Pd $\rightarrow$ Cu_{2}Pd_{2} for the two configurations we examined? Below, we show some pretty general code that computes these formation energies, and normalizes them by the number of atoms in the unit cell.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -5381,7 +5383,7 @@ print 'Delta Hf cupd-2 = {0:1.2f} eV/atom'.format(e2)
 
 The answer is yes. Both structures are energetically more favorable than an equal composition mixture of the parent metals. The heat of formation for both structures is exothermic, but the cupd-1 structure is more stable than the cupd-2 structure. This is shown conceptually in Figure \ref{fig:alloy1}.
 
-#+caption: Conceptual picture of two alloys with exothermic formation energies.
+#+caption: Conceptual picture of two alloys with exothermic formation energies. The dashed line represents a composition weighted average energy of the parent metals. E4 and E3 are energies associated with two different alloy structures at the same composition. Both structures are more stable than a mixture of pure metals with the same composition, but E3 is more stable than E4.
 #+label: fig:alloy1
 #+ATTR_LaTeX: placement=[H]
 [[./images/alloy-stability.png]]
@@ -5454,7 +5456,7 @@ print 'Composition weighted average  = {0} eV'.format(Hf1 + (x0-x)/(x0-x3)*(Hf3 
 We find the weighted composition formation energy of pure Cu and cupd-1 is more favorable than the formation energy of cu3pd-1. Therefore, we could expect that structure to phase separate into a mixture of pure Cu and cupd-1. Schematically what we are seeing is shown in Figure \ref{fig:alloy-phase-separation}.
 
 # inkscape images/alloy-phase-stability.svg
-#+caption: Illustration of phase separation. The point labeled E5 will phase separate into mixtures of the structures at x0 and x3.
+#+caption: Illustration of of an alloy structure with an exothermic formation energy that is not stable with respect to phase separation. The solid line shows the composition weighted average energy of a mixture of Cu and cupd-2. Since the energy of cu3pd-1 is above the solid line, it is less favorable than a mixture of Cu and cupd-2 with the same composition.
 #+label: fig:alloy-phase-separation
 #+ATTR_LaTeX: placement=[H]
 [[./images/alloy-phase-stability.png]]
@@ -5507,7 +5509,7 @@ print 'Delta Hf cu3pd-2 = {0:1.2f} eV/atom'.format(e4)
 This looks promising: the formation energy is much more favorable than cu3pd-1, and it is below the composition weighted formation energy of -0.06 eV/atom. Consequently, we conclude that this structure will not phase separate into a mixture of Cu and CuPd. We cannot say, however, if there is a more stable phase not yet considered, or if it might phase separate into two other phases. We also note here that we have ignored a few other contributions to alloy stability. We have only considered the electronic energy contributions to the formation energy. At temperatures above absolute zero there are additional contributions including configurational and vibrational entropy, which may stabilize some structures more than others. Finally, our analysis is limited to comparisons of the structures computed on the fcc lattice. In fact, it is known that the CuPd alloy forms a bcc structure. We did not calculate that structure, so we can not say if it is more or less stable than the obvious fcc structure we found.
 
 # convert ./images/alloy-phase-stability-2.svg ./images/alloy-phase-stability-2.png
-#+caption: The structure E6 is more stable than E5, and lower in energy than a composition weighted average of E1 and E3, so it will not phase separate.
+#+caption: Illustration that cu3pd-2 is more stable than cu3pd-1 and that is it is more stable than a composition weighted mixture of Cu and cupd-1. The dotted line shows the energy of a composition weighted average energy of a mixture of Cu and cupd-1. Since cu3pd-2 is below the dotted line, it is more stable than the phase-separated mixture.
 #+label: fig:alloy-phase-separation-2
 #+ATTR_LaTeX: placement=[H]
 [[./images/alloy-phase-stability-2.png]]
@@ -5710,7 +5712,7 @@ There are a few reasons why our number does not agree with the experimental reac
 ** Bulk density of states
 The density of states refers to the number of electronic states in a particular energy range.
 
-The solution to Eq. \eqref{eq:KS} yields a set of K-S orbitals and an
+The solution to Eq. \eqref{eq:KS} yields a set of Kohn-Sham (K-S) orbitals and an
 associated set of eigenvalues that correspond to the energies of these
 orbitals, neither of which have any known directly observable meaning
 \cite{RevModPhys.71.1253}.  The sum of the squared K-S orbitals,
@@ -5797,7 +5799,7 @@ plt.savefig('images/pd-dos.png')
 
 This DOS looks roughly like you would expect. The peak between -5 to 0 eV is the Pd d-band.
 
-The VASP manual [[http://cms.mpi.univie.ac.at/vasp/guide/node124.html#SECTION000933000000000000000][recommends]] a final run be made with ISMEAR=-5, which uses the tetrahedron method with Blo\"chl corrections.
+The VASP manual [[http://cms.mpi.univie.ac.at/vasp/guide/node124.html#SECTION000933000000000000000][recommends]] a final run be made with ISMEAR=-5, which uses the tetrahedron method with Bl\"o chl corrections.
 
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -5863,7 +5865,7 @@ here.  Thus, a discussion of the analysis and results is warranted.
 The s and p states in a metal are typically delocalized in space and
 more like free-electrons, whereas the d-orbitals are fairly localized
 in space and have been treated successfully with tight-binding
-theories such as extended H{\"u}ckel theory \cite{RevModPhys.60.601}, and
+theories such as extended H\"u ckel theory \cite{RevModPhys.60.601}, and
 linear muffin tin orbital theory \cite{ruban1997:surfac}.
 Consequently, the remaining discussion will be focused on the
 properties of the projected d-states.
@@ -5991,7 +5993,7 @@ bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
                    (b, 0, b),
                    (b, b, 0)])
 
-RWIGS = [1.0, 1.1, 1.25, 1.5, 2.0, 3.0]
+RWIGS = [1.0, 1.1, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0 ]
 
 ED, WD, N = [], [], []
 
@@ -6045,10 +6047,12 @@ plt.savefig('images/ados-rwigs-moments.png')
 
 #+RESULTS:
 
-#+caption: Effect of the RWIGS on the number of occupied d-states.
+#+caption: Effect of the RWIGS on the number of occupied \(d\)-states.
+#+ATTR_latex: placement=[H]
 [[./images/ados-rwigs-occupation.png]]
 
-#+caption: Effect of the RWIGS on the d-band center and width.
+#+caption: Effect of the RWIGS on the \(d\)-band center and width.
+#+attr_latex: placement=[H]
 [[./images/ados-rwigs-moments.png]]
 
 
@@ -6140,6 +6144,7 @@ for i in range(nbands):
 ax = plt.gca()
 ax.set_xticks([]) # no tick marks
 plt.xlabel('k-vector')
+plt.ylabel('Energy (eV)')
 ax.set_xticks([0,10,19])
 ax.set_xticklabels(['$L$', '$\Gamma$', '$X$'])
 plt.savefig('images/Si-bandstructure.png')
@@ -6254,7 +6259,7 @@ with jasp('bulk/afm-feo',
 : Magnetic moments =  [ 2.652 -2.652  0.     0.   ]
 : Total magnetic moment =  0.0
 
-You can see that even though the total magnetic moment is 0, there is a spin on both Fe atoms, and they are pointing in opposite directions.
+You can see that even though the total magnetic moment is 0, there is a spin on both Fe atoms, and they are pointing in opposite directions. Hence, the sum of spins is zero, and this arrangement is called anti-ferromagnetic.
 
 *** TODO NiO-FeO formation energies with magnetism
 ** TODO phonons
@@ -6285,9 +6290,9 @@ write('images/Al-slab.png', slab, rotation='90x',show_unit_cell=2)
 #+ATTR_LaTeX: width=205bp,placement=[H]
 [[./images/Al-slab.png]]
 
-*** vicinal surfaces
+*** Vicinal surfaces
 
-Many stepped surfaces are not that difficult to make now. The main idea in generating them is described [[https://wiki.fysik.dtu.dk/ase/_downloads/general_surface.pdf][here]]. mod:ase provides a general function for making vicinal surfaces. Here is an example of a (211) surface.
+The vast majority of surface calculations are performed on flat surfaces. This is partially because these surfaces tend to have the lowest surface energies, and thus are likely to be experimentally observed. The flat surfaces, also known as low Miller index surfaces, also have small unit cells, which tends to make them computationally affordable. There are, however, many reasons to model the properties of surfaces that are not flat. You may be interested in the reactivity of a step edge, for example, or you may use the lower cooridnation of steps as a proxy for nanoparticle reactivity.  Many stepped surfaces are not that difficult to make now. The main idea in generating them is described [[https://wiki.fysik.dtu.dk/ase/_downloads/general_surface.pdf][here]]. mod:ase provides a general function for making vicinal surfaces. Here is an example of a (211) surface.
 
 #+BEGIN_SRC python
 from ase.lattice.surface import surface
@@ -6481,6 +6486,14 @@ with jasp('surfaces/Al-slab-relaxed') as calc:
 
 ** Surface reconstruction
 index:reconstruction
+
+We previously considered how relaxation can lower the surface energy. For some surfaces, a more extreme effect can reduce the surface energy: reconstruction. In a simple surface relaxation, the basic structure of a surface is preserved. However, sometimes there is a different surface structure that may have a lower surface energy.
+
+TODO: some citations for famous reconstructions
+Si-\sqrt{7}\times\sqrt{7}
+Pt(100) hex reconstruction
+Au(111) herringbone reconstruction
+
 We will consider the (110) missing row reconstruction \cite{PhysRevB.83.075415}. For some metals, especially Pt and Au, it is energetically favorable to form the so-called missing row reconstruction where every other row in the surface is "missing". It is favorable because it lowers the surface energy. Let us consider how we might calculate and predict that. It is straightforward to compute the energy of a (110) slab, and of a (110) slab with one row missing. However, these slabs contain different numbers of atoms, so we cannot directly compare the total energies to determine which energy is lower.
 
 We have to consider where the missing row atoms have gone, so we can account for their energy. We will consider that they have gone into the bulk, and so we to consider the energy associated with the following transformation:
@@ -6997,7 +7010,7 @@ Nevertheless, in the literature the use of this correction is fairly
 standard, and it is typical to at least consider the correction.
 
 Here we will just illustrate the effect.
-*** slab with no dipole correction
+*** Slab with no dipole correction
 
 #+BEGIN_SRC python
 # compute local potential of slab with no dipole
@@ -7022,7 +7035,7 @@ with jasp('surfaces/Al-Na-nodip',
 #+RESULTS:
 : None
 
-*** slab with a dipole correction
+*** Slab with a dipole correction
     Note this takes a considerably longer time to run than without a dipole correction! In VASP there are several levels of dipole correction to apply. You can use the [[incar:IDIPOL][IDIPOL]] tag to turn it on, and specify which direction to apply it in (1=$x$, 2=$y$, 3=$z$, 4=$(x,y,z)$). This simply corrects the total energy and forces. It does not change the contents of LOCPOT. For that, you have to also set the [[incar:LDIPOL][LDIPOL]] and [[incar:DIPOL][DIPOL]] tags. It is not efficient to set all three at the same time for some reason. The VASP manual recommends you first set IDIPOL to get a converged electronic structure, and then set LDIPOL to True, and set the center of electron density in DIPOL. That makes these calculations a multistep process, because we must run a calculation, analyze the charge density to get the center of charge, and then run a second calculation.
 
 #+BEGIN_SRC python :results output :exports both
@@ -7133,7 +7146,7 @@ The key points to notice in this figure are:
 
 ** Adsorption energies
 [[index:adsorption energy]]
-*** simple estimate
+*** Simple estimate of the adsorption energy
 Calculating an adsorption energy amounts to computing the energy of the following kind of reaction:
 
 slab + gas-phase molecule $\rightarrow$ slab_adsorbate + products
@@ -7699,7 +7712,7 @@ with jasp('surfaces/Pt-O-fcc-hcp-neb',
 [[./images/pt-o-fcc-hcp-neb.png]]
 
 *** Climbing image NEB
-One issue with the standard NEB method is there is no image that is exactly at the transition state. That means there is some uncertainty of the true energy of the transition state, and there is no way to verify the transition state by vibrational analysis. The climbing image NEB method solves that problem by making one image climb to the top. You set [[incar:LCLIMB][LCLIMB]]=True in =jasp= to turn on the climbing image method. Here we use the previous calculation as a starting point and turn on the climbing image method.
+One issue with the standard NEB method is there is no image that is exactly at the transition state. That means there is some uncertainty of the true energy of the transition state, and there is no way to verify the transition state by vibrational analysis. The climbing image NEB method solves that problem by making one image climb to the top. You set [[incar:LCLIMB][LCLIMB]]==True= in =jasp= to turn on the climbing image method. Here we use the previous calculation as a starting point and turn on the climbing image method.
 
 #+BEGIN_SRC python :results output
 # perform a climbing image NEB calculation
@@ -7832,7 +7845,7 @@ You will recognize in this equation the standard formation energy we calculated 
 $G_f \approx H_f - 0.5*\Delta \mu_{O_2}(P,T)$
 
 
-The [[http://materialsproject.org/materials/361/][formation energy of Cu_{2}O]] is -1.9521 eV/formula unit. The [[http://materialsproject.org/materials/353/][formation energy for Ag_{2}O]] is -0.99 eV/formula unit. Let us consider what temperature the oxides decompose at a fixed oxygen pressure of 1$\times 10^{-10}$ atm. We need to find the temperature where:
+The [[http://materialsproject.org/materials/361/][formation energy]] of Cu_{2}O is -1.9521 eV/formula unit. The [[http://materialsproject.org/materials/353/][formation energy]] for Ag_{2}O is -0.99 eV/formula unit. Let us consider what temperature the oxides decompose at a fixed oxygen pressure of 1$\times 10^{-10}$ atm. We need to find the temperature where:
 
 $H_f = 0.5*\Delta \mu_{O_2}(P,T)$
 
@@ -7905,7 +7918,7 @@ plt.savefig('images/O2-mu.png')
 : Cu2O decomposition temperature is 917 K
 : Ag2O decomposition temperature is 478 K
 
-#+caption: \Delta \mu_{O_{2}}(T,p) at different pressures and temperatures.
+#+caption: \Delta \(\mu_{O_2}\)(T,p) at different pressures and temperatures.
 #+label: fig:mu-o2
 #+ATTR_LaTeX: placement=[H]
 [[./images/O2-mu.png]]
@@ -7994,7 +8007,8 @@ plt.savefig('images/atomistic-thermo-hf-mu.png')
 #+RESULTS:
 : None
 
-
+#+caption: Dependence of the formation energy on the oxygen chemical potential.
+#+attr_latex: placement=[H]
 [[./images/atomistic-thermo-hf-mu.png]]
 
 This graph shows graphically the $\Delta \mu_{O_2}$ required to make the metal more stable than the oxide. Anything less than about -2 eV will have the metal more stable. That can be achieved by any one of the following combinations (graphically estimated from Figure \ref{fig:mu-o2}):
@@ -8089,7 +8103,7 @@ index:DFT+U
 [[http://cms.mpi.univie.ac.at/vasp/vasp/On_site_Coulomb_interaction_L_S_DA_U.html][VASP manual on DFT+U]]
 
 *** Metal oxide oxidation energies with DFT+U
-We will reconsider here the reaction (see [[Metal oxide oxidation energies][Metal oxide oxidation energies]]) $2 Cu_2O + O_2 \rightleftharpoons 4 CuO$. We need to compute the energy of each species, now with DFT+U. In \cite{PhysRevB.73.195107} they use a U parameter of 4 eV for Cu which gave the best agreement with the experimental value. We will also try that.
+We will reconsider here the reaction (see [[Metal oxide oxidation energies][Metal oxide oxidation energies]]) 2 Cu_{2}O + O_{2} $\rightleftharpoons$ 4 CuO. We need to compute the energy of each species, now with DFT+U. In \cite{PhysRevB.73.195107} they use a U parameter of 4 eV for Cu which gave the best agreement with the experimental value. We will also try that.
 
 **** Cu_{2}O calculation with U=4.0
 #+BEGIN_SRC python :results output :exports both
@@ -8450,11 +8464,13 @@ with jasp('molecules/cf4-elf',
 
 #+caption: ELF for an isosurface of 0.3 for CF$_4$.
 #+label: fig:elf1
+#+attr_latex: placement=[H]
 [[./images/cf4-elf-3.png]]
 
 
 #+caption: ELF for an isosurface of 0.75 for CF$_4$.
 #+label: fig:elf2
+#+attr_latex: placement=[H]
 [[./images/cf4-elf-75.png]]
 
 These images (Figure \ref{fig:elf1} and \ref{fig:elf2}) are basically consistent with those in Reference \cite{silvi1994}.
@@ -8710,13 +8726,17 @@ xdata = np.array([0.,1.,2.,3.,4.,5.,6.])
 ydata = np.array([0.1, 0.81, 4.03, 9.1, 15.99, 24.2, 37.2])
 
 #fit a third order polynomial
-from pylab import polyfit, plot, show, legend, savefig
+from pylab import polyfit, plot, xlabel, ylabel, show, legend, savefig
 pars = polyfit(xdata,ydata,3)
 print 'pars from polyfit: {0}'.format(pars)
 
 ## numpy method returns more data
-A = np.column_stack([xdata**3,xdata**2,xdata,np.ones(len(xdata),np.float)])
-pars_np,resids,rank,s = np.linalg.lstsq(A,ydata)
+A = np.column_stack([xdata**3,
+                     xdata**2,
+                     xdata,
+                     np.ones(len(xdata),np.float)])
+
+pars_np,resids,rank,s = np.linalg.lstsq(A, ydata)
 print 'pars from np.linalg.lstsq: {0}'.format(pars_np)
 
 '''
@@ -8733,13 +8753,15 @@ print 'pars from linear algebra: {0}'.format(pars_man)
 
 #but, it is easy to fit an exponential function to it!
 # y = a*exp(x)+b
-Aexp = np.column_stack([np.exp(xdata), np.ones(len(xdata),np.float)])
-pars_exp=np.dot(np.linalg.inv(np.dot(Aexp.T,Aexp)), np.dot(Aexp.T,ydata))
+Aexp = np.column_stack([np.exp(xdata), np.ones(len(xdata), np.float)])
+pars_exp=np.dot(np.linalg.inv(np.dot(Aexp.T, Aexp)), np.dot(Aexp.T, ydata))
 
-plot(xdata,ydata,'ro')
-fity = np.dot(A,pars)
-plot(xdata,fity,'k-',label='poly fit')
-plot(xdata,np.dot(Aexp,pars_exp),'b-',label='exp fit')
+plot(xdata, ydata, 'ro')
+fity = np.dot(A, pars)
+plot(xdata, fity, 'k-', label='poly fit')
+plot(xdata, np.dot(Aexp, pars_exp), 'b-', label='exp fit')
+xlabel('x')
+ylabel('y')
 legend()
 savefig('images/curve-fit-1.png')
 #+END_SRC
@@ -9911,7 +9933,9 @@ id2 = np.dot(hkl,np.dot(Gstar,hkl))
 
 print 'd_111 spacing (method 2) =',np.sqrt(1/id2)
 
-# http://books.google.com/books?id=nJHSqEseuIUC&lpg=PA118&ots=YA9TBldoVH&dq=reciprocal%20metric%20tensor&pg=PA119#v=onepage&q=reciprocal%20metric%20tensor&f=false
+# http://books.google.com/books?id=nJHSqEseuIUC&lpg=PA118&ots=YA9TBldoVH
+# &dq=reciprocal%20metric%20tensor&pg=PA119#v=onepage
+# &q=reciprocal%20metric%20tensor&f=false
 
 '''Finally, many text books on crystallography use long algebraic
 formulas for computing the d-spacing with sin and cos, vector lengths,
@@ -10162,21 +10186,21 @@ Vasp provides [[http://cms.mpi.univie.ac.at/vasp/vasp/PAW_potentials.html][speci
 No extension means the standard potential. The following extension mean:
 #+ATTR_LaTeX: align= |l|p{10cm}|
 #+caption: Meaning of extensions on POTCAR files for special setups.
-| extension | <40>                                     |
-|-----------+------------------------------------------|
+| extension |                                                                                     |
+|-----------+-------------------------------------------------------------------------------------|
 | _h        | means the potential is harder than the standard (i.e. needs a higher cutoff energy) |
-| _s        | means the potential is softer than the standard (i.e. needs a lower cutoff energy) |
-| _sv       | $s$ and $p$ semi-core states are treated as valence states |
-| _pv       | $p$ semi-core states are treated as valence states |
-| _d        | $d$ semi-core states are treated as valence states |
+| _s        | means the potential is softer than the standard (i.e. needs a lower cutoff energy)  |
+| _sv       | $s$ and $p$ semi-core states are treated as valence states                          |
+| _pv       | $p$ semi-core states are treated as valence states                                  |
+| _d        | $d$ semi-core states are treated as valence states                                  |
 
 Here are some links to information in the VASP manual for the setups.
 
-[[http://cms.mpi.univie.ac.at/vasp/vasp/st_row_elements.html][- 1st row elements]]
-[[http://cms.mpi.univie.ac.at/vasp/vasp/Alkali_alkali_earth_elements_simple_metals.html][- Alkali and alkali-earth metals]]
-[[http://cms.mpi.univie.ac.at/vasp/vasp/_elements.html][- d-elements]]
-[[http://cms.mpi.univie.ac.at/vasp/vasp/_elements_including_first_row.html][- p-elements]]
-[[http://cms.mpi.univie.ac.at/vasp/vasp/_elements_I.html][- f-elements]]
+[[http://cms.mpi.univie.ac.at/vasp/vasp/st_row_elements.html][ - 1st row elements]]
+[[http://cms.mpi.univie.ac.at/vasp/vasp/Alkali_alkali_earth_elements_simple_metals.html][ - Alkali and alkali-earth metals]]
+[[http://cms.mpi.univie.ac.at/vasp/vasp/_elements.html][ - d-elements]]
+[[http://cms.mpi.univie.ac.at/vasp/vasp/_elements_including_first_row.html][ - p-elements]]
+[[http://cms.mpi.univie.ac.at/vasp/vasp/_elements_I.html][ - f-elements]]
 
 Here we show how to select the O_sv potential in a calculation.
 
