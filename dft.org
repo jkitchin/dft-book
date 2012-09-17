@@ -571,7 +571,7 @@ There are two inconvenient features of the simple cubic cell:
 
 1. Since the CO molecule is at the corner, its electron density is spread over the 8 corners of the box, which is not convenient for visualization later (see [[*Visualizing%20electron%20density][Visualizing electron density]]).
 
-2. Due to the geometry of the cube, you need fairly large cubes to make sure the electron density of the molecule does not overlap with that of its images. Here, the CO molecule has 6 images due to periodic boundary conditions that are 10 \AA away. The volume of the unit cell is 1000 \AA$^3$.
+2. Due to the geometry of the cube, you need fairly large cubes to make sure the electron density of the molecule does not overlap with that of its images. Electron-electron interactions are repulsive, and the overlap makes the energy increase significantly. Here, the CO molecule has 6 images due to periodic boundary conditions that are 10 \AA away. The volume of the unit cell is 1000 \AA$^3$.
 
 The first problem is easily solved by centering the atoms in the unit cell. The second problem can be solved by using a face-centered cubic lattice, which is the lattice with the closest packing. We show the results of the centering in Figure \ref{fig:co-fcc}, where we have guessed values for $b$ until the CO molecules are on average 10 \AA apart. Note the final volume is only about 715 \AA$^3$, which is smaller than the cube. This will result in less computational time to compute properties.
 
@@ -1042,11 +1042,11 @@ You can see see that these centers of mass, which are calculated by different me
 
 *** Moments of inertia
 [[index:moment of inertia]]
-The [[http://en.wikipedia.org/wiki/Moment_of_inertia][moment of inertia]] is a measure of resistance to changes in rotation. It is defined by $I = \sum_{i=1}^N m_i r_i^2$ where $r_i$ is the distance to an axis of rotation. There are typically three moments of inertia, although some may be zero depending on symmetry, and others may be degenerate. There is a convenient function to get the  moments of inertia: func:ase.Atoms.get_moments_of_inertia.
+The [[http://en.wikipedia.org/wiki/Moment_of_inertia][moment of inertia]] is a measure of resistance to changes in rotation. It is defined by $I = \sum_{i=1}^N m_i r_i^2$ where $r_i$ is the distance to an axis of rotation. There are typically three moments of inertia, although some may be zero depending on symmetry, and others may be degenerate. There is a convenient function to get the  moments of inertia: func:ase.Atoms.get_moments_of_inertia. Here are several examples:
 
 TODO: what are axes of rotation? show for different orientations of  molecule.
 
-Here are several examples:
+
 #+BEGIN_SRC python :results output :exports both
 from ase.structure import molecule
 
@@ -1222,7 +1222,7 @@ dihedral angle = 60.00 degrees
 [[./images/ethane-dihedral.png]]
 
 *** Energy and forces
-Two of the most important quantities we are interested in is the total
+Two of the most important quantities we are interested in are the total
 energy and the forces on the atoms. To get these quantities, we have
 to define a calculator and attach it to an mod:ase.Atoms object so
 that =ase= knows how to get the data. After defining the calculator a
@@ -1366,18 +1366,14 @@ plt.savefig('images/co-dos.png')
 [[./images/co-dos.png]]
 
 *** Atom-projected density of states on molecules
-Let us consider which states in the density of states belong to which atoms in a molecule. This can only be a qualitative consideration because the orbitals on the atoms often hybridize to form molecular orbitals, e.g. in methane the $s$ and $p$ orbitals can form what we call $sp_3$ orbitals. We can compute atom-projected density of states in VASP, which is done by projecting the wave function onto localized atomic orbitals. Here is an example. We will consider the CO molecule. To get atom-projected density of states, we must set [[incar:RWIGS][RWIGS]] for each atom. This parameter defines the radius of the sphere around the atom which cuts off the projection.
+Let us consider which states in the density of states belong to which atoms in a molecule. This can only be a qualitative consideration because the orbitals on the atoms often hybridize to form molecular orbitals, e.g. in methane the $s$ and $p$ orbitals can form what we call $sp_3$ orbitals. We can compute atom-projected density of states in VASP, which is done by projecting the wave function onto localized atomic orbitals. Here is an example. We will consider the CO molecule. To get atom-projected density of states, we must set [[incar:RWIGS][RWIGS]] for each atom. This parameter defines the radius of the sphere around the atom which cuts off the projection. The total density of states and projected density of states information comes from the DOSCAR file.
 
-Note that unlike the DOS, here we must run another calculation because we did not specify the atom-projected keywords above. Our strategy is to get the atoms from the previous calculation, and use them in a new calculation. You could redo the calculation in the same directory, but
+Note that unlike the DOS, here we must run another calculation because we did not specify the atom-projected keywords above. Our strategy is to get the atoms from the previous calculation, and use them in a new calculation. You could redo the calculation in the same directory, but you risk losing the results of the first step. That can make it difficult to reproduce a result. We advocate our approach of using multiple directories for the subsequent calculations, because it leaves a clear trail of how the work was done.
 
 #+begin_note
 The [[incar:RWIGS][RWIGS]] is not uniquely determined for an element. There are various natural choices, e.g. the ionic radius of an atom, or a value that minimizes overlap of neighboring spheres, but these values can change slightly in different environments.
-#+end_note
 
-The total density of states and projected density of states information comes from the DOSCAR file.
-
-#+begin_note
-You can get spin-polarized atom-projected DOS, and magnetization projected DOS. See http://cms.mpi.univie.ac.at/vasp/vasp/DOSCAR_file.html#doscar for more details.
+You can also get spin-polarized atom-projected DOS, and magnetization projected DOS. See http://cms.mpi.univie.ac.at/vasp/vasp/DOSCAR_file.html#doscar for more details.
 #+end_note
 
 #+BEGIN_SRC python
@@ -1436,7 +1432,7 @@ plt.savefig('images/co-ados.png')
 
 *** Visualizing electron density
 
-The electron density is a 3\(d\) quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure \ref{fig:cd1}) of plotting the charge density. We will use the results from a previous calculation.
+The electron density is a 3\(d\) quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure \ref{fig:cd1}) of plotting the charge density, and we consider some issues we have to consider when visualizing volumetric data in unit cells with periodic boundary conditions. We will use the results from a previous calculation.
 
 
 #+BEGIN_SRC python
@@ -1891,7 +1887,7 @@ TODO: figure out these charges
 ** Geometry optimization
 *** Bond lengths
 **** Manual determination
-The equilibrium bond length of a CO molecule is approximately the bond length that minimizes the total energy. We can find that by computing the total energy as a function of bond length, and noting where the minimum is. Here is an example in VASP. There are a few features to point out here. We want to compute 5 bond lengths, and each calculation is independent of all the others. mod:jasp is setup to automatically handle jobs for you by submitting them to the queue. It raises a variety of exceptions to let you know what has happened, and you must handle these to control the workflow. We will illustrate this by examples.
+The equilibrium bond length of a CO molecule is approximately the bond length that minimizes the total energy. We can find that by computing the total energy as a function of bond length, and noting where the minimum is. Here is an example in VASP. There are a few features to point out here. We want to compute 5 bond lengths, and each calculation is independent of all the others. mod:jasp is setup to automatically handle jobs for you by submitting them to the queue. It raises a variety of exceptions to let you know what has happened, and you must handle these to control the workflow. We will illustrate this by the following examples.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -2205,7 +2201,7 @@ with jasp('molecules/h2o_vib',
     print 'Forces'
     print '======'
     print atoms.get_forces()
-
+    print
     # vibrational energies are in eV
     energies, modes = calc.get_vibrational_modes()
     print 'energies\n========'
@@ -2220,6 +2216,7 @@ Forces
 [[ 0.006 -0.022 -0.002]
  [-0.013  0.     0.003]
  [ 0.006  0.022 -0.002]]
+
 energies
 ==========
 00: 0.475622564 eV
@@ -2233,7 +2230,7 @@ energies
 08: (0.015144825+0j) eV
 #+end_example
 
-Note we get 9 frequencies here. Water has 3 atoms, with three degrees of freedom each. Three of those degrees of freedom are translations, and three are rotations. That leaves 3N-6 = 3 degrees of vibrational freedom. The modes of water vibration are (with our calculated values in parentheses):
+Note we get 9 frequencies here. Water has 3 atoms, with three degrees of freedom each, leading to 9 possible combinations of collective motions. Three of those collective motions are translations, i.e. where all atoms move in the same direction (either $x$, $y$ or $z$) and there is no change in the total energy of the molecule. Another three of those motions are rotations, which also do not change the total energy of the molecule. That leaves 3N-6 = 3 degrees of vibrational freedom where some or all of the bonds are stretched, resulting in a change in the total energy. The modes of water vibration are (with our calculated values in parentheses):
 
 1. a symmetric stretch at 3657 cm^{-1}   (3723)
 2. an asymmetric stretch at 3756 cm^{-1} (3836)
@@ -2717,7 +2714,7 @@ if None not in (E_O, E_O2):
 #+RESULTS:
 : O2 -> 2O  D = 8.521 eV
 
-The answer we have obtained is way too high! Experimentally the dissociation energy is more like 5.2 eV (need reference).
+The answer we have obtained is way too high! Experimentally the dissociation energy is about 5.2 eV (need reference), which is *very* different than what we calculated! Let us consider some factors that contribute to this error.
 
 We implicitly neglected spin-polarization in the example above. That could be a problem, since the O_{2} molecule can be in one of two spin states, a singlet or a triplet, and these should have different energies. Furthermore, the oxygen atom can be a singlet or a triplet, and these would have different energies. To account for spin polarization, we have to tell VASP to use spin-polarization, and give initial guesses for the magnetic moments of the atoms. Let us try again with spin polarization.
 
@@ -2888,13 +2885,15 @@ Based on these results (Figure \ref{fig:o2-encut}), you could argue the dissocia
 
 #+BEGIN_SRC python :results output :exports both
 encuts = [250, 300, 350, 400, 450, 500, 550]
+print 'encut (eV)            Total CPU time'
+print '--------------------------------------------------------'
 
 for encut in encuts:
     OUTCAR = 'molecules/O2-sp-triplet-{0}/OUTCAR'.format(encut)
     f = open(OUTCAR, 'r')
     for line in f:
         if 'Total CPU time used (sec)' in line:
-            print '{0}: {1}'.format(encut, line)
+            print '{0} eV: {1}'.format(encut, line)
     f.close()
 #+END_SRC
 
@@ -2933,9 +2932,7 @@ the Fermi temperature. It is recommended that the total energy be
 calculated at several values of the Fermi temperature to make sure the
 total energy is converged with respect to the Fermi temperature.
 
-We were not careful in selecting a good value for [[incar:SIGMA][SIGMA]] in the calculations above. The default value of SIGMA is 0.2, which may be fine for metals, but it is not correct for molecules. SIGMA is the broadening factor used to smear the electronic density of states at the Fermi level. For a metal with a continuous density of states, this appropriate, but for molecules with discrete energy states it does not make sense. We are somewhat forced to use the machinery designed for metals on molecules. The solution is to use a very small SIGMA. Ideally you would use SIGMA=0, but that is not practical for convergence reasons, so we try to find what is small enough.
-
-Let us examine the effect of SIGMA on the dissociation energy here.
+We were not careful in selecting a good value for [[incar:SIGMA][SIGMA]] in the calculations above. The default value of SIGMA is 0.2, which may be fine for metals, but it is not correct for molecules. SIGMA is the broadening factor used to smear the electronic density of states at the Fermi level. For a metal with a continuous density of states this is appropriate, but for molecules with discrete energy states it does not make sense. We are somewhat forced to use the machinery designed for metals on molecules. The solution is to use a very small SIGMA. Ideally you would use SIGMA=0, but that is not practical for convergence reasons, so we try to find what is small enough. Let us examine the effect of SIGMA on the dissociation energy here.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -3131,7 +3128,7 @@ with jasp('molecules/O-orthorhombic-box-random',
 : Orthorhombic box (center): E = -1.894124 eV
 : Orthorhombic box (random): E = -1.494285 eV
 
-This is a surprisingly large difference in energy! Nearly 0.4 eV. This is precisely the amount of energy we were in disagreement with the literature values. Surprisingly, the "random" position is higher in energy, similar to the cubic boxes. Finally, we put this all together. We use a non-symmetric box for the O-atom
+This is a surprisingly large difference in energy! Nearly 0.4 eV. This is precisely the amount of energy we were in disagreement with the literature values. Surprisingly, the "random" position is higher in energy, similar to the cubic boxes. Finally, we put this all together. We use a non-symmetric box for the O-atom.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -3186,7 +3183,7 @@ if None not in (E_O, E_O2):
 : E_O:  -1.893571
 : O2 -> 2O  D = 6.061 eV
 
-This actually agrees within 30-50 meV of reported literature values. Note that with a different "random" position, we get the lower energy for the O atom. All the disagreement we had been seeing was apparently in the O atom energy. So, if you do not need the dissociation energy in your analysis, you will not see the error. Also note that this error is specific to there being a spherical atom in a symmetric cell. This is not a problem for most molecules, which are generally non-spherical.
+This actually agrees within 30-50 meV of reported literature values, although still nearly an eV greater than the experimental dissociation energy. Note that with a different "random" position, we get the lower energy for the O atom. All the disagreement we had been seeing was apparently in the O atom energy. So, if you do not need the dissociation energy in your analysis, you will not see the error. Also note that this error is specific to there being a spherical atom in a symmetric cell. This is not a problem for most molecules, which are generally non-spherical.
 
 **** Estimating singlet oxygen dissociation energy
 Finally, let us consider the case where each species is in the singlet state.
@@ -3306,7 +3303,7 @@ with jasp('molecules/O2-sp-triplet-magmoms') as calc:
 Note the atomic magnetic moments do not add up to the total magnetic moment. The atomic magnetic moments are not really true observable properties. The moments are determined by a projection method that probably involves a spherical orbital, so the moments may be over or underestimated.
 
 **** Using a different potential
-It is possible we need a higher quality potential to get the 6.02 eV value quoted by many. Here we try the O_sv potential, which treats the 1s electrons as valence electrons. Note however, the ENMIN in the POTCAR is very high!
+It is possible we need a higher quality potential to get the 6.02 eV value quoted by many in the literature. Here we try the O_sv potential, which treats the 1s electrons as valence electrons. Note however, the ENMIN in the POTCAR is very high!
 
 #+BEGIN_SRC sh :exports both
 grep ENMIN $VASP_PP_PATH/potpaw_PBE/O_sv/POTCAR
@@ -3315,6 +3312,7 @@ grep ENMIN $VASP_PP_PATH/potpaw_PBE/O_sv/POTCAR
 #+RESULTS:
 : ENMAX  = 1421.493; ENMIN  = 1066.119 eV
 
+In the following calculation, we let VASP select an appropriate ENCUT value.
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 from ase import Atom, Atoms
@@ -3364,6 +3362,7 @@ if None not in (E_O, E_O2):
 
 #+RESULTS:
 
+TODO: where is the answer? Final discussion?
 *** Water gas shift example
 We consider calculating the reaction energy of the water-gas shift reaction in this example.
 
@@ -7743,6 +7742,8 @@ This did not do exactly what I expected. I thought there would be an image that 
 *** TODO use vibrations to confirm transition state
 ** TODO Diffusion rates with transition state theory
 
+** TODO Simulating STM images
+http://cst-www.nrl.navy.mil/users/sullivan/stm_backup/stm2.html
 * Atomistic thermodynamics
 [[index:atomistic thermodynamics]]
 Let us consider how much the Gibbs free energy of an O_{2} molecule changes as a function of temperature, at 1 atm. We use the Shomate polynomials to approximate the temperature dependent entropy and enthalpy, and use the parameters from the [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447&Units=SI&Mask=1#Thermo-Gas][NIST Webbook]] for O_{2}.
@@ -10180,6 +10181,52 @@ guesses you will probably find the =scipy.optimize.leastsq= function
 does not converge.
 
 ** Miscellaneous \texttt{jasp}/VASP tips
+*** Installing jasp
+
+You need to create an executable script named =runvasp.py= on your executable path. Here is an example script that works for both serial and parallel versions of VASP.
+#+BEGIN_SRC python
+#!/usr/bin/env python
+import os
+
+serial_vasp = '/home/jkitchin/src/vasp/bin/vasp_serial_intel_mkl'
+parallel_vasp = '/home/jkitchin/src/vasp/bin/vasp_openmpi_intel_mkl'
+
+if 'PBS_NODEFILE' in os.environ:
+    NPROCS = len(open(os.environ['PBS_NODEFILE']).readlines())
+
+    if NPROCS == 1:
+        print 'NPROCS = ',NPROCS
+        exitcode = os.system(serial_vasp)
+    else:
+        print 'NPROCS = ',NPROCS
+        parcmd = 'mpirun -np %i %s' % (NPROCS,parallel_vasp)
+        exitcode = os.system(parcmd)
+else:
+    exitcode = os.system(serial_vasp)
+#end
+#+END_SRC
+
+Then create an environment variable that points to this script. For example in =.bashrc=:
+#+BEGIN_SRC sh
+export VASP_SCRIPT=$HOME/kitchinpython/jasp/bin/run_vasp.py
+#+END_SRC
+
+=jasp= expects to find the POTCAR potentials in specific directories. You have two options:
+1. Install the potentials in a directory and name the potential directories like this:
+#+begin_example
+my_vasp_potentials
+    potpaw
+    potpaw_GGA
+    potpaw_PBE
+#+end_example
+The =potpaw= directory contains the LDA potentials, =potpaw_GGA= contains PW91 potentials, and =potpaw_PBE= contains the PBE potentials. Then, in your .bashrc file set an environment variable that points to this directory. For example:
+
+#+BEGIN_SRC sh
+export VASP_PP_PATH=$HOME/vasp/my_vasp_potentials
+#+END_SRC
+
+If you already have potential directories setup with different names, you can always make symlinks with the names above that point to your directories.
+
 *** Using a special setup
 Vasp provides [[http://cms.mpi.univie.ac.at/vasp/vasp/PAW_potentials.html][special setups]] for some elements. The following guidelines tell you what is in a potential:
 
@@ -10196,20 +10243,19 @@ No extension means the standard potential. The following extension mean:
 
 Here are some links to information in the VASP manual for the setups.
 
-[[http://cms.mpi.univie.ac.at/vasp/vasp/st_row_elements.html][ - 1st row elements]]
-[[http://cms.mpi.univie.ac.at/vasp/vasp/Alkali_alkali_earth_elements_simple_metals.html][ - Alkali and alkali-earth metals]]
-[[http://cms.mpi.univie.ac.at/vasp/vasp/_elements.html][ - d-elements]]
-[[http://cms.mpi.univie.ac.at/vasp/vasp/_elements_including_first_row.html][ - p-elements]]
-[[http://cms.mpi.univie.ac.at/vasp/vasp/_elements_I.html][ - f-elements]]
-
+- [[http://cms.mpi.univie.ac.at/vasp/vasp/st_row_elements.html][1st row elements]]
+- [[http://cms.mpi.univie.ac.at/vasp/vasp/Alkali_alkali_earth_elements_simple_metals.html][Alkali and alkali-earth metals]]
+- [[http://cms.mpi.univie.ac.at/vasp/vasp/_elements.html][d-elements]]
+- [[http://cms.mpi.univie.ac.at/vasp/vasp/_elements_including_first_row.html][p-elements]]
+- [[http://cms.mpi.univie.ac.at/vasp/vasp/_elements_I.html][f-elements]]
 Here we show how to select the O_sv potential in a calculation.
 
 #+BEGIN_SRC python :results output :exports both
 from ase import Atoms, Atom
 from jasp import *
 
-atoms = Atoms([Atom('O',[5,5,5],magmom=1)],
-             cell=(6,6,6))
+atoms = Atoms([Atom('O',[5, 5, 5], magmom=1)],
+             cell=(6, 6, 6))
 
 with jasp('molecules/O_sv',
           encut=300,
@@ -10226,13 +10272,15 @@ with jasp('molecules/O_sv',
 #+RESULTS:
 : Total energy = -1578.61345 eV
 
-How do you know you got the right one? We can look at the first line of the POTCAR file in the calculation directory to see.
+How do you know you got the right special setup? We can look at the first line of the POTCAR file in the calculation directory to see.
 #+BEGIN_SRC sh :exports both
 head -n 1 molecules/O_sv/POTCAR
 #+END_SRC
 
 #+RESULTS:
 : PAW_PBE O_sv 05Jul2007
+
+This shows we indeed used the O_sv setup.
 
 *** Running jasp in parallel
 jasp is smart. If you ask for more than one node, it will automatically try to run in parallel.
