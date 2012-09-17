@@ -851,6 +851,7 @@ from ase.io import write
 from numpy import pi
 
 atoms = molecule('CH3CN')
+atoms.center(vacuum=6)
 p1 = atoms.get_positions()
 
 atoms.rotate('x', pi/4, center='COM', rotate_cell=False)
@@ -1042,31 +1043,27 @@ You can see see that these centers of mass, which are calculated by different me
 
 *** Moments of inertia
 [[index:moment of inertia]]
-The [[http://en.wikipedia.org/wiki/Moment_of_inertia][moment of inertia]] is a measure of resistance to changes in rotation. It is defined by $I = \sum_{i=1}^N m_i r_i^2$ where $r_i$ is the distance to an axis of rotation. There are typically three moments of inertia, although some may be zero depending on symmetry, and others may be degenerate. There is a convenient function to get the  moments of inertia: func:ase.Atoms.get_moments_of_inertia. Here are several examples:
-
-TODO: what are axes of rotation? show for different orientations of  molecule.
-
+The [[http://en.wikipedia.org/wiki/Moment_of_inertia][moment of inertia]] is a measure of resistance to changes in rotation. It is defined by $I = \sum_{i=1}^N m_i r_i^2$ where $r_i$ is the distance to an axis of rotation. There are typically three moments of inertia, although some may be zero depending on symmetry, and others may be degenerate. There is a convenient function to get the  moments of inertia: func:ase.Atoms.get_moments_of_inertia. Here are several examples of molecules with different types of symmetry.:
 
 #+BEGIN_SRC python :results output :exports both
 from ase.structure import molecule
 
-print 'linear rotors: I = [Ia Ia 0]'
+print 'linear rotors: I = [0 Ia Ia]'
 atoms = molecule('CO2')
 print '  CO2 moments of inertia: ',atoms.get_moments_of_inertia()
 print
 
-print 'symmetric rotors (IA = Ib) < Ic'
+print 'symmetric rotors (Ia = Ib) < Ic'
 atoms = molecule('NH3')
 print '  NH3 moments of inertia: ' ,atoms.get_moments_of_inertia()
-print
 
 atoms = molecule('C6H6')
-print '  C6H6 moments of inertia: ' ,atoms.get_moments_of_inertia()
+print '  C6H6 moments of inertia:' ,atoms.get_moments_of_inertia()
 print
 
-print 'symmetric rotors (IA = Ib) > Ic'
+print 'symmetric rotors Ia < (Ib = Ic)'
 atoms = molecule('CH3Cl')
-print 'CHCl3 moments of inertia: ',atoms.get_moments_of_inertia()
+print 'CH3Cl moments of inertia: ',atoms.get_moments_of_inertia()
 print
 
 print 'spherical rotors Ia = Ib = Ic'
@@ -1081,16 +1078,15 @@ print '  C3H7Cl moments of inertia: ' ,atoms.get_moments_of_inertia()
 
 #+RESULTS:
 #+begin_example
-linear rotors: I = [Ia Ia 0]
+linear rotors: I = [0 Ia Ia]
   CO2 moments of inertia:  [  0.          44.45384271  44.45384271]
 
-symmetric rotors (IA = Ib) < Ic
+symmetric rotors (Ia = Ib) < Ic
   NH3 moments of inertia:  [ 1.71012426  1.71012548  2.67031768]
+  C6H6 moments of inertia: [  88.77914641   88.77916799  177.5583144 ]
 
-  C6H6 moments of inertia:  [  88.77914641   88.77916799  177.5583144 ]
-
-symmetric rotors (IA = Ib) > Ic
-CHCl3 moments of inertia:  [  3.20372189  37.97009644  37.97009837]
+symmetric rotors Ia < (Ib = Ic)
+CH3Cl moments of inertia:  [  3.20372189  37.97009644  37.97009837]
 
 spherical rotors Ia = Ib = Ic
   CH4 moments of inertia:  [ 3.19145621  3.19145621  3.19145621]
@@ -1099,8 +1095,26 @@ unsymmetric rotors Ia != Ib != Ic
   C3H7Cl moments of inertia:  [  19.41351508  213.18961963  223.16255537]
 #+end_example
 
-** Simple properties that require computations
-In this section we cover properties that require simple calculations, but not DFT calculations, to compute.
+If you want to know the principle axes of rotation, we simply pass =vectors=True= to the function, and it returns the moments of inertia and the principle axes.
+
+#+BEGIN_SRC python :results output
+from ase.structure import molecule
+import numpy as np
+
+atoms = molecule('CH3Cl')
+moments, axes = atoms.get_moments_of_inertia(vectors=True)
+print 'Moments = {0}'.format(moments)
+print 'axes = {0}'.format(axes)
+#+END_SRC
+
+#+RESULTS:
+: Moments = [  3.20372189  37.97009644  37.97009837]
+: axes = [[ 0.  0.  1.]
+:  [ 0.  1.  0.]
+:  [ 1.  0.  0.]]
+
+This shows the first moment is about the z-axis, the second moment is about the y-axis, and the third moment is about the x-axis.
+
 *** Computing bond lengths and angles
 A typical question we might ask is, "What is the structure of a molecule?" In other words, what are the bond lengths, angles between bonds, and similar properties. The Atoms object contains an func:ase.Atoms.get_distance method to make this easy. To calculate the distance between two atoms, you have to specify their indices, remembering that the index starts at 0.
 
@@ -1220,7 +1234,9 @@ dihedral angle = 60.00 degrees
 #+label: fig:ethane-dihedral
 #+ATTR_LaTeX: width=86bp,placement=[H]
 [[./images/ethane-dihedral.png]]
+In this section we cover properties that require simple calculations, but not DFT calculations, to compute.
 
+** Simple properties that require computations
 *** Energy and forces
 Two of the most important quantities we are interested in are the total
 energy and the forces on the atoms. To get these quantities, we have
@@ -1238,7 +1254,7 @@ This is your first DFT calculation in the book! see [[incar:ISMEAR][ISMEAR]], in
 #+end_note
 
 #+BEGIN_SRC python :results output :exports both
-from ase import Atoms,Atom
+from ase import Atoms, Atom
 from jasp import *
 import numpy as np
 np.set_printoptions(precision=3, suppress=True)
@@ -1263,41 +1279,81 @@ with jasp('molecules/simple-co', #output dir
 : [[ 5.095  0.     0.   ]
 :  [-5.095  0.     0.   ]]
 
-**** TODO Convergence with unit cell size
+**** Convergence with unit cell size
 There are a number of parameters that affect the energy and forces including the calculation parameters and the unit cell. We will first consider the effect of the unit cell on the total energy and forces. The reason that the unit cell affects the total energy is that it can change the distribution of electrons in the molecule.
 
 #+BEGIN_SRC python
-from ase import Atoms,Atom
 from jasp import *
+from ase import Atoms,Atom
 import numpy as np
 np.set_printoptions(precision=3, suppress=True)
 
 atoms = Atoms([Atom('C',[0,   0, 0]),
                Atom('O',[1.2, 0, 0])])
 
-L = [3, 4, 5, 6, 8, 10]
+L = [4, 5, 6, 8, 10]
 
 volumes, energies = [], []
 for a in L:
     atoms.set_cell([a,a,a], scale_atoms=False)
     atoms.center()
-    with jasp('molecules/co-vol-{0}'.format(a),
+    with jasp('molecules/co-L-{0}'.format(a),
               encut=350,
               xc='PBE',
               atoms=atoms) as calc:
         try:
-            volumes.append(atoms.get_volume())
             energies.append(atoms.get_potential_energy())
         except (VaspSubmitted, VaspQueued):
             pass
 import matplotlib.pyplot as plt
-plt.plot(volumes, energies, 'bo')
-plt.xlabel('Volume ($\AA^3$)')
+plt.plot(L, energies, 'bo')
+plt.xlabel('Unit cell length ($\AA$)')
 plt.ylabel('Total energy (eV)')
 plt.savefig('images/co-e-v.png')
+plt.show()
 #+END_SRC
 
-We have to decide what an appropriate volume for our calculation is, and the choice depends on the goal. We may wish to know the total energy of a molecule that is not interacting with any other molecules, e.g. in the ideal gas limit. In that case we need a large unit cell so the electron density from the molecule does not go outside the unit cell where it would overlap with neighboring images. The overlap is repulsive, which increases the energy. The dependence of the total energy on the unit cell volume is defined by \(P = dE/dV\). When this derivative is equal to zero, we are in the ideal gas limit.
+#+RESULTS:
+: None
+
+#+caption: Total energy of a CO molecule as a function of the unit cell length.
+#+attr_latex: placement=[H]
+[[./images/co-e-v.png]]
+
+Here there are evidently attractive interactions between the CO molecules which lower the total energy for small box sizes. We have to decide what an appropriate volume for our calculation is, and the choice depends on the goal. We may wish to know the total energy of a molecule that is not interacting with any other molecules, e.g. in the ideal gas limit. In that case we need a large unit cell so the electron density from the molecule does not go outside the unit cell where it would overlap with neighboring images.
+
+Let us consider what the pressure in the unit cell is. In the ideal gas limit we have $PV = nRT$, which gives a pressure of zero at absolute zero. At non-zero temperatures, we have $P=n/V RT$. Let us consider some examples. In atomic units we use $k_B$ instead of $R$, and it has a value of
+
+#+BEGIN_SRC python
+from ase.units import kB, Pascal
+import numpy as np
+import matplotlib.pyplot as plt
+
+atm = 101325 * Pascal
+
+L = np.linspace(4,10)
+V = L**3
+
+n = 1 # one atom per unit cell
+
+for T in [298, 600, 1000]:
+    P = n/V*kB*T / atm # convert to atmospheres
+
+    plt.plot(V, P, label='{0}K'.format(T))
+
+plt.xlabel('Unit cell volume ($\AA^3$)')
+plt.ylabel('Pressure (atm)')
+plt.legend(loc='best')
+plt.savefig('images/ideal-gas-pressure.png')
+plt.show()
+#+END_SRC
+
+#+RESULTS:
+: None
+
+#+caption: Ideal gas pressure dependence on temperature and unit cell volume.
+#+attr_latex: placement=[H]
+[[./images/ideal-gas-pressure.png]]
 
 **** Convergence of ENCUT
 The total energy and forces also depend on the computational parameters, notably incar:ENCUT.
@@ -1434,7 +1490,6 @@ plt.savefig('images/co-ados.png')
 
 The electron density is a 3\(d\) quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure \ref{fig:cd1}) of plotting the charge density, and we consider some issues we have to consider when visualizing volumetric data in unit cells with periodic boundary conditions. We will use the results from a previous calculation.
 
-
 #+BEGIN_SRC python
 from jasp import *
 from enthought.mayavi import mlab
@@ -1452,7 +1507,7 @@ for atom in atoms:
     mlab.points3d(atom.x,
                   atom.y,
                   atom.z,
-                  scale_factor=vdw_radii[atom.number]/2.,
+                  scale_factor=vdw_radii[atom.number]/5., #this determines the size of the atom
                   resolution=20,
                   # a tuple is required for the color
                   color=tuple(cpk_colors[atom.number]),
@@ -1496,13 +1551,26 @@ mlab.show()
 #+label: fig:cd1
 [[./images/co-cd.png]]
 
+If we take care to center the CO molecule in the unit cell, we get a nicer looking result.
+
 #+BEGIN_SRC python
 from jasp import *
 from enthought.mayavi import mlab
 from ase.data import vdw_radii
 from ase.data.colors import cpk_colors
+from ase import Atom, Atoms
 
-with jasp('molecules/co-centered') as calc:
+atoms = Atoms([Atom('C', [2.422, 0.0, 0.0]),
+               Atom('O', [3.578, 0.0, 0.0])],
+               cell=(10,10,10))
+
+atoms.center()
+
+with jasp('molecules/co-centered',
+          encut=350,
+          xc='PBE',
+          atoms=atoms) as calc:
+
     atoms = calc.get_atoms()
     x, y, z, cd = calc.get_charge_density()
 
@@ -1513,7 +1581,7 @@ for atom in atoms:
     mlab.points3d(atom.x,
                   atom.y,
                   atom.z,
-                  scale_factor=vdw_radii[atom.number]/2.,
+                  scale_factor=vdw_radii[atom.number]/5.,
                   resolution=20,
                   # a tuple is required for the color
                   color=tuple(cpk_colors[atom.number]),
@@ -1541,8 +1609,11 @@ for p1, p2 in cell_matrix:
                 [p1[2], p2[2]], # z-positions
                 tube_radius=0.02)
 
+
 # Now plot the charge density
-mlab.contour3d(x, y, z, cd)
+mlab.contour3d(x, y, z, cd, transparent=True)
+
+# this view was empirically found by iteration
 mlab.view(azimuth=-90, elevation=90, distance='auto')
 
 mlab.savefig('images/co-centered-cd.png')
@@ -1550,7 +1621,6 @@ mlab.show()
 #+END_SRC
 
 #+RESULTS:
-: None
 
 #+caption: Charge density of a CO molecule centered in the unit cell. Now the electron density is centered in the unit cell.
 #+ATTR_LaTeX: placement=[H]
@@ -1633,27 +1703,15 @@ See http://www.uni-due.de/~hp0058/?file=manual03.html&dir=vmdplugins for example
 *** TODO Visualizing Kohn-Sham orbitals                            :noexport:
 need to read wavecar files! We cannot do this yet. There is some hope at http://www.andrew.cmu.edu/user/feenstra/wavetrans/, but I have not figured out how to use it yet.
 
-*** TODO Dipole moments
-describe direction and magnitude of the vector
-
+*** Dipole moments
 [[index:dipole moment]]
-The [[http://en.wikipedia.org/wiki/Molecular_dipole_moment#Molecular_dipoles][dipole moment]] is a vector describing the separation of nuclear (positive) and electrical (negative) charge. The symmetry of a molecule determines if a molecule has a dipole moment or not. Below we compute the dipole moment of CO. We must integrate the electron density to find the center of electrical charge, and sum over the nuclei to find the center of positive charge.
+The [[http://en.wikipedia.org/wiki/Molecular_dipole_moment#Molecular_dipoles][dipole moment]] is a vector describing the separation of  electrical (negative) and nuclear (positive) charge. The magnitude of this vector is the dipole moment, which has units of Coulomb-meter, or more commonly Debye. The symmetry of a molecule determines if a molecule has a dipole moment or not. Below we compute the dipole moment of CO. We must integrate the electron density to find the center of electrical charge, and sum over the nuclei to find the center of positive charge.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 from ase.units import Debye
-from ase import Atom, Atoms
 
-atoms = Atoms([Atom('C', [2.422, 0.0, 0.0]),
-               Atom('O', [3.578, 0.0, 0.0])],
-               cell=(10,10,10))
-
-atoms.center()
-
-with jasp('molecules/co-centered',
-          encut=350,
-          xc='PBE',
-          atoms=atoms) as calc:
+with jasp('molecules/co-centered') as calc:
     atoms.get_potential_energy()
 
     vcd = VaspChargeDensity()
@@ -2240,7 +2298,36 @@ http://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=800#Electronic-Spec
 
 The results are not too far off, and more accurate frequencies may be possible using tighter tolerance on [[incar:POTIM][POTIM]], or by using [[incar:IBRION][IBRION]]=7 or 8.
 
-TODO: discuss imaginary modes and how to tell which modes matter.
+Let us briefly discuss how to determine which vectors are vibrations and which are rotations or translations.
+http://www.gaussian.com/g_whitepap/vib.htm
+
+#+BEGIN_SRC python :results output
+from jasp import *
+import numpy as np
+with jasp('molecules/h2o_vib') as calc:
+    atoms = calc.get_atoms()
+    masses = atoms.get_masses()
+    energies, modes = calc.get_vibrational_modes()
+
+# translations
+x = np.array([1, 0, 0, 1, 0, 0, 1, 0, 0])
+y = np.array([0, 1, 0, 0, 1, 0, 0, 1, 0])
+z = np.array([0, 0, 1, 0, 0, 1, 0, 0, 1])
+
+for mode in modes:
+    print '{0: 1.2f} {1: 1.2f} {2: 1.2f}'.format(np.dot(mode.flat, x), np.dot(mode.flat, y), np.dot(mode.flat, z))
+#+END_SRC
+
+#+RESULTS:
+:  0.00 -0.81  0.00
+:  0.58  0.00  0.01
+: -0.81  0.00 -0.02
+: -0.02  0.00  0.97
+:  0.00 -1.29  0.00
+:  1.42  0.00  0.03
+:  0.04  0.00 -1.44
+:  0.00  0.01  0.00
+:  0.00  0.83  0.00
 
 **** Zero-point energy for multiple modes
 For a molecule with lots of vibrational modes the zero-point energy is defined as the sum over all the vibrational modes:
@@ -2278,53 +2365,6 @@ print 'The ZPE of water is {0:1.3f} eV'.format(ZPE)
 
 Note the zero-point energy of water is also fairly high (more than 0.5 eV). That is because of the high frequency O-H stretches.
 
-*** Vibrations through ase                                         :noexport:
-=jasp= is not designed to work with mod:ase.vibrations. You can do it, but you have to work around =jasp=. The trick is to set JASPRC['mode']='run' and submit the job to the queue. You do not want to run this in a directory with a relaxed geometry, because all your output files will be overwritten. instead, either clone the directory, or do something like this example:
-
-# (org-babel-tangle)
-#+BEGIN_SRC python :results output  :exports both :tangle h2ovib.py
-#!/usr/bin/env python
-from ase import Atoms, Atom
-from ase.vibrations import Vibrations
-from jasp import *
-
-atoms = Atoms([Atom('H',[0.5960812,  -0.7677068,   0.0000000]),
-               Atom('O',[0.0000000,   0.0000000,   0.0000000]),
-               Atom('H',[0.5960812,   0.7677068,   0.0000000])],
-               cell=(8,8,8))
-
-with jasp('molecules/h2o_vib_ase',
-          xc='PBE',
-          encut=400,
-          ismear=0,# Gaussian smearing
-          atoms=atoms) as calc:
-
-    vib = Vibrations(atoms)
-    vib.run()
-    vib.summary()
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
----------------------
-  #    meV     cm^-1
----------------------
-  0    0.0       0.0
-  1    0.0       0.0
-  2    0.0       0.0
-  3    0.0       0.0
-  4    0.0       0.0
-  5    0.0       0.0
-  6    0.0       0.0
-  7    0.0       0.0
-  8    0.0       0.0
----------------------
-Zero-point energy: 0.000 eV
-#+end_example
-
-TODO: solve this problem.
-It strikes me that this is clearly an error! I guess this happened because after the first calculation somehow VASP does not see a difference in geometries for subsequent calculations.
-
 ** Simulated infrared spectra
 [[index:infrared intensity]]
 At http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02 there is a recipe for computing the Infrared vibrational spectroscopy intensities in VASP. We are going to do that for water here. First, we will relax a water molecule.
@@ -2358,9 +2398,7 @@ with jasp('molecules/h2o_relax',
 :  [-0.001  0.     0.   ]
 :  [ 0.     0.     0.   ]]
 
-Next, we instruct VASP to compute the vibrational modes using density functional perturbation theory with IBRION=7. Note, this is different than in [[Vibrational frequencies]] where finite differences were used.
-
-TODO: explain perturbation theory and its advantage.
+Next, we instruct VASP to compute the vibrational modes using [[http://cmt.dur.ac.uk/sjc/thesis_prt/node39.html][density functional perturbation theory]] with IBRION=7. Note, this is different than in [[Vibrational frequencies]] where finite differences were used.
 
 #+BEGIN_SRC python
 from ase import Atoms, Atom
@@ -2805,8 +2843,6 @@ plt.savefig('images/O2-sp-dos.png')
 : number of up states = 7.00000343617
 : number of down states = 5.00001715094
 
-TODO: this needs interpretation discussion
-
 #+caption: Spin-polarized DOS for the O_{2} molecule.
 #+label: fig:o2-sp-dos
 #+ATTR_LaTeX: placement=[H]
@@ -2915,10 +2951,9 @@ for encut in encuts:
 
 #+end_example
 
-**** TODO Illustration of the effect of SIGMA
-put an equation describing sigma and discuss it
+**** Illustration of the effect of SIGMA
 
-The formula for extrapolation of the total energy to absolute zero is
+The methodology for extrapolation of the total energy to absolute zero is
 only valid for a continuous density of states at the Fermi level
 \cite{Kresse199615}. Consequently, it should not be used for
 semiconductors, molecules or atoms. In VASP, this means a very small
@@ -3064,9 +3099,7 @@ with jasp('molecules/O-square-box-random',
 : Square box (center): E = -1.516623 eV
 : Square box (random): E = -1.515359 eV
 
-There is no significant difference in these energies. The origin and center are identical (by symmetry too). The meV variation in the random position is probably only due to the atom being off the FFT grid points a little bit. TODO: this needs clarification.
-
-Now, let us consider some non-square boxes.
+There is no significant difference in these energies. The origin and center calculations are identical in energy. The meV variation in the random calculation is negligible. Now, let us consider some non-square boxes.
 
 #+BEGIN_SRC python :results output :exports both
 # calculate O atom energy in orthorhombic boxes
@@ -3361,8 +3394,12 @@ if None not in (E_O, E_O2):
 #+END_SRC
 
 #+RESULTS:
+: Magnetic moment on O = 2.0000001 Bohr magnetons
+: Magnetic moment on O2 = 1.9999996 Bohr magnetons
+: O2 -> 2O  D = 6.299 eV
 
-TODO: where is the answer? Final discussion?
+This result is close to other reported values. It is possibly not converged, since we let VASP choose the ENCUT value, and that value is the ENMIN value in the POTCAR. Nevertheless, the point is that a harder potential does not fix the problem of overbinding in the O_{2} molecule. That is a fundamental flaw in the GGA exchange-correlation functional.
+
 *** Water gas shift example
 We consider calculating the reaction energy of the water-gas shift reaction in this example.
 
@@ -4013,7 +4050,7 @@ plt.savefig('images/nh3-neb.png')
 
 #+caption: Nudged elastic band results for ammonia flipping.
 [[./images/nh3-neb.png]]
-*** TODO Make a movie of the animation
+*** TODO Make a movie of the animation :noexport:
 
 something was wrong with the script
 
@@ -4240,7 +4277,6 @@ What we typically mean by determining bulk structures includes the following:
 All of these questions can often be addressed by finding the volume, shape and atomic positions that minimize the total energy of a bulk system. This is true at 0K. At higher temperatures, one must consider minimizing the free energy, rather than the internal energy.
 
 *** fcc/bcc crystal structures
-TODO: add descriptive text
 
 The fcc and bcc structures are simple. They only have one degree of freedom: the lattice constant. In this section we show how to calculate the equilibrium volume of each structure, and determine which one is more stable. We start with the fcc crystal structure of Cu. We will manually define the crystal structure based on the definitions in Kittel \cite{kittel} (Chapter 1).
 
@@ -6489,7 +6525,7 @@ index:reconstruction
 We previously considered how relaxation can lower the surface energy. For some surfaces, a more extreme effect can reduce the surface energy: reconstruction. In a simple surface relaxation, the basic structure of a surface is preserved. However, sometimes there is a different surface structure that may have a lower surface energy.
 
 TODO: some citations for famous reconstructions
-Si-\sqrt{7}\times\sqrt{7}
+Si-\(\sqrt{7}\times\sqrt{7}\)
 Pt(100) hex reconstruction
 Au(111) herringbone reconstruction
 
