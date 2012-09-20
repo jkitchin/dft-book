@@ -15,75 +15,8 @@
 #+LINK_UP:
 #+LINK_HOME:
 #+XSLT:
-#+latex_header: \usepackage[super,sort&compress]{natbib}
-#+latex_header: \usepackage{natmove}
-#+latex_header: \usepackage{underscore}
-#+latex_header: \usepackage{makeidx}
-#+latex_header: \usepackage[section]{placeins}
-#+latex_header: \usepackage{xcolor}
-#+latex_header: \usepackage{adjustbox}
-#+latex_header: \usepackage{url}
-#+latex_header: \usepackage{anysize}
-#+latex_header: \marginsize{1in}{1in}{1in}{1in}
-#+latex_header: \makeindex
 
-# export code and results. need to figure out how to handle org environments
-#+PROPERTY: exports both
-
-# http://orgmode.org/worg/org-contrib/org-special-blocks.html
-# http://en.wikibooks.org/wiki/LaTeX/Customizing_LaTeX#New_Environments
-
-# http://en.wikibooks.org/wiki/LaTeX/Colors
-
-#+begin_latex
-% environment to put exercises in a gray, numbered box
-\newcounter{ExerciseCount}
-\setcounter{ExerciseCount}{0}
-\definecolor{MyGray}{rgb}{0.96,0.97,0.98}
-
-\newenvironment{exercise}[0]{%
-\stepcounter{ExerciseCount} \begin{adjustbox}{minipage=[b]{380px},margin=1ex,bgcolor=MyGray,env=center}%
-        \textbf{Exercise \thesection.\theExerciseCount}\\
-}{%
-    \end{adjustbox}%
-}
-#+end_latex
-
-#+begin_latex
-% environment to put notes a light blue box 173-216-230
-% see http://www.tayloredmktg.com/rgb/ for colors
-\definecolor{LightBlue}{rgb}{0.68,0.85,0.90}
-
-\newenvironment{note}[0]{%
-\begin{adjustbox}{minipage=[b]{380px},margin=1ex,bgcolor=LightBlue,env=center}%
-        \textbf{Note: }\\
-}{%
-    \end{adjustbox}%
-}
-#+end_latex
-
-#+begin_latex
-% environment to put warnings a pink box 255-192-203
-% see http://www.tayloredmktg.com/rgb/ for colors
-\definecolor{Pink}{rgb}{1.0,0.75,0.80}
-
-\newenvironment{warning}[0]{%
-\begin{adjustbox}{minipage=[b]{380px},margin=1ex,bgcolor=Pink,env=center}%
-        \textbf{Warning: }\\
-}{%
-    \end{adjustbox}%
-}
-#+end_latex
-
-
-
-
-[[./images/cover-page.png]]
-
-
-#+latex: \listoffigures
-
-#+latex: \listoftables
+#+include: dft-header.org
 
 * Tasks :noexport:
 ** replace all % formating with .format
@@ -1236,7 +1169,8 @@ dihedral angle = 60.00 degrees
 [[./images/ethane-dihedral.png]]
 In this section we cover properties that require simple calculations, but not DFT calculations, to compute.
 
-** Simple properties that require computations
+** Simple properties that require single computations
+There are many properties that only require a single DFT calculation to obtain the energy, forces, density of states, electron denisty and electrostatic potential. This section describes some of these calculations and their analysis.
 *** Energy and forces
 Two of the most important quantities we are interested in are the total
 energy and the forces on the atoms. To get these quantities, we have
@@ -1306,7 +1240,7 @@ for a in L:
         except (VaspSubmitted, VaspQueued):
             pass
 import matplotlib.pyplot as plt
-plt.plot(L, energies, 'bo')
+plt.plot(L, energies, 'bo-')
 plt.xlabel('Unit cell length ($\AA$)')
 plt.ylabel('Total energy (eV)')
 plt.savefig('images/co-e-v.png')
@@ -1365,15 +1299,15 @@ import numpy as np
 np.set_printoptions(precision=3, suppress=True)
 
 atoms = Atoms([Atom('C',[0,   0, 0]),
-               Atom('O',[1.2, 0, 0])])
+               Atom('O',[1.2, 0, 0])],
+               cell=(6,6,6))
+atoms.center()
 
 ENCUTS = [250, 300, 350, 400, 450, 500]
 
 energies = []
+ready = True
 for en in ENCUTS:
-    atoms.set_cell([a,a,a], scale_atoms=False)
-    atoms.center()
-
     with jasp('molecules/co-en-{0}'.format(en),
               encut=en,
               xc='PBE',
@@ -1381,110 +1315,40 @@ for en in ENCUTS:
         try:
             energies.append(atoms.get_potential_energy())
         except (VaspSubmitted, VaspQueued):
-            pass
+            ready = False
+
+if not ready:
+   import sys; sys.exit()
+
 import matplotlib.pyplot as plt
-plt.plot(ENCUTS, energies, 'bo')
+plt.plot(ENCUTS, energies, 'bo-')
 plt.xlabel('ENCUT (eV)')
 plt.ylabel('Total energy (eV)')
 plt.savefig('images/co-encut-v.png')
 #+END_SRC
 
-Keep in mind that we are generally interested in differences in total energy, and the differences tend to converge faster than a single total energy. Also it is important to note that it is usually a single element that determines the rate of convergence.
+#+RESULTS:
+: None
 
-*** The density of states (DOS)
-The density of states (DOS) gives you the number of electronic states (i.e. orbitals) that have a particular energy. We can get this information from the last calculation we just ran without having to run another DFT calculation.
+#+caption: Dependence of the total energy of CO molecule on ENCUT.
+#+attr_latex: placement=[H]
+[[./images/co-encut-v.png]]
 
-#+begin_warning
-One way that =jasp= is unintuitive is that whenever you are "inside" (indented) a =with= statement, the current working directory may be different than where your script started. In this example that can lead to your figure not being saved where you expect it!
-#+end_warning
+You can see in this figure that it takes a cutoff energy of about 400 eV to achieve a convergence level around 10 meV, and that even at 500 meV the energy is still changing slightly. Keep in mind that we are generally interested in differences in total energy, and the differences tend to converge faster than a single total energy. Also it is important to note that it is usually a single element that determines the rate of convergence. The reason we do not just use very high ENCUT all the time is it is expensive.
 
-#+BEGIN_SRC python
-from jasp import *
-from ase.dft.dos import DOS
-import matplotlib.pyplot as plt
-
-with jasp('molecules/simple-co') as calc: # we already ran this!
-    dos = DOS(calc)
-    plt.plot(dos.get_energies(),dos.get_dos())
-    plt.xlabel('Energy - $E_f$ (eV)')
-    plt.ylabel('DOS')
-
-# make sure you save the figure outside the with statement, or provide
-# the correct relative or absolute path to where you want it.
-plt.savefig('images/co-dos.png')
+#+BEGIN_SRC sh :results output raw
+grep "Elapsed time (sec):" molecules/co-en-*/OUTCAR
 #+END_SRC
 
 #+RESULTS:
-: None
+molecules/co-en-250/OUTCAR:                         Elapsed time (sec):        4.954
+molecules/co-en-300/OUTCAR:                         Elapsed time (sec):        7.662
+molecules/co-en-350/OUTCAR:                         Elapsed time (sec):        8.232
+molecules/co-en-400/OUTCAR:                         Elapsed time (sec):       11.148
+molecules/co-en-450/OUTCAR:                         Elapsed time (sec):       12.592
+molecules/co-en-500/OUTCAR:                         Elapsed time (sec):       15.425
 
-#+caption: Density of states for a CO molecule.
-#+ATTR_LaTeX: placement=[H]
-[[./images/co-dos.png]]
-
-*** Atom-projected density of states on molecules
-Let us consider which states in the density of states belong to which atoms in a molecule. This can only be a qualitative consideration because the orbitals on the atoms often hybridize to form molecular orbitals, e.g. in methane the $s$ and $p$ orbitals can form what we call $sp_3$ orbitals. We can compute atom-projected density of states in VASP, which is done by projecting the wave function onto localized atomic orbitals. Here is an example. We will consider the CO molecule. To get atom-projected density of states, we must set [[incar:RWIGS][RWIGS]] for each atom. This parameter defines the radius of the sphere around the atom which cuts off the projection. The total density of states and projected density of states information comes from the DOSCAR file.
-
-Note that unlike the DOS, here we must run another calculation because we did not specify the atom-projected keywords above. Our strategy is to get the atoms from the previous calculation, and use them in a new calculation. You could redo the calculation in the same directory, but you risk losing the results of the first step. That can make it difficult to reproduce a result. We advocate our approach of using multiple directories for the subsequent calculations, because it leaves a clear trail of how the work was done.
-
-#+begin_note
-The [[incar:RWIGS][RWIGS]] is not uniquely determined for an element. There are various natural choices, e.g. the ionic radius of an atom, or a value that minimizes overlap of neighboring spheres, but these values can change slightly in different environments.
-
-You can also get spin-polarized atom-projected DOS, and magnetization projected DOS. See http://cms.mpi.univie.ac.at/vasp/vasp/DOSCAR_file.html#doscar for more details.
-#+end_note
-
-#+BEGIN_SRC python
-from jasp import *
-from ase.dft.dos import DOS
-import matplotlib.pyplot as plt
-
-# get the geometry from another calculation
-with jasp('molecules/simple-co') as calc:
-    atoms = calc.get_atoms()
-
-with jasp('molecules/co-ados',
-          encut=300,
-          xc='PBE',
-          rwigs=[1.0, 1.0],     # these are the cutoff radii for projected states
-          atoms=atoms) as calc:
-    calc.calculate()
-
-    # now get results
-    dos = DOS(calc)
-    plt.plot(dos.get_energies(), dos.get_dos() + 10)
-
-    ados = VaspDos(efermi=calc.get_fermi_level())
-    energies = ados.energy
-
-    plt.plot(energies, ados.dos + 8) # these are the total DOS
-
-    c_s = ados.site_dos(0, 's')
-    c_p = ados.site_dos(0, 'p')
-    o_s = ados.site_dos(1, 's')
-    o_p = ados.site_dos(1, 'p')
-
-    c_d = ados.site_dos(0,'d')
-    o_d = ados.site_dos(1,'d')
-
-    plt.plot(energies, c_s + 6, energies, o_s + 5)
-    plt.plot(energies, c_p + 4, energies, o_p + 3)
-    plt.plot(energies, c_d, energies, o_d + 2)
-    plt.xlabel('Energy - $E_f$ (eV)')
-    plt.ylabel('DOS')
-    plt.legend(['DOS',
-                'C$_s$', 'O$_s$',
-                'C$_p$', 'O$_p$',
-                'C$_d$', 'O$_d$'],
-                ncol=2,loc='best')
-plt.savefig('images/co-ados.png')
-#+end_src
-
-#+RESULTS:
-: None
-
-#+caption: Atom-projected DOS for a CO molecule. The total density of states and the \(s\), \(p\) and \(d\) states on the C and O are shown.
-#+ATTR_LaTeX: placement=[H]
-[[./images/co-ados.png]]
-
+Although here the times do not seem that unreasonable, note we increased the time by a factor of three by simply doubling ENCUT. If the first time was a week, this is a significant increase in time!
 
 *** Visualizing electron density
 
@@ -1626,83 +1490,6 @@ mlab.show()
 #+ATTR_LaTeX: placement=[H]
 #+label: fig:cd2
 [[./images/co-centered-cd.png]]
-
-*** TODO Electrostatic potential
-This is an example of the so-called \sigma hole in a [[http://pubs.acs.org/cen/science/87/8738sci2.html][halogen bond]]. The coordinates for the CF_{3}Br molecule were found at http://cccbdb.nist.gov/exp2.asp?casno=75638.
-
-#+BEGIN_SRC python :results output :exports both
-from jasp import *
-from ase import Atom, Atoms
-from ase.io import write
-
-from enthought.mayavi import mlab
-from ase.data import vdw_radii
-from ase.data.colors import cpk_colors
-
-atoms = Atoms([Atom('C',  [ 0.0000, 	0.0000, 	-0.8088]),
-               Atom('Br', [ 0.0000, 	0.0000, 	 1.1146]),
-               Atom('F',  [ 0.0000, 	1.2455, 	-1.2651]),
-               Atom('F',  [ 1.0787,    -0.6228, 	-1.2651]),
-               Atom('F',  [-1.0787,    -0.6228, 	-1.2651])],
-               cell=(10, 10, 10))
-atoms.center()
-
-with jasp('molecules/CF3Br',
-          encut=350,
-          xc='PBE',
-          ibrion=1,
-          nsw=50,
-          lvtot=True,
-          lvhar=True,
-          atoms=atoms) as calc:
-    calc.set_nbands(f=2)
-    calc.calculate()
-
-    x, y, z, lp = calc.get_local_potential()
-    x, y, z, cd = calc.get_charge_density()
-
-mlab.figure(1, bgcolor=(1, 1, 1)) # make a white figure
-
-# plot the atoms as spheres
-for atom in atoms:
-    mlab.points3d(atom.x,
-                  atom.y,
-                  atom.z,
-                  scale_factor=vdw_radii[atom.number]/5.,
-                  resolution=20,
-                  # a tuple is required for the color
-                  color=tuple(cpk_colors[atom.number]),
-                  scale_mode='none')
-# plot the bonds. We want a line from C-Br, C-F, etc...
-# We create a bond matrix showing which atoms are connected.
-bond_matrix = [[0, 1],
-               [0, 2],
-               [0, 3],
-               [0, 4]]
-
-for a1, a2 in bond_matrix:
-    mlab.plot3d(atoms.positions[[a1,a2], 0], # x-positions
-                atoms.positions[[a1,a2], 1], # y-positions
-                atoms.positions[[a1,a2], 2], # z-positions
-                [2, 2],
-                tube_radius=0.02,
-                colormap='Reds')
-
-mlab.contour3d(x, y, z, lp)
-mlab.savefig('images/halogen-ep.png')
-mlab.show()
-#+END_SRC
-
-#+RESULTS:
-
-#+caption: Plot of the electrostatic potential of CF_{3}Br. TODO: figure out how to do an isosurface of charge, colormapped by the local potential.
-[[./images/halogen-ep.png]]
-
-See http://www.uni-due.de/~hp0058/?file=manual03.html&dir=vmdplugins for examples of using [[http://www.ks.uiuc.edu/Research/vmd/][VMD]] for visualization.
-
-*** TODO Visualizing Kohn-Sham orbitals                            :noexport:
-need to read wavecar files! We cannot do this yet. There is some hope at http://www.andrew.cmu.edu/user/feenstra/wavetrans/, but I have not figured out how to use it yet.
-
 *** Dipole moments
 [[index:dipole moment]]
 The [[http://en.wikipedia.org/wiki/Molecular_dipole_moment#Molecular_dipoles][dipole moment]] is a vector describing the separation of  electrical (negative) and nuclear (positive) charge. The magnitude of this vector is the dipole moment, which has units of Coulomb-meter, or more commonly Debye. The symmetry of a molecule determines if a molecule has a dipole moment or not. Below we compute the dipole moment of CO. We must integrate the electron density to find the center of electrical charge, and sum over the nuclei to find the center of positive charge.
@@ -1798,6 +1585,177 @@ with jasp('molecules/co-centered') as calc:
 
 #+RESULTS:
 : The dipole moment is 0.10 Debye
+
+*** The density of states (DOS)
+The density of states (DOS) gives you the number of electronic states (i.e. orbitals) that have a particular energy. We can get this information from the last calculation we just ran without having to run another DFT calculation.
+
+#+begin_warning
+One way that =jasp= is unintuitive is that whenever you are "inside" (indented) a =with= statement, the current working directory may be different than where your script started. In this example that can lead to your figure not being saved where you expect it!
+#+end_warning
+
+#+BEGIN_SRC python
+from jasp import *
+from ase.dft.dos import DOS
+import matplotlib.pyplot as plt
+
+with jasp('molecules/simple-co') as calc: # we already ran this!
+    dos = DOS(calc)
+    plt.plot(dos.get_energies(), dos.get_dos())
+    plt.xlabel('Energy - $E_f$ (eV)')
+    plt.ylabel('DOS')
+
+# make sure you save the figure outside the with statement, or provide
+# the correct relative or absolute path to where you want it.
+plt.savefig('images/co-dos.png')
+#+END_SRC
+
+#+RESULTS:
+: None
+
+#+caption: Density of states for a CO molecule.
+#+ATTR_LaTeX: placement=[H]
+[[./images/co-dos.png]]
+
+*** Atom-projected density of states on molecules
+Let us consider which states in the density of states belong to which atoms in a molecule. This can only be a qualitative consideration because the orbitals on the atoms often hybridize to form molecular orbitals, e.g. in methane the $s$ and $p$ orbitals can form what we call $sp_3$ orbitals. We can compute atom-projected density of states in VASP, which is done by projecting the wave function onto localized atomic orbitals. Here is an example. We will consider the CO molecule. To get atom-projected density of states, we must set [[incar:RWIGS][RWIGS]] for each atom. This parameter defines the radius of the sphere around the atom which cuts off the projection. The total density of states and projected density of states information comes from the DOSCAR file.
+
+Note that unlike the DOS, here we must run another calculation because we did not specify the atom-projected keywords above. Our strategy is to get the atoms from the previous calculation, and use them in a new calculation. You could redo the calculation in the same directory, but you risk losing the results of the first step. That can make it difficult to reproduce a result. We advocate our approach of using multiple directories for the subsequent calculations, because it leaves a clear trail of how the work was done.
+
+#+begin_note
+The [[incar:RWIGS][RWIGS]] is not uniquely determined for an element. There are various natural choices, e.g. the ionic radius of an atom, or a value that minimizes overlap of neighboring spheres, but these values can change slightly in different environments.
+
+You can also get spin-polarized atom-projected DOS, and magnetization projected DOS. See http://cms.mpi.univie.ac.at/vasp/vasp/DOSCAR_file.html#doscar for more details.
+#+end_note
+
+#+BEGIN_SRC python
+from jasp import *
+from ase.dft.dos import DOS
+import matplotlib.pyplot as plt
+
+# get the geometry from another calculation
+with jasp('molecules/simple-co') as calc:
+    atoms = calc.get_atoms()
+
+with jasp('molecules/co-ados',
+          encut=300,
+          xc='PBE',
+          rwigs=[1.0, 1.0],     # these are the cutoff radii for projected states
+          atoms=atoms) as calc:
+    calc.calculate()
+
+    # now get results
+    dos = DOS(calc)
+    plt.plot(dos.get_energies(), dos.get_dos() + 10)
+
+    ados = VaspDos(efermi=calc.get_fermi_level())
+    energies = ados.energy
+
+    plt.plot(energies, ados.dos + 8, label='ADOS') # these are the total DOS
+
+    c_s = ados.site_dos(0, 's')
+    c_p = ados.site_dos(0, 'p')
+    o_s = ados.site_dos(1, 's')
+    o_p = ados.site_dos(1, 'p')
+
+    c_d = ados.site_dos(0,'d')
+    o_d = ados.site_dos(1,'d')
+
+    plt.plot(energies, c_s + 6, energies, o_s + 5)
+    plt.plot(energies, c_p + 4, energies, o_p + 3)
+    plt.plot(energies, c_d, energies, o_d + 2)
+    plt.xlabel('Energy - $E_f$ (eV)')
+    plt.ylabel('DOS')
+    plt.legend(['DOS', 'ADOS',
+                'C$_s$', 'O$_s$',
+                'C$_p$', 'O$_p$',
+                'C$_d$', 'O$_d$'],
+                ncol=2,loc='best')
+plt.savefig('images/co-ados.png')
+#+end_src
+
+#+RESULTS:
+: None
+
+#+caption: Atom-projected DOS for a CO molecule. The total density of states and the \(s\), \(p\) and \(d\) states on the C and O are shown.
+#+ATTR_LaTeX: placement=[H]
+[[./images/co-ados.png]]
+
+*** TODO Electrostatic potential
+This is an example of the so-called \sigma hole in a [[http://pubs.acs.org/cen/science/87/8738sci2.html][halogen bond]]. The coordinates for the CF_{3}Br molecule were found at http://cccbdb.nist.gov/exp2.asp?casno=75638.
+
+#+BEGIN_SRC python :results output :exports both
+from jasp import *
+from ase import Atom, Atoms
+from ase.io import write
+
+from enthought.mayavi import mlab
+from ase.data import vdw_radii
+from ase.data.colors import cpk_colors
+
+atoms = Atoms([Atom('C',  [ 0.0000, 	0.0000, 	-0.8088]),
+               Atom('Br', [ 0.0000, 	0.0000, 	 1.1146]),
+               Atom('F',  [ 0.0000, 	1.2455, 	-1.2651]),
+               Atom('F',  [ 1.0787,    -0.6228, 	-1.2651]),
+               Atom('F',  [-1.0787,    -0.6228, 	-1.2651])],
+               cell=(10, 10, 10))
+atoms.center()
+
+with jasp('molecules/CF3Br',
+          encut=350,
+          xc='PBE',
+          ibrion=1,
+          nsw=50,
+          lvtot=True,
+          lvhar=True,
+          atoms=atoms) as calc:
+    calc.set_nbands(f=2)
+    calc.calculate()
+
+    x, y, z, lp = calc.get_local_potential()
+    x, y, z, cd = calc.get_charge_density()
+
+mlab.figure(1, bgcolor=(1, 1, 1)) # make a white figure
+
+# plot the atoms as spheres
+for atom in atoms:
+    mlab.points3d(atom.x,
+                  atom.y,
+                  atom.z,
+                  scale_factor=vdw_radii[atom.number]/5.,
+                  resolution=20,
+                  # a tuple is required for the color
+                  color=tuple(cpk_colors[atom.number]),
+                  scale_mode='none')
+# plot the bonds. We want a line from C-Br, C-F, etc...
+# We create a bond matrix showing which atoms are connected.
+bond_matrix = [[0, 1],
+               [0, 2],
+               [0, 3],
+               [0, 4]]
+
+for a1, a2 in bond_matrix:
+    mlab.plot3d(atoms.positions[[a1,a2], 0], # x-positions
+                atoms.positions[[a1,a2], 1], # y-positions
+                atoms.positions[[a1,a2], 2], # z-positions
+                [2, 2],
+                tube_radius=0.02,
+                colormap='Reds')
+
+mlab.contour3d(x, y, z, lp)
+mlab.savefig('images/halogen-ep.png')
+mlab.show()
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: Plot of the electrostatic potential of CF_{3}Br. TODO: figure out how to do an isosurface of charge, colormapped by the local potential.
+#+attr_latex: placement=[H]
+[[./images/halogen-ep.png]]
+
+See http://www.uni-due.de/~hp0058/?file=manual03.html&dir=vmdplugins for examples of using [[http://www.ks.uiuc.edu/Research/vmd/][VMD]] for visualization.
+
+*** TODO Visualizing Kohn-Sham orbitals                            :noexport:
+need to read wavecar files! We cannot do this yet. There is some hope at http://www.andrew.cmu.edu/user/feenstra/wavetrans/, but I have not figured out how to use it yet.
 
 *** Bader analysis
 index:bader
@@ -1943,8 +1901,7 @@ with jasp('molecules/h2o-bader') as calc:
 TODO: figure out these charges
 
 ** Geometry optimization
-*** Bond lengths
-**** Manual determination
+*** Manual determination of a bond length
 The equilibrium bond length of a CO molecule is approximately the bond length that minimizes the total energy. We can find that by computing the total energy as a function of bond length, and noting where the minimum is. Here is an example in VASP. There are a few features to point out here. We want to compute 5 bond lengths, and each calculation is independent of all the others. mod:jasp is setup to automatically handle jobs for you by submitting them to the queue. It raises a variety of exceptions to let you know what has happened, and you must handle these to control the workflow. We will illustrate this by the following examples.
 
 #+BEGIN_SRC python :results output :exports both
@@ -2070,14 +2027,28 @@ plt.savefig('images/co-bondlengths.png')
 plt.show()
 #+END_SRC
 
+#+RESULTS:
+: The minimum energy is [-14.843] eV at V = [ 1.144] Ang^3
+
 
 #+caption: Energy vs CO bond length.
 #+label: fig:co-bondlengths
 #+ATTR_LaTeX: placement=[H]
 [[./images/co-bondlengths.png]]
 
-**** Automatic geometry optimization with VASP
+*** Automatic geometry optimization with VASP
 It is generally the case that the equilibrium geometry of a system is the one that minimizes the total energy and forces. Since each atom has three degrees of freedom, you can quickly get a high dimensional optimization problem. Luckily, VASP has built-in geometry optimization using the [[incar:IBRION][IBRION]] and [[incar:NSW][NSW]] tags. Here we compute the bond length for a CO molecule, letting VASP do the geometry optimization for us.
+
+Here are the most common choices for IBRION.
+| IBRION value | algorithm                                      |
+|--------------+------------------------------------------------|
+|            1 | quasi-Newton    (use if initial guess is good) |
+|            2 | conjugate gradient                             |
+
+
+#+begin_note
+VASP applies a criteria for stopping a geometry optimization. When the change in energy between two steps is less than 0.001 eV (or 10*EDIFF), the relaxation is stopped. This criteria is controlled by the incar:EDIFFG tag. If you prefer to stop based on forces, set EDIFFG=-0.05, i.e. to a negative number. The units of force is eV/\AA. For most work, a force tolerance of 0.05 eV/\AA is usually sufficient.
+#+end_note
 
 #+BEGIN_SRC python :results output :exports both
 from ase import Atom, Atoms
@@ -2114,16 +2085,15 @@ with jasp('molecules/co-cg',
 :  [-0.003  0.     0.   ]]
 : Bondlength = 1.14 angstroms
 
-**** Relaxation of a water molecule
-#+label: sec:relax-h2o
-It is not more complicated to relax more atoms, it just may take longer. Here we relax a water molecule.
+*** Relaxation of a water molecule
+It is not more complicated to relax more atoms, it just may take longer because there are more electrons and degrees of freedom. Here we relax a water molecule which has three atoms.
 #+BEGIN_SRC python :results output :exports both
 from ase import Atoms, Atom
 from jasp import *
 
-atoms = Atoms([Atom('H',[0.5960812,  -0.7677068,   0.0000000]),
-               Atom('O',[0.0000000,   0.0000000,   0.0000000]),
-               Atom('H',[0.5960812,   0.7677068,   0.0000000])],
+atoms = Atoms([Atom('H', [0.5960812,  -0.7677068,   0.0000000]),
+               Atom('O', [0.0000000,   0.0000000,   0.0000000]),
+               Atom('H', [0.5960812,   0.7677068,   0.0000000])],
                cell=(8, 8, 8))
 
 with jasp('molecules/h2o_relax',
@@ -2233,7 +2203,8 @@ This is a reasonable amount of energy! Zero-point energy increases with increasi
 A final note is that this analysis is in the "harmonic approximation". The frequency equation is the solution to a harmonic oscillator. If the spring is non-linear, then there are anharmonic effects that may become important, especially at higher temperatures.
 
 *** Automated vibrational calculations
-VASP has built-in capability for performing vibrational calculations.
+VASP has built-in capability for performing vibrational calculations. We access the capability by using a new value for incar:IBRION. The values of 5 and 6 calculated the Hessian matrix using finite differences. For IBRION=5, all atoms that are not constrained are displaced. For IBRION=6, only symmetry inequivalent displacements are considered, which makes the calculations slightly cheaper. You can specify the number of displacements with incar:NFREE. The default number of displacements is 2. You can also specify the size of the displacement with incar:POTIM (the default is 0.015 \AA).
+
 #+BEGIN_SRC python :results output  :exports both
 #adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
 from ase import Atoms, Atom
@@ -2244,6 +2215,7 @@ atoms = Atoms([Atom('H', [0.5960812,  -0.7677068,   0.0000000]),
                Atom('O', [0.0000000,   0.0000000,   0.0000000]),
                Atom('H', [0.5960812,   0.7677068,   0.0000000])],
                cell=(8, 8, 8))
+atoms.center()
 
 with jasp('molecules/h2o_vib',
           xc='PBE',
@@ -2252,7 +2224,7 @@ with jasp('molecules/h2o_vib',
           ibrion=6,# finite differences with symmetry
           nfree=2, # central differences (default)
           potim=0.015,# default as well
-          ediff=1e-8,
+          ediff=1e-8, # for vibrations you need precise energies
           nsw=1,
           atoms=atoms) as calc:
 
@@ -2271,21 +2243,21 @@ with jasp('molecules/h2o_vib',
 #+begin_example
 Forces
 ======
-[[ 0.006 -0.022 -0.002]
- [-0.013  0.     0.003]
- [ 0.006  0.022 -0.002]]
+[[ 0.018 -0.032 -0.001]
+ [-0.035  0.     0.003]
+ [ 0.018  0.032 -0.001]]
 
 energies
-==========
-00: 0.475622564 eV
-01: 0.461551072 eV
-02: 0.19626758 eV
-03: 0.004419568 eV
-04: 0.002650653 eV
-05: (0.000307624+0j) eV
-06: (0.011665989+0j) eV
-07: (0.011977051+0j) eV
-08: (0.015144825+0j) eV
+========
+00: 0.475824705 eV
+01: 0.461734211 eV
+02: 0.19618999 eV
+03: 0.007093876 eV
+04: 0.002459836 eV
+05: (0.000291856+0j) eV
+06: (0.012642767+0j) eV
+07: (0.012959493+0j) eV
+08: (0.015883929+0j) eV
 #+end_example
 
 Note we get 9 frequencies here. Water has 3 atoms, with three degrees of freedom each, leading to 9 possible combinations of collective motions. Three of those collective motions are translations, i.e. where all atoms move in the same direction (either $x$, $y$ or $z$) and there is no change in the total energy of the molecule. Another three of those motions are rotations, which also do not change the total energy of the molecule. That leaves 3N-6 = 3 degrees of vibrational freedom where some or all of the bonds are stretched, resulting in a change in the total energy. The modes of water vibration are (with our calculated values in parentheses):
@@ -2298,36 +2270,29 @@ http://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=800#Electronic-Spec
 
 The results are not too far off, and more accurate frequencies may be possible using tighter tolerance on [[incar:POTIM][POTIM]], or by using [[incar:IBRION][IBRION]]=7 or 8.
 
-Let us briefly discuss how to determine which vectors are vibrations and which are rotations or translations.
-http://www.gaussian.com/g_whitepap/vib.htm
+Let us briefly discuss how to determine which vectors are vibrations and which are rotations or translations. One way is to visualize the modes. The vibrations are easy to spot. The rotations/translations are not always cleanly separable. This is an issue of accuracy and convergence. We usually do not worry about this because these modes are usually not important.
+
+1. mode 0 is an asymmetric stretch
+2. mode 1 is a symmetric stretch
+3. mode 2 is a bending mode
+4. mode 3 is a mixed translation/rotation
+5. mode 4 is a rotation
+6. mode 5 is a translation
+7. mode 6 is a rotation
+8. mode 7 is a partial translation
+9. mode 8 is a rotation
 
 #+BEGIN_SRC python :results output
 from jasp import *
 import numpy as np
 with jasp('molecules/h2o_vib') as calc:
-    atoms = calc.get_atoms()
-    masses = atoms.get_masses()
-    energies, modes = calc.get_vibrational_modes()
-
-# translations
-x = np.array([1, 0, 0, 1, 0, 0, 1, 0, 0])
-y = np.array([0, 1, 0, 0, 1, 0, 0, 1, 0])
-z = np.array([0, 0, 1, 0, 0, 1, 0, 0, 1])
-
-for mode in modes:
-    print '{0: 1.2f} {1: 1.2f} {2: 1.2f}'.format(np.dot(mode.flat, x), np.dot(mode.flat, y), np.dot(mode.flat, z))
-#+END_SRC
+    energies, modes = calc.get_vibrational_modes(mode=3, massweighted=True,
+                                                 show=True)
+#+end_src
 
 #+RESULTS:
-:  0.00 -0.81  0.00
-:  0.58  0.00  0.01
-: -0.81  0.00 -0.02
-: -0.02  0.00  0.97
-:  0.00 -1.29  0.00
-:  1.42  0.00  0.03
-:  0.04  0.00 -1.44
-:  0.00  0.01  0.00
-:  0.00  0.83  0.00
+
+See http://www.gaussian.com/g_whitepap/vib.htm for a more quantitative discussion of these modes, identifying them, and a method to project the rotations and translations out of the Hessian matrix.
 
 **** Zero-point energy for multiple modes
 For a molecule with lots of vibrational modes the zero-point energy is defined as the sum over all the vibrational modes:
@@ -2559,7 +2524,8 @@ cat results/results.txt
 #+end_example
 
 
-Note the results above include the rotational and vibrational modes (modes 4-9). The following [[http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02][shell script]] removes those, and recalculates the intensities.
+Note the results above include the rotational and vibrational modes (modes 4-9). The following [[http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02][shell script]] removes those, and recalculates the intensities. Note that it appears to just remove the last 6 modes and req compute the intensities. It is not obvious that will always be the right way to do it as the order of the eigenvectors is not guaranteed.
+
 #+BEGIN_SRC sh :results output :dir molecules/h2o_vib_dfpt :exports both
 #!/bin/bash
 # reformat intensities, just normal modes: 3N -> (3N-6)
@@ -2757,13 +2723,13 @@ The answer we have obtained is way too high! Experimentally the dissociation ene
 We implicitly neglected spin-polarization in the example above. That could be a problem, since the O_{2} molecule can be in one of two spin states, a singlet or a triplet, and these should have different energies. Furthermore, the oxygen atom can be a singlet or a triplet, and these would have different energies. To account for spin polarization, we have to tell VASP to use spin-polarization, and give initial guesses for the magnetic moments of the atoms. Let us try again with spin polarization.
 
 **** Estimating O_{2} dissociation energy with spin polarization in triplet ground states
-To tell VASP to use spin-polarization we use [[incar:ISPIN][INCAR]]=2, and we set initial guesses for magnetic moments on the atoms with the magmom keyword. In a triplet state there are two electrons with spins of the same sign.
+To tell VASP to use spin-polarization we use [[incar:ISPIN][ISPIN]]=2, and we set initial guesses for magnetic moments on the atoms with the magmom keyword. In a triplet state there are two electrons with spins of the same sign.
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 from ase import Atom, Atoms
 
-atoms = Atoms([Atom('O',[5,5,5],magmom=2)],
-              cell=(10,10,10))
+atoms = Atoms([Atom('O', [5, 5, 5], magmom=2)],
+              cell=(10, 10, 10))
 
 with jasp('molecules/O-sp-triplet',
           xc='PBE',
@@ -2779,8 +2745,8 @@ with jasp('molecules/O-sp-triplet',
 print 'Magnetic moment on O = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
 
 # now relaxed O2 dimer
-atoms = Atoms([Atom('O',[5,5,5],magmom=1),
-               Atom('O',[6.22, 5,5],magmom=1)],
+atoms = Atoms([Atom('O', [5,    5, 5], magmom=1),
+               Atom('O', [6.22, 5, 5], magmom=1)],
               cell=(10,10,10))
 
 with jasp('molecules/O2-sp-triplet',
@@ -2859,7 +2825,7 @@ encuts = [250, 300, 350, 400, 450, 500, 550]
 
 D = []
 for encut in encuts:
-    atoms = Atoms([Atom('O',[5,5,5],magmom=2)],
+    atoms = Atoms([Atom('O', [5, 5, 5], magmom=2)],
                    cell=(10,10,10))
 
     with jasp('molecules/O-sp-triplet-{0}'.format(encut),
@@ -2874,8 +2840,8 @@ for encut in encuts:
             E_O = None
 
     # now relaxed O2 dimer
-    atoms = Atoms([Atom('O',[5,5,5],magmom=1),
-                    Atom('O',[6.22, 5,5],magmom=1)],
+    atoms = Atoms([Atom('O', [5,    5, 5], magmom=1),
+                   Atom('O', [6.22, 5, 5], magmom=1)],
               cell=(10,10,10))
 
     with jasp('molecules/O2-sp-triplet-{0}'.format(encut),
@@ -5000,6 +4966,8 @@ print 'The cohesive energy is {0:1.3f} eV'.format(cohesive_energy)
 
 Again, the value in Kittel \cite{kittel} is 5.75 eV which is very close to this value. Finally, it is also possible there is a lower energy non-spherical atom energy; we did not check that at all (see [[*Estimating%20triplet%20oxygen%20dissociation%20energy%20with%20low%20symmetry][Estimating triplet oxygen dissociation energy with low symmetry]]).
 
+** TODO Elastic properties
+See this reference \cite{PhysRevB.65.104104}.
 ** Effect of pressure on phase stability
 So far we have only considered relative stability at a pressure of 0 Pa. We now consider the relative stability of two phases under pressure. We will consider TiO$_2$ in the rutile and anatase phases.
 
@@ -5993,13 +5961,14 @@ with jasp('bulk/pd-ados',
     # plot the occupied states in shaded gray
     plt.fill_between(x=energies[occupied],
                  y1=dos[occupied],
-                 y2=zeros(dos[occupied].shape),
+                 y2=np.zeros(dos[occupied].shape),
                  color='gray')
 
     plt.xlabel('$E - E_f$ (eV)')
     plt.ylabel('DOS (arbitrary units)')
 
-savefig('images/pd-ados.png')
+plt.savefig('images/pd-ados.png')
+plt.show()
 #+END_SRC
 
 #+RESULTS:
@@ -6089,7 +6058,6 @@ plt.savefig('images/ados-rwigs-moments.png')
 #+caption: Effect of the RWIGS on the \(d\)-band center and width.
 #+attr_latex: placement=[H]
 [[./images/ados-rwigs-moments.png]]
-
 
 ** Band structures
 [[index:band structure]]
@@ -7432,6 +7400,9 @@ print 'Hads (bridge) = {0:1.3f} eV/O'.format(Hads_bridge)
 #+END_SRC
 
 #+RESULTS:
+: Initial O position: [  1.386   0.     15.726]
+: Final O position  : [  1.386   0.     15.977]
+: Hads (bridge) = -0.488 eV/O
 
 You can see that only the \(z\)-position of the O atom changed. Also, the adsorption energy of O on the bridge site is *much* less favorable than on the fcc or hcp sites.
 
@@ -7678,7 +7649,8 @@ Note that we have one imaginary mode. This corresponds to the motion of the O at
 See this review \cite{ANIE.ANIE200602223} of diffusion on transition metal surfaces.
 
 *** Standard nudged elastic band method
-Here we illustrate a standard NEB method. You need an initial and final state to start with.
+Here we illustrate a standard NEB method. You need an initial and final state to start with. We will use the results from previous calculations of oxygen atoms in an fcc and hcp site. then we will construct a band of images connecting these two sites. Finally, we let VASP optimize the band and analyze the results to get the barrier.
+
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase.neb import NEB
@@ -7694,7 +7666,8 @@ with jasp('surfaces/Pt-slab-O-hcp') as calc:
 
 # here is our estimated transition state. we use vector geometry to
 # define the bridge position, and add 1.451 Ang to z based on our
-# previous bridge calculation.
+# previous bridge calculation. The bridge position is half way between
+# atoms 9 and 10.
 ts = initial_atoms.copy()
 ts.positions[-1] = 0.5*(ts.positions[9] + ts.positions[10]) + [0,0,1.451]
 
@@ -7738,13 +7711,15 @@ with jasp('surfaces/Pt-O-fcc-hcp-neb',
 
 #+RESULTS:
 : Optimization terminated successfully.
-:          Current function value: -0.575389
+:          Current function value: -0.575224
 :          Iterations: 12
 :          Function evaluations: 24
 
-#+caption: Energy pathway for O diffusion from an fcc to hcp site with a spline fit to determine the barrier
+#+caption: Energy pathway for O diffusion from an fcc to hcp site with a spline fit to determine the barrier.
 #+ATTR_LaTeX: placement=[H]
 [[./images/pt-o-fcc-hcp-neb.png]]
+
+We should compare this barrier to what we could estimate from the simple adsorption energies in the fcc and bridge sites. The adsorption energy in the fcc site was -1.04 eV, and in the bridge site was -0.49 eV. The difference between these two is 0.55 eV, which is very close to the calculated barrier from the NEB calculation. In cases where you can determine what the transition state is, e.g. by symmetry, or other means, it is much faster to directly compute the energy of the initial and transition states for barrier determinations. This is not usually possible though.
 
 *** Climbing image NEB
 One issue with the standard NEB method is there is no image that is exactly at the transition state. That means there is some uncertainty of the true energy of the transition state, and there is no way to verify the transition state by vibrational analysis. The climbing image NEB method solves that problem by making one image climb to the top. You set [[incar:LCLIMB][LCLIMB]]==True= in =jasp= to turn on the climbing image method. Here we use the previous calculation as a starting point and turn on the climbing image method.
@@ -7755,13 +7730,14 @@ from jasp import *
 with jasp('surfaces/Pt-O-fcc-hcp-neb') as calc:
     calc.clone('surfaces/Pt-O-fcc-hcp-cineb')
 
-with jasp('surfaces/Pt-O-fcc-hcp-cineb',debug=logging.DEBUG) as calc:
-    calc.set(ichain=0,lclimb=True)
+with jasp('surfaces/Pt-O-fcc-hcp-cineb') as calc:
+    calc.set(ichain=0, lclimb=True)
 
     images, energies = calc.get_neb(npi=4)
     calc.plot_neb(show=False)
 import matplotlib.pyplot as plt
 plt.savefig('images/pt-o-cineb.png')
+plt.show()
 #+END_SRC
 
 #+RESULTS:
@@ -7773,9 +7749,11 @@ plt.savefig('images/pt-o-cineb.png')
 #+caption: Climbing image NEB
 [[./images/pt-o-cineb.png]]
 
-This did not do exactly what I expected. I thought there would be an image that had climbed to the top. Maybe this is an artifact of the spline fitting. More band points would probably clarify that.
+This did not do exactly what I expected. I thought there would be an image that had climbed to the top. Maybe this is an artifact of the spline fitting, or the top is within the tolerance of the top two points. More band points would probably clarify that.
 
 *** TODO use vibrations to confirm transition state
+A transition state should have exactly one imaginary degree of freedom.
+
 ** TODO Diffusion rates with transition state theory
 
 ** TODO Simulating STM images
@@ -9024,7 +9002,7 @@ There are other good examples at http://docs.scipy.org/doc/scipy/reference/tutor
 
 *** Interpolation in 3D
 
-You might ask, why would I need to interpolate in 3D? Suppose you want to plot the charge density along a line through a unit cell that does not correspond to grid points? What are you to do? Interpolate. In contrast to an abundance of methods for 1D and 2D interpolation, I could not find any standard library methods for 3D interpolation. The Scipy cookbook on interpolation suggests that it should be doable with ndimage, but I could not figure out how to make those examples work.
+You might ask, why would I need to interpolate in 3D? Suppose you want to plot the charge density along a line through a unit cell that does not correspond to grid points. What are you to do? Interpolate. In contrast to an abundance of methods for 1D and 2D interpolation, I could not find any standard library methods for 3D interpolation. The Scipy cookbook on interpolation suggests that it should be doable with ndimage, but I could not figure out how to make those examples work.
 
 The principle we will use to develop an interpolation function in 3D is called trilinear interpolation, where we use multiple linear 1D interpolations to compute the value of a point inside a cube. As developed here, this solution only applies to rectangular grids. Later we will generalize the approach. We state the problem as follows:
 
@@ -9245,7 +9223,7 @@ show()
 
 *** Reading and writing data
 
-**** Builtin io modules
+**** Built-in io modules
 
 =pylab= has two convenient and powerful functions for saving and
 reading data, func:pylab.save and func:pylab.load.
@@ -9309,13 +9287,10 @@ f.close()
 #+END_SRC
 
 Some notes:
-1) opening a file in 'w' mode clobbers any existing file, so do that
+1. opening a file in 'w' mode clobbers any existing file, so do that
 with care!
-
-2) when writing to a file you have to add \\n to each line. This is the
-carriage return.
-
-3) Manually writing and reading files is pretty tedious. Whenever
+2. when writing to a file you have to add a carriage return to each line.
+3. Manually writing and reading files is pretty tedious. Whenever
 possible you should use the builtin methods of numpy or pylab.
 
 *** Integration
@@ -9531,7 +9506,7 @@ The derivative is still noisy, but the four-point derivative is a little better 
 
 **** FFT derivatives
 
-It is possible to perform derivatives using FFT:
+It is possible to perform derivatives using fast fourier transforms (FFT):
 #+BEGIN_SRC python
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9639,7 +9614,7 @@ data storage functionality. Check them out some day too.
 
 *** Writing and reading Excel files
 **** Writing Excel files
-It is not too uncommon that it is convenient to do some analysis in Excel. We can create Excel files in python with mod:xlwt. Google this module if you need to do this alot.
+It is sometimes convenient to do some analysis in Excel. We can create Excel files in python with mod:xlwt. Google this module if you need to do this alot.
 #+BEGIN_SRC python
 import numpy as np
 import xlwt
@@ -10041,7 +10016,7 @@ This is probably the most common equation of state used most often,
 and is a modification of the original Murnaghan EOS described below. A
 current description of the equation is in reference
 \cite{PhysRevB.70.224107}. You can also find the equations for the Vinet and
-Pourier-Tarantola equations of state in that reference.
+Poirier-Tarantola equations of state in that reference.
 
 Birch-Murnaghan EOS:
 
