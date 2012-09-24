@@ -16,7 +16,71 @@
 #+LINK_HOME:
 #+XSLT:
 
-#+include: dft-header.org
+#+latex_header: \usepackage[super,sort&compress]{natbib}
+#+latex_header: \usepackage{natmove}
+#+latex_header: \usepackage{underscore}
+#+latex_header: \usepackage{makeidx}
+#+latex_header: \usepackage[section]{placeins}
+#+latex_header: \usepackage{xcolor}
+#+latex_header: \usepackage{adjustbox}
+#+latex_header: \usepackage{url}
+#+latex_header: \usepackage{anysize}
+#+latex_header: \marginsize{1in}{1in}{1in}{1in}
+#+latex_header: \makeindex
+
+# export code and results. need to figure out how to handle org environments
+#+PROPERTY: exports both
+
+# http://orgmode.org/worg/org-contrib/org-special-blocks.html
+# http://en.wikibooks.org/wiki/LaTeX/Customizing_LaTeX#New_Environments
+
+# http://en.wikibooks.org/wiki/LaTeX/Colors
+
+#+begin_latex
+% environment to put exercises in a gray, numbered box
+\newcounter{ExerciseCount}
+\setcounter{ExerciseCount}{0}
+\definecolor{MyGray}{rgb}{0.96,0.97,0.98}
+
+\newenvironment{exercise}[0]{%
+\stepcounter{ExerciseCount} \begin{adjustbox}{minipage=[b]{380px},margin=1ex,bgcolor=MyGray,env=center}%
+        \textbf{Exercise \thesection.\theExerciseCount}\\
+}{%
+    \end{adjustbox}%
+}
+#+end_latex
+
+#+begin_latex
+% environment to put notes a light blue box 173-216-230
+% see http://www.tayloredmktg.com/rgb/ for colors
+\definecolor{LightBlue}{rgb}{0.68,0.85,0.90}
+
+\newenvironment{note}[0]{%
+\begin{adjustbox}{minipage=[b]{380px},margin=1ex,bgcolor=LightBlue,env=center}%
+        \textbf{Note: }\\
+}{%
+    \end{adjustbox}%
+}
+#+end_latex
+
+#+begin_latex
+% environment to put warnings a pink box 255-192-203
+% see http://www.tayloredmktg.com/rgb/ for colors
+\definecolor{Pink}{rgb}{1.0,0.75,0.80}
+
+\newenvironment{warning}[0]{%
+\begin{adjustbox}{minipage=[b]{380px},margin=1ex,bgcolor=Pink,env=center}%
+        \textbf{Warning: }\\
+}{%
+    \end{adjustbox}%
+}
+#+end_latex
+
+[[figure:./images/cover-page.svg]]
+
+#+latex: \listoffigures
+
+#+latex: \listoftables
 
 * Tasks :noexport:
 ** replace all % formating with .format
@@ -7524,7 +7588,7 @@ Some final notes about the equations above:
 
 ** Adsorbate vibrations
 
-Note: you can limit the number of modes calculated with constraints (=FixAtoms= or =FixScaled=) and you use [[incar:IBRION][IBRION]]=5. The other settings (6, 7, 8) do not respect the selective dynamics constraints.
+Adsorbates also have vibrational modes. Unlike a free molecule, the translational and rotational modes of an adsorbate may actually have real frequencies. Sometimes they are called frustrated translations or rotations. For metal surfaces with adsorbates, it is common to only compute vibrational modes of the adsorbate on a frozen metal slab. The rationale is that the metal atoms are so much heavier than the adsorbate that there will be little coupling between the surface and adsorbates. You can limit the number of modes calculated with constraints (func:ase.constraints.FixAtoms or func:ase.constraints.FixScaled) if you use [[incar:IBRION][IBRION]]=5. The other IBRION settings (6, 7, 8) do not respect the selective dynamics constraints. Below we consider the vibrational modes of an oxygen atom in an fcc site on Pt(111).
 
 #+BEGIN_SRC python :results output  :exports both
 from jasp import *
@@ -7558,7 +7622,7 @@ print 'vibrational freq   = {0} cm^(-1)'.format(f/(h*c))
 : vibrational freq   = 1.48964216204e+13 1/s
 : vibrational freq   = 496.547387346 cm^(-1)
 
-There are three modes for the free oxygen atom. One of them is a mode normal to the surface (the one with highest frequency. The other two are called frustrated translations. Note that we did not include the surface Pt atoms in the calculation, and this will have an effect on the result because the O atom could be coupled to the surface modes. It is typical to neglect this coupling because of the large difference in mass between O and Pt.  Next we look at the difference in results when we calculate all the modes. Let us compare to IBRION=6.
+There are three modes for the free oxygen atom. One of them is a mode normal to the surface (the one with highest frequency. The other two are called frustrated translations. Note that we did not include the surface Pt atoms in the calculation, and this will have an effect on the result because the O atom could be coupled to the surface modes. It is typical to neglect this coupling because of the large difference in mass between O and Pt.  Next we look at the difference in results when we calculate all the modes.
 
 #+BEGIN_SRC python :results output  :exports both
 from jasp import *
@@ -7599,19 +7663,16 @@ Note that now there are 39 modes, which is 3*N where N=13 atoms in the unit cell
 
 Calculating these results took 39*2 finite differences. It took about a day to get these results on a single CPU. It pays to use constraints to minimize the number of these calculations.
 
-*** Vibrations of the bridge site
+*** TODO Vibrations of the bridge site
+Here we consider the vibrations of an O atom in a bridge site, which we saw earlier is a metastable saddle point.
 
 #+BEGIN_SRC python :results output  :exports both
 from jasp import *
 from ase.constraints import FixAtoms
 
+# clone calculation so we do not overwrite previous results
 with jasp('surfaces/Pt-slab-O-bridge-xy-constrained') as calc:
     calc.clone('surfaces/Pt-slab-O-bridge-vib')
-    atoms = calc.get_atoms()
-
-del atoms.constraints
-constraint = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
-atoms.set_constraint([constraint])
 
 with jasp('surfaces/Pt-slab-O-bridge-vib') as calc:
     calc.set(ibrion=5,# finite differences with selective dynamics
@@ -7619,9 +7680,11 @@ with jasp('surfaces/Pt-slab-O-bridge-vib') as calc:
              potim=0.015,# default as well
              ediff=1e-8,
              nsw=1)
-    atoms.set_calculator(calc) # reset atoms
-    atoms.get_potential_energy()
-    #print calc.get_vibrational_frequencies()
+    atoms = calc.get_atoms()
+    del atoms.constraints
+    constraint = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
+    atoms.set_constraint([constraint])
+
     f,v = calc.get_vibrational_modes(2)
     print calc.get_vibrational_modes()[0]
 
@@ -7636,11 +7699,6 @@ print 'vibrational freq   = {0} cm^(-1)'.format(f/(h*c))
 #+END_SRC
 
 #+RESULTS:
-: [0.065486064, 0.045079206000000004, (0.019955987+0j)]
-: vibrational energy = (0.019955987+0j) eV
-: vibrational energy = (19.955987+0j) meV
-: vibrational freq   = (4.82533639921e+12+0j) 1/s
-: vibrational freq   = (160.84454664+0j) cm^(-1)
 
 Note that we have one imaginary mode. This corresponds to the motion of the O atom falling into one of the neighboring 3-fold sites. It also indicates this position is not a stable minimum, but rather a saddle point. This position is a transition state for hopping between the fcc and hcp sites.
 
@@ -7736,7 +7794,7 @@ with jasp('surfaces/Pt-O-fcc-hcp-cineb') as calc:
     images, energies = calc.get_neb(npi=4)
     calc.plot_neb(show=False)
 import matplotlib.pyplot as plt
-plt.savefig('images/pt-o-cineb.png')
+plt.savefig('images/pt-o-cineb.svg')
 plt.show()
 #+END_SRC
 
@@ -7746,13 +7804,14 @@ plt.show()
 :          Iterations: 12
 :          Function evaluations: 24
 
-#+caption: Climbing image NEB
-[[./images/pt-o-cineb.png]]
+[[figure:./images/pt-o-cineb.svg][Climbing image NEB.]]
 
 This did not do exactly what I expected. I thought there would be an image that had climbed to the top. Maybe this is an artifact of the spline fitting, or the top is within the tolerance of the top two points. More band points would probably clarify that.
 
-*** TODO use vibrations to confirm transition state
-A transition state should have exactly one imaginary degree of freedom.
+*** Using vibrations to confirm a transition state
+A transition state should have exactly one imaginary degree of freedom which corresponds to the mode that takes reactants to products. See [[*Vibrations%20of%20the%20bridge%20site][Vibrations of the bridge site]] for an example.
+
+
 
 ** TODO Diffusion rates with transition state theory
 
