@@ -109,9 +109,9 @@ This book makes heavy use of many computational tools including:
 - [[http://github.org][git]]
   This book is available at https://github.com/jkitchin/dft-book
 
-- [[https://bitbucket.org/jkitchin/jasp][jasp]]
+- [[https://github.com/jkitchin/jasp][jasp]]
 index:jasp
-=jasp= is a sophisticated wrapper to the mod:ase.calculators.vasp python interface to the VASP calculator. It was written by me to facilitate writing this book and to develop the best possible way to run DFT calculations. The best way to learn to use jasp is from this book. =jasp= is currently available at https://bitbucket.org/jkitchin/jasp. It probably requires the latest svn version of ase to work since I have been adding new functionality to mod:ase.calculators.vasp as mod:jasp is developed.
+=jasp= is a sophisticated wrapper to the mod:ase.calculators.vasp python interface to the VASP calculator. It was written by me to facilitate writing this book and to develop the best possible way to run DFT calculations. The best way to learn to use jasp is from this book. It probably requires the latest svn version of ase to work since I have been adding new functionality to mod:ase.calculators.vasp as mod:jasp is developed. =jasp= is available at https://github.com/jkitchin/jasp.
 
 The goal in writing mod:jasp was to create a computational environment where you write one script to create, run and analyze your calculations. The code is smart, and submits jobs to a queue system when required, does not submit jobs more than once, allows many jobs to run in parallel, and gives you answers when available. mod:jasp takes care of changing into VASP calculation directories, and then changing back to where you started from. mod:jasp has an interface to sqlite, and to version control (git) software. mod:jasp has some features that
 mod:ase.calculators.vasp does not have yet. They may get incorporated into ase one day.
