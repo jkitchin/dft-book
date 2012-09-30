@@ -9072,7 +9072,7 @@ from ase.visualize import view; view(slab)
 #+ATTR_LATEX: width=383bp,placement=[H]
 [[./images/tagged-bcc111.png]]
 *** Using units in ase
-mod:ase uses a base set of atomic units. Other units are defined in terms of those units, and you can easily convert to alternative units by dividing your quantity in atomic units by the units you want.
+mod:ase uses a base set of atomic units.These are eV for energy, $\AA$ for distance, seconds for time, and amu for mass. Other units are defined in terms of those units, and you can easily convert to alternative units by dividing your quantity in atomic units by the units you want.
 
 Not too many units are defined:
 ['A', 'AUT', 'Ang', 'Angstrom', 'Bohr', 'C', 'Debye', 'GPa', 'Ha', 'Hartree', 'J', 'Pascal', 'Ry', 'Rydberg', 'alpha', 'cm', 'eV', 'erg', 'fs', 'kB', 'kJ', 'kcal', 'kg', 'm', 'meV', 'mol', 'nm', 's', 'second']
@@ -9170,9 +9170,9 @@ alpha = 1.0 - 0.95
 
 pred_interval = t.ppf(1-alpha/2., dof) * std_x * np.sqrt(1.+1./n)
 
-s = ['We are 95%% confident the next measurement',
-       ' will be between %1.3f and %1.3f']
-print ''.join(s) % (avg_x - pred_interval, avg_x + pred_interval)
+s = ['We are 95% confident the next measurement',
+       ' will be between {0:1.3f} and {1:1.3f}']
+print ''.join(s).format(avg_x - pred_interval, avg_x + pred_interval)
 #+END_SRC
 
 #+RESULTS:
@@ -9470,7 +9470,8 @@ Solution: Find the cube that contains the point, and is defined by points
 
 We use 1D interpolation formulas to compute the value of the scalar field at points I1 by interpolating between P1 and P2, and the value of the scalar field at I2 by interpolating between P3 and P4. In these points the only variable changing is x, so it is a simple 1D interpolation. We can then compute the value of the scalar field at I5 by interpolating between I1 and I2. We repeat the process on the top of the cube, to obtain points I3, I4 and I5. Finally, we compute the value of the scalar field at point P by interpolating between points I5 and I6. Note that the point I5 has coordinates (a,b,z1) and (a,b,z2), so the final interpolation is again a 1D interpolation along z evaluated at z=c to get the final value of the scalar field at P=(a,b,c).
 #+BEGIN_SRC python :exports both
-from jasp import *
+from jasp import jasp
+import numpy as np
 
 with jasp('molecules/co-centered') as calc:
     atoms = calc.get_atoms()
@@ -9546,18 +9547,21 @@ icd = [interp3d(x,y,z,cd,p[0],p[1],p[2]) for p in points]
 import matplotlib.pyplot as plt
 
 plt.plot(R, icd)
-cR = np.linalg.norm(pos[0]-P1)
-oR = np.linalg.norm(pos[1]-P1)
-plt.plot([cR, cR],[0, 2],'r-') #markers for where the nuclei are
-plt.plot([oR, oR],[0, 8],'r-')
+cR = np.linalg.norm(pos[0] - P1)
+oR = np.linalg.norm(pos[1] - P1)
+plt.plot([cR, cR], [0, 2], 'r-') #markers for where the nuclei are
+plt.plot([oR, oR], [0, 8], 'r-')
 plt.xlabel('|R| ($\AA$)')
 plt.ylabel('Charge density (e/$\AA^3$)')
 plt.savefig('images/CO-charge-density.png')
+plt.show()
 #+END_SRC
 
 #+RESULTS:
+: None
 
-#+caption: An example of interpolated charge density of A CO molecule along the axis of molecule.
+#+caption: An example of interpolated charge density of a CO molecule along the axis of molecule.
+#+attr_latex: placement=[H]
 [[./images/CO-charge-density.png]]
 
 To generalize this to non-cubic cells, we need to do interpolation along arbitrary vectors. The overall strategy is the same:
