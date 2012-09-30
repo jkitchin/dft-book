@@ -5163,6 +5163,45 @@ Again, the value in Kittel \cite{kittel} is 5.75 eV which is very close to this 
 
 ** TODO Elastic properties
 See this reference \cite{PhysRevB.65.104104}.
+** Bulk thermodynamics
+We can predict temperature dependent thermodynamic properties of bulk materials without too much effort. As with the thermochemical properties of ideal gases, we must use some simple models that we parameterize by DFT. Here we follow the example in Reference \cite{Shang20101040} for computing the thermal coefficient of expansion, heat capacity, enthalpy and entropy for Ni as a function of temperature.
+
+We start by computing the equation of state for fcc Ni.
+#+BEGIN_SRC python
+from jasp import *
+from ase import Atom, Atoms
+
+# fcc
+LC = [3.5, 3.55, 3.6, 3.65, 3.7, 3.75]
+volumes, energies = [], []
+for a in LC:
+    atoms = Atoms([Atom('Ni', (0, 0, 0), magmom=2.5)],
+              cell=0.5 * a * np.array([[1.0, 1.0, 0.0],
+                                       [0.0, 1.0, 1.0],
+                                       [1.0, 0.0, 1.0]]))
+
+    with jasp('bulk/Ni-{0}'.format(a),
+              xc='PBE',
+              encut=350,
+              kpts=(12,12,12),
+              ispin=2,
+              atoms=atoms) as calc:
+        try:
+            e = atoms.get_potential_energy()
+            energies.append(e)
+            volumes.append(atoms.get_volume())
+        except:
+            pass
+
+if len(energies) != len(LC):
+    import sys; sys.exit()
+
+import matplotlib.pyplot as plt
+plt.plot(LC, fcc_energies)
+plt.xlabel('Lattice constant ($\AA$)')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/Ni-fcc.png')
+#+END_SRC
 ** Effect of pressure on phase stability
 So far we have only considered relative stability at a pressure of 0 Pa. We now consider the relative stability of two phases under pressure. We will consider TiO$_2$ in the rutile and anatase phases.
 
@@ -7942,9 +7981,10 @@ This did not do exactly what I expected. I thought there would be an image that 
 *** Using vibrations to confirm a transition state
 A transition state should have exactly one imaginary degree of freedom which corresponds to the mode that takes reactants to products. See [[*Vibrations%20of%20the%20bridge%20site][Vibrations of the bridge site]] for an example.
 
+** TODO Diffusion rates with transition state theory
 
 ** TODO Effects of electric fields on adsorbates
-Electric fields can polarize adsorbates, i.e. shift their electron density around, which changes their stability . We can model this to some extent in VASP. We have to set the incar:EFIELD parameter to specify the field strength (in V/\AA), and incar:LDIPOL to =True=, and finally specify which lattice vector the field should be applied to with incar:IDIPOL. Usually, incar:IDIPOL will be set to 3 for surfaces.
+Electric fields can polarize adsorbates, i.e. shift their electron density around, which changes their stability . We can model this to some extent in VASP. We have to set the incar:EFIELD parameter to specify the field strength (in V/\AA), and incar:LDIPOL to =True=, and finally specify which lattice vector the field should be applied to with incar:IDIPOL. Usually, incar:IDIPOL will be set to 3 for surfaces so it points in the direction of the third lattice vector, which is conventionally in the z-direction and normal to the surface.
 
 We will illustrate the effect using an example from \cite{doi-10.1021/jp810518x} for the effect of electric field on the adsorption energy of a CO molecule on Pt(111) at 0.25 ML. For simplicity, we will use a frozen slab, with the CO molecule in the geometry reported in that reference.
 
@@ -7961,21 +8001,18 @@ for field in [-0.5, 0.0, 0.5]:
               xc='PBE',
               encut=350,
               kpts=(6,6,1),
-              efield=field,
-              ldipol=True,
-              idipol=3,
+              efield=field,  # set the field
+              ldipol=True,   # turn dipole correction on
+              idipol=3,      # set field in z-direction
               atoms=atoms) as calc:
         try:
-            print atoms.get_potential_energy()
+            print '{0}: {1:1.3f}'.format(field, atoms.get_potential_energy())
         except (VaspSubmitted, VaspQueued):
             pass
-
-            #from ase.visualize import view; view(atoms)
 #+END_SRC
 
 #+RESULTS:
-
-** TODO Diffusion rates with transition state theory
+: 0.0: -108.077
 
 ** TODO Simulating STM images
 http://cst-www.nrl.navy.mil/users/sullivan/stm_backup/stm2.html
@@ -8664,7 +8701,7 @@ Van der Waal forces can play a considerable role in binding of aromatic molecule
 
 *** PBE
 **** gas-phase benzene
-#+BEGIN_SRC python
+#+BEGIN_SRC python :results output
 from jasp import *
 from ase.data.molecules import molecule
 
@@ -8682,9 +8719,10 @@ with jasp('molecules/benzene-pbe',
 #+END_SRC
 
 #+RESULTS:
+: -76.011625
 
 **** clean slab
-#+BEGIN_SRC python
+#+BEGIN_SRC python :results output
 # the clean gold slab
 from jasp import *
 from ase.lattice.surface import fcc111, add_adsorbate
@@ -8709,6 +8747,7 @@ with jasp('surfaces/Au-pbe',
 #+END_SRC
 
 #+RESULTS:
+: -82.419513
 
 **** benzene on Au(111)
 #+BEGIN_SRC python
@@ -9114,6 +9153,7 @@ The expression \(x>2\) returns an array of booleans (True where the element of $
 
 *** Statistics
 **** Confidence intervals
+mod:scipy has a statistical package available for getting statistical distributions. This is useful for computing confidence intervals using the student-t tables. Here is an example of computing a 95% confidence interval on an average.
 #+BEGIN_SRC python :results output :exports both
 import numpy as np
 from scipy.stats.distributions import  t
@@ -9366,6 +9406,7 @@ plt.savefig('images/nonlin-fit-ci.png')
 : c1: 2.10995112628 [1.76711622067  2.45278603188]
 
 #+caption: Nonlinear fit to data.
+#+attr_latex: placement=[H]
 [[./images/nonlin-fit-ci.png]]
 
 *** Interpolation with splines
@@ -9402,6 +9443,7 @@ plt.savefig('images/splinefit.png')
 #+END_SRC
 
 #+caption: Illustration of a spline fit to data and finding the maximum point.
+#+attr_latex: placement=[H]
 [[./images/splinefit.png]]
 
 There are other good examples at http://docs.scipy.org/doc/scipy/reference/tutorial/interpolate.html
@@ -9958,7 +10000,6 @@ plt.savefig('images/fft-der.png')
 This example does not show any major advantage in the quality of the derivative, and it is almost certain I would never remember how to do this off the top of my head.
 
 *** NetCDF files
--------------
 
 [[http://www.unidata.ucar.edu/software/netcdf][NetCDF]] is a binary,
 but cross-platform structured data format. 	The input file and
@@ -9976,10 +10017,8 @@ mod:pycdf (http://pysclint.sourceforge.net/pycdf/) this is a very
 low level module modelled after the C-api. I am not sure it is completely
 bug-free (I have problems with character variables)
 
-*** python modules
-
-
-the comma separated values (mod:csv) module in python allows you to
+*** Python modules
+The comma separated values (mod:csv) module in python allows you to
 easily create datafiles:
 
 csv writing:
@@ -10020,7 +10059,7 @@ data storage functionality. Check them out some day too.
 
 *** Writing and reading Excel files
 **** Writing Excel files
-It is sometimes convenient to do some analysis in Excel. We can create Excel files in python with mod:xlwt. Google this module if you need to do this alot.
+It is sometimes convenient to do some analysis in Excel. We can create Excel files in python with mod:xlwt. Google this module if you need to do this a lot.
 #+BEGIN_SRC python
 import numpy as np
 import xlwt
@@ -10301,9 +10340,9 @@ print 'V = {0} ang^3 from get_volume'.format(atoms.get_volume())
 
 *** d-spacing
 If you like to set up the vacuum in your slab calculations in terms of
-equivalent layers of atoms, you need to calculate the d-spacing for
-the hkl plane you are using. The script below shows several ways to
-accomplish that.
+equivalent layers of atoms, you need to calculate the d-spacing (which
+is the spacing between parallel planes of atoms) for the hkl plane you
+are using. The script below shows several ways to accomplish that.
 #+BEGIN_SRC python :results output
 import numpy as np
 from ase.lattice.cubic import FaceCenteredCubic
@@ -10415,7 +10454,7 @@ The module mod:ase.util.eos uses a simple polynomial equation of
 state to find bulk unit cell equilibrium volumes and bulk
 modulus. There are several other choices you could use that are more
 standard in the literature. Here we summarize them and provide
-references to the relevant literature.
+references to the relevant literature. In each of these cases we show equations for the energy as a function of volume, although sometimes the volume is transformed or normalized.
 
 *** Birch-Murnaghan
 This is probably the most common equation of state used most often,
@@ -10586,6 +10625,7 @@ print 'fitted parameters: ', murnpars
 
 
 #+caption: Fitted equation of state for bulk data. The initial fitted parabola is shown to illustrate how it is useful for making initial guesses of the minimum and bulk modulus.
+#+attr_latex: placement=[H]
 [[./images/a-eos.png]]
 
 You can see the Murnaghan equation of state fits the data better than
