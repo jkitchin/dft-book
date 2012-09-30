@@ -2642,7 +2642,26 @@ mode  Relative intensity
 
 ** Thermochemical properties of molecules
 index:thermochemistry
-=ase= provides a [[https://wiki.fysik.dtu.dk/ase/ase/thermochemistry.html#module-thermochemistry][thermochemistry]] module.
+mod:ase.thermochemistry can be used to estimate thermodynamic properties of gases in the ideal gas limit. The module needs as input the geometry, the total energy, the vibrational energies, and some information about the molecular symmetry. We first consider an N_{2} molecule.
+
+The symmetry numbers are determined by the molecular point group \cite{springerlink-10.1007/s00214-007-0328-0}. Here is a table of the most common ones.
+
+#+caption: Symmetry numbers for common point groups
+| point group | \sigma | examples      |
+|-------------+--------+---------------|
+| C_{1}       |      1 |               |
+| C_{s}       |      1 |               |
+| C_{2}       |      2 |               |
+| C_{2v}      |      2 | H_{2}O        |
+| C_{3v}      |      3 | NH_{3}        |
+| C_{\ifty v} |      1 | CO            |
+| D_{2h}      |      4 |               |
+| D_{3h}      |      6 |               |
+| D_{5h}      |     10 |               |
+| D_{\ifty h} |      2 | CO_{2}, H_{2} |
+| D_{3d}      |      6 |               |
+| T_{d}       |     12 | CH_{4}        |
+| O_{h}       |     24 |               |
 
 #+BEGIN_SRC python :results output :exports both
 from ase.structure import molecule
@@ -2690,7 +2709,6 @@ thermo = IdealGasThermo(vib_energies=vib_energies[0:0],
 
 # temperature in K, pressure in Pa, G in eV
 G = thermo.get_free_energy(temperature=298.15, pressure=101325.)
-
 #+END_SRC
 
 #+RESULTS:
@@ -2735,6 +2753,31 @@ Free energy components at T = 298.15 K and P = 101325.0 Pa:
     G        -17.087 eV
 =======================
 #+end_example
+
+Let us compare this to what is in the [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C7727379&Units=SI&Mask=1#Thermo-Gas][Nist webbook]] via the Shomate equations.
+#+BEGIN_SRC python :results output
+import numpy as np
+A = 28.98641
+B = 1.853978
+C = -9.647459
+D = 16.63537
+E = 0.000117
+F = -8.671914
+G = 226.4168
+H = 0.0
+
+T = 298.15
+t = T/1000.
+
+S = A*np.log(t) + B*t + C*t**2/2 + D*t**3/3 - E/(2*t**2) + G
+print '-T*S = {0:1.3f} eV'.format(-T*S/1000/96.4853)
+#+END_SRC
+
+#+RESULTS:
+: 0.00028578754105
+: -T*S = -0.592 eV
+
+This is reasonable agreement for the entropy.
 
 ** Molecular reaction energies
 *** O_{2} dissociation
@@ -3931,8 +3974,8 @@ H2O_t = IdealGasThermo(vib_energies=H2O_vib_energies[0:3],
                       geometry='nonlinear', symmetrynumber=2,
                       spin=0)
 
-# now we can compute G_rxn for a range of temperatures from 200 to 1000 K
-Trange = np.linspace(200,1000,20) #K
+# now we can compute G_rxn for a range of temperatures from 298 to 1000 K
+Trange = np.linspace(298,1000,20) #K
 P = 101325. # Pa
 Grxn = np.array([(CO2_t.get_free_energy(temperature=T, pressure=P)
                   + H2_t.get_free_energy(temperature=T, pressure=P)
@@ -3969,16 +4012,12 @@ plt.show()
 #+caption: Thermodynamic energies of the water gas shift reaction as a function of temperature.
 #+ATTR_LaTeX: placement=[H]
 [[./images/wgs-dG-T.png]]
-You can see a few things here. One is that at near 298K, the Gibbs free energy is about -40 kJ/mol. This is too negative for a standard state free energy, which we estimated to be about -29 kJ/mol from the [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-nist-webbook/#7][NIST webbook. ]]There could be several reasons for this disagreement, but the most likely one is errors in the exchange-correlation functional. Second, it appears the reaction enthalpy gets slightly more exothermic with temperature. This does not seem correct.
+You can see a few things here. One is that at near 298K, the Gibbs free energy is about -75 kJ/mol. This is too negative compared to the experimental standard free energy, which we estimated to be about -29 kJ/mol from the [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-nist-webbook/#7][NIST webbook. ]]There could be several reasons for this disagreement, but the most likely one is errors in the exchange-correlation functional. The error in energy has a significant effect on the calculated equilibrium constant, significantly overestimating it.
 
-At 1000K we estimate the Gibbs free energy to be about -4 kJ/mol, compared to about -3 kJ/mol estimated from the NIST webbook.
 
 #+caption: Temperature dependence of the equilibrium constant.
 [[./images/wgs-Keq.png]]
 
-Despite the error in $\Delta G$, the equilibrium constant at 1000K seems reasonable. If you zoom in to 1000K you find the $K_{eq}$ is about 1.5, and it is known to be 1.44 (see [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-nist-webbook/#7][this example]]).
-
-***** TODO something is wrong with the thermochemistry I think.
 
 ** Molecular reaction barriers
 We will consider a simple example of the barrier for NH_{3} inversion. We have to create an NH_{3} molecule in the initial and inverted state (these have exactly the same energy), and then interpolate a band of images. Then, we use the NEB method to compute the barrier to inversion.
@@ -4394,6 +4433,7 @@ eos.plot('images/Cu-fcc-eos.png')
 : E0 = -3.7246811445 eV
 : B  = 0.859009528171 eV/A^3
 
+
 #+caption: Total energy vs. volume for fcc Cu with  fitted cubic polynomial equation of state.
 #+ATTR_LaTeX: placement=[H]
 [[./images/Cu-fcc-eos.png]]
@@ -4506,7 +4546,7 @@ Use the data for FCC and BCC Cu to plot the total energy as a function of the la
 
 Note we plot the energy vs. atomic volume. That is because the lattice constants of the two crystal structures are very different. It also shows that the atomic volumes in the two structures are similar.
 
-What can we say here? The fcc structure has a lower energy than the bcc structure, so we can conclude the fcc structure is more favorable. In fact, the fcc structure is the experimentally found structure for Cu. Some caution is in order; if you run these calculations at a $4 \times 4 \times 4$ $k$-point grid, the bcc structure is more stable because the results are not converged!
+What can we say here? The fcc structure has a lower energy than the bcc structure, so we can conclude the fcc structure is more favorable. In fact, the fcc structure is the experimentally found structure for Cu. Some caution is in order; if you run these calculations at a $4 \timesqq 4 \times 4$ $k$-point grid, the bcc structure is more stable because the results are not converged!
 
 #+begin_exercise
 Compute the energy vs. volume for fcc and bcc Cu for different $k$-point grids. Determine when each result has converged, and which structure is more stable.
@@ -4514,7 +4554,8 @@ Compute the energy vs. volume for fcc and bcc Cu for different $k$-point grids. 
 
 What can we say about the relative stability of fcc to hcp? Nothing, until we calculate the hcp equation of state.
 
-*** hcp
+
+*** Optimizing the hcp lattice constant
 The hcp lattice is more complicated than the fcc/bcc lattices because there are two lattice parameters: $a$ and $c$ or equivalently: $a$ and $c/a$. We will start by making a grid of values and find the set of parameters that minimizes the energy. See Figure \ref{fig:ru-e-ca}.
 
 #+BEGIN_SRC python :results output
@@ -4819,6 +4860,96 @@ The points to note here are the following:
 4. The spacegroup is still correct.
 
 *** TODO the volume is very small (61) compared to what we expected (64) something may be wrong!
+*** Effect of XC on bulk properties
+The exchange correlation functional can significantly affect computed bulk properties. Here, we examine the effect on the bulk lattice constant of Pd (exp. 3.881). An excellent review of this can be found in \cite{mattsson-084714}. We examine several functionals. The =xc= keyword in =jasp= is used to select the POTCARs. The value of xc can be 'LDA', 'PW91' or 'PBE'. Let us consider the LDA functional first.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase import Atom, Atoms
+from ase.utils.eos import EquationOfState
+
+LC = [3.75, 3.80, 3.85, 3.90, 3.95, 4.0, 4.05, 4.1]
+
+volumes, energies = [],[]
+for a in LC:
+    atoms = Atoms([Atom('Pd', (0, 0, 0))],
+                  cell=0.5 * a*np.array([[1.0, 1.0, 0.0],
+                                         [0.0, 1.0, 1.0],
+                                         [1.0, 0.0, 1.0]]))
+    with jasp('bulk/Pd-LDA-{0}'.format(a),
+              encut=350,
+              kpts=(12,12,12),
+              xc='LDA',
+              atoms=atoms):
+        try:
+            e = atoms.get_potential_energy()
+            energies.append(e)
+            volumes.append(atoms.get_volume())
+        except (VaspSubmitted, VaspQueued):
+            pass
+
+if len(energies) == len(LC):
+    eos = EquationOfState(volumes, energies)
+    v0, e0, B = eos.fit()
+    print 'LDA lattice constant is {0:1.3f} Ang^3'.format((4*v0)**(1./3.))
+#+END_SRC
+
+#+RESULTS:
+: LDA lattice constant is 3.855 Ang^3
+
+For a GGA calculation, it is possible to specify which functional you want via the incar:GGA tag. This tag was designed to use the LDA POTCAR files, but with a GGA functional. We will consider four different functionals here.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase import Atom, Atoms
+from ase.utils.eos import EquationOfState
+
+LC = [3.75, 3.80, 3.85, 3.90, 3.95, 4.0, 4.05, 4.1]
+
+GGA = {'AM':'AM05',
+       'PE':'PBE',
+       'PS':'PBEsol',
+       'RP':'RPBE'}
+
+
+for key in GGA:
+    volumes, energies = [],[]
+    for a in LC:
+        atoms = Atoms([Atom('Pd', (0, 0, 0))],
+                      cell=0.5 * a*np.array([[1.0, 1.0, 0.0],
+                                             [0.0, 1.0, 1.0],
+                                             [1.0, 0.0, 1.0]]))
+        with jasp('bulk/Pd-GGA-{1}-{0}'.format(a,key),
+                  encut=350,
+                  kpts=(12,12,12),
+                  xc='LDA',
+                  gga=key,
+                  atoms=atoms):
+            try:
+                e = atoms.get_potential_energy()
+                energies.append(e)
+                volumes.append(atoms.get_volume())
+            except (VaspSubmitted, VaspQueued):
+                pass
+
+    if len(energies) == len(LC):
+        eos = EquationOfState(volumes, energies)
+        v0, e0, B = eos.fit()
+        print '{1:6s} lattice constant is {0:1.3f} Ang^3'.format((4*v0)**(1./3.),
+                                                             GGA[key])
+    else:
+        print energies, LC
+        print '{0} is not ready'.format(GGA[key])
+#+END_SRC
+
+#+RESULTS:
+: PBEsol lattice constant is 3.885 Ang^3
+: AM05   lattice constant is 3.882 Ang^3
+: RPBE   lattice constant is 3.990 Ang^3
+: PBE    lattice constant is 3.952 Ang^3
+
+These results compare very favorably to those in \cite{mattsson-084714}. It is typical that LDA functionals underestimate the lattice constants, and that GGAs tend to overestimate the lattice constants. PBEsol and AM05 were designed specifically for solids, and for Pd, these functionals do an exceptional job of reproducing the lattice constants. RPBE is particularly bad at the lattice constant, but it has been reported to be a superior functional for reactivity \cite{hammer1999:improv-pbe}.
+
 ** Effect of calculation parameters on bulk calculations
 Several parameters affect the results in bulk calculations
 *** TODO k-point convergence ?
@@ -7812,6 +7943,37 @@ This did not do exactly what I expected. I thought there would be an image that 
 A transition state should have exactly one imaginary degree of freedom which corresponds to the mode that takes reactants to products. See [[*Vibrations%20of%20the%20bridge%20site][Vibrations of the bridge site]] for an example.
 
 
+** TODO Effects of electric fields on adsorbates
+Electric fields can polarize adsorbates, i.e. shift their electron density around, which changes their stability . We can model this to some extent in VASP. We have to set the incar:EFIELD parameter to specify the field strength (in V/\AA), and incar:LDIPOL to =True=, and finally specify which lattice vector the field should be applied to with incar:IDIPOL. Usually, incar:IDIPOL will be set to 3 for surfaces.
+
+We will illustrate the effect using an example from \cite{doi-10.1021/jp810518x} for the effect of electric field on the adsorption energy of a CO molecule on Pt(111) at 0.25 ML. For simplicity, we will use a frozen slab, with the CO molecule in the geometry reported in that reference.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.lattice.surface import fcc111
+
+atoms = fcc111('Pt', size=(2, 2, 4), vacuum=10.0, a=3.986)
+atoms.append(Atom('C', [atoms[12].x, atoms[12].y, atoms[12].z + 1.851]))
+atoms.append(Atom('O', [atoms[-1].x, atoms[-1].y, atoms[-1].z + 1.157]))
+
+for field in [-0.5, 0.0, 0.5]:
+    with jasp('surfaces/Pt-co-field-{0}'.format(field),
+              xc='PBE',
+              encut=350,
+              kpts=(6,6,1),
+              efield=field,
+              ldipol=True,
+              idipol=3,
+              atoms=atoms) as calc:
+        try:
+            print atoms.get_potential_energy()
+        except (VaspSubmitted, VaspQueued):
+            pass
+
+            #from ase.visualize import view; view(atoms)
+#+END_SRC
+
+#+RESULTS:
 
 ** TODO Diffusion rates with transition state theory
 
@@ -8493,12 +8655,197 @@ plt.savefig('images/ni-dos-pbe-pbe0-hse06.png')
 #+ATTR_LaTeX: placement=[H]
 [[./images/ni-dos-pbe-pbe0-hse06.png]]
 
-** TODO vdW
-http://cms.mpi.univie.ac.at/vasp/vasp/vdW_DF_functional_Langreth_Lundqvist_et_al.html
 
 ** TODO DFT+D
 http://cms.mpi.univie.ac.at/vasp/vasp/DFT_D2_method_Grimme.html
 \cite{PhysRevB.82.081101}
+
+Van der Waal forces can play a considerable role in binding of aromatic molecules to metal surfaces [[http://th.fhi-berlin.mpg.de/site/uploads/Publications/PRL_submitted_2012063-582-586-2012.pdf][(ref)]]. Here we consider the effects of these forces on the adsorption energy of benzene on an Au(111) surface.First, we consider the regular PBE functional.
+
+*** PBE
+**** gas-phase benzene
+#+BEGIN_SRC python
+from jasp import *
+from ase.data.molecules import molecule
+
+benzene = molecule('C6H6')
+benzene.center(vacuum=5)
+
+with jasp('molecules/benzene-pbe',
+          xc='PBE',
+          encut=350,
+          kpts=(1,1,1),
+          ibrion=1,
+          nsw=100,
+          atoms=benzene) as calc:
+    print benzene.get_potential_energy()
+#+END_SRC
+
+#+RESULTS:
+
+**** clean slab
+#+BEGIN_SRC python
+# the clean gold slab
+from jasp import *
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Au', size=(3,3,3), vacuum=10)
+
+# now we constrain the slab
+c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
+atoms.set_constraint(c)
+
+#from ase.visualize import view; view(atoms)
+
+with jasp('surfaces/Au-pbe',
+          xc='PBE',
+          encut=350,
+          kpts=(4,4,1),
+          ibrion=1,
+          nsw=100,
+          atoms=atoms) as calc:
+    print atoms.get_potential_energy()
+#+END_SRC
+
+#+RESULTS:
+
+**** benzene on Au(111)
+#+BEGIN_SRC python
+# Benzene on the slab
+from jasp import *
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.data.molecules import molecule
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Au', size=(3,3,3), vacuum=10)
+benzene = molecule('C6H6')
+benzene.translate(-benzene.get_center_of_mass())
+
+# I want the benzene centered on the position in the middle of atoms
+# 20, 22, 23 and 25
+p = (atoms.positions[20] +
+     atoms.positions[22] +
+     atoms.positions[23] +
+     atoms.positions[25])/4.0 + [0.0, 0.0, 3.05]
+
+benzene.translate(p)
+atoms += benzene
+
+# now we constrain the slab
+c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
+atoms.set_constraint(c)
+
+#from ase.visualize import view; view(atoms)
+
+with jasp('surfaces/Au-benzene-pbe',
+          xc='PBE',
+          encut=350,
+          kpts=(4,4,1),
+          ibrion=1,
+          nsw=100,
+          atoms=atoms) as calc:
+    print atoms.get_potential_energy()
+#+END_SRC
+
+#+RESULTS:
+
+*** DFT-D2
+To turn on the van der Waals corrections \cite{JCC-JCC20495} we set incar:LVDW to =True=.
+**** gas-phase benzene
+#+BEGIN_SRC python
+from jasp import *
+from ase.data.molecules import molecule
+
+benzene = molecule('C6H6')
+benzene.center(vacuum=5)
+
+with jasp('molecules/benzene-pbe-d2',
+          xc='PBE',
+          encut=350,
+          kpts=(1,1,1),
+          ibrion=1,
+          nsw=100,
+          lvdw=True,
+          atoms=benzene) as calc:
+    print benzene.get_potential_energy()
+#+END_SRC
+
+#+RESULTS:
+
+**** clean slab
+#+BEGIN_SRC python
+# the clean gold slab
+from jasp import *
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Au', size=(3,3,3), vacuum=10)
+
+# now we constrain the slab
+c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
+atoms.set_constraint(c)
+
+#from ase.visualize import view; view(atoms)
+
+with jasp('surfaces/Au-pbe-d2',
+          xc='PBE',
+          encut=350,
+          kpts=(4,4,1),
+          ibrion=1,
+          nsw=100,
+          lvdw=True,
+          atoms=atoms) as calc:
+    print atoms.get_potential_energy()
+#+END_SRC
+
+#+RESULTS:
+
+**** benzene on Au(111)
+#+BEGIN_SRC python
+# Benzene on the slab
+from jasp import *
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.data.molecules import molecule
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Au', size=(3,3,3), vacuum=10)
+benzene = molecule('C6H6')
+benzene.translate(-benzene.get_center_of_mass())
+
+# I want the benzene centered on the position in the middle of atoms
+# 20, 22, 23 and 25
+p = (atoms.positions[20] +
+     atoms.positions[22] +
+     atoms.positions[23] +
+     atoms.positions[25])/4.0 + [0.0, 0.0, 3.05]
+
+benzene.translate(p)
+atoms += benzene
+
+# now we constrain the slab
+c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
+atoms.set_constraint(c)
+
+#from ase.visualize import view; view(atoms)
+
+with jasp('surfaces/Au-benzene-pbe-d2',
+          xc='PBE',
+          encut=350,
+          kpts=(4,4,1),
+          ibrion=1,
+          nsw=100,
+          lvdw=True,
+          atoms=atoms) as calc:
+    print atoms.get_potential_energy()
+#+END_SRC
+
+#+RESULTS:
+
+*** Advanced vdW-DF functionals
+There is a more sophisticated (i.e. more parameters) treatment of van der Waal forces in VASP (http://cms.mpi.univie.ac.at/vasp/vasp/vdW_DF_functional_Langreth_Lundqvist_et_al.html).
+
+
 ** ELF
 
 Need better intro here.
