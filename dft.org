@@ -994,9 +994,9 @@ print 'The molecular weight of {0} is {1:1.2f} gm/mol'.format(molecular_formula,
 #+END_SRC
 
 #+RESULTS:
-: The molecular weight of C6H6 is 78.11
+: The molecular weight of C6H6 is 78.11 gm/mol
 
-Note that te argument =reduce=True= for func:ase.Atoms.get_chemical_symbols collects all the symbols to provide a molecular formula.
+Note that the argument =reduce=True= for func:ase.Atoms.get_chemical_symbols collects all the symbols to provide a molecular formula.
 
 *** Center of mass
 [[index:center of mass]]
@@ -2647,21 +2647,21 @@ mod:ase.thermochemistry can be used to estimate thermodynamic properties of gase
 The symmetry numbers are determined by the molecular point group \cite{springerlink-10.1007/s00214-007-0328-0}. Here is a table of the most common ones.
 
 #+caption: Symmetry numbers for common point groups
-| point group | \sigma | examples      |
-|-------------+--------+---------------|
-| C_{1}       |      1 |               |
-| C_{s}       |      1 |               |
-| C_{2}       |      2 |               |
-| C_{2v}      |      2 | H_{2}O        |
-| C_{3v}      |      3 | NH_{3}        |
-| C_{\ifty v} |      1 | CO            |
-| D_{2h}      |      4 |               |
-| D_{3h}      |      6 |               |
-| D_{5h}      |     10 |               |
-| D_{\ifty h} |      2 | CO_{2}, H_{2} |
-| D_{3d}      |      6 |               |
-| T_{d}       |     12 | CH_{4}        |
-| O_{h}       |     24 |               |
+| point group    | $\sigma$ | examples      |
+|----------------+----------+---------------|
+| C_{1}          |        1 |               |
+| C_{s}          |        1 |               |
+| C_{2}          |        2 |               |
+| C_{2v}         |        2 | H_{2}O        |
+| C_{3v}         |        3 | NH_{3}        |
+| $C_{\infty v}$ |        1 | CO            |
+| D_{2h}         |        4 |               |
+| D_{3h}         |        6 |               |
+| D_{5h}         |       10 |               |
+| $D_{\infty h}$ |        2 | CO_{2}, H_{2} |
+| D_{3d}         |        6 |               |
+| T_{d}          |       12 | CH_{4}        |
+| O_{h}          |       24 |               |
 
 #+BEGIN_SRC python :results output :exports both
 from ase.structure import molecule
@@ -4546,7 +4546,7 @@ Use the data for FCC and BCC Cu to plot the total energy as a function of the la
 
 Note we plot the energy vs. atomic volume. That is because the lattice constants of the two crystal structures are very different. It also shows that the atomic volumes in the two structures are similar.
 
-What can we say here? The fcc structure has a lower energy than the bcc structure, so we can conclude the fcc structure is more favorable. In fact, the fcc structure is the experimentally found structure for Cu. Some caution is in order; if you run these calculations at a $4 \timesqq 4 \times 4$ $k$-point grid, the bcc structure is more stable because the results are not converged!
+What can we say here? The fcc structure has a lower energy than the bcc structure, so we can conclude the fcc structure is more favorable. In fact, the fcc structure is the experimentally found structure for Cu. Some caution is in order; if you run these calculations at a $4 \times 4 \times 4$ $k$-point grid, the bcc structure is more stable because the results are not converged!
 
 #+begin_exercise
 Compute the energy vs. volume for fcc and bcc Cu for different $k$-point grids. Determine when each result has converged, and which structure is more stable.
@@ -8997,13 +8997,13 @@ adapted from https://listserv.fysik.dtu.dk/pipermail/campos/2004-September/00115
 
 from ase import *
 from ase.io import write
-from ase.lattice.surface import bcc111
+from ase.lattice.surface import bcc111, add_adsorbate
 from ase.constraints import FixAtoms
 
 # the bcc111 function automatically tags atoms
 slab = bcc111('W',
               a=3.92,       # W lattice constant
-              size=(2,2,6), #6-layer slab in 2x2 configuration
+              size=(2,2,6), # 6-layer slab in 2x2 configuration
               vacuum=10.0)
 
 #reset tags to be powers of two
@@ -9062,12 +9062,13 @@ notfree = slab[(slab.get_tags() & FREE) != FREE]
 
 constraint = FixAtoms(mask = (slab.get_tags() & FREE) != FREE)
 slab.set_constraint(constraint)
-write('images/tagged-bcc111.png',slab,rotation='-90x',show_unit_cell=2)
+write('images/tagged-bcc111.png', slab, rotation='-90x', show_unit_cell=2)
+from ase.visualize import view; view(slab)
 #+end_src
 
 #+RESULTS:
 
-#+caption: The tagged bcc(111) structure created above.
+#+caption: The tagged bcc(111) structure created above. Unfortunately, the frozen atoms do not show up in the figure.
 #+ATTR_LATEX: width=383bp,placement=[H]
 [[./images/tagged-bcc111.png]]
 *** Using units in ase
@@ -9286,7 +9287,7 @@ plt.savefig('images/nonlinear-curve-fitting.png')
 
 See additional examples at \url{http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html}.
 
-*** Nonlinear curve fitting by direct least squares mimimization
+*** Nonlinear curve fitting by direct least squares minimization
 #+BEGIN_SRC python :results output :exports both
 from scipy.optimize import fmin
 import numpy as np
@@ -9352,7 +9353,7 @@ y = c1 exp(-x) + c2*x
 
 this is actually a linear regression problem, but it is convenient to
 use the nonlinear fitting routine because it makes it easy to get
-confidence intervals. The downside is you need an initial gues.
+confidence intervals. The downside is you need an initial guess.
 
 from Matlab
 b =
@@ -10108,7 +10109,7 @@ B = B1 x + B2 y + B3 z \\
 C = C1 x + C2 y + C3 z
 \end{eqnarray}
 
-and we want to find the vector $[s1 s2 s3]$ so that
+and we want to find the vector $[s1, s2, s3]$ so that
 \(P = s1 A + s2 B + s3 C \)
 
 if we expand this, we get:
