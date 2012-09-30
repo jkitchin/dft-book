@@ -9702,7 +9702,8 @@ You can save data in many ways from scratch. Basically, just open a
 file and write data to it. Likewise, any datafile that has some
 structure to it can probably be read by python.
 
-Reading a datafile with
+Let us consider a datafile with these contents:
+
 #+begin_example
 	#header
 	#ignore these lines
@@ -10515,7 +10516,7 @@ The original Birch equation \cite{Birch} is:
 where $E_\infty$ corresponds to the energy at infinite separation,
 although the model they use to derive this equation breaks down at
 large separations so this is usually not a good estimate of the
-cohesive energy. $n$ is in the range of -2.
+cohesive energy. $n$ is typically about -2.
 
 *** Fitting data to these equations of state
 To use these equations of state to find the equilibrium cell volume
@@ -11122,7 +11123,7 @@ with jasp('bulk/alloy/cu') as calc:
 * Python
 ** easy_install as a user
 
-This usually works if the directory is on your PYTHONPATH
+=easy_install= is a python command-line utility that automatically installs python packages. Usually you need root access to install a python package, but you can also tell =easy_install= where to install a package. This usually works if the directory is on your PYTHONPATH
 
 easy_install -d ~/lib/python2.6/site-packages/ pymatgen
 ** Integer division math gotchas
