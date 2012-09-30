@@ -8988,7 +8988,7 @@ The method uses integer tags that are powers of two, and then uses binary operat
 8 = [0 0 0 1]
 #+end_example
 
-So, an atom tagged with 1 and 2 would have a tag of [1 1 0 0] or a tag of 3.
+So, an atom tagged with 1 and 2 would have a tag of [1 1 0 0] or equivalently in decimal numbers, a tag of 3.
 
 #+begin_src python :results output
 '''
