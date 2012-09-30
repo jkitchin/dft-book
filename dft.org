@@ -9451,7 +9451,7 @@ There are other good examples at http://docs.scipy.org/doc/scipy/reference/tutor
 
 *** Interpolation in 3D
 
-You might ask, why would I need to interpolate in 3D? Suppose you want to plot the charge density along a line through a unit cell that does not correspond to grid points. What are you to do? Interpolate. In contrast to an abundance of methods for 1D and 2D interpolation, I could not find any standard library methods for 3D interpolation. The Scipy cookbook on interpolation suggests that it should be doable with ndimage, but I could not figure out how to make those examples work.
+You might ask, why would I need to interpolate in 3D? Suppose you want to plot the charge density along a line through a unit cell that does not correspond to grid points. What are you to do? Interpolate. In contrast to an abundance of methods for 1D and 2D interpolation, I could not find any standard library methods for 3D interpolation.
 
 The principle we will use to develop an interpolation function in 3D is called trilinear interpolation, where we use multiple linear 1D interpolations to compute the value of a point inside a cube. As developed here, this solution only applies to rectangular grids. Later we will generalize the approach. We state the problem as follows:
 
@@ -10053,7 +10053,7 @@ for row in reader:
 
 This is almost as much work as manually reading the data though. The
 module is more powerful than I have shown here, so one day checkout
-=pydoc csv=
+=pydoc csv=.
 
 The mod:pickle and mod:shelve modules of python also offer some
 data storage functionality. Check them out some day too.
