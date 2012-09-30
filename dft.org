@@ -8955,26 +8955,22 @@ import textwrap
 from ase.data.molecules import molecule
 
 atoms = molecule('CH3CH2OH')
+print atoms
 
-# we use textwrap to
-print textwrap.fill(str(atoms),
-                    subsequent_indent='      ')
-
+#delete all the hydrogens
 ind2del = [atom.index for atom in atoms if atom.symbol=='H']
 print 'Indices to delete: ',ind2del
 
 del atoms[ind2del]
 
-print textwrap.fill(repr(atoms),
-                    subsequent_indent='      ')
+# now print what is left
+print atoms
 #+END_SRC
 
 #+RESULTS:
-: Atoms(symbols='C2OH6', positions=..., cell=[1.0, 1.0, 1.0],
-:       pbc=[False, False, False])
+: Atoms(symbols='C2OH6', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False, False, False])
 : Indices to delete:  [3, 4, 5, 6, 7, 8]
-: Atoms(symbols='C2O', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False,
-:       False, False])
+: Atoms(symbols='C2O', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False, False, False])
 
 *** Advanced tagging
 We can label atoms with integer tags to help identify them later, e.g. which atoms are adsorbates, or surface atoms, or near an adsorbate, etc... We might want to refer to those atoms later for electronic structure, geometry analysis, etc...
@@ -9006,7 +9002,7 @@ slab = bcc111('W',
               size=(2,2,6), # 6-layer slab in 2x2 configuration
               vacuum=10.0)
 
-#reset tags to be powers of two
+#reset tags to be powers of two so we can use binary math
 slab.set_tags([2**a.get_tag() for a in slab])
 
 # we had 6 layers, so we create new tags starting at 7
@@ -9246,7 +9242,7 @@ vols = np.array([13.71, 14.82, 16.0, 17.23, 18.52])
 energies = np.array([-56.29, -56.41, -56.46, -56.463,-56.41])
 
 def Murnaghan(parameters,vol):
-    'From PRB 28,5480 (1983'
+    'From Phys. Rev. B 28, 5480 (1983)'
     E0 = parameters[0]
     B0 = parameters[1]
     BP = parameters[2]
@@ -9803,7 +9799,7 @@ work well for very smooth data. they are surprisingly fast even up to
 10000 points in the vector.
 '''
 
-x = np.linspace(0.78,0.79,100)
+x = np.linspace(0.78, 0.79, 100) # 100 points between 0.78 and 0.79
 y = np.sin(x)
 dy_analytical = np.cos(x)
 '''
@@ -10646,7 +10642,7 @@ does not converge.
 ** Miscellaneous \texttt{jasp}/VASP tips
 *** Installing jasp
 
-You need to create an executable script named =runvasp.py= on your executable path. Here is an example script that works for both serial and parallel versions of VASP.
+You need to create an executable script named =runvasp.py= on your executable path. Here is an example script that works for both serial and parallel versions of VASP. This script is located in =jasp/bin=.
 #+BEGIN_SRC python
 #!/usr/bin/env python
 import os
