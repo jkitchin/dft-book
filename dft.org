@@ -9077,7 +9077,7 @@ mod:ase uses a base set of atomic units.These are eV for energy, $\AA$ for dista
 Not too many units are defined:
 ['A', 'AUT', 'Ang', 'Angstrom', 'Bohr', 'C', 'Debye', 'GPa', 'Ha', 'Hartree', 'J', 'Pascal', 'Ry', 'Rydberg', 'alpha', 'cm', 'eV', 'erg', 'fs', 'kB', 'kJ', 'kcal', 'kg', 'm', 'meV', 'mol', 'nm', 's', 'second']
 
-It is not that hard to define your own derived units though. Note these  are only conversion factors. No unit algebra is enforced!
+It is not that hard to define your own derived units though. Note these  are only conversion factors. No units algebra is enforced (i.e. it will be ok to add a m and a kg)!
 
 #+BEGIN_SRC python :results output
 from ase.units import *
@@ -9419,14 +9419,14 @@ from scipy.optimize import fmin
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 x = np.array([ 0,      1,      2,      3,      4    ])
 y = np.array([ 0.,     0.308,  0.55,   0.546,  0.44 ])
 
 # create the interpolating function
 f = interp1d(x, y, kind='cubic', bounds_error=False)
 
-# to find the maximum, we minimize the negative of the function. We cannot just multiply f by -1, so we create a new function here.
+# to find the maximum, we minimize the negative of the function. We
+# cannot just multiply f by -1, so we create a new function here.
 f2 = interp1d(x, -y, kind='cubic')
 xmax = fmin(f2, 2.5)
 
@@ -9794,7 +9794,7 @@ Loops in python are pretty slow (relatively speaking) but they are usually trivi
 
 #+BEGIN_SRC python :results output :exports both
 import numpy as np
-import matplotlob.pyplot as plt
+import matplotlib.pyplot as plt
 import time
 
 '''
@@ -9845,7 +9845,6 @@ print ' Centered difference took {0:1.1f} seconds'.format(time.time() - tc1)
 the centered formula is the most accurate formula here
 '''
 
-plt.plot(x,y)
 plt.plot(x,dy_analytical,label='analytical derivative')
 plt.plot(x,dyf,'--',label='forward')
 plt.plot(x,dyb,'--',label='backward')
@@ -9859,6 +9858,8 @@ plt.savefig('images/simple-diffs.png')
 :  Forward difference took 0.0 seconds
 :  Backward difference took 0.0 seconds
 :  Centered difference took 0.0 seconds
+
+Obviously, all of these evaluations are very fast.
 
 #+caption: Comparison of different numerical derivatives.
 [[./images/simple-diffs.png]]
@@ -10629,7 +10630,6 @@ print 'fitted parameters: ', murnpars
 : initial guesses  :  [-56.472   0.631   4.     16.79 ]
 : fitted parameters:  [-56.466   0.49    4.753  16.573]
 
-
 #+caption: Fitted equation of state for bulk data. The initial fitted parabola is shown to illustrate how it is useful for making initial guesses of the minimum and bulk modulus.
 #+attr_latex: placement=[H]
 [[./images/a-eos.png]]
@@ -10693,7 +10693,7 @@ If you already have potential directories setup with different names, you can al
 *** Using a special setup
 Vasp provides [[http://cms.mpi.univie.ac.at/vasp/vasp/PAW_potentials.html][special setups]] for some elements. The following guidelines tell you what is in a potential:
 
-No extension means the standard potential. The following extension mean:
+No extension means the standard potential. The following extensions mean:
 #+ATTR_LaTeX: align= |l|p{10cm}|
 #+caption: Meaning of extensions on POTCAR files for special setups.
 | extension |                                                                                     |
@@ -11127,7 +11127,7 @@ with jasp('bulk/alloy/cu') as calc:
 
 easy_install -d ~/lib/python2.6/site-packages/ pymatgen
 ** Integer division math gotchas
-It pays to be careful when dividing by integers because you can get unexpected results if you do not know the integer division rules. In python 2.6, if you divide two integers, you get an integer! This is usually not a problem if there is no remainder in the division, e.g. 6/3=2. But, if there is a remainder, and that remainder is important, you will lose it. Here is an example of calculating the mole fraction of a species from integer numbers of atoms in the unit cell. If you are not careful, you get the wrong answer! You can convert (also called casting) a number to a float using the float command.
+It pays to be careful when dividing by integers because you can get unexpected results if you do not know the integer division rules. In python 2.6, if you divide two integers, you get an integer! This is usually not a problem if there is no emainder in the division, e.g. 6/3=2. But, if there is a remainder, and that remainder is important, you will lose it. Here is an example of calculating the mole fraction of a species from integer numbers of atoms in the unit cell. If you are not careful, you get the wrong answer! You can convert (also called casting) a number to a float using the float command.
 
 #+BEGIN_SRC python :results output :exports both
 nPd = 4
