@@ -5,3 +5,14 @@ WAVECAR
 *~
 archive
 test
+*.idx
+*.ilg
+*.ind
+*.lof
+*.lot
+*.toc
+*.out
+*.aux
+*.bbl
+*.blg
+*.log
