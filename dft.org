@@ -9745,7 +9745,7 @@ Some notes:
 with care!
 2. when writing to a file you have to add a carriage return to each line.
 3. Manually writing and reading files is pretty tedious. Whenever
-possible you should use the builtin methods of numpy or pylab.
+possible you should use the built-in methods of mod:numpy or mod:pylab.
 
 *** Integration
 Numerical integrations is easy with the numpy.trapz() method. Use it like this: func:numpy.trapz(y,x). Note that y comes first. y and x must be the same length.
