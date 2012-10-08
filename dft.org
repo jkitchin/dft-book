@@ -1248,7 +1248,7 @@ geometry is not close to the ground state geometry. Note that the
 forces are only along the $x$-axis, which is along the molecular axis. We will see how to minimize this force in [[*Manual%20determination][Manual determination]] and [[*Automatic%20geometry%20optimization%20with%20VASP][Automatic geometry optimization with VASP]].
 
 #+begin_note
-This is your first DFT calculation in the book! see [[incar:ISMEAR][ISMEAR]], incar:SIGMA, incar:NBANDS, and incar:ENCUT to learn more about these VASP keywords.
+This is your first DFT calculation in the book! See [[incar:ISMEAR][ISMEAR]], incar:SIGMA, incar:NBANDS, and incar:ENCUT to learn more about these VASP keywords.
 #+end_note
 
 #+BEGIN_SRC python :results output :exports both
@@ -1556,7 +1556,7 @@ mlab.show()
 [[./images/co-centered-cd.png]]
 *** Dipole moments
 [[index:dipole moment]]
-The [[http://en.wikipedia.org/wiki/Molecular_dipole_moment#Molecular_dipoles][dipole moment]] is a vector describing the separation of  electrical (negative) and nuclear (positive) charge. The magnitude of this vector is the dipole moment, which has units of Coulomb-meter, or more commonly Debye. The symmetry of a molecule determines if a molecule has a dipole moment or not. Below we compute the dipole moment of CO. We must integrate the electron density to find the center of electrical charge, and sum over the nuclei to find the center of positive charge.
+The [[http://en.wikipedia.org/wiki/Molecular_dipole_moment#Molecular_dipoles][dipole moment]] is a vector describing the separation of  electrical (negative) and nuclear (positive) charge. The magnitude of this vector is the dipole moment, which has units of Coulomb-meter, or more commonly Debye. The symmetry of a molecule determines if a molecule has a dipole moment or not. Below we compute the dipole moment of CO. We must integrate the electron density to find the center of electrical charge, and compute a sum over the nuclei to find the center of positive charge.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -1651,10 +1651,10 @@ with jasp('molecules/co-centered') as calc:
 : The dipole moment is 0.10 Debye
 
 *** The density of states (DOS)
-The density of states (DOS) gives you the number of electronic states (i.e. orbitals) that have a particular energy. We can get this information from the last calculation we just ran without having to run another DFT calculation.
+The density of states (DOS) gives you the number of electronic states (i.e., the orbitals) that have a particular energy. We can get this information from the last calculation we just ran without having to run another DFT calculation.
 
 #+begin_warning
-One way that =jasp= is unintuitive is that whenever you are "inside" (indented) a =with= statement, the current working directory may be different than where your script started. In this example that can lead to your figure not being saved where you expect it!
+One way that =jasp= is unintuitive is that whenever you are "inside" (indented) a =with= statement, the current working directory may be different than where your script started. In this example that can lead to your figure not being saved where you expect it to be saved!
 #+end_warning
 
 #+BEGIN_SRC python
@@ -1681,7 +1681,7 @@ plt.savefig('images/co-dos.png')
 [[./images/co-dos.png]]
 
 *** Atom-projected density of states on molecules
-Let us consider which states in the density of states belong to which atoms in a molecule. This can only be a qualitative consideration because the orbitals on the atoms often hybridize to form molecular orbitals, e.g. in methane the $s$ and $p$ orbitals can form what we call $sp_3$ orbitals. We can compute atom-projected density of states in VASP, which is done by projecting the wave function onto localized atomic orbitals. Here is an example. We will consider the CO molecule. To get atom-projected density of states, we must set [[incar:RWIGS][RWIGS]] for each atom. This parameter defines the radius of the sphere around the atom which cuts off the projection. The total density of states and projected density of states information comes from the DOSCAR file.
+Let us consider which states in the density of states belong to which atoms in a molecule. This can only be a qualitative consideration because the orbitals on the atoms often hybridize to form molecular orbitals, e.g. in methane the $s$ and $p$ orbitals can form what we call $sp^3$ orbitals. We can compute atom-projected density of states in VASP, which is done by projecting the wave function onto localized atomic orbitals. Here is an example. We will consider the CO molecule. To get atom-projected density of states, we must set [[incar:RWIGS][RWIGS]] for each atom. This parameter defines the radius of the sphere around the atom which cuts off the projection. The total density of states and projected density of states information comes from the DOSCAR file.
 
 Note that unlike the DOS, here we must run another calculation because we did not specify the atom-projected keywords above. Our strategy is to get the atoms from the previous calculation, and use them in a new calculation. You could redo the calculation in the same directory, but you risk losing the results of the first step. That can make it difficult to reproduce a result. We advocate our approach of using multiple directories for the subsequent calculations, because it leaves a clear trail of how the work was done.
 
@@ -1926,10 +1926,8 @@ cat ACF.dat
 
 This script should work, but only if displacement is set to None or we
 convert the positions to Bohr. Otherwise, the positions do not match
-because of a Bohr/Angstrom units problem in an assertions
-statement. Note the complex sorting that has to be done, because the
-order of atoms in the Atoms object is not the same as in the POSCAR
-file.
+because of a Bohr/Angstrom units problem in the code. Note the sorting that has to be done, because the order of atoms in the Atoms
+object is not the same as in the POSCAR file.
 
 #+BEGIN_SRC python :results output org raw
 from jasp import *
@@ -1966,7 +1964,7 @@ TODO: figure out these charges
 
 ** Geometry optimization
 *** Manual determination of a bond length
-The equilibrium bond length of a CO molecule is approximately the bond length that minimizes the total energy. We can find that by computing the total energy as a function of bond length, and noting where the minimum is. Here is an example in VASP. There are a few features to point out here. We want to compute 5 bond lengths, and each calculation is independent of all the others. mod:jasp is setup to automatically handle jobs for you by submitting them to the queue. It raises a variety of exceptions to let you know what has happened, and you must handle these to control the workflow. We will illustrate this by the following examples.
+The equilibrium bond length of a CO molecule is approximately the bond length that minimizes the total energy. We can find that by computing the total energy as a function of bond length, and noting where the minimum is. Here is an example in VASP. There are a few features to point out here. We want to compute 5 bond lengths, and each calculation is independent of all the others. mod:jasp is set up to automatically handle jobs for you by submitting them to the queue. It raises a variety of exceptions to let you know what has happened, and you must handle these to control the workflow. We will illustrate this by the following examples.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -3343,7 +3341,7 @@ if None not in (E_O, E_O2):
 : 0.0
 : O2 -> 2O  D = 5.650 eV
 
-Interestingly, Vasp still found a triplet spin state on the oxygen atom, even though we guessed an initial magnetic moment of 0. This highlights a difficulty in computing magnetic moments: you provide an initial guess and a solution is found. The magnetic moment of a singlet state is zero, so the  molecule is correct. Also interesting is that the dissociation energy is almost equal to the experimental value. This is probably a coincidence, and may reflect the fact that the singlet oxygen state is less stable than the triplet state. Let us directly compare their total energies:
+Interestingly, VASP still found a triplet spin state on the oxygen atom, even though we guessed an initial magnetic moment of 0. This highlights a difficulty in computing magnetic moments: you provide an initial guess and a solution is found. The magnetic moment of a singlet state is zero, so the  molecule is correct. Also interesting is that the dissociation energy is almost equal to the experimental value. This is probably a coincidence, and may reflect the fact that the singlet oxygen state is less stable than the triplet state. Let us directly compare their total energies:
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -3572,7 +3570,7 @@ It is a good idea to verify your calculations and structures are what you expect
 #+BEGIN_SRC python :results output raw :exports both
 from jasp import *
 
-print '**** calculation summaries'
+print '**** Calculation summaries'
 print '***** CO'
 with jasp('molecules/wgs/CO') as calc:
     print '#+begin_example'
@@ -7162,7 +7160,7 @@ for n in Nlayers:
               encut=350,
               kpts=(8,8,1),
               atoms=slab) as calc:
-        calc.set_nbands(f=2) # the default nbands in Vasp is too low for Al
+        calc.set_nbands(f=2) # the default nbands in VASP is too low for Al
         try:
             energies.append(slab.get_potential_energy())
         except (VaspSubmitted, VaspQueued):
@@ -10687,7 +10685,7 @@ export VASP_PP_PATH=$HOME/vasp/my_vasp_potentials
 If you already have potential directories setup with different names, you can always make symlinks with the names above that point to your directories.
 
 *** Using a special setup
-Vasp provides [[http://cms.mpi.univie.ac.at/vasp/vasp/PAW_potentials.html][special setups]] for some elements. The following guidelines tell you what is in a potential:
+VASP provides [[http://cms.mpi.univie.ac.at/vasp/vasp/PAW_potentials.html][special setups]] for some elements. The following guidelines tell you what is in a potential:
 
 No extension means the standard potential. The following extensions mean:
 #+ATTR_LaTeX: align= |l|p{10cm}|
