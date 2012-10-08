@@ -4236,7 +4236,6 @@ write('images/NaCl.png', atoms, show_unit_cell=2, rotation='45x,45y,45z')
 #+ATTR_LaTeX: placement=[H]
 [[./images/NaCl.png]]
 
-
 *** Using http://materialsproject.org
     The [[http://www.materialsproject.org/][Materials Project]] offers web access to a pretty large number of materials (over 21,000 at the time of this writing), including structure and other computed properties. You must sign up for an account at the website, and then you can access the information. You can search for materials with lots of different criteria including formula, unit cell formula, by elements, by structure, etc... The website allows you to download the VASP files used to create the calculations. They also develop the [[https://github.com/materialsproject/pymatgen/][pymatgen]] project (which requires python 2.7+).
 
@@ -4380,12 +4379,67 @@ Some notes: we had to specify the PBE functional. That is good habit, since the 
 
 We get exactly the same result as the website! Why is this helpful then? Well, we could use this as a starting point to look at an equation of state, or to plot some interesting electronic structure, etc... Or we can gain a little confidence that our version of VASP is working like the one they used.
 
+** TODO convergence testing in bulk structures
+In the section on molecules, we learned that the total energy is a function of the planewave cutoff energy (ENCUT) used. In bulk systems that is true also. There is also another calculation parameter you must consider, the k-point grid. We will typically use a Monkhorst-Pack \cite{PhysRevB.13.5188} k-point grid, which is essentially a uniformly spaced grid in the Brillouin zone. These grids are specified as $n1 \times n2 \times n3$ grids, and the total number of k-points is $n1 \cdot n2 \cdot n3$. The computational cost is linear in the total number of k-points, so  a calculation on a $4 \times 4 \times 4$ grid will be roughly 8 times more expensive than on a $2 \times 2 \times 2$ grid. Hence, one seeks again to balance convergence with computational tractability.
+
+
+#+BEGIN_SRC python
+from ase.lattice.cubic import FaceCenteredCubic
+from jasp import *
+
+atoms = FaceCenteredCubic('Ag')
+
+KPTS = [2, 3, 4, 5, 6, 8, 10]
+
+TE = []
+
+ready = True
+for k in KPTS:
+    with jasp('bulk/Ag-kpts-{0}'.format(k),
+              xc='PBE',
+              kpts=(k, k, k),
+              encut=300,
+              atoms=atoms) as calc:
+        try:
+            TE.append(atoms.get_potential_energy())
+        except (VaspSubmitted, VaspQueued):
+            ready = False
+
+if not ready:
+    import sys; sys.exit()
+
+import matplotlib.pyplot as plt
+
+# consider the change in energy from lowest energy state
+TE = np.array(TE)
+TE -= TE.min()
+
+plt.plot(KPTS, TE)
+plt.xlabel('ENCUT (eV)')
+plt.ylabel('Total Energy (eV)')
+plt.savefig('images/Ag-kpt-convergence.png')
+plt.show()
+#+END_SRC
+
+#+RESULTS:
+: None
+
+#+caption: k-point convergence of the total energy of fcc Ag.
+#+attr_latex: placement=[H]
+[[./images/Ag-kpt-convergence.png]]
+
+Based on this figure, we need at least a $6 \times 6 \times 6$ k-point grid to achieve a convergence level of at least 50 meV. Note: the k-point convergence is not always monotonic like it is in this example. Oscillations in the total energy are typical, and it can be difficult to get high levels of convergence. The best practices are to use the same k-point sampling grid in energy differences where possible, and dense (high numbers of k-points) otherwise. It is important to check for convergence in these cases.
+
+As unit cells get larger, the number of k-points required becomes smaller. For example, if a $1 \times 1 \times 1$ fcc unit cell shows converged energies in a $12 \times 12 \times 12$ k-point grid, then a $2 \times 2 \times 2$ fcc unit cell would show the same level of convergence with a $6 \times 6 \times 6$ k-point grid. In other words, doubling the unit cell vectors results in a halving of the number of k-points.
+
+Sometimes you may see k-points described as k-points per reciprocal atom. For example, a $12 \times 12 \times 12$ k-point grid for a primitive fcc unit cell would be 1728 k-points per reciprocal atom. A $2 \times 2 \times 2$ fcc unit cell has eight atoms in it, or 0.125 reciprical atoms, so a $6 \times 6 \times 6$ k-point grid has 216 k-points in it, or 216/0.125 = 1728 k-points per reciprocal atom, the same as we discussed before.
+
 ** Determining bulk structures
 What we typically mean by determining bulk structures includes the following:
 
 - What is the most stable crystal structure for a material?
 - What is the lattice constant of fcc Cu?
-- What are the lattice parameters and internal atom parameters for TiO\(_2\)?
+- What are the lattice parameters and internal atom parameters for TiO_{2}?
 
 All of these questions can often be addressed by finding the volume, shape and atomic positions that minimize the total energy of a bulk system. This is true at 0K. At higher temperatures, one must consider minimizing the free energy, rather than the internal energy.
 
@@ -4400,6 +4454,7 @@ from ase import Atom, Atoms
 # fcc
 LC = [3.5, 3.55, 3.6, 3.65, 3.7, 3.75]
 fcc_energies = []
+ready = True
 for a in LC:
     atoms = Atoms([Atom('Cu',(0, 0, 0))],
               cell=0.5 * a*np.array([[1.0, 1.0, 0.0],
@@ -4412,8 +4467,14 @@ for a in LC:
               kpts=(8,8,8),
               atoms=atoms) as calc:
 
-        e = atoms.get_potential_energy()
-        fcc_energies.append(e)
+        try:
+            e = atoms.get_potential_energy()
+            fcc_energies.append(e)
+        except (VaspSubmitted, VaspQueued):
+            ready = False
+
+if not ready:
+    import sys; sys.exit()
 
 import matplotlib.pyplot as plt
 plt.plot(LC, fcc_energies)
@@ -4437,6 +4498,7 @@ for lc, e in zip(LC,fcc_energies):
 |                      3.7 |         -3.711284 |
 |                     3.75 |          -3.68426 |
 
+
 #+begin_exercise
 Use the data in the table above to plot the total energy as a function of the lattice constant. Fit a cubic polynomial to the data, and find the volume that minimizes the total energy.
 #+end_exercise
@@ -4445,7 +4507,7 @@ Use the data in the table above to plot the total energy as a function of the la
 #+ATTR_LaTeX: placement=[H]
 [[./images/Cu-fcc.png]]
 
-If you want to know the lattice constant that gives the lowest energy, you would fit an [[Equations of State][equation of state]] to the data. Here is an example using mod:ase.utils.eos. Note that this module only fits a cubic polynomial to the data. There are many other possibilities discussed in the appendix on [[Equations of State][equations of state]].
+If you want to know the lattice constant that gives the lowest energy, you would fit an [[Equations of State][equation of state]] to the data. Here is an example using mod:ase.utils.eos.  See also the appendix [[Equations of State][equations of state]].
 
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -4476,6 +4538,7 @@ eos.plot('images/Cu-fcc-eos.png')
 : v0 = 12.0167118546 A^3
 : E0 = -3.7246811445 eV
 : B  = 0.859009528171 eV/A^3
+
 
 
 #+caption: Total energy vs. volume for fcc Cu with  fitted cubic polynomial equation of state.
