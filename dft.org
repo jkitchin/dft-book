@@ -4159,7 +4159,15 @@ See http://arxiv.org/pdf/1204.2733.pdf for a very informative comparison of DFT 
 
 ** Defining and visualizing bulk systems
 *** Built-in functions in ase
-As with molecules, mod:ase provides several helper functions to create bulk structures. We highlight a few of them here.
+As with molecules, mod:ase provides several helper functions to create bulk structures. We highlight a few of them here. Particularly common ones are:
+
+- mod:ase.lattice.cubic.FaceCenteredCubic
+- mod:ase.lattice.cubic.BodyCenteredCubic
+- mod:ase.lattice.hexagonal.Graphite
+- mod:ase.lattice.compounds.NaCl
+
+For others, see https://wiki.fysik.dtu.dk/ase/ase/lattice.html
+
 #+BEGIN_SRC python
 from ase.io import write
 from ase.lattice.cubic import FaceCenteredCubic
@@ -4190,6 +4198,44 @@ write('images/AgPd-bulk.png', atoms, show_unit_cell=2)
 #+caption: A simple Ag_{3}Pd bulk structure.
 #+ATTR_LaTeX: width=114bp,placement=[H]
 [[./images/AgPd-bulk.png]]
+
+To create a graphite structure we use the following code. Note that we have to specify the lattice constants (taken from http://www.phy.ohiou.edu/~asmith/NewATOMS/HOPG.pdf) because mod:ase has C in the diamond structure by default. We show two views, because the top view does not show the spacing between the layers.
+#+BEGIN_SRC python
+from ase.lattice.hexagonal import Graphite
+from ase.io import write
+
+atoms = Graphite('C', latticeconstant={'a':2.4612, 'c':6.7079})
+write('images/graphite.png', atoms.repeat((2,2,1)),rotation='115x', show_unit_cell=2)
+write('images/graphite-top.png', atoms.repeat((2,2,1)), show_unit_cell=2)
+#+END_SRC
+
+#+RESULTS:
+: None
+
+#+caption: A top view of graphite.
+#+ATTR_LaTeX: placement=[H]
+[[./images/graphite-top.png]]
+
+#+caption: A side view of graphite.
+#+ATTR_LaTeX: placement=[H]
+[[./images/graphite.png]]
+
+To get a compound, we use the following code. We have to specify the basis atoms to the function generating the compound, and the lattice constant. For NaCl we use the lattice constant at (http://en.wikipedia.org/wiki/Sodium_chloride).
+
+#+BEGIN_SRC python
+from ase.lattice.compounds import NaCl
+from ase.io import write
+
+atoms = NaCl(['Na','Cl'], latticeconstant=5.65)
+write('images/NaCl.png', atoms, show_unit_cell=2, rotation='45x,45y,45z')
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: A side view of graphite.
+#+ATTR_LaTeX: placement=[H]
+[[./images/NaCl.png]]
+
 
 *** Using http://materialsproject.org
     The [[http://www.materialsproject.org/][Materials Project]] offers web access to a pretty large number of materials (over 21,000 at the time of this writing), including structure and other computed properties. You must sign up for an account at the website, and then you can access the information. You can search for materials with lots of different criteria including formula, unit cell formula, by elements, by structure, etc... The website allows you to download the VASP files used to create the calculations. They also develop the [[https://github.com/materialsproject/pymatgen/][pymatgen]] project (which requires python 2.7+).
