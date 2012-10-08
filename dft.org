@@ -4379,9 +4379,10 @@ Some notes: we had to specify the PBE functional. That is good habit, since the 
 
 We get exactly the same result as the website! Why is this helpful then? Well, we could use this as a starting point to look at an equation of state, or to plot some interesting electronic structure, etc... Or we can gain a little confidence that our version of VASP is working like the one they used.
 
-** TODO convergence testing in bulk structures
-In the section on molecules, we learned that the total energy is a function of the planewave cutoff energy (ENCUT) used. In bulk systems that is true also. There is also another calculation parameter you must consider, the k-point grid. We will typically use a Monkhorst-Pack \cite{PhysRevB.13.5188} k-point grid, which is essentially a uniformly spaced grid in the Brillouin zone. These grids are specified as $n1 \times n2 \times n3$ grids, and the total number of k-points is $n1 \cdot n2 \cdot n3$. The computational cost is linear in the total number of k-points, so  a calculation on a $4 \times 4 \times 4$ grid will be roughly 8 times more expensive than on a $2 \times 2 \times 2$ grid. Hence, one seeks again to balance convergence with computational tractability.
+** Convergence testing in bulk structures
+In the section on molecules, we learned that the total energy is a function of the planewave cutoff energy (ENCUT) used. In bulk systems that is true also. There is also another calculation parameter you must consider, the k-point grid. The k-point grid is a computational tool used to approximate integrals of some property, e.g. the electron density, over the entire unit cell. The integration is performed in reciprocal space (i.e. in the Brillouin zone) for convenience and efficiency, and the k-point grid is where the property is sampled for the integration. The higher the number of sampled points, the more accurately the integrals are approximated.
 
+We will typically use a Monkhorst-Pack \cite{PhysRevB.13.5188} k-point grid, which is essentially a uniformly spaced grid in the Brillouin zone. Another less commonly used scheme is the Chadi-Cohen k-point grid \cite{PhysRevB.8.5747}. The Monkhorst-Pack grids are specified as $n1 \times n2 \times n3$ grids, and the total number of k-points is $n1 \cdot n2 \cdot n3$. The computational cost is linear in the total number of k-points, so  a calculation on a $4 \times 4 \times 4$ grid will be roughly 8 times more expensive than on a $2 \times 2 \times 2$ grid. Hence, one seeks again to balance convergence with computational tractability. Below we consider the k-point convergence of fcc Ag.
 
 #+BEGIN_SRC python
 from ase.lattice.cubic import FaceCenteredCubic
@@ -4397,7 +4398,7 @@ ready = True
 for k in KPTS:
     with jasp('bulk/Ag-kpts-{0}'.format(k),
               xc='PBE',
-              kpts=(k, k, k),
+              kpts=(k, k, k), #specifies the Monkhorst-Pack grid
               encut=300,
               atoms=atoms) as calc:
         try:
@@ -4428,7 +4429,7 @@ plt.show()
 #+attr_latex: placement=[H]
 [[./images/Ag-kpt-convergence.png]]
 
-Based on this figure, we need at least a $6 \times 6 \times 6$ k-point grid to achieve a convergence level of at least 50 meV. Note: the k-point convergence is not always monotonic like it is in this example. Oscillations in the total energy are typical, and it can be difficult to get high levels of convergence. The best practices are to use the same k-point sampling grid in energy differences where possible, and dense (high numbers of k-points) otherwise. It is important to check for convergence in these cases.
+Based on this figure, we need at least a $6 \times 6 \times 6$ k-point grid to achieve a convergence level of at least 50 meV. Note: the k-point convergence is not always monotonic like it is in this example, and sometimes very dense grids (e.g. up to $20 \times 20 \times 20$ are needed for highly converged properties such as the density of states). Oscillations in the total energy are typical, and it can be difficult to get high levels of convergence. The best practices are to use the same k-point sampling grid in energy differences where possible, and dense (high numbers of k-points) otherwise. It is important to check for convergence in these cases.
 
 As unit cells get larger, the number of k-points required becomes smaller. For example, if a $1 \times 1 \times 1$ fcc unit cell shows converged energies in a $12 \times 12 \times 12$ k-point grid, then a $2 \times 2 \times 2$ fcc unit cell would show the same level of convergence with a $6 \times 6 \times 6$ k-point grid. In other words, doubling the unit cell vectors results in a halving of the number of k-points.
 
@@ -4624,7 +4625,7 @@ plt.savefig('images/Cu-bcc-fcc.png')
 
 # print table of data
 print '#+tblname: bcc-data'
-print '#+caption: Total energy vs. lattice constant for BCC Cu'
+print '#+caption: Total energy vs. lattice constant for BCC Cu.'
 print '| Lattice constant (\AA$^3$) | Total energy (eV) |'
 print '|-'
 for lc, e in zip(bcc_LC, bcc_energies):
@@ -4633,15 +4634,16 @@ for lc, e in zip(bcc_LC, bcc_energies):
 
 #+RESULTS:
 #+tblname: bcc-data
-#+caption: Total energy vs. lattice constant for BCC Cu
+#+caption: Total energy vs. lattice constant for BCC Cu.
 | Lattice constant (\AA$^3$) | Total energy (eV) |
-|----------------------------+-------------------|
-|                       2.75 |         -3.587523 |
-|                        2.8 |         -3.668112 |
-|                       2.85 |         -3.708699 |
-|                        2.9 |         -3.716496 |
-|                       2.95 |         -3.697781 |
-|                        3.0 |         -3.657913 |
+|-
+| 2.75 | -3.587523 |
+| 2.8 | -3.668112 |
+| 2.85 | -3.708699 |
+| 2.9 | -3.716496 |
+| 2.95 | -3.697781 |
+| 3.0 | -3.657913 |
+
 
 #+begin_exercise
 Use the data for FCC and BCC Cu to plot the total energy as a function of the lattice constant.
@@ -4756,10 +4758,10 @@ plt.show()
 A unit cell has six degrees of freedom: the lengths of each unit cell vector, and the angle between each vector. There may additionally be internal degrees of freedom for the atoms. It is impractical to try the approach used for the hcp Ru on anything complicated. Instead, we rely again on algorithms to optimize the unit cell shape, volume and internal degrees of freedom. It is usually not efficient to make a wild guess of the geometry and then turn VASP loose on to optimize it. Instead, the following algorithm works pretty well.
 
 1. With the atoms frozen find the volume (at constant shape) that minimizes the total energy. The goal here is to just get an idea of where the right volume is.
-2. Perform a set of calculations at constant volume around the minimum from step 1, but the shape is allowed to change ([[incar:ISIF][ISIF]]=4)and the atoms allowed to relax.
+2. Perform a set of calculations at constant volume around the minimum from step 1, but the shape and internal atom positions are allowed to change ([[incar:ISIF][ISIF]]=4).
 3. Finally, do a final calculation near the minimum energy allowing the volume to also change. ([[incar:ISIF][ISIF]]=3)
 
-This multistep process is pretty reasonable to get a converged structure pretty quickly. We will illustrate the process on TiO$_2$ which has two lattice parameters and one internal degree of freedom.
+This multistep process is pretty reasonable to get a converged structure pretty quickly. We will illustrate the process on TiO_{2} which has two lattice parameters and one internal degree of freedom.
 
 #+BEGIN_SRC python :results output org raw :exports both
 # step 1 frozen atoms and shape at different volumes
@@ -4876,6 +4878,7 @@ plt.plot(volumes, energies)
 plt.xlabel('Vol. ($\AA^3)$')
 plt.ylabel('Total energy (eV)')
 plt.savefig('images/tio2-step2.png')
+plt.show()
 #+END_SRC
 
 #+RESULTS:
@@ -4965,8 +4968,10 @@ The points to note here are the following:
 2. The forces on the atoms are very small (less than 0.0 eV/\AA).
 3. The agreement with experimental lattice parameters is pretty good.
 4. The spacegroup is still correct.
+5. The total energy of this calculation is lower than everything from step 2.
 
-*** TODO the volume is very small (61) compared to what we expected (64) something may be wrong!
+However, note that the the volume is very small (61 Ang^{3}) compared to what we expected from step 2 (64 \AA^{3}). I suspect this is a problem due to convergence. It is recommended in the VASP manual that you set INCAR:PREC to "HIGH" and use ENCUT=1.3*max(ENMAX), which we certainly have not done here. It is also recommended that a final calculation be run with the tetrahedron method (ISMEAR=-5) to get an accurate energy.  Read more at http://cms.mpi.univie.ac.at/vasp/guide/node161.html.
+
 *** Effect of XC on bulk properties
 The exchange correlation functional can significantly affect computed bulk properties. Here, we examine the effect on the bulk lattice constant of Pd (exp. 3.881). An excellent review of this can be found in \cite{mattsson-084714}. We examine several functionals. The =xc= keyword in =jasp= is used to select the POTCARs. The value of xc can be 'LDA', 'PW91' or 'PBE'. Let us consider the LDA functional first.
 
