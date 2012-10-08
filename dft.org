@@ -4168,6 +4168,52 @@ As with molecules, mod:ase provides several helper functions to create bulk stru
 
 For others, see https://wiki.fysik.dtu.dk/ase/ase/lattice.html
 
+We start with a simple example, fcc Ag. By default, mod:ase knows Ag is an fcc metal, and knows the experimental lattice constant. We have to specify the directions (vectors along each axis) to get something other than the default output. Here, the default fcc cell contains four atoms.
+
+#+BEGIN_SRC python :results output
+from ase.io import write
+from ase.lattice.cubic import FaceCenteredCubic
+
+atoms = FaceCenteredCubic('Ag')
+
+write('images/Ag-fcc.png',atoms,show_unit_cell=2)
+
+print atoms
+#+END_SRC
+
+#+RESULTS:
+: Lattice(symbols='Ag4', positions=..., cell=[4.09, 4.09, 4.09], pbc=[True, True, True])
+
+#+begin_note
+A mod:ase.lattice.bravais.Lattice object is returned! This is practically the same as as an mod:ase.atoms.Atoms object.
+#+end_note
+
+#+caption: A simple fcc Ag bulk structure in the primitive unit cell.
+#+ATTR_LaTeX: placement=[H]
+[[./images/Ag-fcc.png]]
+
+Here we specify the primitive unit cell, which only has one atom in it.
+
+#+BEGIN_SRC python :results output
+from ase.io import write
+from ase.lattice.cubic import FaceCenteredCubic
+
+atoms = FaceCenteredCubic('Ag', directions=[[0, 1, 1],
+                                            [1, 0, 1],
+                                            [1, 1, 0]])
+
+write('images/Ag-fcc-primitive.png',atoms,show_unit_cell=2)
+
+print atoms
+#+END_SRC
+
+#+RESULTS:
+: Lattice(symbols='Ag', positions=..., cell=[[2.892066735052979, 0.0, 0.0], [1.4460333675264898, 2.5046032619957996, 0.0], [1.4460333675264896, 0.8348677539985997, 2.3613626009855695]], pbc=[True, True, True])
+
+#+caption: A simple fcc Ag bulk structure in the primitive unit cell.
+#+ATTR_LaTeX: placement=[H]
+[[./images/Ag-fcc.png]]
+
 #+BEGIN_SRC python
 from ase.io import write
 from ase.lattice.cubic import FaceCenteredCubic
@@ -4190,7 +4236,7 @@ write('images/AgPd-bulk.png', atoms, show_unit_cell=2)
 #+RESULTS:
 : None
 
-#+caption: A simple fcc Ag bulk structure.
+#+caption: A simple fcc Ag bulk structure in the traditional unit cell.
 #+ATTR_LaTeX: width=114bp,placement=[H]
 
 [[./images/Ag-bulk.png]]
