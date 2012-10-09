@@ -4212,7 +4212,9 @@ print atoms
 
 #+caption: A simple fcc Ag bulk structure in the primitive unit cell.
 #+ATTR_LaTeX: placement=[H]
-[[./images/Ag-fcc.png]]
+[[./images/Ag-fcc-primitive.png]]
+
+We can use these modules to build alloy unit cells. The basic strategy is to create the base unit cell in one element and then selectively change some atoms to different chemical symbols. Here we examine an Ag_{3}Pd alloy structure.
 
 #+BEGIN_SRC python
 from ase.io import write
@@ -4278,7 +4280,7 @@ write('images/NaCl.png', atoms, show_unit_cell=2, rotation='45x,45y,45z')
 
 #+RESULTS:
 
-#+caption: A side view of graphite.
+#+caption: A view of a NaCl crystal structure.
 #+ATTR_LaTeX: placement=[H]
 [[./images/NaCl.png]]
 
@@ -4462,7 +4464,7 @@ TE = np.array(TE)
 TE -= TE.min()
 
 plt.plot(KPTS, TE)
-plt.xlabel('ENCUT (eV)')
+plt.xlabel('number of k-points in each dimension')
 plt.ylabel('Total Energy (eV)')
 plt.savefig('images/Ag-kpt-convergence.png')
 plt.show()
@@ -4475,11 +4477,13 @@ plt.show()
 #+attr_latex: placement=[H]
 [[./images/Ag-kpt-convergence.png]]
 
-Based on this figure, we need at least a $6 \times 6 \times 6$ k-point grid to achieve a convergence level of at least 50 meV. Note: the k-point convergence is not always monotonic like it is in this example, and sometimes very dense grids (e.g. up to $20 \times 20 \times 20$ are needed for highly converged properties such as the density of states). Oscillations in the total energy are typical, and it can be difficult to get high levels of convergence. The best practices are to use the same k-point sampling grid in energy differences where possible, and dense (high numbers of k-points) otherwise. It is important to check for convergence in these cases.
+Based on this figure, we need at least a $6 \times 6 \times 6$ k-point grid to achieve a convergence level of at least 50 meV. Note: the k-point convergence is not always monotonic like it is in this example, and sometimes very dense grids (e.g. up to $20 \times 20 \times 20$) are needed for highly converged properties such as the density of states in smaller unit cells. Oscillations in the total energy are typical, and it can be difficult to get high levels of convergence. The best practices are to use the same k-point sampling grid in energy differences where possible, and dense (high numbers of k-points) otherwise. It is important to check for convergence in these cases.
 
 As unit cells get larger, the number of k-points required becomes smaller. For example, if a $1 \times 1 \times 1$ fcc unit cell shows converged energies in a $12 \times 12 \times 12$ k-point grid, then a $2 \times 2 \times 2$ fcc unit cell would show the same level of convergence with a $6 \times 6 \times 6$ k-point grid. In other words, doubling the unit cell vectors results in a halving of the number of k-points.
 
 Sometimes you may see k-points described as k-points per reciprocal atom. For example, a $12 \times 12 \times 12$ k-point grid for a primitive fcc unit cell would be 1728 k-points per reciprocal atom. A $2 \times 2 \times 2$ fcc unit cell has eight atoms in it, or 0.125 reciprical atoms, so a $6 \times 6 \times 6$ k-point grid has 216 k-points in it, or 216/0.125 = 1728 k-points per reciprocal atom, the same as we discussed before.
+
+In the k-point convergence example above, we used a $6 \times 6 \times 6$ k-point grid on a unit cell with four atoms in it, leading to 864 k-points per reciprocal atom. If we had instead used the primitive unit cell, we would need either a $9 \times 9 \times 9$ or $10 \times 10 \times 10$ k-point grid to get a similar level of accuracy. In this case, there is no exact matching of k-point grids due to the difference in shape of the cells.
 
 ** Determining bulk structures
 What we typically mean by determining bulk structures includes the following:
@@ -4800,14 +4804,92 @@ plt.show()
 #+label: fig:ru-contourf
 [[./images/ru-contourf.png]]
 
+
 *** Complex structures with internal degrees of freedom
 A unit cell has six degrees of freedom: the lengths of each unit cell vector, and the angle between each vector. There may additionally be internal degrees of freedom for the atoms. It is impractical to try the approach used for the hcp Ru on anything complicated. Instead, we rely again on algorithms to optimize the unit cell shape, volume and internal degrees of freedom. It is usually not efficient to make a wild guess of the geometry and then turn VASP loose on to optimize it. Instead, the following algorithm works pretty well.
 
-1. With the atoms frozen find the volume (at constant shape) that minimizes the total energy. The goal here is to just get an idea of where the right volume is.
-2. Perform a set of calculations at constant volume around the minimum from step 1, but the shape and internal atom positions are allowed to change ([[incar:ISIF][ISIF]]=4).
-3. Finally, do a final calculation near the minimum energy allowing the volume to also change. ([[incar:ISIF][ISIF]]=3)
+1. With the atoms frozen find the volume (at constant shape) that minimizes the total energy (INCAR:ISIF=2). The goal here is to just get an idea of where the right volume is.
+2. Using the results from step 1 as a starting point, perform a set of calculations at constant volume around the minimum from step 1, but the shape and internal atom positions are allowed to change ([[incar:ISIF][ISIF]]=4).
+3. Finally, do a final calculation near the minimum energy allowing the volume to also change. ([[incar:ISIF][ISIF]]=3).
 
 This multistep process is pretty reasonable to get a converged structure pretty quickly. We will illustrate the process on TiO_{2} which has two lattice parameters and one internal degree of freedom.
+
+There are a few subtle points to mention in doing these calculations. The VASP [[http://cms.mpi.univie.ac.at/vasp/guide/node161.html][manual]] recommends that you set incar:PREC to 'high', and that ENCUT be set to 1.3*max(ENMAX) of the pseudopotentials. This is necessary to avoid problems caused by small basis sets when the volume changes, and Pulay stress. It is important to ensure that the energies are reasonably converged with respect to k-point grids. Hence, it can be a significant amount of work to do this right! Let us start with determining the ENCUT value that is appropriate for TiO_{2}
+
+#+BEGIN_SRC sh :results output
+grep ENMAX $VASP_PP_PATH/POTPAW_PBE/Ti/POTCAR
+grep ENMAX $VASP_PP_PATH/POTPAW_PBE/O/POTCAR
+#+END_SRC
+
+#+RESULTS:
+:    ENMAX  =  178.330; ENMIN  =  133.747 eV
+:    ENMAX  =  400.000; ENMIN  =  300.000 eV
+
+According to the manual, we should use ENCUT = 1.3*400 for good results.
+
+Now we consider the k-point convergence. The lattice vectors of the rutile TiO_{2} structure are not all the same length, which means it is not essential that we use the same number of k-points in each direction. For simplicity, however, we do that here.
+
+#+BEGIN_SRC python :results output org raw :exports both
+# step 1 frozen atoms and shape at different volumes
+from ase import Atom, Atoms
+import numpy as np
+from jasp import *
+import matplotlib.pyplot as plt
+
+'''
+create a TiO2 structure from the lattice vectors at
+http://cst-www.nrl.navy.mil/lattice/struk/c4.html
+'''
+a = 4.59 # experimental degrees of freedom.
+c = 2.96
+u = 0.3 #internal degree of freedom!
+
+#primitive vectors
+a1 = a*np.array([1.0, 0.0, 0.0])
+a2 = a*np.array([0.0, 1.0, 0.0])
+a3 = c*np.array([0.0, 0.0, 1.0])
+
+atoms = Atoms([Atom('Ti', [0., 0., 0.]),
+               Atom('Ti', 0.5 * a1 + 0.5 * a2 + 0.5 * a3),
+               Atom('O', u * a1 + u * a2),
+               Atom('O', -u * a1 - u * a2),
+               Atom('O', (0.5 + u) * a1 + (0.5 - u) * a2 + 0.5 * a3),
+               Atom('O', (0.5 - u) * a1 + (0.5 + u) * a2 + 0.5 * a3)],
+              cell=[a1, a2, a3])
+
+KPOINTS = [2, 3, 4, 5, 6, 7, 8]
+energies = []
+
+ready = True
+for k in KPOINTS:
+    with jasp('bulk/tio2/kpts-{0}'.format(k),
+              encut=520,
+              kpts=(k, k, k),
+              xc='PBE',
+              sigma=0.05,
+              atoms=atoms) as calc:
+        try:
+            energies.append(atoms.get_potential_energy())
+        except (VaspSubmitted, VaspQueued):
+            ready = False
+
+if not ready:
+    import sys; sys.exit()
+
+plt.plot(KPOINTS, energies)
+plt.xlabel('number of k-points in each vector')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/tio2-kpt-convergence.png')
+plt.show()
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: k-point convergence of rutile TiO_{2}.
+#+attr_latex: placement=[H]
+[[./images/tio2-kpt-convergence.png]]
+
+A k-point grid of $5 \times 5 \times 5$ appears suitable for reasonably converged results. Now we proceed with step 1: Compute the total energy of the unit cell allowing internal degrees of freedom to relax, but keeping a constant cell shape.
 
 #+BEGIN_SRC python :results output org raw :exports both
 # step 1 frozen atoms and shape at different volumes
@@ -4843,6 +4925,8 @@ cell0 = atoms.get_cell()
 factors = [0.9, 0.95, 1.0, 1.05, 1.1] #to change volume by
 
 energies, volumes = [], []
+
+ready = True
 for f in factors:
     v1 = f*v0
     cell_factor = (v1 / v0)**(1. / 3.)
@@ -4850,8 +4934,11 @@ for f in factors:
     atoms.set_cell(cell0 * cell_factor, scale_atoms=True)
 
     with jasp('bulk/tio2/step1-{0:1.2f}'.format(f),
-              encut=350,
-              kpts=(4, 4, 4),
+              encut=520,
+              kpts=(5,5,5),
+              isif=2, # relax internal degrees of freedom
+              ibrion=1,
+              nsw=50,
               xc='PBE',
               sigma=0.05,
               atoms=atoms) as calc:
@@ -4859,7 +4946,10 @@ for f in factors:
             energies.append(atoms.get_potential_energy())
             volumes.append(atoms.get_volume())
         except (VaspSubmitted, VaspQueued):
-            pass
+            ready = False
+
+if not ready:
+    import sys; sys.exit()
 
 plt.plot(volumes, energies)
 plt.xlabel('Vol. ($\AA^3)$')
@@ -4877,85 +4967,79 @@ for v, e in zip(volumes, energies):
 #+RESULTS:
 #+tblname: tio2-vol-ene
 #+caption: Total energy of TiO_{2} vs. volume.
-| Volume  $\AA^3$ | Energy (eV) |
-|-----------------+-------------|
-|      56.1254184 |  -52.042193 |
-|      59.2434972 |  -52.649555 |
-|       62.361576 |  -52.949853 |
-|      65.4796548 |  -52.950336 |
-|      68.5977336 |  -52.783494 |
+| Volume ($\AA^3$) | Energy (eV) |
+|-
+| 56.1254184 | -51.820427 |
+| 59.2434972 | -52.462241 |
+| 62.361576 | -52.761097 |
+| 65.4796548 | -52.801329 |
+| 68.5977336 | -52.64715 |
 
 
-#+caption: Total energy vs volume for TiO_{2} with frozen atoms and frozen shape.
+#+caption: Total energy vs. volume for rutile TiO_{2} in step 1 of the optimization.
+#+attr_latex: placement=[H]
 [[./images/tio2-step1.png]]
 
-In step 2 we will actually do some relaxations. We will do a series of relaxations, from 62 to 66 \AA^{3}, and allow the ions and cell shape to relax (ISIF=4) at constant volume.
+Now, we know the minimum volume is near 64 \AA^3. You could at this point fit an equation of state to find that minimum. However, we now want to use these initial starting points for a second round of optimization where we allow the unit cell shape to change, at constant volume: ISIF=4.
 
-#+BEGIN_SRC python
-# step 2, constant volume, relax shape and atoms
+#+BEGIN_SRC python :results output
 from jasp import *
-import matplotlib.pyplot as plt
 
-with jasp('bulk/tio2/step1-1.00') as calc:
-    atoms = calc.get_atoms()
-    v0 = atoms.get_volume()
-    cell0 = atoms.get_cell()
+factors = [0.9, 0.95, 1.0, 1.05, 1.1] #to change volume by
 
-volumes = [62., 63., 64., 65., 66.]
+energies1, volumes1 = [], [] # from step 1
+energies, volumes = [], [] # for step 2
+ready = True
+for f in factors:
+    with jasp('bulk/tio2/step1-{0:1.2f}'.format(f)) as calc:
+        atoms = calc.get_atoms()
+        energies1.append(atoms.get_potential_energy())
+        volumes1.append(atoms.get_volume())
+        calc.clone('bulk/tio2/step2-{0:1.2f}'.format(f))
 
-energies = []
-for v in volumes:
-    atoms.set_cell((v / v0)**(1. / 3.) * cell0, scale_atoms=True)
-    with jasp('bulk/tio2/step2-{0}'.format(v),
-              encut=350,
-              kpts=(4, 4, 4),
-              xc='PBE',
-              sigma=0.05,
-              isif=4,     # relax ions, cell shape. not volume
-              ibrion=2,
-              nsw=10,
-              atoms=atoms) as calc:
+    # now set ISIF=4 and run
+    with jasp('bulk/tio2/step2-{0:1.2f}'.format(f),
+              isif=4) as calc:
+        atoms = calc.get_atoms()
         try:
             energies.append(atoms.get_potential_energy())
+            volumes.append(atoms.get_volume())
         except (VaspSubmitted, VaspQueued):
-            pass
+            ready = False
 
-plt.plot(volumes, energies)
+if not ready:
+    import sys; sys.exit()
+
+import matplotlib.pyplot as plt
+plt.plot(volumes1, energies1, volumes, energies)
 plt.xlabel('Vol. ($\AA^3)$')
 plt.ylabel('Total energy (eV)')
+plt.legend(['step 1', 'step 2'], loc='best')
 plt.savefig('images/tio2-step2.png')
 plt.show()
 #+END_SRC
 
 #+RESULTS:
-: None
 
-#+caption: Total energy vs. volume of TiO$_2$ where shape and atoms are allowed to relax.
+#+caption: Total energy vs. volume for step 2 of the unit cell optimization.
+#+attr_latex: placement=[H]
 [[./images/tio2-step2.png]]
 
-Now, we take the final step, with ISIF=3 using the best guess from step 2.
+The take away message here is that the total energy slightly decreases when we allow the unit cell shape to change, especially for the larger unit cell deformation. This has little effect on the minimum volume, but would have an effect on the bulk modulus, which is related to the curvature of the equation of state. At this point, you could fit an equation of state to the step 2 data, and estimate the volume at the minimum volume, and recalculate the
 
-#+BEGIN_SRC python :results output :exports both
-# step 3 relax whole unit cell
+An alternative is a final calculation with ISIF=3, which optimizes the unit cell volume, shape and internal coordinates.  It looks like the calculation at bulk/tio2/step2-1.05 is close to the minimum, so we will use that as a starting point for the final calculation.
+
+#+BEGIN_SRC python :results output
 from jasp import *
 
-with jasp('bulk/tio2/step2-64.0') as calc:
-    atoms = calc.get_atoms()
+with jasp('bulk/tio2/step2-1.05') as calc:
+    calc.clone('bulk/tio2/step3')
 
 with jasp('bulk/tio2/step3',
-          encut=350,
-          kpts=(4,4,4),
-          xc='PBE',
-          sigma=0.05,
-          isif=3,     # relax ions, cell shape, and volume
-          ibrion=2,
-          nsw=10,
-          atoms=atoms) as calc:
-        try:
-            calc.calculate()
-            print calc
-        except (VaspSubmitted, VaspQueued):
-            pass
+          isif=3) as calc:
+    calc.calculate()
+    atoms = calc.get_atoms()
+    print calc
 
 from pyspglib import spglib
 print '\nThe spacegroup is {0}'.format(spglib.get_spacegroup(atoms))
@@ -4966,36 +5050,37 @@ print '\nThe spacegroup is {0}'.format(spglib.get_spacegroup(atoms))
 : -----------------------------
   VASP calculation from /home/jkitchin/dft-org/bulk/tio2/step3
   converged: True
-  Energy = -53.201939 eV
+  Energy = -52.818610 eV
 
   Unit cell vectors (angstroms)
         x       y     z      length
-  a0 [ 4.553  0.000  0.000] 4.553
-  a1 [ 0.000  4.553  0.000] 4.553
-  a2 [ 0.000  0.000  2.932] 2.932
-  a,b,c,alpha,beta,gamma (deg): 4.553 4.553 2.932 90.0 90.0 90.0
-  Unit cell volume = 60.759 Ang^3
+  a0 [ 4.661  0.000  0.000] 4.661
+  a1 [ 0.000  4.661  0.000] 4.661
+  a2 [ 0.000  0.000  2.970] 2.970
+  a,b,c,alpha,beta,gamma (deg): 4.661 4.661 2.970 90.0 90.0 90.0
+  Unit cell volume = 64.515 Ang^3
   Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
-            -0.001 -0.001  0.000 -0.000 -0.000 -0.000
- Atom#  sym       position [x,y,z]         tag  rmsForce
-   0    Ti  [0.000      0.000      0.000]   0   0.00
-   1    Ti  [2.276      2.276      1.466]   0   0.00
-   2    O   [1.379      1.379      0.000]   0   0.00
-   3    O   [3.174      3.174      0.000]   0   0.00
-   4    O   [3.655      0.898      1.466]   0   0.00
-   5    O   [0.898      3.655      1.466]   0   0.00
+            -0.000 -0.000 -0.000 -0.000 -0.000 -0.000
+ Atom#  sym       position [x,y,z]         tag  rmsForce constraints
+   0    Ti  [0.000      0.000      0.000]   0   0.00      T T T
+   1    Ti  [2.331      2.331      1.485]   0   0.00      T T T
+   2    O   [1.420      1.420      0.000]   0   0.00      T T T
+   3    O   [3.241      3.241      0.000]   0   0.00      T T T
+   4    O   [3.751      0.910      1.485]   0   0.00      T T T
+   5    O   [0.910      3.751      1.485]   0   0.00      T T T
 --------------------------------------------------
 
 INCAR Parameters:
 -----------------
         nbands: 20
-           nsw: 10
-        ibrion: 2
+           nsw: 50
+        ibrion: 1
           isif: 3
-         encut: 350.0
+         encut: 520.0
          sigma: 0.05
+        magmom: None
           prec: Normal
-          kpts: [4 4 4]
+          kpts: [5, 5, 5]
     reciprocal: False
             xc: PBE
            txt: -
@@ -5006,17 +5091,33 @@ Pseudopotentials used:
 O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
 Ti: potpaw_PBE/Ti/POTCAR (git-hash: a29a4f0f14083cf90544a3cf1ae7fc220b31829c)
 
-The spacegroup is  (136)
+The spacegroup is P4_2/mnm   (136)
 #+end_example
 
-The points to note here are the following:
-1. The stress on the unit cell is very low.
-2. The forces on the atoms are very small (less than 0.0 eV/\AA).
-3. The agreement with experimental lattice parameters is pretty good.
-4. The spacegroup is still correct.
-5. The total energy of this calculation is lower than everything from step 2.
+This is the final result. You can see that the forces on all the atoms are less than 0.01 eV/\AA, and the stress is also very small. The final volume is close to where we expect it to be based on steps 1 and 2. The space group is still correct. The lattice vectors are close in length to the experimentally known values, and the angles between the vectors has not changed much. Looks good!
 
-However, note that the the volume is very small (61 Ang^{3}) compared to what we expected from step 2 (64 \AA^{3}). I suspect this is a problem due to convergence. It is recommended in the VASP manual that you set INCAR:PREC to "HIGH" and use ENCUT=1.3*max(ENMAX), which we certainly have not done here. It is also recommended that a final calculation be run with the tetrahedron method (ISMEAR=-5) to get an accurate energy.  Read more at http://cms.mpi.univie.ac.at/vasp/guide/node161.html.
+As a final note, the VASP [[http://cms.mpi.univie.ac.at/vasp/guide/node164.html][manual]] recommends you do not use the final energy directly from the calculation, but rather run a final calculation with incar:ISMEAR set to -5. Here we examine the effect.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+
+with jasp('bulk/tio2/step3') as calc:
+    atoms = calc.get_atoms()
+    print 'default ismear: ',atoms.get_potential_energy()
+    calc.clone('bulk/tio2/step4')
+
+with jasp('bulk/tio2/step4',
+          ismear=-5,
+          nsw=0) as calc:
+    atoms = calc.get_atoms()
+    print 'ismear=-5:      ',atoms.get_potential_energy()
+#+END_SRC
+
+#+RESULTS:
+: default ismear:  -52.81861
+: ismear=-5:       -52.817345
+
+The difference here is on the order of a meV. That does not seem significant here. I suspect the recommended practice stems from early days when much smaller ENCUT values were used and changes in the number of basis functions were more significant.
 
 *** Effect of XC on bulk properties
 The exchange correlation functional can significantly affect computed bulk properties. Here, we examine the effect on the bulk lattice constant of Pd (exp. 3.881). An excellent review of this can be found in \cite{mattsson-084714}. We examine several functionals. The =xc= keyword in =jasp= is used to select the POTCARs. The value of xc can be 'LDA', 'PW91' or 'PBE'. Let us consider the LDA functional first.
@@ -5119,7 +5220,7 @@ In the self-consistent cycle  of a DFT calculation, the total energy is minimize
 
 Some rules to keep in mind:
 1. The smearing methods were designed for metals. For molecules, semiconductors and insulators you should use a very small SIGMA (e.g. 0.01).
-2. Standard values for metallic systems is SIGMA=0.1, but the best SIGMA may be [[http://cms.mpi.univie.ac.at/vasp/guide/node159.html ][material specific]].
+2. Standard values for metallic systems is SIGMA=0.1, but the best SIGMA may be [[http://cms.mpi.univie.ac.at/vasp/guide/node159.html][material specific]].
 
 The consequence of this finite temperature is that additional bands
 must be included in the calculation to allow for the partially
