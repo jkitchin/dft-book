@@ -11041,6 +11041,140 @@ head molecules/O_sv-4nodes/OUTCAR
 
 #+end_example
 
+*** Running multiple instances of jasp in parallel
+mod:jasp was designed to enable asynchronous, parallel running processes through a queuing system. This is ideal for submitting large numbers of independent calculations in one script. The design uses exceptions to exit the script if the results are not available for subsequent analysis. The design expects that you run the script often, and the results are analyzed only when they are finally available.
+
+Sometimes it is convenient to run a set of calculations and then wait for them to finish so that a second set of calculations that depend on the first results can be run. In this scenario, it is inconvenient to have to rerun your script again after the first set of calculations is done.  The challenge is how to tell the computer to run a set of calculations in parallel, *and* wait for the calculations to finish. This can be achieved using the mod:multiprocessing module in python.
+
+The principle idea is to set up the calculations you want to run, and use mod:multiprocessing to handle running them and waiting for you. To do this, you must instruct mod:jasp to use a "run mode", and construct a script with a function that runs a calculation, and a section that only runs in the "__main__" script.
+
+#+BEGIN_SRC python :results output
+import multiprocessing
+from jasp import *
+from ase import Atom, Atoms
+from ase.utils.eos import EquationOfState
+import numpy as np
+
+JASPRC['mode'] = 'run'
+
+# this is the function that runs a calculation
+def do_calculation(calculator):
+    'function to run a calculation through multiprocessing'
+    with calculator as calc:
+        atoms = calc.get_atoms()
+        e = atoms.get_potential_energy()
+        v = atoms.get_volume()
+    return v, e
+
+# this only runs in the main script, not in processes on other cores
+if __name__ == '__main__':
+    NCORES = 6  # number of cores to run processes on
+
+    # setup an atoms object
+    a = 3.6
+    atoms = Atoms([Atom('Cu',(0, 0, 0))],
+                  cell=0.5 * a*np.array([[1.0, 1.0, 0.0],
+                                         [0.0, 1.0, 1.0],
+                                         [1.0, 0.0, 1.0]]))
+    v0 = atoms.get_volume()
+
+    # Step 1
+    COUNTER = 0
+    calculators = []  # list of calculators to be run
+    factors = [-0.1, 0.05, 0.0, 0.05, 0.1]
+    for f in factors:
+        newatoms = atoms.copy()
+        newatoms.set_volume(v0*(1 + f))
+        label = 'bulk/cu-mp/step1-{0}'.format(COUNTER)
+        COUNTER += 1
+
+        calc = jasp(label,
+                    xc='PBE',
+                    encut=350,
+                    kpts=(6,6,6),
+                    isym=2,
+                    atoms=newatoms)
+
+        calculators.append(calc)
+
+    # now we set up the Pool of processes
+    pool = multiprocessing.Pool(processes=NCORES)
+
+    # get the output from running each calculation
+    out = pool.map(do_calculation, calculators)
+    pool.close()
+    pool.join() # this makes the script wait here until all jobs are done
+
+    # now proceed with analysis
+    V = [x[0] for x in out]
+    E = [x[1] for x in out]
+
+    eos = EquationOfState(V, E)
+    v1, e1, B = eos.fit()
+    print 'step1: v1 = {v1}'.format(**locals())
+
+    ### ################################################################
+    ## STEP 2, eos around the minimum
+    ## #################################################################
+    factors = [-0.06, -0.04, -0.02,
+               0.0,
+               0.02, 0.04, 0.06]
+
+    calculators = [] # reset list
+    for f in factors:
+        newatoms = atoms.copy()
+        newatoms.set_volume(v1*(1 + f))
+        label = 'bulk/cu-mp/step2-{0}'.format(COUNTER)
+        COUNTER += 1
+
+        calc = jasp(label,
+                    xc='PBE',
+                    encut=350,
+                    kpts=(6,6,6),
+                    isym=2,
+                    atoms=newatoms)
+        calculators.append(calc)
+
+    pool = multiprocessing.Pool(processes=NCORES)
+
+    out = pool.map(do_calculation, calculators)
+    pool.close()
+    pool.join() # wait here for calculations to finish
+
+    # proceed with analysis
+    V += [x[0] for x in out]
+    E += [x[1] for x in out]
+
+    V = np.array(V)
+    E = np.array(E)
+
+    f = np.array(V)/v1
+
+    # only take points within +- 10% of the minimum
+    ind = (f >=0.90) & (f <= 1.1)
+
+    eos = EquationOfState(V[ind], E[ind])
+    v2, e2, B = eos.fit()
+    print 'step2: v2 = {v2}'.format(**locals())
+    eos.plot('images/cu-mp-eos.png')
+
+
+#+END_SRC
+
+#+RESULTS:
+: step1: v1 = 12.0218897111
+: step2: v2 = 12.0216094217
+
+#+caption: Equation of state for Cu using the multiprocessing module.
+#+attr_latex: placement=[H]
+[[./images/cu-mp-eos.png]]
+
+#+begin_note
+The first time you run this you will get all the VASP output. The second time you get the smaller output above.
+
+Also, I have not figured out how to integrate this method with the queue system. At the moment, the runjasp.py script which ultimately runs VASP will run VASP in parallel, i.e. one process on multiple nodes/cores instead of a single job that runs multiple processes simultaneously on multiple nodes/cores.
+#+end_note
+
 *** Exporting data json, xml, python, sqlite
 jasp has some capability for representing a calculation result in an archival format. The formats currently under development are json, xml, python and sqlite. The main point of these methods is to make it easy to create archive files that are machine readable for supplementary information in publications. These are under development.
 
@@ -11370,6 +11504,413 @@ with jasp('bulk/alloy/cu') as calc:
   </pyxs:col>
 </pyxs:obj>
 
+#+end_example
+
+*** Recommended values for ENCUT
+#+BEGIN_SRC python :results output
+from ase.data import chemical_symbols
+import glob, os
+
+chemical_symbols.sort()
+for symbol in chemical_symbols:
+
+    potcars = glob.glob('{0}/POTPAW_PBE/{1}*/POTCAR'.format(os.environ['VASP_PP_PATH'],
+                                                     symbol))
+
+    for potcar in potcars:
+        with open(potcar) as f:
+            for line in f:
+                if 'ENMAX' in line:
+                        print '{0:30s}: {1}'.format(os.path.relpath(potcar,
+                                                                os.environ['VASP_PP_PATH']),
+                                                                line.strip())
+
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+POTPAW_PBE/Ac/POTCAR          : ENMAX  =  172.237; ENMIN  =  129.178 eV
+POTPAW_PBE/Ag_new/POTCAR      : ENMAX  =  249.844; ENMIN  =  187.383 eV
+POTPAW_PBE/Ag/POTCAR          : ENMAX  =  249.846; ENMIN  =  187.385 eV
+POTPAW_PBE/Ag_pv/POTCAR       : ENMAX  =  297.865; ENMIN  =  223.399 eV
+POTPAW_PBE/Al/POTCAR          : ENMAX  =  240.300; ENMIN  =  180.225 eV
+POTPAW_PBE/Am/POTCAR          : ENMAX  =  255.875; ENMIN  =  191.906 eV
+POTPAW_PBE/Ar/POTCAR          : ENMAX  =  266.393; ENMIN  =  199.795 eV
+POTPAW_PBE/As_d_GW/POTCAR     : ENMAX  =  346.172; ENMIN  =  259.629 eV
+POTPAW_PBE/As_d/POTCAR        : ENMAX  =  288.651; ENMIN  =  216.488 eV
+POTPAW_PBE/As_GW/POTCAR       : ENMAX  =  208.702; ENMIN  =  156.526 eV
+POTPAW_PBE/As/POTCAR          : ENMAX  =  208.680; ENMIN  =  156.510 eV
+POTPAW_PBE/At_d/POTCAR        : ENMAX  =  266.251; ENMIN  =  199.688 eV
+POTPAW_PBE/At/POTCAR          : ENMAX  =  161.430; ENMIN  =  121.073 eV
+POTPAW_PBE/Au_new/POTCAR      : ENMAX  =  229.943; ENMIN  =  172.457 eV
+POTPAW_PBE/Au/POTCAR          : ENMAX  =  229.948; ENMIN  =  172.461 eV
+POTPAW_PBE/Ba_sv/POTCAR       : ENMAX  =  187.210; ENMIN  =  140.408 eV
+POTPAW_PBE/Be/POTCAR          : ENMAX  =  247.544; ENMIN  =  185.658 eV
+POTPAW_PBE/Be_sv/POTCAR       : ENMAX  =  308.750; ENMIN  =  231.563 eV
+POTPAW_PBE/B_h/POTCAR         : ENMAX  =  700.000; ENMIN  =  500.000 eV
+POTPAW_PBE/Bi_d/POTCAR        : ENMAX  =  242.851; ENMIN  =  182.138 eV
+POTPAW_PBE/Bi/POTCAR          : ENMAX  =  105.037; ENMIN  =   78.777 eV
+POTPAW_PBE/Bi_pv/POTCAR       : ENMAX  =  309.187; ENMIN  =  231.890 eV
+POTPAW_PBE/B/POTCAR           : ENMAX  =  318.606; ENMIN  =  238.954 eV
+POTPAW_PBE/Br/POTCAR          : ENMAX  =  216.264; ENMIN  =  162.198 eV
+POTPAW_PBE/B_s/POTCAR         : ENMAX  =  269.245; ENMIN  =  201.934 eV
+POTPAW_PBE/Ba_sv/POTCAR       : ENMAX  =  187.210; ENMIN  =  140.408 eV
+POTPAW_PBE/Be/POTCAR          : ENMAX  =  247.544; ENMIN  =  185.658 eV
+POTPAW_PBE/Be_sv/POTCAR       : ENMAX  =  308.750; ENMIN  =  231.563 eV
+POTPAW_PBE/Bi_d/POTCAR        : ENMAX  =  242.851; ENMIN  =  182.138 eV
+POTPAW_PBE/Bi/POTCAR          : ENMAX  =  105.037; ENMIN  =   78.777 eV
+POTPAW_PBE/Bi_pv/POTCAR       : ENMAX  =  309.187; ENMIN  =  231.890 eV
+POTPAW_PBE/Br/POTCAR          : ENMAX  =  216.264; ENMIN  =  162.198 eV
+POTPAW_PBE/Ca/POTCAR          : ENMAX  =  102.755; ENMIN  =   77.067 eV
+POTPAW_PBE/Ca_pv/POTCAR       : ENMAX  =  119.554; ENMIN  =   89.665 eV
+POTPAW_PBE/Ca_sv/POTCAR       : ENMAX  =  266.586; ENMIN  =  199.939 eV
+POTPAW_PBE/C_d/POTCAR         : ENMAX  =  413.992; ENMIN  =  310.494 eV
+POTPAW_PBE/Cd/POTCAR          : ENMAX  =  274.342; ENMIN  =  205.757 eV
+POTPAW_PBE/Ce_3/POTCAR        : ENMAX  =  181.286; ENMIN  =  135.964 eV
+POTPAW_PBE/Ce_h/POTCAR        : ENMAX  =  299.900; ENMIN  =  224.925 eV
+POTPAW_PBE/Ce/POTCAR          : ENMAX  =  273.042; ENMIN  =  204.781 eV
+POTPAW_PBE/C_GW/POTCAR        : ENMAX  =  413.992; ENMIN  =  310.494 eV
+POTPAW_PBE/C_h_nr/POTCAR      : ENMAX  =  741.684; ENMIN  =  556.263 eV
+POTPAW_PBE/C_h/POTCAR         : ENMAX  =  700.000; ENMIN  =  500.000 eV
+POTPAW_PBE/Cl_h/POTCAR        : ENMAX  =  409.136; ENMIN  =  306.852 eV
+POTPAW_PBE/Cl/POTCAR          : ENMAX  =  280.000; ENMIN  =  196.854 eV
+POTPAW_PBE/Co_new/POTCAR      : ENMAX  =  267.968; ENMIN  =  200.976 eV
+POTPAW_PBE/Co/POTCAR          : ENMAX  =  267.969; ENMIN  =  200.977 eV
+POTPAW_PBE/Co_sv/POTCAR       : ENMAX  =  390.362; ENMIN  =  292.771 eV
+POTPAW_PBE/C/POTCAR           : ENMAX  =  400.000; ENMIN  =  300.000 eV
+POTPAW_PBE/Cr/POTCAR          : ENMAX  =  227.082; ENMIN  =  170.311 eV
+POTPAW_PBE/Cr_pv_new/POTCAR   : ENMAX  =  265.681; ENMIN  =  199.261 eV
+POTPAW_PBE/Cr_pv/POTCAR       : ENMAX  =  265.683; ENMIN  =  199.262 eV
+POTPAW_PBE/Cr_sv_new/POTCAR   : ENMAX  =  395.471; ENMIN  =  296.603 eV
+POTPAW_PBE/Cr_sv/POTCAR       : ENMAX  =  395.471; ENMIN  =  296.603 eV
+POTPAW_PBE/C_s/POTCAR         : ENMAX  =  273.901; ENMIN  =  205.426 eV
+POTPAW_PBE/Cs_sv/POTCAR       : ENMAX  =  220.318; ENMIN  =  165.238 eV
+POTPAW_PBE/Cu_f/POTCAR        : ENMAX  =  295.446; ENMIN  =  221.585 eV
+POTPAW_PBE/Cu_new/POTCAR      : ENMAX  =  295.446; ENMIN  =  221.585 eV
+POTPAW_PBE/Cu/POTCAR          : ENMAX  =  273.214; ENMIN  =  204.910 eV
+POTPAW_PBE/Cu_pvf/POTCAR      : ENMAX  =  368.648; ENMIN  =  276.486 eV
+POTPAW_PBE/Cu_pv/POTCAR       : ENMAX  =  368.605; ENMIN  =  276.454 eV
+POTPAW_PBE/Ca/POTCAR          : ENMAX  =  102.755; ENMIN  =   77.067 eV
+POTPAW_PBE/Ca_pv/POTCAR       : ENMAX  =  119.554; ENMIN  =   89.665 eV
+POTPAW_PBE/Ca_sv/POTCAR       : ENMAX  =  266.586; ENMIN  =  199.939 eV
+POTPAW_PBE/Cd/POTCAR          : ENMAX  =  274.342; ENMIN  =  205.757 eV
+POTPAW_PBE/Ce_3/POTCAR        : ENMAX  =  181.286; ENMIN  =  135.964 eV
+POTPAW_PBE/Ce_h/POTCAR        : ENMAX  =  299.900; ENMIN  =  224.925 eV
+POTPAW_PBE/Ce/POTCAR          : ENMAX  =  273.042; ENMIN  =  204.781 eV
+POTPAW_PBE/Cl_h/POTCAR        : ENMAX  =  409.136; ENMIN  =  306.852 eV
+POTPAW_PBE/Cl/POTCAR          : ENMAX  =  280.000; ENMIN  =  196.854 eV
+POTPAW_PBE/Co_new/POTCAR      : ENMAX  =  267.968; ENMIN  =  200.976 eV
+POTPAW_PBE/Co/POTCAR          : ENMAX  =  267.969; ENMIN  =  200.977 eV
+POTPAW_PBE/Co_sv/POTCAR       : ENMAX  =  390.362; ENMIN  =  292.771 eV
+POTPAW_PBE/Cr/POTCAR          : ENMAX  =  227.082; ENMIN  =  170.311 eV
+POTPAW_PBE/Cr_pv_new/POTCAR   : ENMAX  =  265.681; ENMIN  =  199.261 eV
+POTPAW_PBE/Cr_pv/POTCAR       : ENMAX  =  265.683; ENMIN  =  199.262 eV
+POTPAW_PBE/Cr_sv_new/POTCAR   : ENMAX  =  395.471; ENMIN  =  296.603 eV
+POTPAW_PBE/Cr_sv/POTCAR       : ENMAX  =  395.471; ENMIN  =  296.603 eV
+POTPAW_PBE/Cs_sv/POTCAR       : ENMAX  =  220.318; ENMIN  =  165.238 eV
+POTPAW_PBE/Cu_f/POTCAR        : ENMAX  =  295.446; ENMIN  =  221.585 eV
+POTPAW_PBE/Cu_new/POTCAR      : ENMAX  =  295.446; ENMIN  =  221.585 eV
+POTPAW_PBE/Cu/POTCAR          : ENMAX  =  273.214; ENMIN  =  204.910 eV
+POTPAW_PBE/Cu_pvf/POTCAR      : ENMAX  =  368.648; ENMIN  =  276.486 eV
+POTPAW_PBE/Cu_pv/POTCAR       : ENMAX  =  368.605; ENMIN  =  276.454 eV
+POTPAW_PBE/Dy_3/POTCAR        : ENMAX  =  155.729; ENMIN  =  116.797 eV
+POTPAW_PBE/Dy/POTCAR          : ENMAX  =  255.467; ENMIN  =  191.601 eV
+POTPAW_PBE/Er_2/POTCAR        : ENMAX  =  119.750; ENMIN  =   89.813 eV
+POTPAW_PBE/Er_3/POTCAR        : ENMAX  =  155.053; ENMIN  =  116.290 eV
+POTPAW_PBE/Er/POTCAR          : ENMAX  =  298.116; ENMIN  =  223.587 eV
+POTPAW_PBE/Eu_2/POTCAR        : ENMAX  =   99.304; ENMIN  =   74.478 eV
+POTPAW_PBE/Eu_3/POTCAR        : ENMAX  =  129.057; ENMIN  =   96.793 eV
+POTPAW_PBE/Eu_GW/POTCAR       : ENMAX  =  603.254; ENMIN  =  452.441 eV
+POTPAW_PBE/Eu/POTCAR          : ENMAX  =  249.668; ENMIN  =  187.251 eV
+POTPAW_PBE/F_d_GW/POTCAR      : ENMAX  =  487.698; ENMIN  =  365.773 eV
+POTPAW_PBE/Fe/POTCAR          : ENMAX  =  267.883; ENMIN  =  200.912 eV
+POTPAW_PBE/Fe_pv_new/POTCAR   : ENMAX  =  293.238; ENMIN  =  219.928 eV
+POTPAW_PBE/Fe_pv/POTCAR       : ENMAX  =  293.238; ENMIN  =  219.929 eV
+POTPAW_PBE/Fe_sv_h/POTCAR     : ENMAX  =  547.365; ENMIN  =  410.523 eV
+POTPAW_PBE/Fe_sv/POTCAR       : ENMAX  =  390.558; ENMIN  =  292.918 eV
+POTPAW_PBE/F_h/POTCAR         : ENMAX  =  700.000; ENMIN  =  500.000 eV
+POTPAW_PBE/F/POTCAR           : ENMAX  =  400.000; ENMIN  =  300.000 eV
+POTPAW_PBE/Fr_sv/POTCAR       : ENMAX  =  214.540; ENMIN  =  160.905 eV
+POTPAW_PBE/F_s/POTCAR         : ENMAX  =  289.825; ENMIN  =  217.369 eV
+POTPAW_PBE/Fe/POTCAR          : ENMAX  =  267.883; ENMIN  =  200.912 eV
+POTPAW_PBE/Fe_pv_new/POTCAR   : ENMAX  =  293.238; ENMIN  =  219.928 eV
+POTPAW_PBE/Fe_pv/POTCAR       : ENMAX  =  293.238; ENMIN  =  219.929 eV
+POTPAW_PBE/Fe_sv_h/POTCAR     : ENMAX  =  547.365; ENMIN  =  410.523 eV
+POTPAW_PBE/Fe_sv/POTCAR       : ENMAX  =  390.558; ENMIN  =  292.918 eV
+POTPAW_PBE/Fr_sv/POTCAR       : ENMAX  =  214.540; ENMIN  =  160.905 eV
+POTPAW_PBE/Ga_d_GW/POTCAR     : ENMAX  =  369.848; ENMIN  =  277.386 eV
+POTPAW_PBE/Ga_d/POTCAR        : ENMAX  =  282.697; ENMIN  =  212.022 eV
+POTPAW_PBE/Ga_h/POTCAR        : ENMAX  =  404.601; ENMIN  =  303.451 eV
+POTPAW_PBE/Ga/POTCAR          : ENMAX  =  134.678; ENMIN  =  101.009 eV
+POTPAW_PBE/Ga_s/POTCAR        : ENMAX  =   83.836; ENMIN  =   62.877 eV
+POTPAW_PBE/Ga_sv_GW/POTCAR    : ENMAX  =  503.418; ENMIN  =  377.564 eV
+POTPAW_PBE/Gd_3/POTCAR        : ENMAX  =  154.348; ENMIN  =  115.761 eV
+POTPAW_PBE/Gd/POTCAR          : ENMAX  =  256.472; ENMIN  =  192.354 eV
+POTPAW_PBE/Ge_d3/POTCAR       : ENMAX  =  226.106; ENMIN  =  169.580 eV
+POTPAW_PBE/Ge_d_GW2/POTCAR    : ENMAX  =  339.130; ENMIN  =  254.348 eV
+POTPAW_PBE/Ge_d_GW/POTCAR     : ENMAX  =  310.294; ENMIN  =  232.720 eV
+POTPAW_PBE/Ge_d_GW_ref/POTCAR : ENMAX  =  572.010; ENMIN  =  429.008 eV
+POTPAW_PBE/Ge_d/POTCAR        : ENMAX  =  310.294; ENMIN  =  232.720 eV
+POTPAW_PBE/Ge_h/POTCAR        : ENMAX  =  410.425; ENMIN  =  307.818 eV
+POTPAW_PBE/Ge/POTCAR          : ENMAX  =  173.807; ENMIN  =  130.355 eV
+POTPAW_PBE/H1.25/POTCAR       : ENMAX  =  250.000; ENMIN  =  200.000 eV
+POTPAW_PBE/H1.5/POTCAR        : ENMAX  =  250.000; ENMIN  =  200.000 eV
+POTPAW_PBE/H.5/POTCAR         : ENMAX  =  250.000; ENMIN  =  200.000 eV
+POTPAW_PBE/H.75/POTCAR        : ENMAX  =  250.000; ENMIN  =  200.000 eV
+POTPAW_PBE/He/POTCAR          : ENMAX  =  478.896; ENMIN  =  359.172 eV
+POTPAW_PBE/Hf/POTCAR          : ENMAX  =  220.333; ENMIN  =  165.250 eV
+POTPAW_PBE/Hf_pv/POTCAR       : ENMAX  =  220.342; ENMIN  =  165.256 eV
+POTPAW_PBE/Hf_sv_GW/POTCAR    : ENMAX  =  317.394; ENMIN  =  238.045 eV
+POTPAW_PBE/Hf_sv/POTCAR       : ENMAX  =  237.444; ENMIN  =  178.083 eV
+POTPAW_PBE/Hg/POTCAR          : ENMAX  =  233.214; ENMIN  =  174.911 eV
+POTPAW_PBE/H_h/POTCAR         : ENMAX  =  700.000; ENMIN  =  500.000 eV
+POTPAW_PBE/Ho_3/POTCAR        : ENMAX  =  154.153; ENMIN  =  115.615 eV
+POTPAW_PBE/Ho/POTCAR          : ENMAX  =  257.168; ENMIN  =  192.876 eV
+POTPAW_PBE/H/POTCAR           : ENMAX  =  250.000; ENMIN  =  200.000 eV
+POTPAW_PBE/He/POTCAR          : ENMAX  =  478.896; ENMIN  =  359.172 eV
+POTPAW_PBE/Hf/POTCAR          : ENMAX  =  220.333; ENMIN  =  165.250 eV
+POTPAW_PBE/Hf_pv/POTCAR       : ENMAX  =  220.342; ENMIN  =  165.256 eV
+POTPAW_PBE/Hf_sv_GW/POTCAR    : ENMAX  =  317.394; ENMIN  =  238.045 eV
+POTPAW_PBE/Hf_sv/POTCAR       : ENMAX  =  237.444; ENMIN  =  178.083 eV
+POTPAW_PBE/Hg/POTCAR          : ENMAX  =  233.214; ENMIN  =  174.911 eV
+POTPAW_PBE/Ho_3/POTCAR        : ENMAX  =  154.153; ENMIN  =  115.615 eV
+POTPAW_PBE/Ho/POTCAR          : ENMAX  =  257.168; ENMIN  =  192.876 eV
+POTPAW_PBE/In_d/POTCAR        : ENMAX  =  239.218; ENMIN  =  179.413 eV
+POTPAW_PBE/In/POTCAR          : ENMAX  =   95.934; ENMIN  =   71.951 eV
+POTPAW_PBE/I/POTCAR           : ENMAX  =  175.647; ENMIN  =  131.735 eV
+POTPAW_PBE/Ir/POTCAR          : ENMAX  =  210.870; ENMIN  =  158.153 eV
+POTPAW_PBE/In_d/POTCAR        : ENMAX  =  239.218; ENMIN  =  179.413 eV
+POTPAW_PBE/In/POTCAR          : ENMAX  =   95.934; ENMIN  =   71.951 eV
+POTPAW_PBE/Ir/POTCAR          : ENMAX  =  210.870; ENMIN  =  158.153 eV
+POTPAW_PBE/K_pv/POTCAR        : ENMAX  =  116.731; ENMIN  =   87.548 eV
+POTPAW_PBE/Kr/POTCAR          : ENMAX  =  185.260; ENMIN  =  138.945 eV
+POTPAW_PBE/K_sv/POTCAR        : ENMAX  =  259.216; ENMIN  =  194.412 eV
+POTPAW_PBE/Kr/POTCAR          : ENMAX  =  185.260; ENMIN  =  138.945 eV
+POTPAW_PBE/La/POTCAR          : ENMAX  =  219.313; ENMIN  =  164.485 eV
+POTPAW_PBE/La_s/POTCAR        : ENMAX  =  136.552; ENMIN  =  102.414 eV
+POTPAW_PBE/Li/POTCAR          : ENMAX  =  140.000; ENMIN  =  100.000 eV
+POTPAW_PBE/Li_sv2/POTCAR      : ENMAX  =  555.106; ENMIN  =  416.330 eV
+POTPAW_PBE/Li_sv/POTCAR       : ENMAX  =  499.034; ENMIN  =  374.276 eV
+POTPAW_PBE/Lu_3/POTCAR        : ENMAX  =  155.009; ENMIN  =  116.257 eV
+POTPAW_PBE/Lu/POTCAR          : ENMAX  =  255.695; ENMIN  =  191.771 eV
+POTPAW_PBE/Mg_new/POTCAR      : ENMAX  =  126.143; ENMIN  =   94.607 eV
+POTPAW_PBE/Mg/POTCAR          : ENMAX  =  210.012; ENMIN  =  157.509 eV
+POTPAW_PBE/Mg_pv_GW/POTCAR    : ENMAX  =  403.929; ENMIN  =  302.947 eV
+POTPAW_PBE/Mg_pv.old/POTCAR   : ENMAX  =  265.574; ENMIN  =  199.180 eV
+POTPAW_PBE/Mg_pv/POTCAR       : ENMAX  =  403.929; ENMIN  =  302.947 eV
+POTPAW_PBE/Mg_sv/POTCAR       : ENMAX  =  495.223; ENMIN  =  371.417 eV
+POTPAW_PBE/Mn/POTCAR          : ENMAX  =  269.865; ENMIN  =  202.399 eV
+POTPAW_PBE/Mn_pv_new/POTCAR   : ENMAX  =  269.864; ENMIN  =  202.398 eV
+POTPAW_PBE/Mn_pv/POTCAR       : ENMAX  =  269.865; ENMIN  =  202.399 eV
+POTPAW_PBE/Mn_sv/POTCAR       : ENMAX  =  387.187; ENMIN  =  290.390 eV
+POTPAW_PBE/Mo/POTCAR          : ENMAX  =  224.584; ENMIN  =  168.438 eV
+POTPAW_PBE/Mo_pv_new/POTCAR   : ENMAX  =  224.584; ENMIN  =  168.438 eV
+POTPAW_PBE/Mo_pv/POTCAR       : ENMAX  =  224.584; ENMIN  =  168.438 eV
+POTPAW_PBE/Mo_sv/POTCAR       : ENMAX  =  242.676; ENMIN  =  182.007 eV
+POTPAW_PBE/Na/POTCAR          : ENMAX  =  101.968; ENMIN  =   76.476 eV
+POTPAW_PBE/Na_pv/POTCAR       : ENMAX  =  259.561; ENMIN  =  194.671 eV
+POTPAW_PBE/Na_sv/POTCAR       : ENMAX  =  700.000; ENMIN  =  484.230 eV
+POTPAW_PBE/Nb_pv/POTCAR       : ENMAX  =  208.608; ENMIN  =  156.456 eV
+POTPAW_PBE/Nb_sv_new/POTCAR   : ENMAX  =  293.235; ENMIN  =  219.927 eV
+POTPAW_PBE/Nb_sv/POTCAR       : ENMAX  =  293.235; ENMIN  =  219.927 eV
+POTPAW_PBE/Nd_3/POTCAR        : ENMAX  =  182.546; ENMIN  =  136.909 eV
+POTPAW_PBE/Nd/POTCAR          : ENMAX  =  253.189; ENMIN  =  189.892 eV
+POTPAW_PBE/Ne/POTCAR          : ENMAX  =  343.606; ENMIN  =  257.704 eV
+POTPAW_PBE/N_h/POTCAR         : ENMAX  =  700.000; ENMIN  =  500.000 eV
+POTPAW_PBE/Ni_new/POTCAR      : ENMAX  =  269.532; ENMIN  =  202.149 eV
+POTPAW_PBE/Ni/POTCAR          : ENMAX  =  269.533; ENMIN  =  202.150 eV
+POTPAW_PBE/Ni_pv/POTCAR       : ENMAX  =  367.945; ENMIN  =  275.959 eV
+POTPAW_PBE/N/POTCAR           : ENMAX  =  400.000; ENMIN  =  300.000 eV
+POTPAW_PBE/Np/POTCAR          : ENMAX  =  254.369; ENMIN  =  190.776 eV
+POTPAW_PBE/Np_s/POTCAR        : ENMAX  =  210.851; ENMIN  =  158.138 eV
+POTPAW_PBE/N_s_GW/POTCAR      : ENMAX  =  296.495; ENMIN  =  222.371 eV
+POTPAW_PBE/N_s/POTCAR         : ENMAX  =  279.680; ENMIN  =  209.760 eV
+POTPAW_PBE/N_vs/POTCAR        : ENMAX  =  279.680; ENMIN  =  209.760 eV
+POTPAW_PBE/Na/POTCAR          : ENMAX  =  101.968; ENMIN  =   76.476 eV
+POTPAW_PBE/Na_pv/POTCAR       : ENMAX  =  259.561; ENMIN  =  194.671 eV
+POTPAW_PBE/Na_sv/POTCAR       : ENMAX  =  700.000; ENMIN  =  484.230 eV
+POTPAW_PBE/Nb_pv/POTCAR       : ENMAX  =  208.608; ENMIN  =  156.456 eV
+POTPAW_PBE/Nb_sv_new/POTCAR   : ENMAX  =  293.235; ENMIN  =  219.927 eV
+POTPAW_PBE/Nb_sv/POTCAR       : ENMAX  =  293.235; ENMIN  =  219.927 eV
+POTPAW_PBE/Nd_3/POTCAR        : ENMAX  =  182.546; ENMIN  =  136.909 eV
+POTPAW_PBE/Nd/POTCAR          : ENMAX  =  253.189; ENMIN  =  189.892 eV
+POTPAW_PBE/Ne/POTCAR          : ENMAX  =  343.606; ENMIN  =  257.704 eV
+POTPAW_PBE/Ni_new/POTCAR      : ENMAX  =  269.532; ENMIN  =  202.149 eV
+POTPAW_PBE/Ni/POTCAR          : ENMAX  =  269.533; ENMIN  =  202.150 eV
+POTPAW_PBE/Ni_pv/POTCAR       : ENMAX  =  367.945; ENMIN  =  275.959 eV
+POTPAW_PBE/Np/POTCAR          : ENMAX  =  254.369; ENMIN  =  190.776 eV
+POTPAW_PBE/Np_s/POTCAR        : ENMAX  =  210.851; ENMIN  =  158.138 eV
+POTPAW_PBE/O_GW/POTCAR        : ENMAX  =  414.635; ENMIN  =  310.976 eV
+POTPAW_PBE/O_h/POTCAR         : ENMAX  =  700.000; ENMIN  =  500.000 eV
+POTPAW_PBE/O/POTCAR           : ENMAX  =  400.000; ENMIN  =  300.000 eV
+POTPAW_PBE/O_s_GW/POTCAR      : ENMAX  =  300.688; ENMIN  =  225.516 eV
+POTPAW_PBE/O_s/POTCAR         : ENMAX  =  282.841; ENMIN  =  212.131 eV
+POTPAW_PBE/Os/POTCAR          : ENMAX  =  228.022; ENMIN  =  171.017 eV
+POTPAW_PBE/Os_pv/POTCAR       : ENMAX  =  228.022; ENMIN  =  171.017 eV
+POTPAW_PBE/O_sv/POTCAR        : ENMAX  = 1421.493; ENMIN  = 1066.119 eV
+POTPAW_PBE/Os/POTCAR          : ENMAX  =  228.022; ENMIN  =  171.017 eV
+POTPAW_PBE/Os_pv/POTCAR       : ENMAX  =  228.022; ENMIN  =  171.017 eV
+POTPAW_PBE/Pa/POTCAR          : ENMAX  =  252.316; ENMIN  =  189.237 eV
+POTPAW_PBE/Pa_s/POTCAR        : ENMAX  =  193.576; ENMIN  =  145.182 eV
+POTPAW_PBE/Pb_d/POTCAR        : ENMAX  =  237.846; ENMIN  =  178.384 eV
+POTPAW_PBE/Pb_d_rel2/POTCAR   : ENMAX  =  237.809; ENMIN  =  178.357 eV
+POTPAW_PBE/Pb_d_rel/POTCAR    : ENMAX  =  237.809; ENMIN  =  178.357 eV
+POTPAW_PBE/Pb/POTCAR          : ENMAX  =   97.973; ENMIN  =   73.480 eV
+POTPAW_PBE/Pd_new/POTCAR      : ENMAX  =  250.925; ENMIN  =  188.194 eV
+POTPAW_PBE/Pd/POTCAR          : ENMAX  =  250.925; ENMIN  =  188.194 eV
+POTPAW_PBE/Pd_pv_new/POTCAR   : ENMAX  =  250.925; ENMIN  =  188.194 eV
+POTPAW_PBE/Pd_pv/POTCAR       : ENMAX  =  271.098; ENMIN  =  203.323 eV
+POTPAW_PBE/Pd_vnew/POTCAR     : ENMAX  =  250.925; ENMIN  =  188.194 eV
+POTPAW_PBE/P_h/POTCAR         : ENMAX  =  390.202; ENMIN  =  292.651 eV
+POTPAW_PBE/Pm_3/POTCAR        : ENMAX  =  183.908; ENMIN  =  137.931 eV
+POTPAW_PBE/Pm/POTCAR          : ENMAX  =  258.627; ENMIN  =  193.970 eV
+POTPAW_PBE/Po_d/POTCAR        : ENMAX  =  264.565; ENMIN  =  198.424 eV
+POTPAW_PBE/Po/POTCAR          : ENMAX  =  159.707; ENMIN  =  119.780 eV
+POTPAW_PBE/P/POTCAR           : ENMAX  =  270.000; ENMIN  =  191.280 eV
+POTPAW_PBE/Pr_3/POTCAR        : ENMAX  =  182.312; ENMIN  =  136.734 eV
+POTPAW_PBE/Pr/POTCAR          : ENMAX  =  272.941; ENMIN  =  204.706 eV
+POTPAW_PBE/Pt_new/POTCAR      : ENMAX  =  230.283; ENMIN  =  172.712 eV
+POTPAW_PBE/Pt/POTCAR          : ENMAX  =  230.283; ENMIN  =  172.712 eV
+POTPAW_PBE/Pt_pv/POTCAR       : ENMAX  =  294.607; ENMIN  =  220.955 eV
+POTPAW_PBE/Pt_pv_ZORA/POTCAR  : ENMAX  =  294.604; ENMIN  =  220.953 eV
+POTPAW_PBE/Pt_ZORA/POTCAR     : ENMAX  =  230.281; ENMIN  =  172.711 eV
+POTPAW_PBE/Pu_h/POTCAR        : ENMAX  =  444.783; ENMIN  =  333.587 eV
+POTPAW_PBE/Pu/POTCAR          : ENMAX  =  254.458; ENMIN  =  190.844 eV
+POTPAW_PBE/Pu_s/POTCAR        : ENMAX  =  211.344; ENMIN  =  158.508 eV
+POTPAW_PBE/Pa/POTCAR          : ENMAX  =  252.316; ENMIN  =  189.237 eV
+POTPAW_PBE/Pa_s/POTCAR        : ENMAX  =  193.576; ENMIN  =  145.182 eV
+POTPAW_PBE/Pb_d/POTCAR        : ENMAX  =  237.846; ENMIN  =  178.384 eV
+POTPAW_PBE/Pb_d_rel2/POTCAR   : ENMAX  =  237.809; ENMIN  =  178.357 eV
+POTPAW_PBE/Pb_d_rel/POTCAR    : ENMAX  =  237.809; ENMIN  =  178.357 eV
+POTPAW_PBE/Pb/POTCAR          : ENMAX  =   97.973; ENMIN  =   73.480 eV
+POTPAW_PBE/Pd_new/POTCAR      : ENMAX  =  250.925; ENMIN  =  188.194 eV
+POTPAW_PBE/Pd/POTCAR          : ENMAX  =  250.925; ENMIN  =  188.194 eV
+POTPAW_PBE/Pd_pv_new/POTCAR   : ENMAX  =  250.925; ENMIN  =  188.194 eV
+POTPAW_PBE/Pd_pv/POTCAR       : ENMAX  =  271.098; ENMIN  =  203.323 eV
+POTPAW_PBE/Pd_vnew/POTCAR     : ENMAX  =  250.925; ENMIN  =  188.194 eV
+POTPAW_PBE/Pm_3/POTCAR        : ENMAX  =  183.908; ENMIN  =  137.931 eV
+POTPAW_PBE/Pm/POTCAR          : ENMAX  =  258.627; ENMIN  =  193.970 eV
+POTPAW_PBE/Po_d/POTCAR        : ENMAX  =  264.565; ENMIN  =  198.424 eV
+POTPAW_PBE/Po/POTCAR          : ENMAX  =  159.707; ENMIN  =  119.780 eV
+POTPAW_PBE/Pr_3/POTCAR        : ENMAX  =  182.312; ENMIN  =  136.734 eV
+POTPAW_PBE/Pr/POTCAR          : ENMAX  =  272.941; ENMIN  =  204.706 eV
+POTPAW_PBE/Pt_new/POTCAR      : ENMAX  =  230.283; ENMIN  =  172.712 eV
+POTPAW_PBE/Pt/POTCAR          : ENMAX  =  230.283; ENMIN  =  172.712 eV
+POTPAW_PBE/Pt_pv/POTCAR       : ENMAX  =  294.607; ENMIN  =  220.955 eV
+POTPAW_PBE/Pt_pv_ZORA/POTCAR  : ENMAX  =  294.604; ENMIN  =  220.953 eV
+POTPAW_PBE/Pt_ZORA/POTCAR     : ENMAX  =  230.281; ENMIN  =  172.711 eV
+POTPAW_PBE/Pu_h/POTCAR        : ENMAX  =  444.783; ENMIN  =  333.587 eV
+POTPAW_PBE/Pu/POTCAR          : ENMAX  =  254.458; ENMIN  =  190.844 eV
+POTPAW_PBE/Pu_s/POTCAR        : ENMAX  =  211.344; ENMIN  =  158.508 eV
+POTPAW_PBE/Ra_sv/POTCAR       : ENMAX  =  237.367; ENMIN  =  178.025 eV
+POTPAW_PBE/Rb_pv/POTCAR       : ENMAX  =  121.919; ENMIN  =   91.439 eV
+POTPAW_PBE/Rb_sv/POTCAR       : ENMAX  =  220.022; ENMIN  =  165.017 eV
+POTPAW_PBE/Re/POTCAR          : ENMAX  =  226.216; ENMIN  =  169.662 eV
+POTPAW_PBE/Re_pv/POTCAR       : ENMAX  =  226.223; ENMIN  =  169.667 eV
+POTPAW_PBE/Rh_new/POTCAR      : ENMAX  =  228.996; ENMIN  =  171.747 eV
+POTPAW_PBE/Rh/POTCAR          : ENMAX  =  229.000; ENMIN  =  171.750 eV
+POTPAW_PBE/Rh_pv_new/POTCAR   : ENMAX  =  247.408; ENMIN  =  185.556 eV
+POTPAW_PBE/Rh_pv/POTCAR       : ENMAX  =  271.470; ENMIN  =  203.602 eV
+POTPAW_PBE/Rn/POTCAR          : ENMAX  =  152.121; ENMIN  =  114.091 eV
+POTPAW_PBE/Ru_new/POTCAR      : ENMAX  =  213.271; ENMIN  =  159.953 eV
+POTPAW_PBE/Ru/POTCAR          : ENMAX  =  213.276; ENMIN  =  159.957 eV
+POTPAW_PBE/Ru_pv_new/POTCAR   : ENMAX  =  240.049; ENMIN  =  180.037 eV
+POTPAW_PBE/Ru_pv/POTCAR       : ENMAX  =  230.429; ENMIN  =  172.822 eV
+POTPAW_PBE/Ru_sv/POTCAR       : ENMAX  =  318.855; ENMIN  =  239.141 eV
+POTPAW_PBE/Sb/POTCAR          : ENMAX  =  172.037; ENMIN  =  129.028 eV
+POTPAW_PBE/Sc/POTCAR          : ENMAX  =  154.763; ENMIN  =  116.072 eV
+POTPAW_PBE/Sc_sv_h/POTCAR     : ENMAX  =  380.696; ENMIN  =  285.522 eV
+POTPAW_PBE/Sc_sv/POTCAR       : ENMAX  =  222.664; ENMIN  =  166.998 eV
+POTPAW_PBE/Se_GW/POTCAR       : ENMAX  =  211.555; ENMIN  =  158.666 eV
+POTPAW_PBE/Se/POTCAR          : ENMAX  =  211.534; ENMIN  =  158.651 eV
+POTPAW_PBE/S_h/POTCAR         : ENMAX  =  402.436; ENMIN  =  301.827 eV
+POTPAW_PBE/Si_d_GW_nr/POTCAR  : ENMAX  =  245.338; ENMIN  =  184.004 eV
+POTPAW_PBE/Si_d_GW/POTCAR     : ENMAX  =  245.345; ENMIN  =  184.009 eV
+POTPAW_PBE/Si_h_old/POTCAR    : ENMAX  =  380.146; ENMIN  =  285.109 eV
+POTPAW_PBE/Si_h/POTCAR        : ENMAX  =  380.146; ENMIN  =  285.109 eV
+POTPAW_PBE/Si_nopc/POTCAR     : ENMAX  =  245.345; ENMIN  =  184.009 eV
+POTPAW_PBE/Si/POTCAR          : ENMAX  =  245.345; ENMIN  =  184.009 eV
+POTPAW_PBE/Si_pv_GW/POTCAR    : ENMAX  =  475.096; ENMIN  =  356.322 eV
+POTPAW_PBE/Si_sv_GW_nr/POTCAR : ENMAX  =  475.101; ENMIN  =  356.326 eV
+POTPAW_PBE/Si_sv_GW/POTCAR    : ENMAX  =  475.096; ENMIN  =  356.322 eV
+POTPAW_PBE/Sm_3/POTCAR        : ENMAX  =  177.087; ENMIN  =  132.815 eV
+POTPAW_PBE/Sm/POTCAR          : ENMAX  =  257.515; ENMIN  =  193.136 eV
+POTPAW_PBE/Sn_d/POTCAR        : ENMAX  =  241.090; ENMIN  =  180.817 eV
+POTPAW_PBE/Sn_GW/POTCAR       : ENMAX  =  103.236; ENMIN  =   77.427 eV
+POTPAW_PBE/Sn/POTCAR          : ENMAX  =  103.236; ENMIN  =   77.427 eV
+POTPAW_PBE/S/POTCAR           : ENMAX  =  280.000; ENMIN  =  194.016 eV
+POTPAW_PBE/Sr_sv/POTCAR       : ENMAX  =  229.282; ENMIN  =  171.961 eV
+POTPAW_PBE/Sr/POTCAR          : ENMAX  =  229.282; ENMIN  =  171.961 eV
+POTPAW_PBE/Sb/POTCAR          : ENMAX  =  172.037; ENMIN  =  129.028 eV
+POTPAW_PBE/Sc/POTCAR          : ENMAX  =  154.763; ENMIN  =  116.072 eV
+POTPAW_PBE/Sc_sv_h/POTCAR     : ENMAX  =  380.696; ENMIN  =  285.522 eV
+POTPAW_PBE/Sc_sv/POTCAR       : ENMAX  =  222.664; ENMIN  =  166.998 eV
+POTPAW_PBE/Se_GW/POTCAR       : ENMAX  =  211.555; ENMIN  =  158.666 eV
+POTPAW_PBE/Se/POTCAR          : ENMAX  =  211.534; ENMIN  =  158.651 eV
+POTPAW_PBE/Si_d_GW_nr/POTCAR  : ENMAX  =  245.338; ENMIN  =  184.004 eV
+POTPAW_PBE/Si_d_GW/POTCAR     : ENMAX  =  245.345; ENMIN  =  184.009 eV
+POTPAW_PBE/Si_h_old/POTCAR    : ENMAX  =  380.146; ENMIN  =  285.109 eV
+POTPAW_PBE/Si_h/POTCAR        : ENMAX  =  380.146; ENMIN  =  285.109 eV
+POTPAW_PBE/Si_nopc/POTCAR     : ENMAX  =  245.345; ENMIN  =  184.009 eV
+POTPAW_PBE/Si/POTCAR          : ENMAX  =  245.345; ENMIN  =  184.009 eV
+POTPAW_PBE/Si_pv_GW/POTCAR    : ENMAX  =  475.096; ENMIN  =  356.322 eV
+POTPAW_PBE/Si_sv_GW_nr/POTCAR : ENMAX  =  475.101; ENMIN  =  356.326 eV
+POTPAW_PBE/Si_sv_GW/POTCAR    : ENMAX  =  475.096; ENMIN  =  356.322 eV
+POTPAW_PBE/Sm_3/POTCAR        : ENMAX  =  177.087; ENMIN  =  132.815 eV
+POTPAW_PBE/Sm/POTCAR          : ENMAX  =  257.515; ENMIN  =  193.136 eV
+POTPAW_PBE/Sn_d/POTCAR        : ENMAX  =  241.090; ENMIN  =  180.817 eV
+POTPAW_PBE/Sn_GW/POTCAR       : ENMAX  =  103.236; ENMIN  =   77.427 eV
+POTPAW_PBE/Sn/POTCAR          : ENMAX  =  103.236; ENMIN  =   77.427 eV
+POTPAW_PBE/Sr_sv/POTCAR       : ENMAX  =  229.282; ENMIN  =  171.961 eV
+POTPAW_PBE/Sr/POTCAR          : ENMAX  =  229.282; ENMIN  =  171.961 eV
+POTPAW_PBE/Ta/POTCAR          : ENMAX  =  223.667; ENMIN  =  167.750 eV
+POTPAW_PBE/Ta_pv/POTCAR       : ENMAX  =  223.675; ENMIN  =  167.756 eV
+POTPAW_PBE/Tb_3/POTCAR        : ENMAX  =  155.628; ENMIN  =  116.721 eV
+POTPAW_PBE/Tb/POTCAR          : ENMAX  =  264.824; ENMIN  =  198.618 eV
+POTPAW_PBE/Tc_new/POTCAR      : ENMAX  =  228.694; ENMIN  =  171.521 eV
+POTPAW_PBE/Tc/POTCAR          : ENMAX  =  228.694; ENMIN  =  171.521 eV
+POTPAW_PBE/Tc_pv_new/POTCAR   : ENMAX  =  263.523; ENMIN  =  197.642 eV
+POTPAW_PBE/Tc_pv/POTCAR       : ENMAX  =  228.699; ENMIN  =  171.524 eV
+POTPAW_PBE/Te/POTCAR          : ENMAX  =  174.982; ENMIN  =  131.236 eV
+POTPAW_PBE/Te_rel/POTCAR      : ENMAX  =  174.979; ENMIN  =  131.234 eV
+POTPAW_PBE/Th/POTCAR          : ENMAX  =  247.449; ENMIN  =  185.587 eV
+POTPAW_PBE/Th_s/POTCAR        : ENMAX  =  169.492; ENMIN  =  127.119 eV
+POTPAW_PBE/Ti/POTCAR          : ENMAX  =  178.330; ENMIN  =  133.747 eV
+POTPAW_PBE/Ti_pv/POTCAR       : ENMAX  =  222.338; ENMIN  =  166.753 eV
+POTPAW_PBE/Ti_sv_GW/POTCAR    : ENMAX  =  312.571; ENMIN  =  234.428 eV
+POTPAW_PBE/Ti_sv_h/POTCAR     : ENMAX  =  388.698; ENMIN  =  291.524 eV
+POTPAW_PBE/Ti_sv_new2/POTCAR  : ENMAX  =  274.610; ENMIN  =  205.957 eV
+POTPAW_PBE/Ti_sv_new/POTCAR   : ENMAX  =  274.610; ENMIN  =  205.957 eV
+POTPAW_PBE/Ti_sv/POTCAR       : ENMAX  =  274.574; ENMIN  =  205.930 eV
+POTPAW_PBE/Tl_d/POTCAR        : ENMAX  =  237.063; ENMIN  =  177.797 eV
+POTPAW_PBE/Tl/POTCAR          : ENMAX  =   90.140; ENMIN  =   67.605 eV
+POTPAW_PBE/Tm_3/POTCAR        : ENMAX  =  149.221; ENMIN  =  111.916 eV
+POTPAW_PBE/Tm/POTCAR          : ENMAX  =  257.419; ENMIN  =  193.065 eV
+POTPAW_PBE/U/POTCAR           : ENMAX  =  252.616; ENMIN  =  189.462 eV
+POTPAW_PBE/U_s/POTCAR         : ENMAX  =  209.069; ENMIN  =  156.802 eV
+POTPAW_PBE/V/POTCAR           : ENMAX  =  192.543; ENMIN  =  144.408 eV
+POTPAW_PBE/V_pv/POTCAR        : ENMAX  =  263.675; ENMIN  =  197.756 eV
+POTPAW_PBE/V_sv_h/POTCAR      : ENMAX  =  390.664; ENMIN  =  292.998 eV
+POTPAW_PBE/V_sv_new/POTCAR    : ENMAX  =  263.673; ENMIN  =  197.755 eV
+POTPAW_PBE/V_sv/POTCAR        : ENMAX  =  263.675; ENMIN  =  197.756 eV
+POTPAW_PBE/W/POTCAR           : ENMAX  =  223.057; ENMIN  =  167.293 eV
+POTPAW_PBE/W_pv_new/POTCAR    : ENMAX  =  223.057; ENMIN  =  167.293 eV
+POTPAW_PBE/W_pv/POTCAR        : ENMAX  =  223.065; ENMIN  =  167.299 eV
+POTPAW_PBE/Xe/POTCAR          : ENMAX  =  153.098; ENMIN  =  114.823 eV
+POTPAW_PBE/Xe/POTCAR          : ENMAX  =  153.098; ENMIN  =  114.823 eV
+POTPAW_PBE/Yb_2_n/POTCAR      : ENMAX  =  144.685; ENMIN  =  108.514 eV
+POTPAW_PBE/Yb_2/POTCAR        : ENMAX  =  112.543; ENMIN  =   84.407 eV
+POTPAW_PBE/Yb/POTCAR          : ENMAX  =  253.028; ENMIN  =  189.771 eV
+POTPAW_PBE/Y_sv/POTCAR        : ENMAX  =  211.641; ENMIN  =  158.731 eV
+POTPAW_PBE/Yb_2_n/POTCAR      : ENMAX  =  144.685; ENMIN  =  108.514 eV
+POTPAW_PBE/Yb_2/POTCAR        : ENMAX  =  112.543; ENMIN  =   84.407 eV
+POTPAW_PBE/Yb/POTCAR          : ENMAX  =  253.028; ENMIN  =  189.771 eV
+POTPAW_PBE/Zn/POTCAR          : ENMAX  =  276.727; ENMIN  =  207.545 eV
+POTPAW_PBE/Zn_pv/POTCAR       : ENMAX  =  376.607; ENMIN  =  282.455 eV
+POTPAW_PBE/Zr/POTCAR          : ENMAX  =  154.632; ENMIN  =  115.974 eV
+POTPAW_PBE/Zr_sv_GW/POTCAR    : ENMAX  =  307.836; ENMIN  =  230.877 eV
+POTPAW_PBE/Zr_sv_new/POTCAR   : ENMAX  =  229.898; ENMIN  =  172.424 eV
+POTPAW_PBE/Zr_sv/POTCAR       : ENMAX  =  229.839; ENMIN  =  172.379 eV
 #+end_example
 
 * Python
