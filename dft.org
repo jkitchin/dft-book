@@ -4428,6 +4428,7 @@ Some notes: we had to specify the PBE functional. That is good habit, since the 
 We get exactly the same result as the website! Why is this helpful then? Well, we could use this as a starting point to look at an equation of state, or to plot some interesting electronic structure, etc... Or we can gain a little confidence that our version of VASP is working like the one they used.
 
 ** Convergence testing in bulk structures
+*** k-point convergence
 In the section on molecules, we learned that the total energy is a function of the planewave cutoff energy (ENCUT) used. In bulk systems that is true also. There is also another calculation parameter you must consider, the k-point grid. The k-point grid is a computational tool used to approximate integrals of some property, e.g. the electron density, over the entire unit cell. The integration is performed in reciprocal space (i.e. in the Brillouin zone) for convenience and efficiency, and the k-point grid is where the property is sampled for the integration. The higher the number of sampled points, the more accurately the integrals are approximated.
 
 We will typically use a Monkhorst-Pack \cite{PhysRevB.13.5188} k-point grid, which is essentially a uniformly spaced grid in the Brillouin zone. Another less commonly used scheme is the Chadi-Cohen k-point grid \cite{PhysRevB.8.5747}. The Monkhorst-Pack grids are specified as $n1 \times n2 \times n3$ grids, and the total number of k-points is $n1 \cdot n2 \cdot n3$. The computational cost is linear in the total number of k-points, so  a calculation on a $4 \times 4 \times 4$ grid will be roughly 8 times more expensive than on a $2 \times 2 \times 2$ grid. Hence, one seeks again to balance convergence with computational tractability. Below we consider the k-point convergence of fcc Ag.
@@ -4484,6 +4485,85 @@ As unit cells get larger, the number of k-points required becomes smaller. For e
 Sometimes you may see k-points described as k-points per reciprocal atom. For example, a $12 \times 12 \times 12$ k-point grid for a primitive fcc unit cell would be 1728 k-points per reciprocal atom. A $2 \times 2 \times 2$ fcc unit cell has eight atoms in it, or 0.125 reciprical atoms, so a $6 \times 6 \times 6$ k-point grid has 216 k-points in it, or 216/0.125 = 1728 k-points per reciprocal atom, the same as we discussed before.
 
 In the k-point convergence example above, we used a $6 \times 6 \times 6$ k-point grid on a unit cell with four atoms in it, leading to 864 k-points per reciprocal atom. If we had instead used the primitive unit cell, we would need either a $9 \times 9 \times 9$ or $10 \times 10 \times 10$ k-point grid to get a similar level of accuracy. In this case, there is no exact matching of k-point grids due to the difference in shape of the cells.
+
+*** Effect of [[incar:SIGMA][SIGMA]]
+index:ISMEAR
+index:SIGMA
+
+In the self-consistent cycle  of a DFT calculation, the total energy is minimized with respect to occupation of the Kohn-Sham orbitals. At absolute zero, a band is either occupied or empty. This discrete occupation results in discontinuous changes in energy with changes in occupation, which makes it difficult to converge. One solution is to artificially broaden the band occupancies, as if they were occupied at a higher temperature where partial occupation is possible. This results in a continuous dependence of energy on the partial occupancy, and dramatically increases the rate of convergence. [[incar:SIGMA][SIGMA]] and [[incar:ISMEAR][ISMEAR]] affect how the partial occupancies of the bands are determined.
+
+Some rules to keep in mind:
+1. The smearing methods were designed for metals. For molecules, semiconductors and insulators you should use a very small SIGMA (e.g. 0.01).
+2. Standard values for metallic systems is SIGMA=0.1, but the best SIGMA may be [[http://cms.mpi.univie.ac.at/vasp/guide/node159.html][material specific]].
+
+The consequence of this finite temperature is that additional bands
+must be included in the calculation to allow for the partially
+occupied states above the Fermi level; the number of extra bands depends on
+the temperature used.  An example of the maximum occupancies of the
+bands for an Al(111) slab as a function of the Fermi temperature is
+shown in Figure \ref{fig:sigma-occ}. Obviously, as the Fermi temperature
+approaches 0 K, the occupancy approaches a step function.  It is preferable
+that the occupancy of several of the highest bands be zero (or at
+least of order $1\times 10^{-8}$) to ensure enough variational freedom was
+available in the calculation.  Consequently, it is suggested that fifteen to
+twenty extra bands be used for a Fermi temperature of $k_bT=0.20$ eV, or
+that the Fermi temperature be decreased to $k_bT=0.10$ eV. In any case,
+it should be determined that enough bands were used by examination of
+the occupancies.  It is undesirable to have too many extra bands, as
+this will add computational time.
+
+
+Below we show the effect of SIGMA on the band occupancies.
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase import Atom, Atoms
+import matplotlib.pyplot as plt
+
+a = 3.61
+atoms = Atoms([Atom('Cu', (0, 0, 0))],
+              cell=0.5 * a * np.array([[1.0, 1.0, 0.0],
+                                       [0.0, 1.0, 1.0],
+                                       [1.0, 0.0, 1.0]])).repeat((2,2,2))
+
+SIGMA = [0.001, 0.05, 0.1, 0.2, 0.5]
+
+for sigma in SIGMA:
+
+    with jasp('bulk/Cu-sigma-{0}'.format(sigma),
+              xc='PBE',
+              encut=350,
+              kpts=(4, 4, 4),
+              ismear=-1,
+              sigma=sigma,
+              nbands=9 * 8,
+              atoms=atoms) as calc:
+        e = atoms.get_potential_energy()
+
+        nbands = calc.nbands
+        nkpts = len(calc.get_ibz_k_points())
+
+        occ = np.zeros((nkpts, nbands))
+        for i in range(nkpts):
+            occ[i,:] = calc.get_occupation_numbers(kpt=i)
+
+        max_occ = np.max(occ,axis=0) #axis 0 is columns
+
+        plt.plot(range(nbands), max_occ, label='$\sigma = {0}$'.format(sigma))
+
+plt.xlabel('band number')
+plt.ylabel('maximum occupancy (electrons)')
+plt.ylim([-0.1, 2.1])
+plt.legend(loc='best')
+plt.savefig('images/occ-sigma.png')
+plt.show()
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: Effects of SIGMA on the occupancies of the Cu system.
+#+label: fig:sigma-occ
+#+ATTR_LaTeX: placement=[H]
+[[./images/occ-sigma.png]]
 
 ** Determining bulk structures
 What we typically mean by determining bulk structures includes the following:
@@ -5170,7 +5250,6 @@ GGA = {'AM':'AM05',
        'PS':'PBEsol',
        'RP':'RPBE'}
 
-
 for key in GGA:
     volumes, energies = [],[]
     for a in LC:
@@ -5208,88 +5287,6 @@ for key in GGA:
 : PBE    lattice constant is 3.952 Ang^3
 
 These results compare very favorably to those in \cite{mattsson-084714}. It is typical that LDA functionals underestimate the lattice constants, and that GGAs tend to overestimate the lattice constants. PBEsol and AM05 were designed specifically for solids, and for Pd, these functionals do an exceptional job of reproducing the lattice constants. RPBE is particularly bad at the lattice constant, but it has been reported to be a superior functional for reactivity \cite{hammer1999:improv-pbe}.
-
-** Effect of calculation parameters on bulk calculations
-Several parameters affect the results in bulk calculations
-*** TODO k-point convergence ?
-*** Effect of [[incar:SIGMA][SIGMA]]
-index:ISMEAR
-index:SIGMA
-
-In the self-consistent cycle  of a DFT calculation, the total energy is minimized with respect to occupation of the Kohn-Sham orbitals. At absolute zero, a band is either occupied or empty. This discrete occupation results in discontinuous changes in energy with changes in occupation, which makes it difficult to converge. One solution is to artificially broaden the band occupancies, as if they were occupied at a higher temperature where partial occupation is possible. This results in a continuous dependence of energy on the partial occupancy, and dramatically increases the rate of convergence. [[incar:SIGMA][SIGMA]] and [[incar:ISMEAR][ISMEAR]] affect how the partial occupancies of the bands are determined.
-
-Some rules to keep in mind:
-1. The smearing methods were designed for metals. For molecules, semiconductors and insulators you should use a very small SIGMA (e.g. 0.01).
-2. Standard values for metallic systems is SIGMA=0.1, but the best SIGMA may be [[http://cms.mpi.univie.ac.at/vasp/guide/node159.html][material specific]].
-
-The consequence of this finite temperature is that additional bands
-must be included in the calculation to allow for the partially
-occupied states above the Fermi level; the number of extra bands depends on
-the temperature used.  An example of the maximum occupancies of the
-bands for an Al(111) slab as a function of the Fermi temperature is
-shown in Figure \ref{fig:sigma-occ}. Obviously, as the Fermi temperature
-approaches 0 K, the occupancy approaches a step function.  It is preferable
-that the occupancy of several of the highest bands be zero (or at
-least of order $1\times 10^{-8}$) to ensure enough variational freedom was
-available in the calculation.  Consequently, it is suggested that fifteen to
-twenty extra bands be used for a Fermi temperature of $k_bT=0.20$ eV, or
-that the Fermi temperature be decreased to $k_bT=0.10$ eV. In any case,
-it should be determined that enough bands were used by examination of
-the occupancies.  It is undesirable to have too many extra bands, as
-this will add computational time.
-
-
-Below we show the effect of SIGMA on the band occupancies.
-#+BEGIN_SRC python :results output
-from jasp import *
-from ase import Atom, Atoms
-import matplotlib.pyplot as plt
-
-a = 3.61
-atoms = Atoms([Atom('Cu', (0, 0, 0))],
-              cell=0.5 * a * np.array([[1.0, 1.0, 0.0],
-                                       [0.0, 1.0, 1.0],
-                                       [1.0, 0.0, 1.0]])).repeat((2,2,2))
-
-SIGMA = [0.001, 0.05, 0.1, 0.2, 0.5]
-
-for sigma in SIGMA:
-
-    with jasp('bulk/Cu-sigma-{0}'.format(sigma),
-              xc='PBE',
-              encut=350,
-              kpts=(4, 4, 4),
-              ismear=-1,
-              sigma=sigma,
-              nbands=9 * 8,
-              atoms=atoms) as calc:
-        e = atoms.get_potential_energy()
-
-        nbands = calc.nbands
-        nkpts = len(calc.get_ibz_k_points())
-
-        occ = np.zeros((nkpts, nbands))
-        for i in range(nkpts):
-            occ[i,:] = calc.get_occupation_numbers(kpt=i)
-
-        max_occ = np.max(occ,axis=0) #axis 0 is columns
-
-        plt.plot(range(nbands), max_occ, label='$\sigma = {0}$'.format(sigma))
-
-plt.xlabel('band number')
-plt.ylabel('maximum occupancy (electrons)')
-plt.ylim([-0.1, 2.1])
-plt.legend(loc='best')
-plt.savefig('images/occ-sigma.png')
-plt.show()
-#+END_SRC
-
-#+RESULTS:
-
-#+caption: Effects of SIGMA on the occupancies of the Cu system.
-#+label: fig:sigma-occ
-#+ATTR_LaTeX: placement=[H]
-[[./images/occ-sigma.png]]
 
 ** Cohesive energy
 [[index:cohesive energy]]
