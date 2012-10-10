@@ -4427,7 +4427,7 @@ Some notes: we had to specify the PBE functional. That is good habit, since the 
 
 We get exactly the same result as the website! Why is this helpful then? Well, we could use this as a starting point to look at an equation of state, or to plot some interesting electronic structure, etc... Or we can gain a little confidence that our version of VASP is working like the one they used.
 
-** Convergence testing in bulk structures
+** Computaional parameters that are important for bulk structures
 *** k-point convergence
 In the section on molecules, we learned that the total energy is a function of the planewave cutoff energy (ENCUT) used. In bulk systems that is true also. There is also another calculation parameter you must consider, the k-point grid. The k-point grid is a computational tool used to approximate integrals of some property, e.g. the electron density, over the entire unit cell. The integration is performed in reciprocal space (i.e. in the Brillouin zone) for convenience and efficiency, and the k-point grid is where the property is sampled for the integration. The higher the number of sampled points, the more accurately the integrals are approximated.
 
@@ -4564,6 +4564,175 @@ plt.show()
 #+label: fig:sigma-occ
 #+ATTR_LaTeX: placement=[H]
 [[./images/occ-sigma.png]]
+
+*** The number of bands
+In the last figure, it is evident that due to the smearing of the electronic states you need to have extra bands to accommodate the electrons above the Fermi level, and the higher the incar:SIGMA value is, the more bands you need. You need enough bands so that the highest energy bands are unoccupied, and VASP will give you a warning that looks like this:
+
+#+begin_example
+ -----------------------------------------------------------------------------
+|                                                                             |
+|  ADVICE TO THIS USER RUNNING 'VASP/VAMP'   (HEAR YOUR MASTER'S VOICE ...):  |
+|                                                                             |
+|      Your highest band is occupied at some k-points! Unless you are         |
+|      performing a calculation for an insulator or semiconductor, without    |
+|      unoccupied bands, you have included TOO FEW BANDS!! Please increase    |
+|      the parameter NBANDS in file 'INCAR' to ensure that the highest band   |
+|      is unoccupied at all k-points. It is always recommended to             |
+|      include a few unoccupied bands to accelerate the convergence of        |
+|      molecular dynamics runs (even for insulators or semiconductors).       |
+|      Because the presence of unoccupied bands improves wavefunction         |
+|      prediction, and helps to suppress 'band-crossings.'                    |
+|      Following all k-points will be listed (with the Fermi weights of       |
+|      the highest band given in paranthesis) ... :                           |
+|                                                                             |
+|                          6       (-0.01472)                                 |
+|                          8       (-0.01413)                                 |
+|                         13       (-0.01733)                                 |
+|                         14       (-0.01838)                                 |
+|                                                                             |
+|      The total occupancy of band no.    49 is  -0.00932 electrons ...       |
+|                                                                             |
+ -----------------------------------------------------------------------------
+#+end_example
+
+We tell VASP the number of bands to use with the incar:NBANDS keyword. VASP will set the NBANDS automatically if you do not provide a value, but this is in general bad practice (even though it is often done in this book!). There are a few general guidelines for setting NBANDS. First we recognize that a band can only have two electrons in it (one spin up, and one spin down) in an calculation without spin-polarization, or one electron per band for a spin-polarized calculation (note that spin-polarization doubles the number of bands).  There absolutely must be enough bands to accommodate all the electrons, so the minimum number of bands is int(ceil(nelectrons/2)).
+
+#+BEGIN_SRC python :results output
+import numpy as np
+
+print int(np.ceil(50/2.))
+print int(np.ceil(51/2.))
+#+END_SRC
+
+#+RESULTS:
+: 25
+: 26
+
+However, due to the smearing, the minimum number of bands is almost never enough, and we always add more bands. The default behavior in vasp is:
+
+| non-spin polarized | NELECT/2 + NIONS/2 |
+| spin-polarized     | 0.6*NELECT + NMAGIONS |
+
+These do not always work, especially for small molecular systems where NIONS/2 may be only 1, or transition metals where it may be necessary to add up to 2*NIONS extra bands.
+
+To figure out how many bands you need, it is necessary to know how many electrons are in your calculation. The func:jasp.get_valence_electrons provides this for you. Alternatively, you can look in the [[*Recommended%20values%20for%20ENCUT%20and%20valence%20electrons%20for%20different%20POTCAR%20files][Appendix]] for a table listing the number of valence electrons for each POTCAR file. Armed with this information you can set NBANDS the way you want.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000])],
+              cell=  [[ 1.818,  0.000,  1.818],
+                      [ 1.818,  1.818,  0.000],
+                      [ 0.000,  1.818,  1.818]])
+
+with jasp('bulk/alloy/cu',
+          xc='PBE',
+          encut=350,
+          kpts=(13,13,13),
+          nbands=9,
+          ibrion=2,
+          isif=4,
+          nsw=10,
+          atoms=atoms) as calc:
+    print calc.get_valence_electrons()
+#+END_SRC
+
+#+RESULTS:
+: 11.0
+
+For this calculation we need at least 6 bands (11/2=5.5 which is rounded up to 6) and we need to include some extra bands. The default rule would only add half a band, which is not enough. We add three additional bands. This system is so small it does not substantially increase the computational cost.
+
+If you are too trifling to do that much work, you can use the func:jasp.set_nbands to automatically set the number of bands. This function takes an argument =N= to set the number of bands to N, *or* an argument =f= to set the NBANDS according to the formula $nbands = int(nelectrons/2 + len(atoms)*f)$. The default value of =f= is 1.5. If you want the default VASP behavior, set f=0.5. For transition metals, it may be required that f=2. This function does not consider whether the calculation is spin-polarized or not. Here is an example of using func:jasp.set_nbands.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000])],
+              cell=  [[ 1.818,  0.000,  1.818],
+                      [ 1.818,  1.818,  0.000],
+                      [ 0.000,  1.818,  1.818]])
+
+with jasp('bulk/alloy/cu',
+          xc='PBE',
+          encut=350,
+          kpts=(13,13,13),
+          ibrion=2,
+          isif=4,
+          nsw=10,
+          atoms=atoms) as calc:
+    print calc.set_nbands(9)
+#+END_SRC
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000])],
+              cell=  [[ 1.818,  0.000,  1.818],
+                      [ 1.818,  1.818,  0.000],
+                      [ 0.000,  1.818,  1.818]])
+
+with jasp('bulk/alloy/cu-setnbands',
+          xc='PBE',
+          encut=350,
+          kpts=(13,13,13),
+          ibrion=2,
+          isif=4,
+          nsw=10,
+          atoms=atoms) as calc:
+    print calc.set_nbands(f=3)
+    print calc
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+None
+False
+: -----------------------------
+  VASP calculation from /home/jkitchin/dft-org/bulk/alloy/cu-setnbands
+  converged: None
+  Energy = nan eV
+
+  Unit cell vectors (angstroms)
+        x       y     z      length
+  a0 [ 1.818  0.000  1.818] 2.571
+  a1 [ 1.818  1.818  0.000] 2.571
+  a2 [ 0.000  1.818  1.818] 2.571
+  a,b,c,alpha,beta,gamma (deg): 2.571 2.571 2.571 60.0 60.0 60.0
+  Unit cell volume = 12.017 Ang^3
+  Stress was not computed
+ Atom#  sym       position [x,y,z]         tag  rmsForce constraints
+   0    Cu  [0.000      0.000      0.000]   0   nan      T T T
+--------------------------------------------------
+
+INCAR Parameters:
+-----------------
+        nbands: 9
+           nsw: 10
+        ibrion: 2
+          isif: 4
+         encut: 350
+        magmom: None
+          prec: Normal
+          kpts: (13, 13, 13)
+    reciprocal: False
+            xc: PBE
+           txt: -
+         gamma: False
+
+Pseudopotentials used:
+----------------------
+None: None (git-hash: None)
+#+end_example
+
+You are, of course, free to use any formula you want to set the number of bands. Some formulas I have used in the past include:
+
+1. NBANDS = 0.65*NELECT + 10
+2. NBANDS = 0.5*NELECT + 15
+3. etc...
 
 ** Determining bulk structures
 What we typically mean by determining bulk structures includes the following:
@@ -11506,10 +11675,19 @@ with jasp('bulk/alloy/cu') as calc:
 
 #+end_example
 
-*** Recommended values for ENCUT
-#+BEGIN_SRC python :results output
+*** Recommended values for ENCUT and valence electrons for different POTCAR files
+The incar:ENCUT tag and incar:PREC tag affect the accuracy/convergence of your calculations.
+
+#+BEGIN_SRC python :results output raw org
+from jasp.POTCAR import *
 from ase.data import chemical_symbols
 import glob, os
+
+print '#+tblname: POTCAR'
+print '#+caption: Parameters for POTCAR files.'
+print '#+ATTR_LaTeX: longtable'
+print '| POTCAR | ENMIN (eV) | ENMAX (eV) | ENCUT prec=high (eV) | # valence electrons |'
+print '|-'
 
 chemical_symbols.sort()
 for symbol in chemical_symbols:
@@ -11518,400 +11696,407 @@ for symbol in chemical_symbols:
                                                      symbol))
 
     for potcar in potcars:
-        with open(potcar) as f:
-            for line in f:
-                if 'ENMAX' in line:
-                        print '{0:30s}: {1}'.format(os.path.relpath(potcar,
-                                                                os.environ['VASP_PP_PATH']),
-                                                                line.strip())
 
+        POTCAR = os.path.relpath(potcar,
+                                 os.environ['VASP_PP_PATH'])[:-7]
+        ENMIN = get_ENMIN(potcar)
+        ENMAX = get_ENMAX(potcar)
+        HIGH  = 1.3*ENMAX
+        ZVAL  = get_ZVAL(potcar)
+
+        print '|{POTCAR:30s}|{ENMIN}|{ENMAX}|{HIGH:1.3f}|{ZVAL}|'.format(**locals())
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-POTPAW_PBE/Ac/POTCAR          : ENMAX  =  172.237; ENMIN  =  129.178 eV
-POTPAW_PBE/Ag_new/POTCAR      : ENMAX  =  249.844; ENMIN  =  187.383 eV
-POTPAW_PBE/Ag/POTCAR          : ENMAX  =  249.846; ENMIN  =  187.385 eV
-POTPAW_PBE/Ag_pv/POTCAR       : ENMAX  =  297.865; ENMIN  =  223.399 eV
-POTPAW_PBE/Al/POTCAR          : ENMAX  =  240.300; ENMIN  =  180.225 eV
-POTPAW_PBE/Am/POTCAR          : ENMAX  =  255.875; ENMIN  =  191.906 eV
-POTPAW_PBE/Ar/POTCAR          : ENMAX  =  266.393; ENMIN  =  199.795 eV
-POTPAW_PBE/As_d_GW/POTCAR     : ENMAX  =  346.172; ENMIN  =  259.629 eV
-POTPAW_PBE/As_d/POTCAR        : ENMAX  =  288.651; ENMIN  =  216.488 eV
-POTPAW_PBE/As_GW/POTCAR       : ENMAX  =  208.702; ENMIN  =  156.526 eV
-POTPAW_PBE/As/POTCAR          : ENMAX  =  208.680; ENMIN  =  156.510 eV
-POTPAW_PBE/At_d/POTCAR        : ENMAX  =  266.251; ENMIN  =  199.688 eV
-POTPAW_PBE/At/POTCAR          : ENMAX  =  161.430; ENMIN  =  121.073 eV
-POTPAW_PBE/Au_new/POTCAR      : ENMAX  =  229.943; ENMIN  =  172.457 eV
-POTPAW_PBE/Au/POTCAR          : ENMAX  =  229.948; ENMIN  =  172.461 eV
-POTPAW_PBE/Ba_sv/POTCAR       : ENMAX  =  187.210; ENMIN  =  140.408 eV
-POTPAW_PBE/Be/POTCAR          : ENMAX  =  247.544; ENMIN  =  185.658 eV
-POTPAW_PBE/Be_sv/POTCAR       : ENMAX  =  308.750; ENMIN  =  231.563 eV
-POTPAW_PBE/B_h/POTCAR         : ENMAX  =  700.000; ENMIN  =  500.000 eV
-POTPAW_PBE/Bi_d/POTCAR        : ENMAX  =  242.851; ENMIN  =  182.138 eV
-POTPAW_PBE/Bi/POTCAR          : ENMAX  =  105.037; ENMIN  =   78.777 eV
-POTPAW_PBE/Bi_pv/POTCAR       : ENMAX  =  309.187; ENMIN  =  231.890 eV
-POTPAW_PBE/B/POTCAR           : ENMAX  =  318.606; ENMIN  =  238.954 eV
-POTPAW_PBE/Br/POTCAR          : ENMAX  =  216.264; ENMIN  =  162.198 eV
-POTPAW_PBE/B_s/POTCAR         : ENMAX  =  269.245; ENMIN  =  201.934 eV
-POTPAW_PBE/Ba_sv/POTCAR       : ENMAX  =  187.210; ENMIN  =  140.408 eV
-POTPAW_PBE/Be/POTCAR          : ENMAX  =  247.544; ENMIN  =  185.658 eV
-POTPAW_PBE/Be_sv/POTCAR       : ENMAX  =  308.750; ENMIN  =  231.563 eV
-POTPAW_PBE/Bi_d/POTCAR        : ENMAX  =  242.851; ENMIN  =  182.138 eV
-POTPAW_PBE/Bi/POTCAR          : ENMAX  =  105.037; ENMIN  =   78.777 eV
-POTPAW_PBE/Bi_pv/POTCAR       : ENMAX  =  309.187; ENMIN  =  231.890 eV
-POTPAW_PBE/Br/POTCAR          : ENMAX  =  216.264; ENMIN  =  162.198 eV
-POTPAW_PBE/Ca/POTCAR          : ENMAX  =  102.755; ENMIN  =   77.067 eV
-POTPAW_PBE/Ca_pv/POTCAR       : ENMAX  =  119.554; ENMIN  =   89.665 eV
-POTPAW_PBE/Ca_sv/POTCAR       : ENMAX  =  266.586; ENMIN  =  199.939 eV
-POTPAW_PBE/C_d/POTCAR         : ENMAX  =  413.992; ENMIN  =  310.494 eV
-POTPAW_PBE/Cd/POTCAR          : ENMAX  =  274.342; ENMIN  =  205.757 eV
-POTPAW_PBE/Ce_3/POTCAR        : ENMAX  =  181.286; ENMIN  =  135.964 eV
-POTPAW_PBE/Ce_h/POTCAR        : ENMAX  =  299.900; ENMIN  =  224.925 eV
-POTPAW_PBE/Ce/POTCAR          : ENMAX  =  273.042; ENMIN  =  204.781 eV
-POTPAW_PBE/C_GW/POTCAR        : ENMAX  =  413.992; ENMIN  =  310.494 eV
-POTPAW_PBE/C_h_nr/POTCAR      : ENMAX  =  741.684; ENMIN  =  556.263 eV
-POTPAW_PBE/C_h/POTCAR         : ENMAX  =  700.000; ENMIN  =  500.000 eV
-POTPAW_PBE/Cl_h/POTCAR        : ENMAX  =  409.136; ENMIN  =  306.852 eV
-POTPAW_PBE/Cl/POTCAR          : ENMAX  =  280.000; ENMIN  =  196.854 eV
-POTPAW_PBE/Co_new/POTCAR      : ENMAX  =  267.968; ENMIN  =  200.976 eV
-POTPAW_PBE/Co/POTCAR          : ENMAX  =  267.969; ENMIN  =  200.977 eV
-POTPAW_PBE/Co_sv/POTCAR       : ENMAX  =  390.362; ENMIN  =  292.771 eV
-POTPAW_PBE/C/POTCAR           : ENMAX  =  400.000; ENMIN  =  300.000 eV
-POTPAW_PBE/Cr/POTCAR          : ENMAX  =  227.082; ENMIN  =  170.311 eV
-POTPAW_PBE/Cr_pv_new/POTCAR   : ENMAX  =  265.681; ENMIN  =  199.261 eV
-POTPAW_PBE/Cr_pv/POTCAR       : ENMAX  =  265.683; ENMIN  =  199.262 eV
-POTPAW_PBE/Cr_sv_new/POTCAR   : ENMAX  =  395.471; ENMIN  =  296.603 eV
-POTPAW_PBE/Cr_sv/POTCAR       : ENMAX  =  395.471; ENMIN  =  296.603 eV
-POTPAW_PBE/C_s/POTCAR         : ENMAX  =  273.901; ENMIN  =  205.426 eV
-POTPAW_PBE/Cs_sv/POTCAR       : ENMAX  =  220.318; ENMIN  =  165.238 eV
-POTPAW_PBE/Cu_f/POTCAR        : ENMAX  =  295.446; ENMIN  =  221.585 eV
-POTPAW_PBE/Cu_new/POTCAR      : ENMAX  =  295.446; ENMIN  =  221.585 eV
-POTPAW_PBE/Cu/POTCAR          : ENMAX  =  273.214; ENMIN  =  204.910 eV
-POTPAW_PBE/Cu_pvf/POTCAR      : ENMAX  =  368.648; ENMIN  =  276.486 eV
-POTPAW_PBE/Cu_pv/POTCAR       : ENMAX  =  368.605; ENMIN  =  276.454 eV
-POTPAW_PBE/Ca/POTCAR          : ENMAX  =  102.755; ENMIN  =   77.067 eV
-POTPAW_PBE/Ca_pv/POTCAR       : ENMAX  =  119.554; ENMIN  =   89.665 eV
-POTPAW_PBE/Ca_sv/POTCAR       : ENMAX  =  266.586; ENMIN  =  199.939 eV
-POTPAW_PBE/Cd/POTCAR          : ENMAX  =  274.342; ENMIN  =  205.757 eV
-POTPAW_PBE/Ce_3/POTCAR        : ENMAX  =  181.286; ENMIN  =  135.964 eV
-POTPAW_PBE/Ce_h/POTCAR        : ENMAX  =  299.900; ENMIN  =  224.925 eV
-POTPAW_PBE/Ce/POTCAR          : ENMAX  =  273.042; ENMIN  =  204.781 eV
-POTPAW_PBE/Cl_h/POTCAR        : ENMAX  =  409.136; ENMIN  =  306.852 eV
-POTPAW_PBE/Cl/POTCAR          : ENMAX  =  280.000; ENMIN  =  196.854 eV
-POTPAW_PBE/Co_new/POTCAR      : ENMAX  =  267.968; ENMIN  =  200.976 eV
-POTPAW_PBE/Co/POTCAR          : ENMAX  =  267.969; ENMIN  =  200.977 eV
-POTPAW_PBE/Co_sv/POTCAR       : ENMAX  =  390.362; ENMIN  =  292.771 eV
-POTPAW_PBE/Cr/POTCAR          : ENMAX  =  227.082; ENMIN  =  170.311 eV
-POTPAW_PBE/Cr_pv_new/POTCAR   : ENMAX  =  265.681; ENMIN  =  199.261 eV
-POTPAW_PBE/Cr_pv/POTCAR       : ENMAX  =  265.683; ENMIN  =  199.262 eV
-POTPAW_PBE/Cr_sv_new/POTCAR   : ENMAX  =  395.471; ENMIN  =  296.603 eV
-POTPAW_PBE/Cr_sv/POTCAR       : ENMAX  =  395.471; ENMIN  =  296.603 eV
-POTPAW_PBE/Cs_sv/POTCAR       : ENMAX  =  220.318; ENMIN  =  165.238 eV
-POTPAW_PBE/Cu_f/POTCAR        : ENMAX  =  295.446; ENMIN  =  221.585 eV
-POTPAW_PBE/Cu_new/POTCAR      : ENMAX  =  295.446; ENMIN  =  221.585 eV
-POTPAW_PBE/Cu/POTCAR          : ENMAX  =  273.214; ENMIN  =  204.910 eV
-POTPAW_PBE/Cu_pvf/POTCAR      : ENMAX  =  368.648; ENMIN  =  276.486 eV
-POTPAW_PBE/Cu_pv/POTCAR       : ENMAX  =  368.605; ENMIN  =  276.454 eV
-POTPAW_PBE/Dy_3/POTCAR        : ENMAX  =  155.729; ENMIN  =  116.797 eV
-POTPAW_PBE/Dy/POTCAR          : ENMAX  =  255.467; ENMIN  =  191.601 eV
-POTPAW_PBE/Er_2/POTCAR        : ENMAX  =  119.750; ENMIN  =   89.813 eV
-POTPAW_PBE/Er_3/POTCAR        : ENMAX  =  155.053; ENMIN  =  116.290 eV
-POTPAW_PBE/Er/POTCAR          : ENMAX  =  298.116; ENMIN  =  223.587 eV
-POTPAW_PBE/Eu_2/POTCAR        : ENMAX  =   99.304; ENMIN  =   74.478 eV
-POTPAW_PBE/Eu_3/POTCAR        : ENMAX  =  129.057; ENMIN  =   96.793 eV
-POTPAW_PBE/Eu_GW/POTCAR       : ENMAX  =  603.254; ENMIN  =  452.441 eV
-POTPAW_PBE/Eu/POTCAR          : ENMAX  =  249.668; ENMIN  =  187.251 eV
-POTPAW_PBE/F_d_GW/POTCAR      : ENMAX  =  487.698; ENMIN  =  365.773 eV
-POTPAW_PBE/Fe/POTCAR          : ENMAX  =  267.883; ENMIN  =  200.912 eV
-POTPAW_PBE/Fe_pv_new/POTCAR   : ENMAX  =  293.238; ENMIN  =  219.928 eV
-POTPAW_PBE/Fe_pv/POTCAR       : ENMAX  =  293.238; ENMIN  =  219.929 eV
-POTPAW_PBE/Fe_sv_h/POTCAR     : ENMAX  =  547.365; ENMIN  =  410.523 eV
-POTPAW_PBE/Fe_sv/POTCAR       : ENMAX  =  390.558; ENMIN  =  292.918 eV
-POTPAW_PBE/F_h/POTCAR         : ENMAX  =  700.000; ENMIN  =  500.000 eV
-POTPAW_PBE/F/POTCAR           : ENMAX  =  400.000; ENMIN  =  300.000 eV
-POTPAW_PBE/Fr_sv/POTCAR       : ENMAX  =  214.540; ENMIN  =  160.905 eV
-POTPAW_PBE/F_s/POTCAR         : ENMAX  =  289.825; ENMIN  =  217.369 eV
-POTPAW_PBE/Fe/POTCAR          : ENMAX  =  267.883; ENMIN  =  200.912 eV
-POTPAW_PBE/Fe_pv_new/POTCAR   : ENMAX  =  293.238; ENMIN  =  219.928 eV
-POTPAW_PBE/Fe_pv/POTCAR       : ENMAX  =  293.238; ENMIN  =  219.929 eV
-POTPAW_PBE/Fe_sv_h/POTCAR     : ENMAX  =  547.365; ENMIN  =  410.523 eV
-POTPAW_PBE/Fe_sv/POTCAR       : ENMAX  =  390.558; ENMIN  =  292.918 eV
-POTPAW_PBE/Fr_sv/POTCAR       : ENMAX  =  214.540; ENMIN  =  160.905 eV
-POTPAW_PBE/Ga_d_GW/POTCAR     : ENMAX  =  369.848; ENMIN  =  277.386 eV
-POTPAW_PBE/Ga_d/POTCAR        : ENMAX  =  282.697; ENMIN  =  212.022 eV
-POTPAW_PBE/Ga_h/POTCAR        : ENMAX  =  404.601; ENMIN  =  303.451 eV
-POTPAW_PBE/Ga/POTCAR          : ENMAX  =  134.678; ENMIN  =  101.009 eV
-POTPAW_PBE/Ga_s/POTCAR        : ENMAX  =   83.836; ENMIN  =   62.877 eV
-POTPAW_PBE/Ga_sv_GW/POTCAR    : ENMAX  =  503.418; ENMIN  =  377.564 eV
-POTPAW_PBE/Gd_3/POTCAR        : ENMAX  =  154.348; ENMIN  =  115.761 eV
-POTPAW_PBE/Gd/POTCAR          : ENMAX  =  256.472; ENMIN  =  192.354 eV
-POTPAW_PBE/Ge_d3/POTCAR       : ENMAX  =  226.106; ENMIN  =  169.580 eV
-POTPAW_PBE/Ge_d_GW2/POTCAR    : ENMAX  =  339.130; ENMIN  =  254.348 eV
-POTPAW_PBE/Ge_d_GW/POTCAR     : ENMAX  =  310.294; ENMIN  =  232.720 eV
-POTPAW_PBE/Ge_d_GW_ref/POTCAR : ENMAX  =  572.010; ENMIN  =  429.008 eV
-POTPAW_PBE/Ge_d/POTCAR        : ENMAX  =  310.294; ENMIN  =  232.720 eV
-POTPAW_PBE/Ge_h/POTCAR        : ENMAX  =  410.425; ENMIN  =  307.818 eV
-POTPAW_PBE/Ge/POTCAR          : ENMAX  =  173.807; ENMIN  =  130.355 eV
-POTPAW_PBE/H1.25/POTCAR       : ENMAX  =  250.000; ENMIN  =  200.000 eV
-POTPAW_PBE/H1.5/POTCAR        : ENMAX  =  250.000; ENMIN  =  200.000 eV
-POTPAW_PBE/H.5/POTCAR         : ENMAX  =  250.000; ENMIN  =  200.000 eV
-POTPAW_PBE/H.75/POTCAR        : ENMAX  =  250.000; ENMIN  =  200.000 eV
-POTPAW_PBE/He/POTCAR          : ENMAX  =  478.896; ENMIN  =  359.172 eV
-POTPAW_PBE/Hf/POTCAR          : ENMAX  =  220.333; ENMIN  =  165.250 eV
-POTPAW_PBE/Hf_pv/POTCAR       : ENMAX  =  220.342; ENMIN  =  165.256 eV
-POTPAW_PBE/Hf_sv_GW/POTCAR    : ENMAX  =  317.394; ENMIN  =  238.045 eV
-POTPAW_PBE/Hf_sv/POTCAR       : ENMAX  =  237.444; ENMIN  =  178.083 eV
-POTPAW_PBE/Hg/POTCAR          : ENMAX  =  233.214; ENMIN  =  174.911 eV
-POTPAW_PBE/H_h/POTCAR         : ENMAX  =  700.000; ENMIN  =  500.000 eV
-POTPAW_PBE/Ho_3/POTCAR        : ENMAX  =  154.153; ENMIN  =  115.615 eV
-POTPAW_PBE/Ho/POTCAR          : ENMAX  =  257.168; ENMIN  =  192.876 eV
-POTPAW_PBE/H/POTCAR           : ENMAX  =  250.000; ENMIN  =  200.000 eV
-POTPAW_PBE/He/POTCAR          : ENMAX  =  478.896; ENMIN  =  359.172 eV
-POTPAW_PBE/Hf/POTCAR          : ENMAX  =  220.333; ENMIN  =  165.250 eV
-POTPAW_PBE/Hf_pv/POTCAR       : ENMAX  =  220.342; ENMIN  =  165.256 eV
-POTPAW_PBE/Hf_sv_GW/POTCAR    : ENMAX  =  317.394; ENMIN  =  238.045 eV
-POTPAW_PBE/Hf_sv/POTCAR       : ENMAX  =  237.444; ENMIN  =  178.083 eV
-POTPAW_PBE/Hg/POTCAR          : ENMAX  =  233.214; ENMIN  =  174.911 eV
-POTPAW_PBE/Ho_3/POTCAR        : ENMAX  =  154.153; ENMIN  =  115.615 eV
-POTPAW_PBE/Ho/POTCAR          : ENMAX  =  257.168; ENMIN  =  192.876 eV
-POTPAW_PBE/In_d/POTCAR        : ENMAX  =  239.218; ENMIN  =  179.413 eV
-POTPAW_PBE/In/POTCAR          : ENMAX  =   95.934; ENMIN  =   71.951 eV
-POTPAW_PBE/I/POTCAR           : ENMAX  =  175.647; ENMIN  =  131.735 eV
-POTPAW_PBE/Ir/POTCAR          : ENMAX  =  210.870; ENMIN  =  158.153 eV
-POTPAW_PBE/In_d/POTCAR        : ENMAX  =  239.218; ENMIN  =  179.413 eV
-POTPAW_PBE/In/POTCAR          : ENMAX  =   95.934; ENMIN  =   71.951 eV
-POTPAW_PBE/Ir/POTCAR          : ENMAX  =  210.870; ENMIN  =  158.153 eV
-POTPAW_PBE/K_pv/POTCAR        : ENMAX  =  116.731; ENMIN  =   87.548 eV
-POTPAW_PBE/Kr/POTCAR          : ENMAX  =  185.260; ENMIN  =  138.945 eV
-POTPAW_PBE/K_sv/POTCAR        : ENMAX  =  259.216; ENMIN  =  194.412 eV
-POTPAW_PBE/Kr/POTCAR          : ENMAX  =  185.260; ENMIN  =  138.945 eV
-POTPAW_PBE/La/POTCAR          : ENMAX  =  219.313; ENMIN  =  164.485 eV
-POTPAW_PBE/La_s/POTCAR        : ENMAX  =  136.552; ENMIN  =  102.414 eV
-POTPAW_PBE/Li/POTCAR          : ENMAX  =  140.000; ENMIN  =  100.000 eV
-POTPAW_PBE/Li_sv2/POTCAR      : ENMAX  =  555.106; ENMIN  =  416.330 eV
-POTPAW_PBE/Li_sv/POTCAR       : ENMAX  =  499.034; ENMIN  =  374.276 eV
-POTPAW_PBE/Lu_3/POTCAR        : ENMAX  =  155.009; ENMIN  =  116.257 eV
-POTPAW_PBE/Lu/POTCAR          : ENMAX  =  255.695; ENMIN  =  191.771 eV
-POTPAW_PBE/Mg_new/POTCAR      : ENMAX  =  126.143; ENMIN  =   94.607 eV
-POTPAW_PBE/Mg/POTCAR          : ENMAX  =  210.012; ENMIN  =  157.509 eV
-POTPAW_PBE/Mg_pv_GW/POTCAR    : ENMAX  =  403.929; ENMIN  =  302.947 eV
-POTPAW_PBE/Mg_pv.old/POTCAR   : ENMAX  =  265.574; ENMIN  =  199.180 eV
-POTPAW_PBE/Mg_pv/POTCAR       : ENMAX  =  403.929; ENMIN  =  302.947 eV
-POTPAW_PBE/Mg_sv/POTCAR       : ENMAX  =  495.223; ENMIN  =  371.417 eV
-POTPAW_PBE/Mn/POTCAR          : ENMAX  =  269.865; ENMIN  =  202.399 eV
-POTPAW_PBE/Mn_pv_new/POTCAR   : ENMAX  =  269.864; ENMIN  =  202.398 eV
-POTPAW_PBE/Mn_pv/POTCAR       : ENMAX  =  269.865; ENMIN  =  202.399 eV
-POTPAW_PBE/Mn_sv/POTCAR       : ENMAX  =  387.187; ENMIN  =  290.390 eV
-POTPAW_PBE/Mo/POTCAR          : ENMAX  =  224.584; ENMIN  =  168.438 eV
-POTPAW_PBE/Mo_pv_new/POTCAR   : ENMAX  =  224.584; ENMIN  =  168.438 eV
-POTPAW_PBE/Mo_pv/POTCAR       : ENMAX  =  224.584; ENMIN  =  168.438 eV
-POTPAW_PBE/Mo_sv/POTCAR       : ENMAX  =  242.676; ENMIN  =  182.007 eV
-POTPAW_PBE/Na/POTCAR          : ENMAX  =  101.968; ENMIN  =   76.476 eV
-POTPAW_PBE/Na_pv/POTCAR       : ENMAX  =  259.561; ENMIN  =  194.671 eV
-POTPAW_PBE/Na_sv/POTCAR       : ENMAX  =  700.000; ENMIN  =  484.230 eV
-POTPAW_PBE/Nb_pv/POTCAR       : ENMAX  =  208.608; ENMIN  =  156.456 eV
-POTPAW_PBE/Nb_sv_new/POTCAR   : ENMAX  =  293.235; ENMIN  =  219.927 eV
-POTPAW_PBE/Nb_sv/POTCAR       : ENMAX  =  293.235; ENMIN  =  219.927 eV
-POTPAW_PBE/Nd_3/POTCAR        : ENMAX  =  182.546; ENMIN  =  136.909 eV
-POTPAW_PBE/Nd/POTCAR          : ENMAX  =  253.189; ENMIN  =  189.892 eV
-POTPAW_PBE/Ne/POTCAR          : ENMAX  =  343.606; ENMIN  =  257.704 eV
-POTPAW_PBE/N_h/POTCAR         : ENMAX  =  700.000; ENMIN  =  500.000 eV
-POTPAW_PBE/Ni_new/POTCAR      : ENMAX  =  269.532; ENMIN  =  202.149 eV
-POTPAW_PBE/Ni/POTCAR          : ENMAX  =  269.533; ENMIN  =  202.150 eV
-POTPAW_PBE/Ni_pv/POTCAR       : ENMAX  =  367.945; ENMIN  =  275.959 eV
-POTPAW_PBE/N/POTCAR           : ENMAX  =  400.000; ENMIN  =  300.000 eV
-POTPAW_PBE/Np/POTCAR          : ENMAX  =  254.369; ENMIN  =  190.776 eV
-POTPAW_PBE/Np_s/POTCAR        : ENMAX  =  210.851; ENMIN  =  158.138 eV
-POTPAW_PBE/N_s_GW/POTCAR      : ENMAX  =  296.495; ENMIN  =  222.371 eV
-POTPAW_PBE/N_s/POTCAR         : ENMAX  =  279.680; ENMIN  =  209.760 eV
-POTPAW_PBE/N_vs/POTCAR        : ENMAX  =  279.680; ENMIN  =  209.760 eV
-POTPAW_PBE/Na/POTCAR          : ENMAX  =  101.968; ENMIN  =   76.476 eV
-POTPAW_PBE/Na_pv/POTCAR       : ENMAX  =  259.561; ENMIN  =  194.671 eV
-POTPAW_PBE/Na_sv/POTCAR       : ENMAX  =  700.000; ENMIN  =  484.230 eV
-POTPAW_PBE/Nb_pv/POTCAR       : ENMAX  =  208.608; ENMIN  =  156.456 eV
-POTPAW_PBE/Nb_sv_new/POTCAR   : ENMAX  =  293.235; ENMIN  =  219.927 eV
-POTPAW_PBE/Nb_sv/POTCAR       : ENMAX  =  293.235; ENMIN  =  219.927 eV
-POTPAW_PBE/Nd_3/POTCAR        : ENMAX  =  182.546; ENMIN  =  136.909 eV
-POTPAW_PBE/Nd/POTCAR          : ENMAX  =  253.189; ENMIN  =  189.892 eV
-POTPAW_PBE/Ne/POTCAR          : ENMAX  =  343.606; ENMIN  =  257.704 eV
-POTPAW_PBE/Ni_new/POTCAR      : ENMAX  =  269.532; ENMIN  =  202.149 eV
-POTPAW_PBE/Ni/POTCAR          : ENMAX  =  269.533; ENMIN  =  202.150 eV
-POTPAW_PBE/Ni_pv/POTCAR       : ENMAX  =  367.945; ENMIN  =  275.959 eV
-POTPAW_PBE/Np/POTCAR          : ENMAX  =  254.369; ENMIN  =  190.776 eV
-POTPAW_PBE/Np_s/POTCAR        : ENMAX  =  210.851; ENMIN  =  158.138 eV
-POTPAW_PBE/O_GW/POTCAR        : ENMAX  =  414.635; ENMIN  =  310.976 eV
-POTPAW_PBE/O_h/POTCAR         : ENMAX  =  700.000; ENMIN  =  500.000 eV
-POTPAW_PBE/O/POTCAR           : ENMAX  =  400.000; ENMIN  =  300.000 eV
-POTPAW_PBE/O_s_GW/POTCAR      : ENMAX  =  300.688; ENMIN  =  225.516 eV
-POTPAW_PBE/O_s/POTCAR         : ENMAX  =  282.841; ENMIN  =  212.131 eV
-POTPAW_PBE/Os/POTCAR          : ENMAX  =  228.022; ENMIN  =  171.017 eV
-POTPAW_PBE/Os_pv/POTCAR       : ENMAX  =  228.022; ENMIN  =  171.017 eV
-POTPAW_PBE/O_sv/POTCAR        : ENMAX  = 1421.493; ENMIN  = 1066.119 eV
-POTPAW_PBE/Os/POTCAR          : ENMAX  =  228.022; ENMIN  =  171.017 eV
-POTPAW_PBE/Os_pv/POTCAR       : ENMAX  =  228.022; ENMIN  =  171.017 eV
-POTPAW_PBE/Pa/POTCAR          : ENMAX  =  252.316; ENMIN  =  189.237 eV
-POTPAW_PBE/Pa_s/POTCAR        : ENMAX  =  193.576; ENMIN  =  145.182 eV
-POTPAW_PBE/Pb_d/POTCAR        : ENMAX  =  237.846; ENMIN  =  178.384 eV
-POTPAW_PBE/Pb_d_rel2/POTCAR   : ENMAX  =  237.809; ENMIN  =  178.357 eV
-POTPAW_PBE/Pb_d_rel/POTCAR    : ENMAX  =  237.809; ENMIN  =  178.357 eV
-POTPAW_PBE/Pb/POTCAR          : ENMAX  =   97.973; ENMIN  =   73.480 eV
-POTPAW_PBE/Pd_new/POTCAR      : ENMAX  =  250.925; ENMIN  =  188.194 eV
-POTPAW_PBE/Pd/POTCAR          : ENMAX  =  250.925; ENMIN  =  188.194 eV
-POTPAW_PBE/Pd_pv_new/POTCAR   : ENMAX  =  250.925; ENMIN  =  188.194 eV
-POTPAW_PBE/Pd_pv/POTCAR       : ENMAX  =  271.098; ENMIN  =  203.323 eV
-POTPAW_PBE/Pd_vnew/POTCAR     : ENMAX  =  250.925; ENMIN  =  188.194 eV
-POTPAW_PBE/P_h/POTCAR         : ENMAX  =  390.202; ENMIN  =  292.651 eV
-POTPAW_PBE/Pm_3/POTCAR        : ENMAX  =  183.908; ENMIN  =  137.931 eV
-POTPAW_PBE/Pm/POTCAR          : ENMAX  =  258.627; ENMIN  =  193.970 eV
-POTPAW_PBE/Po_d/POTCAR        : ENMAX  =  264.565; ENMIN  =  198.424 eV
-POTPAW_PBE/Po/POTCAR          : ENMAX  =  159.707; ENMIN  =  119.780 eV
-POTPAW_PBE/P/POTCAR           : ENMAX  =  270.000; ENMIN  =  191.280 eV
-POTPAW_PBE/Pr_3/POTCAR        : ENMAX  =  182.312; ENMIN  =  136.734 eV
-POTPAW_PBE/Pr/POTCAR          : ENMAX  =  272.941; ENMIN  =  204.706 eV
-POTPAW_PBE/Pt_new/POTCAR      : ENMAX  =  230.283; ENMIN  =  172.712 eV
-POTPAW_PBE/Pt/POTCAR          : ENMAX  =  230.283; ENMIN  =  172.712 eV
-POTPAW_PBE/Pt_pv/POTCAR       : ENMAX  =  294.607; ENMIN  =  220.955 eV
-POTPAW_PBE/Pt_pv_ZORA/POTCAR  : ENMAX  =  294.604; ENMIN  =  220.953 eV
-POTPAW_PBE/Pt_ZORA/POTCAR     : ENMAX  =  230.281; ENMIN  =  172.711 eV
-POTPAW_PBE/Pu_h/POTCAR        : ENMAX  =  444.783; ENMIN  =  333.587 eV
-POTPAW_PBE/Pu/POTCAR          : ENMAX  =  254.458; ENMIN  =  190.844 eV
-POTPAW_PBE/Pu_s/POTCAR        : ENMAX  =  211.344; ENMIN  =  158.508 eV
-POTPAW_PBE/Pa/POTCAR          : ENMAX  =  252.316; ENMIN  =  189.237 eV
-POTPAW_PBE/Pa_s/POTCAR        : ENMAX  =  193.576; ENMIN  =  145.182 eV
-POTPAW_PBE/Pb_d/POTCAR        : ENMAX  =  237.846; ENMIN  =  178.384 eV
-POTPAW_PBE/Pb_d_rel2/POTCAR   : ENMAX  =  237.809; ENMIN  =  178.357 eV
-POTPAW_PBE/Pb_d_rel/POTCAR    : ENMAX  =  237.809; ENMIN  =  178.357 eV
-POTPAW_PBE/Pb/POTCAR          : ENMAX  =   97.973; ENMIN  =   73.480 eV
-POTPAW_PBE/Pd_new/POTCAR      : ENMAX  =  250.925; ENMIN  =  188.194 eV
-POTPAW_PBE/Pd/POTCAR          : ENMAX  =  250.925; ENMIN  =  188.194 eV
-POTPAW_PBE/Pd_pv_new/POTCAR   : ENMAX  =  250.925; ENMIN  =  188.194 eV
-POTPAW_PBE/Pd_pv/POTCAR       : ENMAX  =  271.098; ENMIN  =  203.323 eV
-POTPAW_PBE/Pd_vnew/POTCAR     : ENMAX  =  250.925; ENMIN  =  188.194 eV
-POTPAW_PBE/Pm_3/POTCAR        : ENMAX  =  183.908; ENMIN  =  137.931 eV
-POTPAW_PBE/Pm/POTCAR          : ENMAX  =  258.627; ENMIN  =  193.970 eV
-POTPAW_PBE/Po_d/POTCAR        : ENMAX  =  264.565; ENMIN  =  198.424 eV
-POTPAW_PBE/Po/POTCAR          : ENMAX  =  159.707; ENMIN  =  119.780 eV
-POTPAW_PBE/Pr_3/POTCAR        : ENMAX  =  182.312; ENMIN  =  136.734 eV
-POTPAW_PBE/Pr/POTCAR          : ENMAX  =  272.941; ENMIN  =  204.706 eV
-POTPAW_PBE/Pt_new/POTCAR      : ENMAX  =  230.283; ENMIN  =  172.712 eV
-POTPAW_PBE/Pt/POTCAR          : ENMAX  =  230.283; ENMIN  =  172.712 eV
-POTPAW_PBE/Pt_pv/POTCAR       : ENMAX  =  294.607; ENMIN  =  220.955 eV
-POTPAW_PBE/Pt_pv_ZORA/POTCAR  : ENMAX  =  294.604; ENMIN  =  220.953 eV
-POTPAW_PBE/Pt_ZORA/POTCAR     : ENMAX  =  230.281; ENMIN  =  172.711 eV
-POTPAW_PBE/Pu_h/POTCAR        : ENMAX  =  444.783; ENMIN  =  333.587 eV
-POTPAW_PBE/Pu/POTCAR          : ENMAX  =  254.458; ENMIN  =  190.844 eV
-POTPAW_PBE/Pu_s/POTCAR        : ENMAX  =  211.344; ENMIN  =  158.508 eV
-POTPAW_PBE/Ra_sv/POTCAR       : ENMAX  =  237.367; ENMIN  =  178.025 eV
-POTPAW_PBE/Rb_pv/POTCAR       : ENMAX  =  121.919; ENMIN  =   91.439 eV
-POTPAW_PBE/Rb_sv/POTCAR       : ENMAX  =  220.022; ENMIN  =  165.017 eV
-POTPAW_PBE/Re/POTCAR          : ENMAX  =  226.216; ENMIN  =  169.662 eV
-POTPAW_PBE/Re_pv/POTCAR       : ENMAX  =  226.223; ENMIN  =  169.667 eV
-POTPAW_PBE/Rh_new/POTCAR      : ENMAX  =  228.996; ENMIN  =  171.747 eV
-POTPAW_PBE/Rh/POTCAR          : ENMAX  =  229.000; ENMIN  =  171.750 eV
-POTPAW_PBE/Rh_pv_new/POTCAR   : ENMAX  =  247.408; ENMIN  =  185.556 eV
-POTPAW_PBE/Rh_pv/POTCAR       : ENMAX  =  271.470; ENMIN  =  203.602 eV
-POTPAW_PBE/Rn/POTCAR          : ENMAX  =  152.121; ENMIN  =  114.091 eV
-POTPAW_PBE/Ru_new/POTCAR      : ENMAX  =  213.271; ENMIN  =  159.953 eV
-POTPAW_PBE/Ru/POTCAR          : ENMAX  =  213.276; ENMIN  =  159.957 eV
-POTPAW_PBE/Ru_pv_new/POTCAR   : ENMAX  =  240.049; ENMIN  =  180.037 eV
-POTPAW_PBE/Ru_pv/POTCAR       : ENMAX  =  230.429; ENMIN  =  172.822 eV
-POTPAW_PBE/Ru_sv/POTCAR       : ENMAX  =  318.855; ENMIN  =  239.141 eV
-POTPAW_PBE/Sb/POTCAR          : ENMAX  =  172.037; ENMIN  =  129.028 eV
-POTPAW_PBE/Sc/POTCAR          : ENMAX  =  154.763; ENMIN  =  116.072 eV
-POTPAW_PBE/Sc_sv_h/POTCAR     : ENMAX  =  380.696; ENMIN  =  285.522 eV
-POTPAW_PBE/Sc_sv/POTCAR       : ENMAX  =  222.664; ENMIN  =  166.998 eV
-POTPAW_PBE/Se_GW/POTCAR       : ENMAX  =  211.555; ENMIN  =  158.666 eV
-POTPAW_PBE/Se/POTCAR          : ENMAX  =  211.534; ENMIN  =  158.651 eV
-POTPAW_PBE/S_h/POTCAR         : ENMAX  =  402.436; ENMIN  =  301.827 eV
-POTPAW_PBE/Si_d_GW_nr/POTCAR  : ENMAX  =  245.338; ENMIN  =  184.004 eV
-POTPAW_PBE/Si_d_GW/POTCAR     : ENMAX  =  245.345; ENMIN  =  184.009 eV
-POTPAW_PBE/Si_h_old/POTCAR    : ENMAX  =  380.146; ENMIN  =  285.109 eV
-POTPAW_PBE/Si_h/POTCAR        : ENMAX  =  380.146; ENMIN  =  285.109 eV
-POTPAW_PBE/Si_nopc/POTCAR     : ENMAX  =  245.345; ENMIN  =  184.009 eV
-POTPAW_PBE/Si/POTCAR          : ENMAX  =  245.345; ENMIN  =  184.009 eV
-POTPAW_PBE/Si_pv_GW/POTCAR    : ENMAX  =  475.096; ENMIN  =  356.322 eV
-POTPAW_PBE/Si_sv_GW_nr/POTCAR : ENMAX  =  475.101; ENMIN  =  356.326 eV
-POTPAW_PBE/Si_sv_GW/POTCAR    : ENMAX  =  475.096; ENMIN  =  356.322 eV
-POTPAW_PBE/Sm_3/POTCAR        : ENMAX  =  177.087; ENMIN  =  132.815 eV
-POTPAW_PBE/Sm/POTCAR          : ENMAX  =  257.515; ENMIN  =  193.136 eV
-POTPAW_PBE/Sn_d/POTCAR        : ENMAX  =  241.090; ENMIN  =  180.817 eV
-POTPAW_PBE/Sn_GW/POTCAR       : ENMAX  =  103.236; ENMIN  =   77.427 eV
-POTPAW_PBE/Sn/POTCAR          : ENMAX  =  103.236; ENMIN  =   77.427 eV
-POTPAW_PBE/S/POTCAR           : ENMAX  =  280.000; ENMIN  =  194.016 eV
-POTPAW_PBE/Sr_sv/POTCAR       : ENMAX  =  229.282; ENMIN  =  171.961 eV
-POTPAW_PBE/Sr/POTCAR          : ENMAX  =  229.282; ENMIN  =  171.961 eV
-POTPAW_PBE/Sb/POTCAR          : ENMAX  =  172.037; ENMIN  =  129.028 eV
-POTPAW_PBE/Sc/POTCAR          : ENMAX  =  154.763; ENMIN  =  116.072 eV
-POTPAW_PBE/Sc_sv_h/POTCAR     : ENMAX  =  380.696; ENMIN  =  285.522 eV
-POTPAW_PBE/Sc_sv/POTCAR       : ENMAX  =  222.664; ENMIN  =  166.998 eV
-POTPAW_PBE/Se_GW/POTCAR       : ENMAX  =  211.555; ENMIN  =  158.666 eV
-POTPAW_PBE/Se/POTCAR          : ENMAX  =  211.534; ENMIN  =  158.651 eV
-POTPAW_PBE/Si_d_GW_nr/POTCAR  : ENMAX  =  245.338; ENMIN  =  184.004 eV
-POTPAW_PBE/Si_d_GW/POTCAR     : ENMAX  =  245.345; ENMIN  =  184.009 eV
-POTPAW_PBE/Si_h_old/POTCAR    : ENMAX  =  380.146; ENMIN  =  285.109 eV
-POTPAW_PBE/Si_h/POTCAR        : ENMAX  =  380.146; ENMIN  =  285.109 eV
-POTPAW_PBE/Si_nopc/POTCAR     : ENMAX  =  245.345; ENMIN  =  184.009 eV
-POTPAW_PBE/Si/POTCAR          : ENMAX  =  245.345; ENMIN  =  184.009 eV
-POTPAW_PBE/Si_pv_GW/POTCAR    : ENMAX  =  475.096; ENMIN  =  356.322 eV
-POTPAW_PBE/Si_sv_GW_nr/POTCAR : ENMAX  =  475.101; ENMIN  =  356.326 eV
-POTPAW_PBE/Si_sv_GW/POTCAR    : ENMAX  =  475.096; ENMIN  =  356.322 eV
-POTPAW_PBE/Sm_3/POTCAR        : ENMAX  =  177.087; ENMIN  =  132.815 eV
-POTPAW_PBE/Sm/POTCAR          : ENMAX  =  257.515; ENMIN  =  193.136 eV
-POTPAW_PBE/Sn_d/POTCAR        : ENMAX  =  241.090; ENMIN  =  180.817 eV
-POTPAW_PBE/Sn_GW/POTCAR       : ENMAX  =  103.236; ENMIN  =   77.427 eV
-POTPAW_PBE/Sn/POTCAR          : ENMAX  =  103.236; ENMIN  =   77.427 eV
-POTPAW_PBE/Sr_sv/POTCAR       : ENMAX  =  229.282; ENMIN  =  171.961 eV
-POTPAW_PBE/Sr/POTCAR          : ENMAX  =  229.282; ENMIN  =  171.961 eV
-POTPAW_PBE/Ta/POTCAR          : ENMAX  =  223.667; ENMIN  =  167.750 eV
-POTPAW_PBE/Ta_pv/POTCAR       : ENMAX  =  223.675; ENMIN  =  167.756 eV
-POTPAW_PBE/Tb_3/POTCAR        : ENMAX  =  155.628; ENMIN  =  116.721 eV
-POTPAW_PBE/Tb/POTCAR          : ENMAX  =  264.824; ENMIN  =  198.618 eV
-POTPAW_PBE/Tc_new/POTCAR      : ENMAX  =  228.694; ENMIN  =  171.521 eV
-POTPAW_PBE/Tc/POTCAR          : ENMAX  =  228.694; ENMIN  =  171.521 eV
-POTPAW_PBE/Tc_pv_new/POTCAR   : ENMAX  =  263.523; ENMIN  =  197.642 eV
-POTPAW_PBE/Tc_pv/POTCAR       : ENMAX  =  228.699; ENMIN  =  171.524 eV
-POTPAW_PBE/Te/POTCAR          : ENMAX  =  174.982; ENMIN  =  131.236 eV
-POTPAW_PBE/Te_rel/POTCAR      : ENMAX  =  174.979; ENMIN  =  131.234 eV
-POTPAW_PBE/Th/POTCAR          : ENMAX  =  247.449; ENMIN  =  185.587 eV
-POTPAW_PBE/Th_s/POTCAR        : ENMAX  =  169.492; ENMIN  =  127.119 eV
-POTPAW_PBE/Ti/POTCAR          : ENMAX  =  178.330; ENMIN  =  133.747 eV
-POTPAW_PBE/Ti_pv/POTCAR       : ENMAX  =  222.338; ENMIN  =  166.753 eV
-POTPAW_PBE/Ti_sv_GW/POTCAR    : ENMAX  =  312.571; ENMIN  =  234.428 eV
-POTPAW_PBE/Ti_sv_h/POTCAR     : ENMAX  =  388.698; ENMIN  =  291.524 eV
-POTPAW_PBE/Ti_sv_new2/POTCAR  : ENMAX  =  274.610; ENMIN  =  205.957 eV
-POTPAW_PBE/Ti_sv_new/POTCAR   : ENMAX  =  274.610; ENMIN  =  205.957 eV
-POTPAW_PBE/Ti_sv/POTCAR       : ENMAX  =  274.574; ENMIN  =  205.930 eV
-POTPAW_PBE/Tl_d/POTCAR        : ENMAX  =  237.063; ENMIN  =  177.797 eV
-POTPAW_PBE/Tl/POTCAR          : ENMAX  =   90.140; ENMIN  =   67.605 eV
-POTPAW_PBE/Tm_3/POTCAR        : ENMAX  =  149.221; ENMIN  =  111.916 eV
-POTPAW_PBE/Tm/POTCAR          : ENMAX  =  257.419; ENMIN  =  193.065 eV
-POTPAW_PBE/U/POTCAR           : ENMAX  =  252.616; ENMIN  =  189.462 eV
-POTPAW_PBE/U_s/POTCAR         : ENMAX  =  209.069; ENMIN  =  156.802 eV
-POTPAW_PBE/V/POTCAR           : ENMAX  =  192.543; ENMIN  =  144.408 eV
-POTPAW_PBE/V_pv/POTCAR        : ENMAX  =  263.675; ENMIN  =  197.756 eV
-POTPAW_PBE/V_sv_h/POTCAR      : ENMAX  =  390.664; ENMIN  =  292.998 eV
-POTPAW_PBE/V_sv_new/POTCAR    : ENMAX  =  263.673; ENMIN  =  197.755 eV
-POTPAW_PBE/V_sv/POTCAR        : ENMAX  =  263.675; ENMIN  =  197.756 eV
-POTPAW_PBE/W/POTCAR           : ENMAX  =  223.057; ENMIN  =  167.293 eV
-POTPAW_PBE/W_pv_new/POTCAR    : ENMAX  =  223.057; ENMIN  =  167.293 eV
-POTPAW_PBE/W_pv/POTCAR        : ENMAX  =  223.065; ENMIN  =  167.299 eV
-POTPAW_PBE/Xe/POTCAR          : ENMAX  =  153.098; ENMIN  =  114.823 eV
-POTPAW_PBE/Xe/POTCAR          : ENMAX  =  153.098; ENMIN  =  114.823 eV
-POTPAW_PBE/Yb_2_n/POTCAR      : ENMAX  =  144.685; ENMIN  =  108.514 eV
-POTPAW_PBE/Yb_2/POTCAR        : ENMAX  =  112.543; ENMIN  =   84.407 eV
-POTPAW_PBE/Yb/POTCAR          : ENMAX  =  253.028; ENMIN  =  189.771 eV
-POTPAW_PBE/Y_sv/POTCAR        : ENMAX  =  211.641; ENMIN  =  158.731 eV
-POTPAW_PBE/Yb_2_n/POTCAR      : ENMAX  =  144.685; ENMIN  =  108.514 eV
-POTPAW_PBE/Yb_2/POTCAR        : ENMAX  =  112.543; ENMIN  =   84.407 eV
-POTPAW_PBE/Yb/POTCAR          : ENMAX  =  253.028; ENMIN  =  189.771 eV
-POTPAW_PBE/Zn/POTCAR          : ENMAX  =  276.727; ENMIN  =  207.545 eV
-POTPAW_PBE/Zn_pv/POTCAR       : ENMAX  =  376.607; ENMIN  =  282.455 eV
-POTPAW_PBE/Zr/POTCAR          : ENMAX  =  154.632; ENMIN  =  115.974 eV
-POTPAW_PBE/Zr_sv_GW/POTCAR    : ENMAX  =  307.836; ENMIN  =  230.877 eV
-POTPAW_PBE/Zr_sv_new/POTCAR   : ENMAX  =  229.898; ENMIN  =  172.424 eV
-POTPAW_PBE/Zr_sv/POTCAR       : ENMAX  =  229.839; ENMIN  =  172.379 eV
-#+end_example
+#+BEGIN_ORG
+#+tblname: POTCAR
+#+caption: Parameters for POTCAR files.
+#+ATTR_LaTeX: longtable
+| POTCAR                 | ENMIN (eV) | ENMAX (eV) | ENCUT prec=high (eV) | # valence electrons |
+|------------------------+------------+------------+----------------------+---------------------|
+| POTPAW_PBE/Ac          |    129.178 |    172.237 |              223.908 |                11.0 |
+| POTPAW_PBE/Ag_new      |    187.383 |    249.844 |              324.797 |                11.0 |
+| POTPAW_PBE/Ag          |    187.385 |    249.846 |              324.800 |                11.0 |
+| POTPAW_PBE/Ag_pv       |    223.399 |    297.865 |              387.225 |                17.0 |
+| POTPAW_PBE/Al          |    180.225 |      240.3 |              312.390 |                 3.0 |
+| POTPAW_PBE/Am          |    191.906 |    255.875 |              332.637 |                17.0 |
+| POTPAW_PBE/Ar          |    199.795 |    266.393 |              346.311 |                 8.0 |
+| POTPAW_PBE/As_d_GW     |    259.629 |    346.172 |              450.024 |                15.0 |
+| POTPAW_PBE/As_d        |    216.488 |    288.651 |              375.246 |                15.0 |
+| POTPAW_PBE/As_GW       |    156.526 |    208.702 |              271.313 |                 5.0 |
+| POTPAW_PBE/As          |     156.51 |     208.68 |              271.284 |                 5.0 |
+| POTPAW_PBE/At_d        |    199.688 |    266.251 |              346.126 |                17.0 |
+| POTPAW_PBE/At          |    121.073 |     161.43 |              209.859 |                 7.0 |
+| POTPAW_PBE/Au_new      |    172.457 |    229.943 |              298.926 |                11.0 |
+| POTPAW_PBE/Au          |    172.461 |    229.948 |              298.932 |                11.0 |
+| POTPAW_PBE/Ba_sv       |    140.408 |     187.21 |              243.373 |                10.0 |
+| POTPAW_PBE/Be          |    185.658 |    247.544 |              321.807 |                 2.0 |
+| POTPAW_PBE/Be_sv       |    231.563 |     308.75 |              401.375 |                 4.0 |
+| POTPAW_PBE/B_h         |      500.0 |      700.0 |              910.000 |                 3.0 |
+| POTPAW_PBE/Bi_d        |    182.138 |    242.851 |              315.706 |                15.0 |
+| POTPAW_PBE/Bi          |     78.777 |    105.037 |              136.548 |                 5.0 |
+| POTPAW_PBE/Bi_pv       |     231.89 |    309.187 |              401.943 |                21.0 |
+| POTPAW_PBE/B           |    238.954 |    318.606 |              414.188 |                 3.0 |
+| POTPAW_PBE/Br          |    162.198 |    216.264 |              281.143 |                 7.0 |
+| POTPAW_PBE/B_s         |    201.934 |    269.245 |              350.019 |                 3.0 |
+| POTPAW_PBE/Ba_sv       |    140.408 |     187.21 |              243.373 |                10.0 |
+| POTPAW_PBE/Be          |    185.658 |    247.544 |              321.807 |                 2.0 |
+| POTPAW_PBE/Be_sv       |    231.563 |     308.75 |              401.375 |                 4.0 |
+| POTPAW_PBE/Bi_d        |    182.138 |    242.851 |              315.706 |                15.0 |
+| POTPAW_PBE/Bi          |     78.777 |    105.037 |              136.548 |                 5.0 |
+| POTPAW_PBE/Bi_pv       |     231.89 |    309.187 |              401.943 |                21.0 |
+| POTPAW_PBE/Br          |    162.198 |    216.264 |              281.143 |                 7.0 |
+| POTPAW_PBE/Ca          |     77.067 |    102.755 |              133.582 |                 2.0 |
+| POTPAW_PBE/Ca_pv       |     89.665 |    119.554 |              155.420 |                 8.0 |
+| POTPAW_PBE/Ca_sv       |    199.939 |    266.586 |              346.562 |                10.0 |
+| POTPAW_PBE/C_d         |    310.494 |    413.992 |              538.190 |                 4.0 |
+| POTPAW_PBE/Cd          |    205.757 |    274.342 |              356.645 |                12.0 |
+| POTPAW_PBE/Ce_3        |    135.964 |    181.286 |              235.672 |                11.0 |
+| POTPAW_PBE/Ce_h        |    224.925 |      299.9 |              389.870 |                12.0 |
+| POTPAW_PBE/Ce          |    204.781 |    273.042 |              354.955 |                12.0 |
+| POTPAW_PBE/C_GW        |    310.494 |    413.992 |              538.190 |                 4.0 |
+| POTPAW_PBE/C_h_nr      |    556.263 |    741.684 |              964.189 |                 4.0 |
+| POTPAW_PBE/C_h         |      500.0 |      700.0 |              910.000 |                 4.0 |
+| POTPAW_PBE/Cl_h        |    306.852 |    409.136 |              531.877 |                 7.0 |
+| POTPAW_PBE/Cl          |    196.854 |      280.0 |              364.000 |                 7.0 |
+| POTPAW_PBE/Co_new      |    200.976 |    267.968 |              348.358 |                 9.0 |
+| POTPAW_PBE/Co          |    200.977 |    267.969 |              348.360 |                 9.0 |
+| POTPAW_PBE/Co_sv       |    292.771 |    390.362 |              507.471 |                17.0 |
+| POTPAW_PBE/C           |      300.0 |      400.0 |              520.000 |                 4.0 |
+| POTPAW_PBE/Cr          |    170.311 |    227.082 |              295.207 |                 6.0 |
+| POTPAW_PBE/Cr_pv_new   |    199.261 |    265.681 |              345.385 |                12.0 |
+| POTPAW_PBE/Cr_pv       |    199.262 |    265.683 |              345.388 |                12.0 |
+| POTPAW_PBE/Cr_sv_new   |    296.603 |    395.471 |              514.112 |                14.0 |
+| POTPAW_PBE/Cr_sv       |    296.603 |    395.471 |              514.112 |                14.0 |
+| POTPAW_PBE/C_s         |    205.426 |    273.901 |              356.071 |                 4.0 |
+| POTPAW_PBE/Cs_sv       |    165.238 |    220.318 |              286.413 |                 9.0 |
+| POTPAW_PBE/Cu_f        |    221.585 |    295.446 |              384.080 |                11.0 |
+| POTPAW_PBE/Cu_new      |    221.585 |    295.446 |              384.080 |                11.0 |
+| POTPAW_PBE/Cu          |     204.91 |    273.214 |              355.178 |                11.0 |
+| POTPAW_PBE/Cu_pvf      |    276.486 |    368.648 |              479.242 |                17.0 |
+| POTPAW_PBE/Cu_pv       |    276.454 |    368.605 |              479.187 |                17.0 |
+| POTPAW_PBE/Ca          |     77.067 |    102.755 |              133.582 |                 2.0 |
+| POTPAW_PBE/Ca_pv       |     89.665 |    119.554 |              155.420 |                 8.0 |
+| POTPAW_PBE/Ca_sv       |    199.939 |    266.586 |              346.562 |                10.0 |
+| POTPAW_PBE/Cd          |    205.757 |    274.342 |              356.645 |                12.0 |
+| POTPAW_PBE/Ce_3        |    135.964 |    181.286 |              235.672 |                11.0 |
+| POTPAW_PBE/Ce_h        |    224.925 |      299.9 |              389.870 |                12.0 |
+| POTPAW_PBE/Ce          |    204.781 |    273.042 |              354.955 |                12.0 |
+| POTPAW_PBE/Cl_h        |    306.852 |    409.136 |              531.877 |                 7.0 |
+| POTPAW_PBE/Cl          |    196.854 |      280.0 |              364.000 |                 7.0 |
+| POTPAW_PBE/Co_new      |    200.976 |    267.968 |              348.358 |                 9.0 |
+| POTPAW_PBE/Co          |    200.977 |    267.969 |              348.360 |                 9.0 |
+| POTPAW_PBE/Co_sv       |    292.771 |    390.362 |              507.471 |                17.0 |
+| POTPAW_PBE/Cr          |    170.311 |    227.082 |              295.207 |                 6.0 |
+| POTPAW_PBE/Cr_pv_new   |    199.261 |    265.681 |              345.385 |                12.0 |
+| POTPAW_PBE/Cr_pv       |    199.262 |    265.683 |              345.388 |                12.0 |
+| POTPAW_PBE/Cr_sv_new   |    296.603 |    395.471 |              514.112 |                14.0 |
+| POTPAW_PBE/Cr_sv       |    296.603 |    395.471 |              514.112 |                14.0 |
+| POTPAW_PBE/Cs_sv       |    165.238 |    220.318 |              286.413 |                 9.0 |
+| POTPAW_PBE/Cu_f        |    221.585 |    295.446 |              384.080 |                11.0 |
+| POTPAW_PBE/Cu_new      |    221.585 |    295.446 |              384.080 |                11.0 |
+| POTPAW_PBE/Cu          |     204.91 |    273.214 |              355.178 |                11.0 |
+| POTPAW_PBE/Cu_pvf      |    276.486 |    368.648 |              479.242 |                17.0 |
+| POTPAW_PBE/Cu_pv       |    276.454 |    368.605 |              479.187 |                17.0 |
+| POTPAW_PBE/Dy_3        |    116.797 |    155.729 |              202.448 |                 9.0 |
+| POTPAW_PBE/Dy          |    191.601 |    255.467 |              332.107 |                20.0 |
+| POTPAW_PBE/Er_2        |     89.813 |     119.75 |              155.675 |                 8.0 |
+| POTPAW_PBE/Er_3        |     116.29 |    155.053 |              201.569 |                 9.0 |
+| POTPAW_PBE/Er          |    223.587 |    298.116 |              387.551 |                22.0 |
+| POTPAW_PBE/Eu_2        |     74.478 |     99.304 |              129.095 |                 8.0 |
+| POTPAW_PBE/Eu_3        |     96.793 |    129.057 |              167.774 |                 9.0 |
+| POTPAW_PBE/Eu_GW       |    452.441 |    603.254 |              784.230 |                17.0 |
+| POTPAW_PBE/Eu          |    187.251 |    249.668 |              324.568 |                17.0 |
+| POTPAW_PBE/F_d_GW      |    365.773 |    487.698 |              634.007 |                 7.0 |
+| POTPAW_PBE/Fe          |    200.912 |    267.883 |              348.248 |                 8.0 |
+| POTPAW_PBE/Fe_pv_new   |    219.928 |    293.238 |              381.209 |                14.0 |
+| POTPAW_PBE/Fe_pv       |    219.929 |    293.238 |              381.209 |                14.0 |
+| POTPAW_PBE/Fe_sv_h     |    410.523 |    547.365 |              711.575 |                16.0 |
+| POTPAW_PBE/Fe_sv       |    292.918 |    390.558 |              507.725 |                16.0 |
+| POTPAW_PBE/F_h         |      500.0 |      700.0 |              910.000 |                 7.0 |
+| POTPAW_PBE/F           |      300.0 |      400.0 |              520.000 |                 7.0 |
+| POTPAW_PBE/Fr_sv       |    160.905 |     214.54 |              278.902 |                 9.0 |
+| POTPAW_PBE/F_s         |    217.369 |    289.825 |              376.772 |                 7.0 |
+| POTPAW_PBE/Fe          |    200.912 |    267.883 |              348.248 |                 8.0 |
+| POTPAW_PBE/Fe_pv_new   |    219.928 |    293.238 |              381.209 |                14.0 |
+| POTPAW_PBE/Fe_pv       |    219.929 |    293.238 |              381.209 |                14.0 |
+| POTPAW_PBE/Fe_sv_h     |    410.523 |    547.365 |              711.575 |                16.0 |
+| POTPAW_PBE/Fe_sv       |    292.918 |    390.558 |              507.725 |                16.0 |
+| POTPAW_PBE/Fr_sv       |    160.905 |     214.54 |              278.902 |                 9.0 |
+| POTPAW_PBE/Ga_d_GW     |    277.386 |    369.848 |              480.802 |                13.0 |
+| POTPAW_PBE/Ga_d        |    212.022 |    282.697 |              367.506 |                13.0 |
+| POTPAW_PBE/Ga_h        |    303.451 |    404.601 |              525.981 |                13.0 |
+| POTPAW_PBE/Ga          |    101.009 |    134.678 |              175.081 |                 3.0 |
+| POTPAW_PBE/Ga_s        |     62.877 |     83.836 |              108.987 |                 3.0 |
+| POTPAW_PBE/Ga_sv_GW    |    377.564 |    503.418 |              654.443 |                21.0 |
+| POTPAW_PBE/Gd_3        |    115.761 |    154.348 |              200.652 |                 9.0 |
+| POTPAW_PBE/Gd          |    192.354 |    256.472 |              333.414 |                18.0 |
+| POTPAW_PBE/Ge_d3       |     169.58 |    226.106 |              293.938 |                14.0 |
+| POTPAW_PBE/Ge_d_GW2    |    254.348 |     339.13 |              440.869 |                14.0 |
+| POTPAW_PBE/Ge_d_GW     |     232.72 |    310.294 |              403.382 |                14.0 |
+| POTPAW_PBE/Ge_d_GW_ref |    429.008 |     572.01 |              743.613 |                14.0 |
+| POTPAW_PBE/Ge_d        |     232.72 |    310.294 |              403.382 |                14.0 |
+| POTPAW_PBE/Ge_h        |    307.818 |    410.425 |              533.553 |                14.0 |
+| POTPAW_PBE/Ge          |    130.355 |    173.807 |              225.949 |                 4.0 |
+| POTPAW_PBE/H1.25       |      200.0 |      250.0 |              325.000 |                1.25 |
+| POTPAW_PBE/H1.5        |      200.0 |      250.0 |              325.000 |                 1.5 |
+| POTPAW_PBE/H.5         |      200.0 |      250.0 |              325.000 |                 0.5 |
+| POTPAW_PBE/H.75        |      200.0 |      250.0 |              325.000 |                0.75 |
+| POTPAW_PBE/He          |    359.172 |    478.896 |              622.565 |                 2.0 |
+| POTPAW_PBE/Hf          |     165.25 |    220.333 |              286.433 |                 4.0 |
+| POTPAW_PBE/Hf_pv       |    165.256 |    220.342 |              286.445 |                10.0 |
+| POTPAW_PBE/Hf_sv_GW    |    238.045 |    317.394 |              412.612 |                12.0 |
+| POTPAW_PBE/Hf_sv       |    178.083 |    237.444 |              308.677 |                12.0 |
+| POTPAW_PBE/Hg          |    174.911 |    233.214 |              303.178 |                12.0 |
+| POTPAW_PBE/H_h         |      500.0 |      700.0 |              910.000 |                 1.0 |
+| POTPAW_PBE/Ho_3        |    115.615 |    154.153 |              200.399 |                 9.0 |
+| POTPAW_PBE/Ho          |    192.876 |    257.168 |              334.318 |                21.0 |
+| POTPAW_PBE/H           |      200.0 |      250.0 |              325.000 |                 1.0 |
+| POTPAW_PBE/He          |    359.172 |    478.896 |              622.565 |                 2.0 |
+| POTPAW_PBE/Hf          |     165.25 |    220.333 |              286.433 |                 4.0 |
+| POTPAW_PBE/Hf_pv       |    165.256 |    220.342 |              286.445 |                10.0 |
+| POTPAW_PBE/Hf_sv_GW    |    238.045 |    317.394 |              412.612 |                12.0 |
+| POTPAW_PBE/Hf_sv       |    178.083 |    237.444 |              308.677 |                12.0 |
+| POTPAW_PBE/Hg          |    174.911 |    233.214 |              303.178 |                12.0 |
+| POTPAW_PBE/Ho_3        |    115.615 |    154.153 |              200.399 |                 9.0 |
+| POTPAW_PBE/Ho          |    192.876 |    257.168 |              334.318 |                21.0 |
+| POTPAW_PBE/In_d        |    179.413 |    239.218 |              310.983 |                13.0 |
+| POTPAW_PBE/In          |     71.951 |     95.934 |              124.714 |                 3.0 |
+| POTPAW_PBE/I           |    131.735 |    175.647 |              228.341 |                 7.0 |
+| POTPAW_PBE/Ir          |    158.153 |     210.87 |              274.131 |                 9.0 |
+| POTPAW_PBE/In_d        |    179.413 |    239.218 |              310.983 |                13.0 |
+| POTPAW_PBE/In          |     71.951 |     95.934 |              124.714 |                 3.0 |
+| POTPAW_PBE/Ir          |    158.153 |     210.87 |              274.131 |                 9.0 |
+| POTPAW_PBE/K_pv        |     87.548 |    116.731 |              151.750 |                 7.0 |
+| POTPAW_PBE/Kr          |    138.945 |     185.26 |              240.838 |                 8.0 |
+| POTPAW_PBE/K_sv        |    194.412 |    259.216 |              336.981 |                 9.0 |
+| POTPAW_PBE/Kr          |    138.945 |     185.26 |              240.838 |                 8.0 |
+| POTPAW_PBE/La          |    164.485 |    219.313 |              285.107 |                11.0 |
+| POTPAW_PBE/La_s        |    102.414 |    136.552 |              177.518 |                 9.0 |
+| POTPAW_PBE/Li          |      100.0 |      140.0 |              182.000 |                 1.0 |
+| POTPAW_PBE/Li_sv2      |     416.33 |    555.106 |              721.638 |                 3.0 |
+| POTPAW_PBE/Li_sv       |    374.276 |    499.034 |              648.744 |                 3.0 |
+| POTPAW_PBE/Lu_3        |    116.257 |    155.009 |              201.512 |                 9.0 |
+| POTPAW_PBE/Lu          |    191.771 |    255.695 |              332.404 |                25.0 |
+| POTPAW_PBE/Mg_new      |     94.607 |    126.143 |              163.986 |                 2.0 |
+| POTPAW_PBE/Mg          |    157.509 |    210.012 |              273.016 |                 2.0 |
+| POTPAW_PBE/Mg_pv_GW    |    302.947 |    403.929 |              525.108 |                 8.0 |
+| POTPAW_PBE/Mg_pv.old   |     199.18 |    265.574 |              345.246 |                 8.0 |
+| POTPAW_PBE/Mg_pv       |    302.947 |    403.929 |              525.108 |                 8.0 |
+| POTPAW_PBE/Mg_sv       |    371.417 |    495.223 |              643.790 |                10.0 |
+| POTPAW_PBE/Mn          |    202.399 |    269.865 |              350.825 |                 7.0 |
+| POTPAW_PBE/Mn_pv_new   |    202.398 |    269.864 |              350.823 |                13.0 |
+| POTPAW_PBE/Mn_pv       |    202.399 |    269.865 |              350.825 |                13.0 |
+| POTPAW_PBE/Mn_sv       |     290.39 |    387.187 |              503.343 |                15.0 |
+| POTPAW_PBE/Mo          |    168.438 |    224.584 |              291.959 |                 6.0 |
+| POTPAW_PBE/Mo_pv_new   |    168.438 |    224.584 |              291.959 |                12.0 |
+| POTPAW_PBE/Mo_pv       |    168.438 |    224.584 |              291.959 |                12.0 |
+| POTPAW_PBE/Mo_sv       |    182.007 |    242.676 |              315.479 |                14.0 |
+| POTPAW_PBE/Na          |     76.476 |    101.968 |              132.558 |                 1.0 |
+| POTPAW_PBE/Na_pv       |    194.671 |    259.561 |              337.429 |                 7.0 |
+| POTPAW_PBE/Na_sv       |     484.23 |      700.0 |              910.000 |                 9.0 |
+| POTPAW_PBE/Nb_pv       |    156.456 |    208.608 |              271.190 |                11.0 |
+| POTPAW_PBE/Nb_sv_new   |    219.927 |    293.235 |              381.206 |                13.0 |
+| POTPAW_PBE/Nb_sv       |    219.927 |    293.235 |              381.206 |                13.0 |
+| POTPAW_PBE/Nd_3        |    136.909 |    182.546 |              237.310 |                11.0 |
+| POTPAW_PBE/Nd          |    189.892 |    253.189 |              329.146 |                14.0 |
+| POTPAW_PBE/Ne          |    257.704 |    343.606 |              446.688 |                 8.0 |
+| POTPAW_PBE/N_h         |      500.0 |      700.0 |              910.000 |                 5.0 |
+| POTPAW_PBE/Ni_new      |    202.149 |    269.532 |              350.392 |                10.0 |
+| POTPAW_PBE/Ni          |     202.15 |    269.533 |              350.393 |                10.0 |
+| POTPAW_PBE/Ni_pv       |    275.959 |    367.945 |              478.329 |                16.0 |
+| POTPAW_PBE/N           |      300.0 |      400.0 |              520.000 |                 5.0 |
+| POTPAW_PBE/Np          |    190.776 |    254.369 |              330.680 |                15.0 |
+| POTPAW_PBE/Np_s        |    158.138 |    210.851 |              274.106 |                15.0 |
+| POTPAW_PBE/N_s_GW      |    222.371 |    296.495 |              385.444 |                 5.0 |
+| POTPAW_PBE/N_s         |     209.76 |     279.68 |              363.584 |                 5.0 |
+| POTPAW_PBE/N_vs        |     209.76 |     279.68 |              363.584 |                 5.0 |
+| POTPAW_PBE/Na          |     76.476 |    101.968 |              132.558 |                 1.0 |
+| POTPAW_PBE/Na_pv       |    194.671 |    259.561 |              337.429 |                 7.0 |
+| POTPAW_PBE/Na_sv       |     484.23 |      700.0 |              910.000 |                 9.0 |
+| POTPAW_PBE/Nb_pv       |    156.456 |    208.608 |              271.190 |                11.0 |
+| POTPAW_PBE/Nb_sv_new   |    219.927 |    293.235 |              381.206 |                13.0 |
+| POTPAW_PBE/Nb_sv       |    219.927 |    293.235 |              381.206 |                13.0 |
+| POTPAW_PBE/Nd_3        |    136.909 |    182.546 |              237.310 |                11.0 |
+| POTPAW_PBE/Nd          |    189.892 |    253.189 |              329.146 |                14.0 |
+| POTPAW_PBE/Ne          |    257.704 |    343.606 |              446.688 |                 8.0 |
+| POTPAW_PBE/Ni_new      |    202.149 |    269.532 |              350.392 |                10.0 |
+| POTPAW_PBE/Ni          |     202.15 |    269.533 |              350.393 |                10.0 |
+| POTPAW_PBE/Ni_pv       |    275.959 |    367.945 |              478.329 |                16.0 |
+| POTPAW_PBE/Np          |    190.776 |    254.369 |              330.680 |                15.0 |
+| POTPAW_PBE/Np_s        |    158.138 |    210.851 |              274.106 |                15.0 |
+| POTPAW_PBE/O_GW        |    310.976 |    414.635 |              539.025 |                 6.0 |
+| POTPAW_PBE/O_h         |      500.0 |      700.0 |              910.000 |                 6.0 |
+| POTPAW_PBE/O           |      300.0 |      400.0 |              520.000 |                 6.0 |
+| POTPAW_PBE/O_s_GW      |    225.516 |    300.688 |              390.894 |                 6.0 |
+| POTPAW_PBE/O_s         |    212.131 |    282.841 |              367.693 |                 6.0 |
+| POTPAW_PBE/Os          |    171.017 |    228.022 |              296.429 |                 8.0 |
+| POTPAW_PBE/Os_pv       |    171.017 |    228.022 |              296.429 |                14.0 |
+| POTPAW_PBE/O_sv        |   1066.119 |   1421.493 |             1847.941 |                 8.0 |
+| POTPAW_PBE/Os          |    171.017 |    228.022 |              296.429 |                 8.0 |
+| POTPAW_PBE/Os_pv       |    171.017 |    228.022 |              296.429 |                14.0 |
+| POTPAW_PBE/Pa          |    189.237 |    252.316 |              328.011 |                13.0 |
+| POTPAW_PBE/Pa_s        |    145.182 |    193.576 |              251.649 |                11.0 |
+| POTPAW_PBE/Pb_d        |    178.384 |    237.846 |              309.200 |                14.0 |
+| POTPAW_PBE/Pb_d_rel2   |    178.357 |    237.809 |              309.152 |                14.0 |
+| POTPAW_PBE/Pb_d_rel    |    178.357 |    237.809 |              309.152 |                14.0 |
+| POTPAW_PBE/Pb          |      73.48 |     97.973 |              127.365 |                 4.0 |
+| POTPAW_PBE/Pd_new      |    188.194 |    250.925 |              326.203 |                10.0 |
+| POTPAW_PBE/Pd          |    188.194 |    250.925 |              326.203 |                10.0 |
+| POTPAW_PBE/Pd_pv_new   |    188.194 |    250.925 |              326.203 |                16.0 |
+| POTPAW_PBE/Pd_pv       |    203.323 |    271.098 |              352.427 |                16.0 |
+| POTPAW_PBE/Pd_vnew     |    188.194 |    250.925 |              326.203 |                10.0 |
+| POTPAW_PBE/P_h         |    292.651 |    390.202 |              507.263 |                 5.0 |
+| POTPAW_PBE/Pm_3        |    137.931 |    183.908 |              239.080 |                11.0 |
+| POTPAW_PBE/Pm          |     193.97 |    258.627 |              336.215 |                15.0 |
+| POTPAW_PBE/Po_d        |    198.424 |    264.565 |              343.935 |                16.0 |
+| POTPAW_PBE/Po          |     119.78 |    159.707 |              207.619 |                 6.0 |
+| POTPAW_PBE/P           |     191.28 |      270.0 |              351.000 |                 5.0 |
+| POTPAW_PBE/Pr_3        |    136.734 |    182.312 |              237.006 |                11.0 |
+| POTPAW_PBE/Pr          |    204.706 |    272.941 |              354.823 |                13.0 |
+| POTPAW_PBE/Pt_new      |    172.712 |    230.283 |              299.368 |                10.0 |
+| POTPAW_PBE/Pt          |    172.712 |    230.283 |              299.368 |                10.0 |
+| POTPAW_PBE/Pt_pv       |    220.955 |    294.607 |              382.989 |                16.0 |
+| POTPAW_PBE/Pt_pv_ZORA  |    220.953 |    294.604 |              382.985 |                16.0 |
+| POTPAW_PBE/Pt_ZORA     |    172.711 |    230.281 |              299.365 |                10.0 |
+| POTPAW_PBE/Pu_h        |    333.587 |    444.783 |              578.218 |                16.0 |
+| POTPAW_PBE/Pu          |    190.844 |    254.458 |              330.795 |                16.0 |
+| POTPAW_PBE/Pu_s        |    158.508 |    211.344 |              274.747 |                16.0 |
+| POTPAW_PBE/Pa          |    189.237 |    252.316 |              328.011 |                13.0 |
+| POTPAW_PBE/Pa_s        |    145.182 |    193.576 |              251.649 |                11.0 |
+| POTPAW_PBE/Pb_d        |    178.384 |    237.846 |              309.200 |                14.0 |
+| POTPAW_PBE/Pb_d_rel2   |    178.357 |    237.809 |              309.152 |                14.0 |
+| POTPAW_PBE/Pb_d_rel    |    178.357 |    237.809 |              309.152 |                14.0 |
+| POTPAW_PBE/Pb          |      73.48 |     97.973 |              127.365 |                 4.0 |
+| POTPAW_PBE/Pd_new      |    188.194 |    250.925 |              326.203 |                10.0 |
+| POTPAW_PBE/Pd          |    188.194 |    250.925 |              326.203 |                10.0 |
+| POTPAW_PBE/Pd_pv_new   |    188.194 |    250.925 |              326.203 |                16.0 |
+| POTPAW_PBE/Pd_pv       |    203.323 |    271.098 |              352.427 |                16.0 |
+| POTPAW_PBE/Pd_vnew     |    188.194 |    250.925 |              326.203 |                10.0 |
+| POTPAW_PBE/Pm_3        |    137.931 |    183.908 |              239.080 |                11.0 |
+| POTPAW_PBE/Pm          |     193.97 |    258.627 |              336.215 |                15.0 |
+| POTPAW_PBE/Po_d        |    198.424 |    264.565 |              343.935 |                16.0 |
+| POTPAW_PBE/Po          |     119.78 |    159.707 |              207.619 |                 6.0 |
+| POTPAW_PBE/Pr_3        |    136.734 |    182.312 |              237.006 |                11.0 |
+| POTPAW_PBE/Pr          |    204.706 |    272.941 |              354.823 |                13.0 |
+| POTPAW_PBE/Pt_new      |    172.712 |    230.283 |              299.368 |                10.0 |
+| POTPAW_PBE/Pt          |    172.712 |    230.283 |              299.368 |                10.0 |
+| POTPAW_PBE/Pt_pv       |    220.955 |    294.607 |              382.989 |                16.0 |
+| POTPAW_PBE/Pt_pv_ZORA  |    220.953 |    294.604 |              382.985 |                16.0 |
+| POTPAW_PBE/Pt_ZORA     |    172.711 |    230.281 |              299.365 |                10.0 |
+| POTPAW_PBE/Pu_h        |    333.587 |    444.783 |              578.218 |                16.0 |
+| POTPAW_PBE/Pu          |    190.844 |    254.458 |              330.795 |                16.0 |
+| POTPAW_PBE/Pu_s        |    158.508 |    211.344 |              274.747 |                16.0 |
+| POTPAW_PBE/Ra_sv       |    178.025 |    237.367 |              308.577 |                10.0 |
+| POTPAW_PBE/Rb_pv       |     91.439 |    121.919 |              158.495 |                 7.0 |
+| POTPAW_PBE/Rb_sv       |    165.017 |    220.022 |              286.029 |                 9.0 |
+| POTPAW_PBE/Re          |    169.662 |    226.216 |              294.081 |                 7.0 |
+| POTPAW_PBE/Re_pv       |    169.667 |    226.223 |              294.090 |                13.0 |
+| POTPAW_PBE/Rh_new      |    171.747 |    228.996 |              297.695 |                 9.0 |
+| POTPAW_PBE/Rh          |     171.75 |      229.0 |              297.700 |                 9.0 |
+| POTPAW_PBE/Rh_pv_new   |    185.556 |    247.408 |              321.630 |                15.0 |
+| POTPAW_PBE/Rh_pv       |    203.602 |     271.47 |              352.911 |                15.0 |
+| POTPAW_PBE/Rn          |    114.091 |    152.121 |              197.757 |                 8.0 |
+| POTPAW_PBE/Ru_new      |    159.953 |    213.271 |              277.252 |                 8.0 |
+| POTPAW_PBE/Ru          |    159.957 |    213.276 |              277.259 |                 8.0 |
+| POTPAW_PBE/Ru_pv_new   |    180.037 |    240.049 |              312.064 |                14.0 |
+| POTPAW_PBE/Ru_pv       |    172.822 |    230.429 |              299.558 |                14.0 |
+| POTPAW_PBE/Ru_sv       |    239.141 |    318.855 |              414.512 |                16.0 |
+| POTPAW_PBE/Sb          |    129.028 |    172.037 |              223.648 |                 5.0 |
+| POTPAW_PBE/Sc          |    116.072 |    154.763 |              201.192 |                 3.0 |
+| POTPAW_PBE/Sc_sv_h     |    285.522 |    380.696 |              494.905 |                11.0 |
+| POTPAW_PBE/Sc_sv       |    166.998 |    222.664 |              289.463 |                11.0 |
+| POTPAW_PBE/Se_GW       |    158.666 |    211.555 |              275.022 |                 6.0 |
+| POTPAW_PBE/Se          |    158.651 |    211.534 |              274.994 |                 6.0 |
+| POTPAW_PBE/S_h         |    301.827 |    402.436 |              523.167 |                 6.0 |
+| POTPAW_PBE/Si_d_GW_nr  |    184.004 |    245.338 |              318.939 |                 4.0 |
+| POTPAW_PBE/Si_d_GW     |    184.009 |    245.345 |              318.949 |                 4.0 |
+| POTPAW_PBE/Si_h_old    |    285.109 |    380.146 |              494.190 |                 4.0 |
+| POTPAW_PBE/Si_h        |    285.109 |    380.146 |              494.190 |                 4.0 |
+| POTPAW_PBE/Si_nopc     |    184.009 |    245.345 |              318.949 |                 4.0 |
+| POTPAW_PBE/Si          |    184.009 |    245.345 |              318.949 |                 4.0 |
+| POTPAW_PBE/Si_pv_GW    |    356.322 |    475.096 |              617.625 |                10.0 |
+| POTPAW_PBE/Si_sv_GW_nr |    356.326 |    475.101 |              617.631 |                12.0 |
+| POTPAW_PBE/Si_sv_GW    |    356.322 |    475.096 |              617.625 |                12.0 |
+| POTPAW_PBE/Sm_3        |    132.815 |    177.087 |              230.213 |                11.0 |
+| POTPAW_PBE/Sm          |    193.136 |    257.515 |              334.769 |                16.0 |
+| POTPAW_PBE/Sn_d        |    180.817 |     241.09 |              313.417 |                14.0 |
+| POTPAW_PBE/Sn_GW       |     77.427 |    103.236 |              134.207 |                 4.0 |
+| POTPAW_PBE/Sn          |     77.427 |    103.236 |              134.207 |                 4.0 |
+| POTPAW_PBE/S           |    194.016 |      280.0 |              364.000 |                 6.0 |
+| POTPAW_PBE/Sr_sv       |    171.961 |    229.282 |              298.067 |                10.0 |
+| POTPAW_PBE/Sr          |    171.961 |    229.282 |              298.067 |                10.0 |
+| POTPAW_PBE/Sb          |    129.028 |    172.037 |              223.648 |                 5.0 |
+| POTPAW_PBE/Sc          |    116.072 |    154.763 |              201.192 |                 3.0 |
+| POTPAW_PBE/Sc_sv_h     |    285.522 |    380.696 |              494.905 |                11.0 |
+| POTPAW_PBE/Sc_sv       |    166.998 |    222.664 |              289.463 |                11.0 |
+| POTPAW_PBE/Se_GW       |    158.666 |    211.555 |              275.022 |                 6.0 |
+| POTPAW_PBE/Se          |    158.651 |    211.534 |              274.994 |                 6.0 |
+| POTPAW_PBE/Si_d_GW_nr  |    184.004 |    245.338 |              318.939 |                 4.0 |
+| POTPAW_PBE/Si_d_GW     |    184.009 |    245.345 |              318.949 |                 4.0 |
+| POTPAW_PBE/Si_h_old    |    285.109 |    380.146 |              494.190 |                 4.0 |
+| POTPAW_PBE/Si_h        |    285.109 |    380.146 |              494.190 |                 4.0 |
+| POTPAW_PBE/Si_nopc     |    184.009 |    245.345 |              318.949 |                 4.0 |
+| POTPAW_PBE/Si          |    184.009 |    245.345 |              318.949 |                 4.0 |
+| POTPAW_PBE/Si_pv_GW    |    356.322 |    475.096 |              617.625 |                10.0 |
+| POTPAW_PBE/Si_sv_GW_nr |    356.326 |    475.101 |              617.631 |                12.0 |
+| POTPAW_PBE/Si_sv_GW    |    356.322 |    475.096 |              617.625 |                12.0 |
+| POTPAW_PBE/Sm_3        |    132.815 |    177.087 |              230.213 |                11.0 |
+| POTPAW_PBE/Sm          |    193.136 |    257.515 |              334.769 |                16.0 |
+| POTPAW_PBE/Sn_d        |    180.817 |     241.09 |              313.417 |                14.0 |
+| POTPAW_PBE/Sn_GW       |     77.427 |    103.236 |              134.207 |                 4.0 |
+| POTPAW_PBE/Sn          |     77.427 |    103.236 |              134.207 |                 4.0 |
+| POTPAW_PBE/Sr_sv       |    171.961 |    229.282 |              298.067 |                10.0 |
+| POTPAW_PBE/Sr          |    171.961 |    229.282 |              298.067 |                10.0 |
+| POTPAW_PBE/Ta          |     167.75 |    223.667 |              290.767 |                 5.0 |
+| POTPAW_PBE/Ta_pv       |    167.756 |    223.675 |              290.778 |                11.0 |
+| POTPAW_PBE/Tb_3        |    116.721 |    155.628 |              202.316 |                 9.0 |
+| POTPAW_PBE/Tb          |    198.618 |    264.824 |              344.271 |                19.0 |
+| POTPAW_PBE/Tc_new      |    171.521 |    228.694 |              297.302 |                 7.0 |
+| POTPAW_PBE/Tc          |    171.521 |    228.694 |              297.302 |                 7.0 |
+| POTPAW_PBE/Tc_pv_new   |    197.642 |    263.523 |              342.580 |                13.0 |
+| POTPAW_PBE/Tc_pv       |    171.524 |    228.699 |              297.309 |                13.0 |
+| POTPAW_PBE/Te          |    131.236 |    174.982 |              227.477 |                 6.0 |
+| POTPAW_PBE/Te_rel      |    131.234 |    174.979 |              227.473 |                 6.0 |
+| POTPAW_PBE/Th          |    185.587 |    247.449 |              321.684 |                12.0 |
+| POTPAW_PBE/Th_s        |    127.119 |    169.492 |              220.340 |                10.0 |
+| POTPAW_PBE/Ti          |    133.747 |     178.33 |              231.829 |                 4.0 |
+| POTPAW_PBE/Ti_pv       |    166.753 |    222.338 |              289.039 |                10.0 |
+| POTPAW_PBE/Ti_sv_GW    |    234.428 |    312.571 |              406.342 |                12.0 |
+| POTPAW_PBE/Ti_sv_h     |    291.524 |    388.698 |              505.307 |                12.0 |
+| POTPAW_PBE/Ti_sv_new2  |    205.957 |     274.61 |              356.993 |                12.0 |
+| POTPAW_PBE/Ti_sv_new   |    205.957 |     274.61 |              356.993 |                12.0 |
+| POTPAW_PBE/Ti_sv       |     205.93 |    274.574 |              356.946 |                12.0 |
+| POTPAW_PBE/Tl_d        |    177.797 |    237.063 |              308.182 |                13.0 |
+| POTPAW_PBE/Tl          |     67.605 |      90.14 |              117.182 |                 3.0 |
+| POTPAW_PBE/Tm_3        |    111.916 |    149.221 |              193.987 |                 9.0 |
+| POTPAW_PBE/Tm          |    193.065 |    257.419 |              334.645 |                23.0 |
+| POTPAW_PBE/U           |    189.462 |    252.616 |              328.401 |                14.0 |
+| POTPAW_PBE/U_s         |    156.802 |    209.069 |              271.790 |                14.0 |
+| POTPAW_PBE/V           |    144.408 |    192.543 |              250.306 |                 5.0 |
+| POTPAW_PBE/V_pv        |    197.756 |    263.675 |              342.778 |                11.0 |
+| POTPAW_PBE/V_sv_h      |    292.998 |    390.664 |              507.863 |                13.0 |
+| POTPAW_PBE/V_sv_new    |    197.755 |    263.673 |              342.775 |                13.0 |
+| POTPAW_PBE/V_sv        |    197.756 |    263.675 |              342.778 |                13.0 |
+| POTPAW_PBE/W           |    167.293 |    223.057 |              289.974 |                 6.0 |
+| POTPAW_PBE/W_pv_new    |    167.293 |    223.057 |              289.974 |                12.0 |
+| POTPAW_PBE/W_pv        |    167.299 |    223.065 |              289.985 |                12.0 |
+| POTPAW_PBE/Xe          |    114.823 |    153.098 |              199.027 |                 8.0 |
+| POTPAW_PBE/Xe          |    114.823 |    153.098 |              199.027 |                 8.0 |
+| POTPAW_PBE/Yb_2_n      |    108.514 |    144.685 |              188.091 |                10.0 |
+| POTPAW_PBE/Yb_2        |     84.407 |    112.543 |              146.306 |                 8.0 |
+| POTPAW_PBE/Yb          |    189.771 |    253.028 |              328.936 |                24.0 |
+| POTPAW_PBE/Y_sv        |    158.731 |    211.641 |              275.133 |                11.0 |
+| POTPAW_PBE/Yb_2_n      |    108.514 |    144.685 |              188.091 |                10.0 |
+| POTPAW_PBE/Yb_2        |     84.407 |    112.543 |              146.306 |                 8.0 |
+| POTPAW_PBE/Yb          |    189.771 |    253.028 |              328.936 |                24.0 |
+| POTPAW_PBE/Zn          |    207.545 |    276.727 |              359.745 |                12.0 |
+| POTPAW_PBE/Zn_pv       |    282.455 |    376.607 |              489.589 |                18.0 |
+| POTPAW_PBE/Zr          |    115.974 |    154.632 |              201.022 |                 4.0 |
+| POTPAW_PBE/Zr_sv_GW    |    230.877 |    307.836 |              400.187 |                12.0 |
+| POTPAW_PBE/Zr_sv_new   |    172.424 |    229.898 |              298.867 |                12.0 |
+| POTPAW_PBE/Zr_sv       |    172.379 |    229.839 |              298.791 |                12.0 |
+#+END_ORG
 
 * Python
 ** easy_install as a user
