@@ -1245,7 +1245,7 @@ DFT calculation must be run.
 Here is an example of getting the energy and forces from a CO
 molecule. The forces in this case are very high, indicating that this
 geometry is not close to the ground state geometry. Note that the
-forces are only along the $x$-axis, which is along the molecular axis. We will see how to minimize this force in [[*Manual%20determination][Manual determination]] and [[*Automatic%20geometry%20optimization%20with%20VASP][Automatic geometry optimization with VASP]].
+forces are only along the $x$-axis, which is along the molecular axis. We will see how to minimize this force in [[*Manual%20determination%20of%20a%20bond%20length][Manual determination]] and [[*Automatic%20geometry%20optimization%20with%20VASP][Automatic geometry optimization with VASP]].
 
 #+begin_note
 This is your first DFT calculation in the book! See [[incar:ISMEAR][ISMEAR]], incar:SIGMA, incar:NBANDS, and incar:ENCUT to learn more about these VASP keywords.
@@ -2187,7 +2187,7 @@ The principle idea in calculating vibrational frequencies is that we consider a 
 
 $\nu = \frac{1}{2\pi}\sqrt{k/\mu}$ where $\frac{1}{\mu} = \frac{1}{m_C} + \frac{1}{m_O}$ and $k$ is the spring constant. We will compute the value of $k$ from DFT calculations as follows:
 
-$k = \frac{\partial^2E}{\partial x^2}$ at the equilibrium bond length. We actually already have the data to do this from [[*Manual%20determination][Manual determination]]. We only need to fit an equation to the energy vs. bond-length data, find the minimum energy bond-length, and then evaluate the second derivative of the fitted function at the minimum. We will use a cubic polynomial for demonstration here. Polynomials are numerically convenient because they are easy to fit, and it is trivial to get the roots and derivatives of the polynomials, as well as to evaluate them at other points using func:numpy.polyfit, func:numpy.polyder, and func:numpy.polyval.
+$k = \frac{\partial^2E}{\partial x^2}$ at the equilibrium bond length. We actually already have the data to do this from [[*Manual%20determination%20of%20a%20bond%20length][Manual determination]]. We only need to fit an equation to the energy vs. bond-length data, find the minimum energy bond-length, and then evaluate the second derivative of the fitted function at the minimum. We will use a cubic polynomial for demonstration here. Polynomials are numerically convenient because they are easy to fit, and it is trivial to get the roots and derivatives of the polynomials, as well as to evaluate them at other points using func:numpy.polyfit, func:numpy.polyder, and func:numpy.polyval.
 
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -11678,7 +11678,7 @@ with jasp('bulk/alloy/cu') as calc:
 *** Recommended values for ENCUT and valence electrons for different POTCAR files
 The incar:ENCUT tag and incar:PREC tag affect the accuracy/convergence of your calculations.
 
-#+BEGIN_SRC python :results output raw org
+#+BEGIN_SRC python :results output raw
 from jasp.POTCAR import *
 from ase.data import chemical_symbols
 import glob, os
@@ -11708,7 +11708,6 @@ for symbol in chemical_symbols:
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_ORG
 #+tblname: POTCAR
 #+caption: Parameters for POTCAR files.
 #+ATTR_LaTeX: longtable
@@ -12096,7 +12095,6 @@ for symbol in chemical_symbols:
 | POTPAW_PBE/Zr_sv_GW    |    230.877 |    307.836 |              400.187 |                12.0 |
 | POTPAW_PBE/Zr_sv_new   |    172.424 |    229.898 |              298.867 |                12.0 |
 | POTPAW_PBE/Zr_sv       |    172.379 |    229.839 |              298.791 |                12.0 |
-#+END_ORG
 
 * Python
 ** easy_install as a user
