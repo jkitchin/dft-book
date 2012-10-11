@@ -4284,6 +4284,35 @@ write('images/NaCl.png', atoms, show_unit_cell=2, rotation='45x,45y,45z')
 #+ATTR_LaTeX: placement=[H]
 [[./images/NaCl.png]]
 
+
+**** mod:ase.spacegroup
+A final alternative to setting up bulk structures is mod:ase.spacegroup. This is a concise way to setup structures if you know the following properties of the crystal structure:
+
+1. Chemical symbols
+2. Coordinates of the non-equivalent sites in the unit cell
+3. the spacegroup
+4. the cell parameters (a, b, c, alpha, beta, gamma)
+
+#+BEGIN_SRC python :results output
+from ase.lattice.spacegroup import crystal
+# FCC aluminum
+a = 4.05
+al = crystal('Al', [(0,0,0)], spacegroup=225, cellpar=[a, a, a, 90, 90, 90])
+print al
+#+END_SRC
+
+#+RESULTS:
+: Atoms(symbols='Al4', positions=..., cell=[[4.05, 0.0, 0.0], [2.4799097682733903e-16, 4.05, 0.0], [2.4799097682733903e-16, 2.4799097682733903e-16, 4.05]], pbc=[True, True, True])
+
+Here is rutile TiO_{2}.
+#+BEGIN_SRC python :results output
+from ase.lattice.spacegroup import crystal
+
+a = 4.6
+c = 2.95
+rutile =crystal(['Ti', 'O'], basis=[(0, 0, 0), (0.3, 0.3, 0.0)],
+                spacegroup=136, cellpar=[a, a, c, 90, 90, 90])
+#+END_SRC
 *** Using http://materialsproject.org
     The [[http://www.materialsproject.org/][Materials Project]] offers web access to a pretty large number of materials (over 21,000 at the time of this writing), including structure and other computed properties. You must sign up for an account at the website, and then you can access the information. You can search for materials with lots of different criteria including formula, unit cell formula, by elements, by structure, etc... The website allows you to download the VASP files used to create the calculations. They also develop the [[https://github.com/materialsproject/pymatgen/][pymatgen]] project (which requires python 2.7+).
 
@@ -5006,6 +5035,7 @@ plt.savefig('images/Ru-covera-scan.png')
 #+RESULTS:
 
 #+caption: Total energy vs. $c/a$ for different values of $a$.
+#+attr_latex: placement=[H]
 #+label: fig:ru-e-ca
 [[./images/Ru-covera-scan.png]]
 
@@ -5014,7 +5044,6 @@ It looks like there is a minimum in the a=2.7  \AA  curve, at a $c/a$ ratio of a
 #+BEGIN_SRC python :results output
 from jasp import *
 import matplotlib.pyplot as plt
-
 
 x = [2.5, 2.6, 2.7, 2.8, 2.9]
 y = [1.4, 1.5, 1.6, 1.7, 1.8]
@@ -5050,6 +5079,7 @@ plt.show()
 #+RESULTS:
 
 #+caption: Contour plot of the total energy of hcp Ru for different values of $a$ and $c/a$.
+#+attr_latex: placement=[H]
 #+label: fig:ru-contourf
 [[./images/ru-contourf.png]]
 
@@ -5057,13 +5087,13 @@ plt.show()
 *** Complex structures with internal degrees of freedom
 A unit cell has six degrees of freedom: the lengths of each unit cell vector, and the angle between each vector. There may additionally be internal degrees of freedom for the atoms. It is impractical to try the approach used for the hcp Ru on anything complicated. Instead, we rely again on algorithms to optimize the unit cell shape, volume and internal degrees of freedom. It is usually not efficient to make a wild guess of the geometry and then turn VASP loose on to optimize it. Instead, the following algorithm works pretty well.
 
-1. With the atoms frozen find the volume (at constant shape) that minimizes the total energy (INCAR:ISIF=2). The goal here is to just get an idea of where the right volume is.
+1. Find the volume (at constant shape, with relaxed ions) that minimizes the total energy ([[incar:ISIF][ISIF]]=2). The goal here is to just get an idea of where the right volume is.
 2. Using the results from step 1 as a starting point, perform a set of calculations at constant volume around the minimum from step 1, but the shape and internal atom positions are allowed to change ([[incar:ISIF][ISIF]]=4).
 3. Finally, do a final calculation near the minimum energy allowing the volume to also change. ([[incar:ISIF][ISIF]]=3).
 
 This multistep process is pretty reasonable to get a converged structure pretty quickly. We will illustrate the process on TiO_{2} which has two lattice parameters and one internal degree of freedom.
 
-There are a few subtle points to mention in doing these calculations. The VASP [[http://cms.mpi.univie.ac.at/vasp/guide/node161.html][manual]] recommends that you set incar:PREC to 'high', and that ENCUT be set to 1.3*max(ENMAX) of the pseudopotentials. This is necessary to avoid problems caused by small basis sets when the volume changes, and Pulay stress. It is important to ensure that the energies are reasonably converged with respect to k-point grids. Hence, it can be a significant amount of work to do this right! Let us start with determining the ENCUT value that is appropriate for TiO_{2}
+There are a few subtle points to mention in doing these calculations. The VASP [[http://cms.mpi.univie.ac.at/vasp/guide/node161.html][manual]] recommends that you set incar:PREC to 'high', and that ENCUT be set to 1.3*max(ENMAX) of the pseudopotentials. This is necessary to avoid problems caused by small basis sets when the volume changes, and Pulay stress. It is important to ensure that the energies are reasonably converged with respect to k-point grids. Hence, it can be a significant amount of work to do this right! Let us start with determining the ENCUT value that is appropriate for TiO_{2}.
 
 #+BEGIN_SRC sh :results output
 grep ENMAX $VASP_PP_PATH/POTPAW_PBE/Ti/POTCAR
@@ -5074,7 +5104,7 @@ grep ENMAX $VASP_PP_PATH/POTPAW_PBE/O/POTCAR
 :    ENMAX  =  178.330; ENMIN  =  133.747 eV
 :    ENMAX  =  400.000; ENMIN  =  300.000 eV
 
-According to the manual, we should use ENCUT = 1.3*400 for good results.
+According to the manual, we should use ENCUT = 1.3*400 = 520 eV for good results.
 
 Now we consider the k-point convergence. The lattice vectors of the rutile TiO_{2} structure are not all the same length, which means it is not essential that we use the same number of k-points in each direction. For simplicity, however, we do that here.
 
@@ -5274,7 +5304,7 @@ plt.show()
 #+attr_latex: placement=[H]
 [[./images/tio2-step2.png]]
 
-The take away message here is that the total energy slightly decreases when we allow the unit cell shape to change, especially for the larger unit cell deformation. This has little effect on the minimum volume, but would have an effect on the bulk modulus, which is related to the curvature of the equation of state. At this point, you could fit an equation of state to the step 2 data, and estimate the volume at the minimum volume, and recalculate the
+The take away message here is that the total energy slightly decreases when we allow the unit cell shape to change, especially for the larger unit cell deformation. This has little effect on the minimum volume, but would have an effect on the bulk modulus, which is related to the curvature of the equation of state. At this point, you could fit an equation of state to the step 2 data, and estimate the volume at the minimum volume, and recalculate the total energy at that volume.
 
 An alternative is a final calculation with ISIF=3, which optimizes the unit cell volume, shape and internal coordinates.  It looks like the calculation at bulk/tio2/step2-1.05 is close to the minimum, so we will use that as a starting point for the final calculation.
 
@@ -11344,6 +11374,141 @@ The first time you run this you will get all the VASP output. The second time yo
 Also, I have not figured out how to integrate this method with the queue system. At the moment, the runjasp.py script which ultimately runs VASP will run VASP in parallel, i.e. one process on multiple nodes/cores instead of a single job that runs multiple processes simultaneously on multiple nodes/cores.
 #+end_note
 
+Here is an example of running this through the queue. The main variations are you must set several variables in =JASPRC= that indicate you want to use mod:multiprocessing, and you must save the script and submit manually to the queue with matching parameters. This is not 100% satisfying, but it is the best that I have found for now.
+
+# (org-babel-tangle)
+#+BEGIN_SRC python :results output :tangle cu-mp.py
+#!/usr/bin/env python
+import multiprocessing
+from jasp import *
+from ase import Atom, Atoms
+from ase.utils.eos import EquationOfState
+import numpy as np
+
+JASPRC['mode'] = 'run'
+JASPRC['queue.nodes'] = 1
+
+# Here we will be able to run three MPI jobs on 2 cores at a time.
+JASPRC['queue.ppn'] = 6
+JASPRC['multiprocessing.cores_per_process'] = 2
+
+# to submit this script, save it as cu-mp.py
+# qsub -l nodes=1:ppn=6,walltime=10:00:00 cu-mp.py
+import os
+if 'PBS_O_WORKDIR' in os.environ:
+    os.chdir(os.environ['PBS_O_WORKDIR'])
+
+# this is the function that runs a calculation
+def do_calculation(calculator):
+    'function to run a calculation through multiprocessing'
+    with calculator as calc:
+        atoms = calc.get_atoms()
+        e = atoms.get_potential_energy()
+        v = atoms.get_volume()
+    return v, e
+
+# this only runs in the main script, not in processes on other cores
+if __name__ == '__main__':
+
+    # setup an atoms object
+    a = 3.6
+    atoms = Atoms([Atom('Cu',(0, 0, 0))],
+                  cell=0.5 * a*np.array([[1.0, 1.0, 0.0],
+                                         [0.0, 1.0, 1.0],
+                                         [1.0, 0.0, 1.0]]))
+    v0 = atoms.get_volume()
+
+    # Step 1
+    COUNTER = 0
+    calculators = []  # list of calculators to be run
+    factors = [-0.1, 0.05, 0.0, 0.05, 0.1]
+    for f in factors:
+        newatoms = atoms.copy()
+        newatoms.set_volume(v0*(1 + f))
+        label = 'bulk/cu-mp2/step1-{0}'.format(COUNTER)
+        COUNTER += 1
+
+        calc = jasp(label,
+                    xc='PBE',
+                    encut=350,
+                    kpts=(6,6,6),
+                    isym=2,
+                    debug=logging.DEBUG,
+                    atoms=newatoms)
+
+        calculators.append(calc)
+
+    # now we set up the Pool of processes
+    pool = multiprocessing.Pool(processes=3) # ask for 6 cores but run MPI on 2 cores
+
+    # get the output from running each calculation
+    out = pool.map(do_calculation, calculators)
+    pool.close()
+    pool.join() # this makes the script wait here until all jobs are done
+
+    # now proceed with analysis
+    V = [x[0] for x in out]
+    E = [x[1] for x in out]
+
+    eos = EquationOfState(V, E)
+    v1, e1, B = eos.fit()
+    print 'step1: v1 = {v1}'.format(**locals())
+
+    ### ################################################################
+    ## STEP 2, eos around the minimum
+    ## #################################################################
+    factors = [-0.06, -0.04, -0.02,
+               0.0,
+               0.02, 0.04, 0.06]
+
+    calculators = [] # reset list
+    for f in factors:
+        newatoms = atoms.copy()
+        newatoms.set_volume(v1*(1 + f))
+        label = 'bulk/cu-mp2/step2-{0}'.format(COUNTER)
+        COUNTER += 1
+
+        calc = jasp(label,
+                    xc='PBE',
+                    encut=350,
+                    kpts=(6,6,6),
+                    isym=2,
+                    debug=logging.DEBUG,
+                    atoms=newatoms)
+        calculators.append(calc)
+
+    pool = multiprocessing.Pool(processes=3)
+
+    out = pool.map(do_calculation, calculators)
+    pool.close()
+    pool.join() # wait here for calculations to finish
+
+    # proceed with analysis
+    V += [x[0] for x in out]
+    E += [x[1] for x in out]
+
+    V = np.array(V)
+    E = np.array(E)
+
+    f = np.array(V)/v1
+
+    # only take points within +- 10% of the minimum
+    ind = (f >=0.90) & (f <= 1.1)
+
+    eos = EquationOfState(V[ind], E[ind])
+    v2, e2, B = eos.fit()
+    print 'step2: v2 = {v2}'.format(**locals())
+    eos.plot('images/cu-mp2-eos.png',show=True)
+#+END_SRC
+
+#+RESULTS:
+: step1: v1 = 12.0218897111
+: step2: v2 = 12.0216189798
+
+#+caption: Second view of a Cu equation of state computed with multiprocessing.
+#+attr_latex: placement=[H]
+[[./images/cu-mp2-eos.png]]
+
 *** Exporting data json, xml, python, sqlite
 jasp has some capability for representing a calculation result in an archival format. The formats currently under development are json, xml, python and sqlite. The main point of these methods is to make it easy to create archive files that are machine readable for supplementary information in publications. These are under development.
 
@@ -11684,9 +11849,9 @@ from ase.data import chemical_symbols
 import glob, os
 
 print '#+tblname: POTCAR'
-print '#+caption: Parameters for POTCAR files.'
+print '#+caption: Parameters for POTPAW_PBE POTCAR files.'
 print '#+ATTR_LaTeX: longtable'
-print '| POTCAR | ENMIN (eV) | ENMAX (eV) | ENCUT prec=high (eV) | # valence electrons |'
+print '| POTCAR | ENMIN | ENMAX | prec=high (eV) | # val. elect. |'
 print '|-'
 
 chemical_symbols.sort()
@@ -11698,7 +11863,7 @@ for symbol in chemical_symbols:
     for potcar in potcars:
 
         POTCAR = os.path.relpath(potcar,
-                                 os.environ['VASP_PP_PATH'])[:-7]
+                                 os.environ['VASP_PP_PATH']+'/POTPAW_PBE')[:-7]
         ENMIN = get_ENMIN(potcar)
         ENMAX = get_ENMAX(potcar)
         HIGH  = 1.3*ENMAX
@@ -11709,392 +11874,393 @@ for symbol in chemical_symbols:
 
 #+RESULTS:
 #+tblname: POTCAR
-#+caption: Parameters for POTCAR files.
+#+caption: Parameters for POTPAW_PBE POTCAR files.
 #+ATTR_LaTeX: longtable
-| POTCAR                 | ENMIN (eV) | ENMAX (eV) | ENCUT prec=high (eV) | # valence electrons |
-|------------------------+------------+------------+----------------------+---------------------|
-| POTPAW_PBE/Ac          |    129.178 |    172.237 |              223.908 |                11.0 |
-| POTPAW_PBE/Ag_new      |    187.383 |    249.844 |              324.797 |                11.0 |
-| POTPAW_PBE/Ag          |    187.385 |    249.846 |              324.800 |                11.0 |
-| POTPAW_PBE/Ag_pv       |    223.399 |    297.865 |              387.225 |                17.0 |
-| POTPAW_PBE/Al          |    180.225 |      240.3 |              312.390 |                 3.0 |
-| POTPAW_PBE/Am          |    191.906 |    255.875 |              332.637 |                17.0 |
-| POTPAW_PBE/Ar          |    199.795 |    266.393 |              346.311 |                 8.0 |
-| POTPAW_PBE/As_d_GW     |    259.629 |    346.172 |              450.024 |                15.0 |
-| POTPAW_PBE/As_d        |    216.488 |    288.651 |              375.246 |                15.0 |
-| POTPAW_PBE/As_GW       |    156.526 |    208.702 |              271.313 |                 5.0 |
-| POTPAW_PBE/As          |     156.51 |     208.68 |              271.284 |                 5.0 |
-| POTPAW_PBE/At_d        |    199.688 |    266.251 |              346.126 |                17.0 |
-| POTPAW_PBE/At          |    121.073 |     161.43 |              209.859 |                 7.0 |
-| POTPAW_PBE/Au_new      |    172.457 |    229.943 |              298.926 |                11.0 |
-| POTPAW_PBE/Au          |    172.461 |    229.948 |              298.932 |                11.0 |
-| POTPAW_PBE/Ba_sv       |    140.408 |     187.21 |              243.373 |                10.0 |
-| POTPAW_PBE/Be          |    185.658 |    247.544 |              321.807 |                 2.0 |
-| POTPAW_PBE/Be_sv       |    231.563 |     308.75 |              401.375 |                 4.0 |
-| POTPAW_PBE/B_h         |      500.0 |      700.0 |              910.000 |                 3.0 |
-| POTPAW_PBE/Bi_d        |    182.138 |    242.851 |              315.706 |                15.0 |
-| POTPAW_PBE/Bi          |     78.777 |    105.037 |              136.548 |                 5.0 |
-| POTPAW_PBE/Bi_pv       |     231.89 |    309.187 |              401.943 |                21.0 |
-| POTPAW_PBE/B           |    238.954 |    318.606 |              414.188 |                 3.0 |
-| POTPAW_PBE/Br          |    162.198 |    216.264 |              281.143 |                 7.0 |
-| POTPAW_PBE/B_s         |    201.934 |    269.245 |              350.019 |                 3.0 |
-| POTPAW_PBE/Ba_sv       |    140.408 |     187.21 |              243.373 |                10.0 |
-| POTPAW_PBE/Be          |    185.658 |    247.544 |              321.807 |                 2.0 |
-| POTPAW_PBE/Be_sv       |    231.563 |     308.75 |              401.375 |                 4.0 |
-| POTPAW_PBE/Bi_d        |    182.138 |    242.851 |              315.706 |                15.0 |
-| POTPAW_PBE/Bi          |     78.777 |    105.037 |              136.548 |                 5.0 |
-| POTPAW_PBE/Bi_pv       |     231.89 |    309.187 |              401.943 |                21.0 |
-| POTPAW_PBE/Br          |    162.198 |    216.264 |              281.143 |                 7.0 |
-| POTPAW_PBE/Ca          |     77.067 |    102.755 |              133.582 |                 2.0 |
-| POTPAW_PBE/Ca_pv       |     89.665 |    119.554 |              155.420 |                 8.0 |
-| POTPAW_PBE/Ca_sv       |    199.939 |    266.586 |              346.562 |                10.0 |
-| POTPAW_PBE/C_d         |    310.494 |    413.992 |              538.190 |                 4.0 |
-| POTPAW_PBE/Cd          |    205.757 |    274.342 |              356.645 |                12.0 |
-| POTPAW_PBE/Ce_3        |    135.964 |    181.286 |              235.672 |                11.0 |
-| POTPAW_PBE/Ce_h        |    224.925 |      299.9 |              389.870 |                12.0 |
-| POTPAW_PBE/Ce          |    204.781 |    273.042 |              354.955 |                12.0 |
-| POTPAW_PBE/C_GW        |    310.494 |    413.992 |              538.190 |                 4.0 |
-| POTPAW_PBE/C_h_nr      |    556.263 |    741.684 |              964.189 |                 4.0 |
-| POTPAW_PBE/C_h         |      500.0 |      700.0 |              910.000 |                 4.0 |
-| POTPAW_PBE/Cl_h        |    306.852 |    409.136 |              531.877 |                 7.0 |
-| POTPAW_PBE/Cl          |    196.854 |      280.0 |              364.000 |                 7.0 |
-| POTPAW_PBE/Co_new      |    200.976 |    267.968 |              348.358 |                 9.0 |
-| POTPAW_PBE/Co          |    200.977 |    267.969 |              348.360 |                 9.0 |
-| POTPAW_PBE/Co_sv       |    292.771 |    390.362 |              507.471 |                17.0 |
-| POTPAW_PBE/C           |      300.0 |      400.0 |              520.000 |                 4.0 |
-| POTPAW_PBE/Cr          |    170.311 |    227.082 |              295.207 |                 6.0 |
-| POTPAW_PBE/Cr_pv_new   |    199.261 |    265.681 |              345.385 |                12.0 |
-| POTPAW_PBE/Cr_pv       |    199.262 |    265.683 |              345.388 |                12.0 |
-| POTPAW_PBE/Cr_sv_new   |    296.603 |    395.471 |              514.112 |                14.0 |
-| POTPAW_PBE/Cr_sv       |    296.603 |    395.471 |              514.112 |                14.0 |
-| POTPAW_PBE/C_s         |    205.426 |    273.901 |              356.071 |                 4.0 |
-| POTPAW_PBE/Cs_sv       |    165.238 |    220.318 |              286.413 |                 9.0 |
-| POTPAW_PBE/Cu_f        |    221.585 |    295.446 |              384.080 |                11.0 |
-| POTPAW_PBE/Cu_new      |    221.585 |    295.446 |              384.080 |                11.0 |
-| POTPAW_PBE/Cu          |     204.91 |    273.214 |              355.178 |                11.0 |
-| POTPAW_PBE/Cu_pvf      |    276.486 |    368.648 |              479.242 |                17.0 |
-| POTPAW_PBE/Cu_pv       |    276.454 |    368.605 |              479.187 |                17.0 |
-| POTPAW_PBE/Ca          |     77.067 |    102.755 |              133.582 |                 2.0 |
-| POTPAW_PBE/Ca_pv       |     89.665 |    119.554 |              155.420 |                 8.0 |
-| POTPAW_PBE/Ca_sv       |    199.939 |    266.586 |              346.562 |                10.0 |
-| POTPAW_PBE/Cd          |    205.757 |    274.342 |              356.645 |                12.0 |
-| POTPAW_PBE/Ce_3        |    135.964 |    181.286 |              235.672 |                11.0 |
-| POTPAW_PBE/Ce_h        |    224.925 |      299.9 |              389.870 |                12.0 |
-| POTPAW_PBE/Ce          |    204.781 |    273.042 |              354.955 |                12.0 |
-| POTPAW_PBE/Cl_h        |    306.852 |    409.136 |              531.877 |                 7.0 |
-| POTPAW_PBE/Cl          |    196.854 |      280.0 |              364.000 |                 7.0 |
-| POTPAW_PBE/Co_new      |    200.976 |    267.968 |              348.358 |                 9.0 |
-| POTPAW_PBE/Co          |    200.977 |    267.969 |              348.360 |                 9.0 |
-| POTPAW_PBE/Co_sv       |    292.771 |    390.362 |              507.471 |                17.0 |
-| POTPAW_PBE/Cr          |    170.311 |    227.082 |              295.207 |                 6.0 |
-| POTPAW_PBE/Cr_pv_new   |    199.261 |    265.681 |              345.385 |                12.0 |
-| POTPAW_PBE/Cr_pv       |    199.262 |    265.683 |              345.388 |                12.0 |
-| POTPAW_PBE/Cr_sv_new   |    296.603 |    395.471 |              514.112 |                14.0 |
-| POTPAW_PBE/Cr_sv       |    296.603 |    395.471 |              514.112 |                14.0 |
-| POTPAW_PBE/Cs_sv       |    165.238 |    220.318 |              286.413 |                 9.0 |
-| POTPAW_PBE/Cu_f        |    221.585 |    295.446 |              384.080 |                11.0 |
-| POTPAW_PBE/Cu_new      |    221.585 |    295.446 |              384.080 |                11.0 |
-| POTPAW_PBE/Cu          |     204.91 |    273.214 |              355.178 |                11.0 |
-| POTPAW_PBE/Cu_pvf      |    276.486 |    368.648 |              479.242 |                17.0 |
-| POTPAW_PBE/Cu_pv       |    276.454 |    368.605 |              479.187 |                17.0 |
-| POTPAW_PBE/Dy_3        |    116.797 |    155.729 |              202.448 |                 9.0 |
-| POTPAW_PBE/Dy          |    191.601 |    255.467 |              332.107 |                20.0 |
-| POTPAW_PBE/Er_2        |     89.813 |     119.75 |              155.675 |                 8.0 |
-| POTPAW_PBE/Er_3        |     116.29 |    155.053 |              201.569 |                 9.0 |
-| POTPAW_PBE/Er          |    223.587 |    298.116 |              387.551 |                22.0 |
-| POTPAW_PBE/Eu_2        |     74.478 |     99.304 |              129.095 |                 8.0 |
-| POTPAW_PBE/Eu_3        |     96.793 |    129.057 |              167.774 |                 9.0 |
-| POTPAW_PBE/Eu_GW       |    452.441 |    603.254 |              784.230 |                17.0 |
-| POTPAW_PBE/Eu          |    187.251 |    249.668 |              324.568 |                17.0 |
-| POTPAW_PBE/F_d_GW      |    365.773 |    487.698 |              634.007 |                 7.0 |
-| POTPAW_PBE/Fe          |    200.912 |    267.883 |              348.248 |                 8.0 |
-| POTPAW_PBE/Fe_pv_new   |    219.928 |    293.238 |              381.209 |                14.0 |
-| POTPAW_PBE/Fe_pv       |    219.929 |    293.238 |              381.209 |                14.0 |
-| POTPAW_PBE/Fe_sv_h     |    410.523 |    547.365 |              711.575 |                16.0 |
-| POTPAW_PBE/Fe_sv       |    292.918 |    390.558 |              507.725 |                16.0 |
-| POTPAW_PBE/F_h         |      500.0 |      700.0 |              910.000 |                 7.0 |
-| POTPAW_PBE/F           |      300.0 |      400.0 |              520.000 |                 7.0 |
-| POTPAW_PBE/Fr_sv       |    160.905 |     214.54 |              278.902 |                 9.0 |
-| POTPAW_PBE/F_s         |    217.369 |    289.825 |              376.772 |                 7.0 |
-| POTPAW_PBE/Fe          |    200.912 |    267.883 |              348.248 |                 8.0 |
-| POTPAW_PBE/Fe_pv_new   |    219.928 |    293.238 |              381.209 |                14.0 |
-| POTPAW_PBE/Fe_pv       |    219.929 |    293.238 |              381.209 |                14.0 |
-| POTPAW_PBE/Fe_sv_h     |    410.523 |    547.365 |              711.575 |                16.0 |
-| POTPAW_PBE/Fe_sv       |    292.918 |    390.558 |              507.725 |                16.0 |
-| POTPAW_PBE/Fr_sv       |    160.905 |     214.54 |              278.902 |                 9.0 |
-| POTPAW_PBE/Ga_d_GW     |    277.386 |    369.848 |              480.802 |                13.0 |
-| POTPAW_PBE/Ga_d        |    212.022 |    282.697 |              367.506 |                13.0 |
-| POTPAW_PBE/Ga_h        |    303.451 |    404.601 |              525.981 |                13.0 |
-| POTPAW_PBE/Ga          |    101.009 |    134.678 |              175.081 |                 3.0 |
-| POTPAW_PBE/Ga_s        |     62.877 |     83.836 |              108.987 |                 3.0 |
-| POTPAW_PBE/Ga_sv_GW    |    377.564 |    503.418 |              654.443 |                21.0 |
-| POTPAW_PBE/Gd_3        |    115.761 |    154.348 |              200.652 |                 9.0 |
-| POTPAW_PBE/Gd          |    192.354 |    256.472 |              333.414 |                18.0 |
-| POTPAW_PBE/Ge_d3       |     169.58 |    226.106 |              293.938 |                14.0 |
-| POTPAW_PBE/Ge_d_GW2    |    254.348 |     339.13 |              440.869 |                14.0 |
-| POTPAW_PBE/Ge_d_GW     |     232.72 |    310.294 |              403.382 |                14.0 |
-| POTPAW_PBE/Ge_d_GW_ref |    429.008 |     572.01 |              743.613 |                14.0 |
-| POTPAW_PBE/Ge_d        |     232.72 |    310.294 |              403.382 |                14.0 |
-| POTPAW_PBE/Ge_h        |    307.818 |    410.425 |              533.553 |                14.0 |
-| POTPAW_PBE/Ge          |    130.355 |    173.807 |              225.949 |                 4.0 |
-| POTPAW_PBE/H1.25       |      200.0 |      250.0 |              325.000 |                1.25 |
-| POTPAW_PBE/H1.5        |      200.0 |      250.0 |              325.000 |                 1.5 |
-| POTPAW_PBE/H.5         |      200.0 |      250.0 |              325.000 |                 0.5 |
-| POTPAW_PBE/H.75        |      200.0 |      250.0 |              325.000 |                0.75 |
-| POTPAW_PBE/He          |    359.172 |    478.896 |              622.565 |                 2.0 |
-| POTPAW_PBE/Hf          |     165.25 |    220.333 |              286.433 |                 4.0 |
-| POTPAW_PBE/Hf_pv       |    165.256 |    220.342 |              286.445 |                10.0 |
-| POTPAW_PBE/Hf_sv_GW    |    238.045 |    317.394 |              412.612 |                12.0 |
-| POTPAW_PBE/Hf_sv       |    178.083 |    237.444 |              308.677 |                12.0 |
-| POTPAW_PBE/Hg          |    174.911 |    233.214 |              303.178 |                12.0 |
-| POTPAW_PBE/H_h         |      500.0 |      700.0 |              910.000 |                 1.0 |
-| POTPAW_PBE/Ho_3        |    115.615 |    154.153 |              200.399 |                 9.0 |
-| POTPAW_PBE/Ho          |    192.876 |    257.168 |              334.318 |                21.0 |
-| POTPAW_PBE/H           |      200.0 |      250.0 |              325.000 |                 1.0 |
-| POTPAW_PBE/He          |    359.172 |    478.896 |              622.565 |                 2.0 |
-| POTPAW_PBE/Hf          |     165.25 |    220.333 |              286.433 |                 4.0 |
-| POTPAW_PBE/Hf_pv       |    165.256 |    220.342 |              286.445 |                10.0 |
-| POTPAW_PBE/Hf_sv_GW    |    238.045 |    317.394 |              412.612 |                12.0 |
-| POTPAW_PBE/Hf_sv       |    178.083 |    237.444 |              308.677 |                12.0 |
-| POTPAW_PBE/Hg          |    174.911 |    233.214 |              303.178 |                12.0 |
-| POTPAW_PBE/Ho_3        |    115.615 |    154.153 |              200.399 |                 9.0 |
-| POTPAW_PBE/Ho          |    192.876 |    257.168 |              334.318 |                21.0 |
-| POTPAW_PBE/In_d        |    179.413 |    239.218 |              310.983 |                13.0 |
-| POTPAW_PBE/In          |     71.951 |     95.934 |              124.714 |                 3.0 |
-| POTPAW_PBE/I           |    131.735 |    175.647 |              228.341 |                 7.0 |
-| POTPAW_PBE/Ir          |    158.153 |     210.87 |              274.131 |                 9.0 |
-| POTPAW_PBE/In_d        |    179.413 |    239.218 |              310.983 |                13.0 |
-| POTPAW_PBE/In          |     71.951 |     95.934 |              124.714 |                 3.0 |
-| POTPAW_PBE/Ir          |    158.153 |     210.87 |              274.131 |                 9.0 |
-| POTPAW_PBE/K_pv        |     87.548 |    116.731 |              151.750 |                 7.0 |
-| POTPAW_PBE/Kr          |    138.945 |     185.26 |              240.838 |                 8.0 |
-| POTPAW_PBE/K_sv        |    194.412 |    259.216 |              336.981 |                 9.0 |
-| POTPAW_PBE/Kr          |    138.945 |     185.26 |              240.838 |                 8.0 |
-| POTPAW_PBE/La          |    164.485 |    219.313 |              285.107 |                11.0 |
-| POTPAW_PBE/La_s        |    102.414 |    136.552 |              177.518 |                 9.0 |
-| POTPAW_PBE/Li          |      100.0 |      140.0 |              182.000 |                 1.0 |
-| POTPAW_PBE/Li_sv2      |     416.33 |    555.106 |              721.638 |                 3.0 |
-| POTPAW_PBE/Li_sv       |    374.276 |    499.034 |              648.744 |                 3.0 |
-| POTPAW_PBE/Lu_3        |    116.257 |    155.009 |              201.512 |                 9.0 |
-| POTPAW_PBE/Lu          |    191.771 |    255.695 |              332.404 |                25.0 |
-| POTPAW_PBE/Mg_new      |     94.607 |    126.143 |              163.986 |                 2.0 |
-| POTPAW_PBE/Mg          |    157.509 |    210.012 |              273.016 |                 2.0 |
-| POTPAW_PBE/Mg_pv_GW    |    302.947 |    403.929 |              525.108 |                 8.0 |
-| POTPAW_PBE/Mg_pv.old   |     199.18 |    265.574 |              345.246 |                 8.0 |
-| POTPAW_PBE/Mg_pv       |    302.947 |    403.929 |              525.108 |                 8.0 |
-| POTPAW_PBE/Mg_sv       |    371.417 |    495.223 |              643.790 |                10.0 |
-| POTPAW_PBE/Mn          |    202.399 |    269.865 |              350.825 |                 7.0 |
-| POTPAW_PBE/Mn_pv_new   |    202.398 |    269.864 |              350.823 |                13.0 |
-| POTPAW_PBE/Mn_pv       |    202.399 |    269.865 |              350.825 |                13.0 |
-| POTPAW_PBE/Mn_sv       |     290.39 |    387.187 |              503.343 |                15.0 |
-| POTPAW_PBE/Mo          |    168.438 |    224.584 |              291.959 |                 6.0 |
-| POTPAW_PBE/Mo_pv_new   |    168.438 |    224.584 |              291.959 |                12.0 |
-| POTPAW_PBE/Mo_pv       |    168.438 |    224.584 |              291.959 |                12.0 |
-| POTPAW_PBE/Mo_sv       |    182.007 |    242.676 |              315.479 |                14.0 |
-| POTPAW_PBE/Na          |     76.476 |    101.968 |              132.558 |                 1.0 |
-| POTPAW_PBE/Na_pv       |    194.671 |    259.561 |              337.429 |                 7.0 |
-| POTPAW_PBE/Na_sv       |     484.23 |      700.0 |              910.000 |                 9.0 |
-| POTPAW_PBE/Nb_pv       |    156.456 |    208.608 |              271.190 |                11.0 |
-| POTPAW_PBE/Nb_sv_new   |    219.927 |    293.235 |              381.206 |                13.0 |
-| POTPAW_PBE/Nb_sv       |    219.927 |    293.235 |              381.206 |                13.0 |
-| POTPAW_PBE/Nd_3        |    136.909 |    182.546 |              237.310 |                11.0 |
-| POTPAW_PBE/Nd          |    189.892 |    253.189 |              329.146 |                14.0 |
-| POTPAW_PBE/Ne          |    257.704 |    343.606 |              446.688 |                 8.0 |
-| POTPAW_PBE/N_h         |      500.0 |      700.0 |              910.000 |                 5.0 |
-| POTPAW_PBE/Ni_new      |    202.149 |    269.532 |              350.392 |                10.0 |
-| POTPAW_PBE/Ni          |     202.15 |    269.533 |              350.393 |                10.0 |
-| POTPAW_PBE/Ni_pv       |    275.959 |    367.945 |              478.329 |                16.0 |
-| POTPAW_PBE/N           |      300.0 |      400.0 |              520.000 |                 5.0 |
-| POTPAW_PBE/Np          |    190.776 |    254.369 |              330.680 |                15.0 |
-| POTPAW_PBE/Np_s        |    158.138 |    210.851 |              274.106 |                15.0 |
-| POTPAW_PBE/N_s_GW      |    222.371 |    296.495 |              385.444 |                 5.0 |
-| POTPAW_PBE/N_s         |     209.76 |     279.68 |              363.584 |                 5.0 |
-| POTPAW_PBE/N_vs        |     209.76 |     279.68 |              363.584 |                 5.0 |
-| POTPAW_PBE/Na          |     76.476 |    101.968 |              132.558 |                 1.0 |
-| POTPAW_PBE/Na_pv       |    194.671 |    259.561 |              337.429 |                 7.0 |
-| POTPAW_PBE/Na_sv       |     484.23 |      700.0 |              910.000 |                 9.0 |
-| POTPAW_PBE/Nb_pv       |    156.456 |    208.608 |              271.190 |                11.0 |
-| POTPAW_PBE/Nb_sv_new   |    219.927 |    293.235 |              381.206 |                13.0 |
-| POTPAW_PBE/Nb_sv       |    219.927 |    293.235 |              381.206 |                13.0 |
-| POTPAW_PBE/Nd_3        |    136.909 |    182.546 |              237.310 |                11.0 |
-| POTPAW_PBE/Nd          |    189.892 |    253.189 |              329.146 |                14.0 |
-| POTPAW_PBE/Ne          |    257.704 |    343.606 |              446.688 |                 8.0 |
-| POTPAW_PBE/Ni_new      |    202.149 |    269.532 |              350.392 |                10.0 |
-| POTPAW_PBE/Ni          |     202.15 |    269.533 |              350.393 |                10.0 |
-| POTPAW_PBE/Ni_pv       |    275.959 |    367.945 |              478.329 |                16.0 |
-| POTPAW_PBE/Np          |    190.776 |    254.369 |              330.680 |                15.0 |
-| POTPAW_PBE/Np_s        |    158.138 |    210.851 |              274.106 |                15.0 |
-| POTPAW_PBE/O_GW        |    310.976 |    414.635 |              539.025 |                 6.0 |
-| POTPAW_PBE/O_h         |      500.0 |      700.0 |              910.000 |                 6.0 |
-| POTPAW_PBE/O           |      300.0 |      400.0 |              520.000 |                 6.0 |
-| POTPAW_PBE/O_s_GW      |    225.516 |    300.688 |              390.894 |                 6.0 |
-| POTPAW_PBE/O_s         |    212.131 |    282.841 |              367.693 |                 6.0 |
-| POTPAW_PBE/Os          |    171.017 |    228.022 |              296.429 |                 8.0 |
-| POTPAW_PBE/Os_pv       |    171.017 |    228.022 |              296.429 |                14.0 |
-| POTPAW_PBE/O_sv        |   1066.119 |   1421.493 |             1847.941 |                 8.0 |
-| POTPAW_PBE/Os          |    171.017 |    228.022 |              296.429 |                 8.0 |
-| POTPAW_PBE/Os_pv       |    171.017 |    228.022 |              296.429 |                14.0 |
-| POTPAW_PBE/Pa          |    189.237 |    252.316 |              328.011 |                13.0 |
-| POTPAW_PBE/Pa_s        |    145.182 |    193.576 |              251.649 |                11.0 |
-| POTPAW_PBE/Pb_d        |    178.384 |    237.846 |              309.200 |                14.0 |
-| POTPAW_PBE/Pb_d_rel2   |    178.357 |    237.809 |              309.152 |                14.0 |
-| POTPAW_PBE/Pb_d_rel    |    178.357 |    237.809 |              309.152 |                14.0 |
-| POTPAW_PBE/Pb          |      73.48 |     97.973 |              127.365 |                 4.0 |
-| POTPAW_PBE/Pd_new      |    188.194 |    250.925 |              326.203 |                10.0 |
-| POTPAW_PBE/Pd          |    188.194 |    250.925 |              326.203 |                10.0 |
-| POTPAW_PBE/Pd_pv_new   |    188.194 |    250.925 |              326.203 |                16.0 |
-| POTPAW_PBE/Pd_pv       |    203.323 |    271.098 |              352.427 |                16.0 |
-| POTPAW_PBE/Pd_vnew     |    188.194 |    250.925 |              326.203 |                10.0 |
-| POTPAW_PBE/P_h         |    292.651 |    390.202 |              507.263 |                 5.0 |
-| POTPAW_PBE/Pm_3        |    137.931 |    183.908 |              239.080 |                11.0 |
-| POTPAW_PBE/Pm          |     193.97 |    258.627 |              336.215 |                15.0 |
-| POTPAW_PBE/Po_d        |    198.424 |    264.565 |              343.935 |                16.0 |
-| POTPAW_PBE/Po          |     119.78 |    159.707 |              207.619 |                 6.0 |
-| POTPAW_PBE/P           |     191.28 |      270.0 |              351.000 |                 5.0 |
-| POTPAW_PBE/Pr_3        |    136.734 |    182.312 |              237.006 |                11.0 |
-| POTPAW_PBE/Pr          |    204.706 |    272.941 |              354.823 |                13.0 |
-| POTPAW_PBE/Pt_new      |    172.712 |    230.283 |              299.368 |                10.0 |
-| POTPAW_PBE/Pt          |    172.712 |    230.283 |              299.368 |                10.0 |
-| POTPAW_PBE/Pt_pv       |    220.955 |    294.607 |              382.989 |                16.0 |
-| POTPAW_PBE/Pt_pv_ZORA  |    220.953 |    294.604 |              382.985 |                16.0 |
-| POTPAW_PBE/Pt_ZORA     |    172.711 |    230.281 |              299.365 |                10.0 |
-| POTPAW_PBE/Pu_h        |    333.587 |    444.783 |              578.218 |                16.0 |
-| POTPAW_PBE/Pu          |    190.844 |    254.458 |              330.795 |                16.0 |
-| POTPAW_PBE/Pu_s        |    158.508 |    211.344 |              274.747 |                16.0 |
-| POTPAW_PBE/Pa          |    189.237 |    252.316 |              328.011 |                13.0 |
-| POTPAW_PBE/Pa_s        |    145.182 |    193.576 |              251.649 |                11.0 |
-| POTPAW_PBE/Pb_d        |    178.384 |    237.846 |              309.200 |                14.0 |
-| POTPAW_PBE/Pb_d_rel2   |    178.357 |    237.809 |              309.152 |                14.0 |
-| POTPAW_PBE/Pb_d_rel    |    178.357 |    237.809 |              309.152 |                14.0 |
-| POTPAW_PBE/Pb          |      73.48 |     97.973 |              127.365 |                 4.0 |
-| POTPAW_PBE/Pd_new      |    188.194 |    250.925 |              326.203 |                10.0 |
-| POTPAW_PBE/Pd          |    188.194 |    250.925 |              326.203 |                10.0 |
-| POTPAW_PBE/Pd_pv_new   |    188.194 |    250.925 |              326.203 |                16.0 |
-| POTPAW_PBE/Pd_pv       |    203.323 |    271.098 |              352.427 |                16.0 |
-| POTPAW_PBE/Pd_vnew     |    188.194 |    250.925 |              326.203 |                10.0 |
-| POTPAW_PBE/Pm_3        |    137.931 |    183.908 |              239.080 |                11.0 |
-| POTPAW_PBE/Pm          |     193.97 |    258.627 |              336.215 |                15.0 |
-| POTPAW_PBE/Po_d        |    198.424 |    264.565 |              343.935 |                16.0 |
-| POTPAW_PBE/Po          |     119.78 |    159.707 |              207.619 |                 6.0 |
-| POTPAW_PBE/Pr_3        |    136.734 |    182.312 |              237.006 |                11.0 |
-| POTPAW_PBE/Pr          |    204.706 |    272.941 |              354.823 |                13.0 |
-| POTPAW_PBE/Pt_new      |    172.712 |    230.283 |              299.368 |                10.0 |
-| POTPAW_PBE/Pt          |    172.712 |    230.283 |              299.368 |                10.0 |
-| POTPAW_PBE/Pt_pv       |    220.955 |    294.607 |              382.989 |                16.0 |
-| POTPAW_PBE/Pt_pv_ZORA  |    220.953 |    294.604 |              382.985 |                16.0 |
-| POTPAW_PBE/Pt_ZORA     |    172.711 |    230.281 |              299.365 |                10.0 |
-| POTPAW_PBE/Pu_h        |    333.587 |    444.783 |              578.218 |                16.0 |
-| POTPAW_PBE/Pu          |    190.844 |    254.458 |              330.795 |                16.0 |
-| POTPAW_PBE/Pu_s        |    158.508 |    211.344 |              274.747 |                16.0 |
-| POTPAW_PBE/Ra_sv       |    178.025 |    237.367 |              308.577 |                10.0 |
-| POTPAW_PBE/Rb_pv       |     91.439 |    121.919 |              158.495 |                 7.0 |
-| POTPAW_PBE/Rb_sv       |    165.017 |    220.022 |              286.029 |                 9.0 |
-| POTPAW_PBE/Re          |    169.662 |    226.216 |              294.081 |                 7.0 |
-| POTPAW_PBE/Re_pv       |    169.667 |    226.223 |              294.090 |                13.0 |
-| POTPAW_PBE/Rh_new      |    171.747 |    228.996 |              297.695 |                 9.0 |
-| POTPAW_PBE/Rh          |     171.75 |      229.0 |              297.700 |                 9.0 |
-| POTPAW_PBE/Rh_pv_new   |    185.556 |    247.408 |              321.630 |                15.0 |
-| POTPAW_PBE/Rh_pv       |    203.602 |     271.47 |              352.911 |                15.0 |
-| POTPAW_PBE/Rn          |    114.091 |    152.121 |              197.757 |                 8.0 |
-| POTPAW_PBE/Ru_new      |    159.953 |    213.271 |              277.252 |                 8.0 |
-| POTPAW_PBE/Ru          |    159.957 |    213.276 |              277.259 |                 8.0 |
-| POTPAW_PBE/Ru_pv_new   |    180.037 |    240.049 |              312.064 |                14.0 |
-| POTPAW_PBE/Ru_pv       |    172.822 |    230.429 |              299.558 |                14.0 |
-| POTPAW_PBE/Ru_sv       |    239.141 |    318.855 |              414.512 |                16.0 |
-| POTPAW_PBE/Sb          |    129.028 |    172.037 |              223.648 |                 5.0 |
-| POTPAW_PBE/Sc          |    116.072 |    154.763 |              201.192 |                 3.0 |
-| POTPAW_PBE/Sc_sv_h     |    285.522 |    380.696 |              494.905 |                11.0 |
-| POTPAW_PBE/Sc_sv       |    166.998 |    222.664 |              289.463 |                11.0 |
-| POTPAW_PBE/Se_GW       |    158.666 |    211.555 |              275.022 |                 6.0 |
-| POTPAW_PBE/Se          |    158.651 |    211.534 |              274.994 |                 6.0 |
-| POTPAW_PBE/S_h         |    301.827 |    402.436 |              523.167 |                 6.0 |
-| POTPAW_PBE/Si_d_GW_nr  |    184.004 |    245.338 |              318.939 |                 4.0 |
-| POTPAW_PBE/Si_d_GW     |    184.009 |    245.345 |              318.949 |                 4.0 |
-| POTPAW_PBE/Si_h_old    |    285.109 |    380.146 |              494.190 |                 4.0 |
-| POTPAW_PBE/Si_h        |    285.109 |    380.146 |              494.190 |                 4.0 |
-| POTPAW_PBE/Si_nopc     |    184.009 |    245.345 |              318.949 |                 4.0 |
-| POTPAW_PBE/Si          |    184.009 |    245.345 |              318.949 |                 4.0 |
-| POTPAW_PBE/Si_pv_GW    |    356.322 |    475.096 |              617.625 |                10.0 |
-| POTPAW_PBE/Si_sv_GW_nr |    356.326 |    475.101 |              617.631 |                12.0 |
-| POTPAW_PBE/Si_sv_GW    |    356.322 |    475.096 |              617.625 |                12.0 |
-| POTPAW_PBE/Sm_3        |    132.815 |    177.087 |              230.213 |                11.0 |
-| POTPAW_PBE/Sm          |    193.136 |    257.515 |              334.769 |                16.0 |
-| POTPAW_PBE/Sn_d        |    180.817 |     241.09 |              313.417 |                14.0 |
-| POTPAW_PBE/Sn_GW       |     77.427 |    103.236 |              134.207 |                 4.0 |
-| POTPAW_PBE/Sn          |     77.427 |    103.236 |              134.207 |                 4.0 |
-| POTPAW_PBE/S           |    194.016 |      280.0 |              364.000 |                 6.0 |
-| POTPAW_PBE/Sr_sv       |    171.961 |    229.282 |              298.067 |                10.0 |
-| POTPAW_PBE/Sr          |    171.961 |    229.282 |              298.067 |                10.0 |
-| POTPAW_PBE/Sb          |    129.028 |    172.037 |              223.648 |                 5.0 |
-| POTPAW_PBE/Sc          |    116.072 |    154.763 |              201.192 |                 3.0 |
-| POTPAW_PBE/Sc_sv_h     |    285.522 |    380.696 |              494.905 |                11.0 |
-| POTPAW_PBE/Sc_sv       |    166.998 |    222.664 |              289.463 |                11.0 |
-| POTPAW_PBE/Se_GW       |    158.666 |    211.555 |              275.022 |                 6.0 |
-| POTPAW_PBE/Se          |    158.651 |    211.534 |              274.994 |                 6.0 |
-| POTPAW_PBE/Si_d_GW_nr  |    184.004 |    245.338 |              318.939 |                 4.0 |
-| POTPAW_PBE/Si_d_GW     |    184.009 |    245.345 |              318.949 |                 4.0 |
-| POTPAW_PBE/Si_h_old    |    285.109 |    380.146 |              494.190 |                 4.0 |
-| POTPAW_PBE/Si_h        |    285.109 |    380.146 |              494.190 |                 4.0 |
-| POTPAW_PBE/Si_nopc     |    184.009 |    245.345 |              318.949 |                 4.0 |
-| POTPAW_PBE/Si          |    184.009 |    245.345 |              318.949 |                 4.0 |
-| POTPAW_PBE/Si_pv_GW    |    356.322 |    475.096 |              617.625 |                10.0 |
-| POTPAW_PBE/Si_sv_GW_nr |    356.326 |    475.101 |              617.631 |                12.0 |
-| POTPAW_PBE/Si_sv_GW    |    356.322 |    475.096 |              617.625 |                12.0 |
-| POTPAW_PBE/Sm_3        |    132.815 |    177.087 |              230.213 |                11.0 |
-| POTPAW_PBE/Sm          |    193.136 |    257.515 |              334.769 |                16.0 |
-| POTPAW_PBE/Sn_d        |    180.817 |     241.09 |              313.417 |                14.0 |
-| POTPAW_PBE/Sn_GW       |     77.427 |    103.236 |              134.207 |                 4.0 |
-| POTPAW_PBE/Sn          |     77.427 |    103.236 |              134.207 |                 4.0 |
-| POTPAW_PBE/Sr_sv       |    171.961 |    229.282 |              298.067 |                10.0 |
-| POTPAW_PBE/Sr          |    171.961 |    229.282 |              298.067 |                10.0 |
-| POTPAW_PBE/Ta          |     167.75 |    223.667 |              290.767 |                 5.0 |
-| POTPAW_PBE/Ta_pv       |    167.756 |    223.675 |              290.778 |                11.0 |
-| POTPAW_PBE/Tb_3        |    116.721 |    155.628 |              202.316 |                 9.0 |
-| POTPAW_PBE/Tb          |    198.618 |    264.824 |              344.271 |                19.0 |
-| POTPAW_PBE/Tc_new      |    171.521 |    228.694 |              297.302 |                 7.0 |
-| POTPAW_PBE/Tc          |    171.521 |    228.694 |              297.302 |                 7.0 |
-| POTPAW_PBE/Tc_pv_new   |    197.642 |    263.523 |              342.580 |                13.0 |
-| POTPAW_PBE/Tc_pv       |    171.524 |    228.699 |              297.309 |                13.0 |
-| POTPAW_PBE/Te          |    131.236 |    174.982 |              227.477 |                 6.0 |
-| POTPAW_PBE/Te_rel      |    131.234 |    174.979 |              227.473 |                 6.0 |
-| POTPAW_PBE/Th          |    185.587 |    247.449 |              321.684 |                12.0 |
-| POTPAW_PBE/Th_s        |    127.119 |    169.492 |              220.340 |                10.0 |
-| POTPAW_PBE/Ti          |    133.747 |     178.33 |              231.829 |                 4.0 |
-| POTPAW_PBE/Ti_pv       |    166.753 |    222.338 |              289.039 |                10.0 |
-| POTPAW_PBE/Ti_sv_GW    |    234.428 |    312.571 |              406.342 |                12.0 |
-| POTPAW_PBE/Ti_sv_h     |    291.524 |    388.698 |              505.307 |                12.0 |
-| POTPAW_PBE/Ti_sv_new2  |    205.957 |     274.61 |              356.993 |                12.0 |
-| POTPAW_PBE/Ti_sv_new   |    205.957 |     274.61 |              356.993 |                12.0 |
-| POTPAW_PBE/Ti_sv       |     205.93 |    274.574 |              356.946 |                12.0 |
-| POTPAW_PBE/Tl_d        |    177.797 |    237.063 |              308.182 |                13.0 |
-| POTPAW_PBE/Tl          |     67.605 |      90.14 |              117.182 |                 3.0 |
-| POTPAW_PBE/Tm_3        |    111.916 |    149.221 |              193.987 |                 9.0 |
-| POTPAW_PBE/Tm          |    193.065 |    257.419 |              334.645 |                23.0 |
-| POTPAW_PBE/U           |    189.462 |    252.616 |              328.401 |                14.0 |
-| POTPAW_PBE/U_s         |    156.802 |    209.069 |              271.790 |                14.0 |
-| POTPAW_PBE/V           |    144.408 |    192.543 |              250.306 |                 5.0 |
-| POTPAW_PBE/V_pv        |    197.756 |    263.675 |              342.778 |                11.0 |
-| POTPAW_PBE/V_sv_h      |    292.998 |    390.664 |              507.863 |                13.0 |
-| POTPAW_PBE/V_sv_new    |    197.755 |    263.673 |              342.775 |                13.0 |
-| POTPAW_PBE/V_sv        |    197.756 |    263.675 |              342.778 |                13.0 |
-| POTPAW_PBE/W           |    167.293 |    223.057 |              289.974 |                 6.0 |
-| POTPAW_PBE/W_pv_new    |    167.293 |    223.057 |              289.974 |                12.0 |
-| POTPAW_PBE/W_pv        |    167.299 |    223.065 |              289.985 |                12.0 |
-| POTPAW_PBE/Xe          |    114.823 |    153.098 |              199.027 |                 8.0 |
-| POTPAW_PBE/Xe          |    114.823 |    153.098 |              199.027 |                 8.0 |
-| POTPAW_PBE/Yb_2_n      |    108.514 |    144.685 |              188.091 |                10.0 |
-| POTPAW_PBE/Yb_2        |     84.407 |    112.543 |              146.306 |                 8.0 |
-| POTPAW_PBE/Yb          |    189.771 |    253.028 |              328.936 |                24.0 |
-| POTPAW_PBE/Y_sv        |    158.731 |    211.641 |              275.133 |                11.0 |
-| POTPAW_PBE/Yb_2_n      |    108.514 |    144.685 |              188.091 |                10.0 |
-| POTPAW_PBE/Yb_2        |     84.407 |    112.543 |              146.306 |                 8.0 |
-| POTPAW_PBE/Yb          |    189.771 |    253.028 |              328.936 |                24.0 |
-| POTPAW_PBE/Zn          |    207.545 |    276.727 |              359.745 |                12.0 |
-| POTPAW_PBE/Zn_pv       |    282.455 |    376.607 |              489.589 |                18.0 |
-| POTPAW_PBE/Zr          |    115.974 |    154.632 |              201.022 |                 4.0 |
-| POTPAW_PBE/Zr_sv_GW    |    230.877 |    307.836 |              400.187 |                12.0 |
-| POTPAW_PBE/Zr_sv_new   |    172.424 |    229.898 |              298.867 |                12.0 |
-| POTPAW_PBE/Zr_sv       |    172.379 |    229.839 |              298.791 |                12.0 |
+| POTCAR      |    ENMIN |    ENMAX | prec=high (eV) | # val. elect. |
+|-------------+----------+----------+----------------+---------------|
+| Ac          |  129.178 |  172.237 |        223.908 |          11.0 |
+| Ag_new      |  187.383 |  249.844 |        324.797 |          11.0 |
+| Ag          |  187.385 |  249.846 |        324.800 |          11.0 |
+| Ag_pv       |  223.399 |  297.865 |        387.225 |          17.0 |
+| Al          |  180.225 |    240.3 |        312.390 |           3.0 |
+| Am          |  191.906 |  255.875 |        332.637 |          17.0 |
+| Ar          |  199.795 |  266.393 |        346.311 |           8.0 |
+| As_d_GW     |  259.629 |  346.172 |        450.024 |          15.0 |
+| As_d        |  216.488 |  288.651 |        375.246 |          15.0 |
+| As_GW       |  156.526 |  208.702 |        271.313 |           5.0 |
+| As          |   156.51 |   208.68 |        271.284 |           5.0 |
+| At_d        |  199.688 |  266.251 |        346.126 |          17.0 |
+| At          |  121.073 |   161.43 |        209.859 |           7.0 |
+| Au_new      |  172.457 |  229.943 |        298.926 |          11.0 |
+| Au          |  172.461 |  229.948 |        298.932 |          11.0 |
+| Ba_sv       |  140.408 |   187.21 |        243.373 |          10.0 |
+| Be          |  185.658 |  247.544 |        321.807 |           2.0 |
+| Be_sv       |  231.563 |   308.75 |        401.375 |           4.0 |
+| B_h         |    500.0 |    700.0 |        910.000 |           3.0 |
+| Bi_d        |  182.138 |  242.851 |        315.706 |          15.0 |
+| Bi          |   78.777 |  105.037 |        136.548 |           5.0 |
+| Bi_pv       |   231.89 |  309.187 |        401.943 |          21.0 |
+| B           |  238.954 |  318.606 |        414.188 |           3.0 |
+| Br          |  162.198 |  216.264 |        281.143 |           7.0 |
+| B_s         |  201.934 |  269.245 |        350.019 |           3.0 |
+| Ba_sv       |  140.408 |   187.21 |        243.373 |          10.0 |
+| Be          |  185.658 |  247.544 |        321.807 |           2.0 |
+| Be_sv       |  231.563 |   308.75 |        401.375 |           4.0 |
+| Bi_d        |  182.138 |  242.851 |        315.706 |          15.0 |
+| Bi          |   78.777 |  105.037 |        136.548 |           5.0 |
+| Bi_pv       |   231.89 |  309.187 |        401.943 |          21.0 |
+| Br          |  162.198 |  216.264 |        281.143 |           7.0 |
+| Ca          |   77.067 |  102.755 |        133.582 |           2.0 |
+| Ca_pv       |   89.665 |  119.554 |        155.420 |           8.0 |
+| Ca_sv       |  199.939 |  266.586 |        346.562 |          10.0 |
+| C_d         |  310.494 |  413.992 |        538.190 |           4.0 |
+| Cd          |  205.757 |  274.342 |        356.645 |          12.0 |
+| Ce_3        |  135.964 |  181.286 |        235.672 |          11.0 |
+| Ce_h        |  224.925 |    299.9 |        389.870 |          12.0 |
+| Ce          |  204.781 |  273.042 |        354.955 |          12.0 |
+| C_GW        |  310.494 |  413.992 |        538.190 |           4.0 |
+| C_h_nr      |  556.263 |  741.684 |        964.189 |           4.0 |
+| C_h         |    500.0 |    700.0 |        910.000 |           4.0 |
+| Cl_h        |  306.852 |  409.136 |        531.877 |           7.0 |
+| Cl          |  196.854 |    280.0 |        364.000 |           7.0 |
+| Co_new      |  200.976 |  267.968 |        348.358 |           9.0 |
+| Co          |  200.977 |  267.969 |        348.360 |           9.0 |
+| Co_sv       |  292.771 |  390.362 |        507.471 |          17.0 |
+| C           |    300.0 |    400.0 |        520.000 |           4.0 |
+| Cr          |  170.311 |  227.082 |        295.207 |           6.0 |
+| Cr_pv_new   |  199.261 |  265.681 |        345.385 |          12.0 |
+| Cr_pv       |  199.262 |  265.683 |        345.388 |          12.0 |
+| Cr_sv_new   |  296.603 |  395.471 |        514.112 |          14.0 |
+| Cr_sv       |  296.603 |  395.471 |        514.112 |          14.0 |
+| C_s         |  205.426 |  273.901 |        356.071 |           4.0 |
+| Cs_sv       |  165.238 |  220.318 |        286.413 |           9.0 |
+| Cu_f        |  221.585 |  295.446 |        384.080 |          11.0 |
+| Cu_new      |  221.585 |  295.446 |        384.080 |          11.0 |
+| Cu          |   204.91 |  273.214 |        355.178 |          11.0 |
+| Cu_pvf      |  276.486 |  368.648 |        479.242 |          17.0 |
+| Cu_pv       |  276.454 |  368.605 |        479.187 |          17.0 |
+| Ca          |   77.067 |  102.755 |        133.582 |           2.0 |
+| Ca_pv       |   89.665 |  119.554 |        155.420 |           8.0 |
+| Ca_sv       |  199.939 |  266.586 |        346.562 |          10.0 |
+| Cd          |  205.757 |  274.342 |        356.645 |          12.0 |
+| Ce_3        |  135.964 |  181.286 |        235.672 |          11.0 |
+| Ce_h        |  224.925 |    299.9 |        389.870 |          12.0 |
+| Ce          |  204.781 |  273.042 |        354.955 |          12.0 |
+| Cl_h        |  306.852 |  409.136 |        531.877 |           7.0 |
+| Cl          |  196.854 |    280.0 |        364.000 |           7.0 |
+| Co_new      |  200.976 |  267.968 |        348.358 |           9.0 |
+| Co          |  200.977 |  267.969 |        348.360 |           9.0 |
+| Co_sv       |  292.771 |  390.362 |        507.471 |          17.0 |
+| Cr          |  170.311 |  227.082 |        295.207 |           6.0 |
+| Cr_pv_new   |  199.261 |  265.681 |        345.385 |          12.0 |
+| Cr_pv       |  199.262 |  265.683 |        345.388 |          12.0 |
+| Cr_sv_new   |  296.603 |  395.471 |        514.112 |          14.0 |
+| Cr_sv       |  296.603 |  395.471 |        514.112 |          14.0 |
+| Cs_sv       |  165.238 |  220.318 |        286.413 |           9.0 |
+| Cu_f        |  221.585 |  295.446 |        384.080 |          11.0 |
+| Cu_new      |  221.585 |  295.446 |        384.080 |          11.0 |
+| Cu          |   204.91 |  273.214 |        355.178 |          11.0 |
+| Cu_pvf      |  276.486 |  368.648 |        479.242 |          17.0 |
+| Cu_pv       |  276.454 |  368.605 |        479.187 |          17.0 |
+| Dy_3        |  116.797 |  155.729 |        202.448 |           9.0 |
+| Dy          |  191.601 |  255.467 |        332.107 |          20.0 |
+| Er_2        |   89.813 |   119.75 |        155.675 |           8.0 |
+| Er_3        |   116.29 |  155.053 |        201.569 |           9.0 |
+| Er          |  223.587 |  298.116 |        387.551 |          22.0 |
+| Eu_2        |   74.478 |   99.304 |        129.095 |           8.0 |
+| Eu_3        |   96.793 |  129.057 |        167.774 |           9.0 |
+| Eu_GW       |  452.441 |  603.254 |        784.230 |          17.0 |
+| Eu          |  187.251 |  249.668 |        324.568 |          17.0 |
+| F_d_GW      |  365.773 |  487.698 |        634.007 |           7.0 |
+| Fe          |  200.912 |  267.883 |        348.248 |           8.0 |
+| Fe_pv_new   |  219.928 |  293.238 |        381.209 |          14.0 |
+| Fe_pv       |  219.929 |  293.238 |        381.209 |          14.0 |
+| Fe_sv_h     |  410.523 |  547.365 |        711.575 |          16.0 |
+| Fe_sv       |  292.918 |  390.558 |        507.725 |          16.0 |
+| F_h         |    500.0 |    700.0 |        910.000 |           7.0 |
+| F           |    300.0 |    400.0 |        520.000 |           7.0 |
+| Fr_sv       |  160.905 |   214.54 |        278.902 |           9.0 |
+| F_s         |  217.369 |  289.825 |        376.772 |           7.0 |
+| Fe          |  200.912 |  267.883 |        348.248 |           8.0 |
+| Fe_pv_new   |  219.928 |  293.238 |        381.209 |          14.0 |
+| Fe_pv       |  219.929 |  293.238 |        381.209 |          14.0 |
+| Fe_sv_h     |  410.523 |  547.365 |        711.575 |          16.0 |
+| Fe_sv       |  292.918 |  390.558 |        507.725 |          16.0 |
+| Fr_sv       |  160.905 |   214.54 |        278.902 |           9.0 |
+| Ga_d_GW     |  277.386 |  369.848 |        480.802 |          13.0 |
+| Ga_d        |  212.022 |  282.697 |        367.506 |          13.0 |
+| Ga_h        |  303.451 |  404.601 |        525.981 |          13.0 |
+| Ga          |  101.009 |  134.678 |        175.081 |           3.0 |
+| Ga_s        |   62.877 |   83.836 |        108.987 |           3.0 |
+| Ga_sv_GW    |  377.564 |  503.418 |        654.443 |          21.0 |
+| Gd_3        |  115.761 |  154.348 |        200.652 |           9.0 |
+| Gd          |  192.354 |  256.472 |        333.414 |          18.0 |
+| Ge_d3       |   169.58 |  226.106 |        293.938 |          14.0 |
+| Ge_d_GW2    |  254.348 |   339.13 |        440.869 |          14.0 |
+| Ge_d_GW     |   232.72 |  310.294 |        403.382 |          14.0 |
+| Ge_d_GW_ref |  429.008 |   572.01 |        743.613 |          14.0 |
+| Ge_d        |   232.72 |  310.294 |        403.382 |          14.0 |
+| Ge_h        |  307.818 |  410.425 |        533.553 |          14.0 |
+| Ge          |  130.355 |  173.807 |        225.949 |           4.0 |
+| H1.25       |    200.0 |    250.0 |        325.000 |          1.25 |
+| H1.5        |    200.0 |    250.0 |        325.000 |           1.5 |
+| H.5         |    200.0 |    250.0 |        325.000 |           0.5 |
+| H.75        |    200.0 |    250.0 |        325.000 |          0.75 |
+| He          |  359.172 |  478.896 |        622.565 |           2.0 |
+| Hf          |   165.25 |  220.333 |        286.433 |           4.0 |
+| Hf_pv       |  165.256 |  220.342 |        286.445 |          10.0 |
+| Hf_sv_GW    |  238.045 |  317.394 |        412.612 |          12.0 |
+| Hf_sv       |  178.083 |  237.444 |        308.677 |          12.0 |
+| Hg          |  174.911 |  233.214 |        303.178 |          12.0 |
+| H_h         |    500.0 |    700.0 |        910.000 |           1.0 |
+| Ho_3        |  115.615 |  154.153 |        200.399 |           9.0 |
+| Ho          |  192.876 |  257.168 |        334.318 |          21.0 |
+| H           |    200.0 |    250.0 |        325.000 |           1.0 |
+| He          |  359.172 |  478.896 |        622.565 |           2.0 |
+| Hf          |   165.25 |  220.333 |        286.433 |           4.0 |
+| Hf_pv       |  165.256 |  220.342 |        286.445 |          10.0 |
+| Hf_sv_GW    |  238.045 |  317.394 |        412.612 |          12.0 |
+| Hf_sv       |  178.083 |  237.444 |        308.677 |          12.0 |
+| Hg          |  174.911 |  233.214 |        303.178 |          12.0 |
+| Ho_3        |  115.615 |  154.153 |        200.399 |           9.0 |
+| Ho          |  192.876 |  257.168 |        334.318 |          21.0 |
+| In_d        |  179.413 |  239.218 |        310.983 |          13.0 |
+| In          |   71.951 |   95.934 |        124.714 |           3.0 |
+| I           |  131.735 |  175.647 |        228.341 |           7.0 |
+| Ir          |  158.153 |   210.87 |        274.131 |           9.0 |
+| In_d        |  179.413 |  239.218 |        310.983 |          13.0 |
+| In          |   71.951 |   95.934 |        124.714 |           3.0 |
+| Ir          |  158.153 |   210.87 |        274.131 |           9.0 |
+| K_pv        |   87.548 |  116.731 |        151.750 |           7.0 |
+| Kr          |  138.945 |   185.26 |        240.838 |           8.0 |
+| K_sv        |  194.412 |  259.216 |        336.981 |           9.0 |
+| Kr          |  138.945 |   185.26 |        240.838 |           8.0 |
+| La          |  164.485 |  219.313 |        285.107 |          11.0 |
+| La_s        |  102.414 |  136.552 |        177.518 |           9.0 |
+| Li          |    100.0 |    140.0 |        182.000 |           1.0 |
+| Li_sv2      |   416.33 |  555.106 |        721.638 |           3.0 |
+| Li_sv       |  374.276 |  499.034 |        648.744 |           3.0 |
+| Lu_3        |  116.257 |  155.009 |        201.512 |           9.0 |
+| Lu          |  191.771 |  255.695 |        332.404 |          25.0 |
+| Mg_new      |   94.607 |  126.143 |        163.986 |           2.0 |
+| Mg          |  157.509 |  210.012 |        273.016 |           2.0 |
+| Mg_pv_GW    |  302.947 |  403.929 |        525.108 |           8.0 |
+| Mg_pv.old   |   199.18 |  265.574 |        345.246 |           8.0 |
+| Mg_pv       |  302.947 |  403.929 |        525.108 |           8.0 |
+| Mg_sv       |  371.417 |  495.223 |        643.790 |          10.0 |
+| Mn          |  202.399 |  269.865 |        350.825 |           7.0 |
+| Mn_pv_new   |  202.398 |  269.864 |        350.823 |          13.0 |
+| Mn_pv       |  202.399 |  269.865 |        350.825 |          13.0 |
+| Mn_sv       |   290.39 |  387.187 |        503.343 |          15.0 |
+| Mo          |  168.438 |  224.584 |        291.959 |           6.0 |
+| Mo_pv_new   |  168.438 |  224.584 |        291.959 |          12.0 |
+| Mo_pv       |  168.438 |  224.584 |        291.959 |          12.0 |
+| Mo_sv       |  182.007 |  242.676 |        315.479 |          14.0 |
+| Na          |   76.476 |  101.968 |        132.558 |           1.0 |
+| Na_pv       |  194.671 |  259.561 |        337.429 |           7.0 |
+| Na_sv       |   484.23 |    700.0 |        910.000 |           9.0 |
+| Nb_pv       |  156.456 |  208.608 |        271.190 |          11.0 |
+| Nb_sv_new   |  219.927 |  293.235 |        381.206 |          13.0 |
+| Nb_sv       |  219.927 |  293.235 |        381.206 |          13.0 |
+| Nd_3        |  136.909 |  182.546 |        237.310 |          11.0 |
+| Nd          |  189.892 |  253.189 |        329.146 |          14.0 |
+| Ne          |  257.704 |  343.606 |        446.688 |           8.0 |
+| N_h         |    500.0 |    700.0 |        910.000 |           5.0 |
+| Ni_new      |  202.149 |  269.532 |        350.392 |          10.0 |
+| Ni          |   202.15 |  269.533 |        350.393 |          10.0 |
+| Ni_pv       |  275.959 |  367.945 |        478.329 |          16.0 |
+| N           |    300.0 |    400.0 |        520.000 |           5.0 |
+| Np          |  190.776 |  254.369 |        330.680 |          15.0 |
+| Np_s        |  158.138 |  210.851 |        274.106 |          15.0 |
+| N_s_GW      |  222.371 |  296.495 |        385.444 |           5.0 |
+| N_s         |   209.76 |   279.68 |        363.584 |           5.0 |
+| N_vs        |   209.76 |   279.68 |        363.584 |           5.0 |
+| Na          |   76.476 |  101.968 |        132.558 |           1.0 |
+| Na_pv       |  194.671 |  259.561 |        337.429 |           7.0 |
+| Na_sv       |   484.23 |    700.0 |        910.000 |           9.0 |
+| Nb_pv       |  156.456 |  208.608 |        271.190 |          11.0 |
+| Nb_sv_new   |  219.927 |  293.235 |        381.206 |          13.0 |
+| Nb_sv       |  219.927 |  293.235 |        381.206 |          13.0 |
+| Nd_3        |  136.909 |  182.546 |        237.310 |          11.0 |
+| Nd          |  189.892 |  253.189 |        329.146 |          14.0 |
+| Ne          |  257.704 |  343.606 |        446.688 |           8.0 |
+| Ni_new      |  202.149 |  269.532 |        350.392 |          10.0 |
+| Ni          |   202.15 |  269.533 |        350.393 |          10.0 |
+| Ni_pv       |  275.959 |  367.945 |        478.329 |          16.0 |
+| Np          |  190.776 |  254.369 |        330.680 |          15.0 |
+| Np_s        |  158.138 |  210.851 |        274.106 |          15.0 |
+| O_GW        |  310.976 |  414.635 |        539.025 |           6.0 |
+| O_h         |    500.0 |    700.0 |        910.000 |           6.0 |
+| O           |    300.0 |    400.0 |        520.000 |           6.0 |
+| O_s_GW      |  225.516 |  300.688 |        390.894 |           6.0 |
+| O_s         |  212.131 |  282.841 |        367.693 |           6.0 |
+| Os          |  171.017 |  228.022 |        296.429 |           8.0 |
+| Os_pv       |  171.017 |  228.022 |        296.429 |          14.0 |
+| O_sv        | 1066.119 | 1421.493 |       1847.941 |           8.0 |
+| Os          |  171.017 |  228.022 |        296.429 |           8.0 |
+| Os_pv       |  171.017 |  228.022 |        296.429 |          14.0 |
+| Pa          |  189.237 |  252.316 |        328.011 |          13.0 |
+| Pa_s        |  145.182 |  193.576 |        251.649 |          11.0 |
+| Pb_d        |  178.384 |  237.846 |        309.200 |          14.0 |
+| Pb_d_rel2   |  178.357 |  237.809 |        309.152 |          14.0 |
+| Pb_d_rel    |  178.357 |  237.809 |        309.152 |          14.0 |
+| Pb          |    73.48 |   97.973 |        127.365 |           4.0 |
+| Pd_new      |  188.194 |  250.925 |        326.203 |          10.0 |
+| Pd          |  188.194 |  250.925 |        326.203 |          10.0 |
+| Pd_pv_new   |  188.194 |  250.925 |        326.203 |          16.0 |
+| Pd_pv       |  203.323 |  271.098 |        352.427 |          16.0 |
+| Pd_vnew     |  188.194 |  250.925 |        326.203 |          10.0 |
+| P_h         |  292.651 |  390.202 |        507.263 |           5.0 |
+| Pm_3        |  137.931 |  183.908 |        239.080 |          11.0 |
+| Pm          |   193.97 |  258.627 |        336.215 |          15.0 |
+| Po_d        |  198.424 |  264.565 |        343.935 |          16.0 |
+| Po          |   119.78 |  159.707 |        207.619 |           6.0 |
+| P           |   191.28 |    270.0 |        351.000 |           5.0 |
+| Pr_3        |  136.734 |  182.312 |        237.006 |          11.0 |
+| Pr          |  204.706 |  272.941 |        354.823 |          13.0 |
+| Pt_new      |  172.712 |  230.283 |        299.368 |          10.0 |
+| Pt          |  172.712 |  230.283 |        299.368 |          10.0 |
+| Pt_pv       |  220.955 |  294.607 |        382.989 |          16.0 |
+| Pt_pv_ZORA  |  220.953 |  294.604 |        382.985 |          16.0 |
+| Pt_ZORA     |  172.711 |  230.281 |        299.365 |          10.0 |
+| Pu_h        |  333.587 |  444.783 |        578.218 |          16.0 |
+| Pu          |  190.844 |  254.458 |        330.795 |          16.0 |
+| Pu_s        |  158.508 |  211.344 |        274.747 |          16.0 |
+| Pa          |  189.237 |  252.316 |        328.011 |          13.0 |
+| Pa_s        |  145.182 |  193.576 |        251.649 |          11.0 |
+| Pb_d        |  178.384 |  237.846 |        309.200 |          14.0 |
+| Pb_d_rel2   |  178.357 |  237.809 |        309.152 |          14.0 |
+| Pb_d_rel    |  178.357 |  237.809 |        309.152 |          14.0 |
+| Pb          |    73.48 |   97.973 |        127.365 |           4.0 |
+| Pd_new      |  188.194 |  250.925 |        326.203 |          10.0 |
+| Pd          |  188.194 |  250.925 |        326.203 |          10.0 |
+| Pd_pv_new   |  188.194 |  250.925 |        326.203 |          16.0 |
+| Pd_pv       |  203.323 |  271.098 |        352.427 |          16.0 |
+| Pd_vnew     |  188.194 |  250.925 |        326.203 |          10.0 |
+| Pm_3        |  137.931 |  183.908 |        239.080 |          11.0 |
+| Pm          |   193.97 |  258.627 |        336.215 |          15.0 |
+| Po_d        |  198.424 |  264.565 |        343.935 |          16.0 |
+| Po          |   119.78 |  159.707 |        207.619 |           6.0 |
+| Pr_3        |  136.734 |  182.312 |        237.006 |          11.0 |
+| Pr          |  204.706 |  272.941 |        354.823 |          13.0 |
+| Pt_new      |  172.712 |  230.283 |        299.368 |          10.0 |
+| Pt          |  172.712 |  230.283 |        299.368 |          10.0 |
+| Pt_pv       |  220.955 |  294.607 |        382.989 |          16.0 |
+| Pt_pv_ZORA  |  220.953 |  294.604 |        382.985 |          16.0 |
+| Pt_ZORA     |  172.711 |  230.281 |        299.365 |          10.0 |
+| Pu_h        |  333.587 |  444.783 |        578.218 |          16.0 |
+| Pu          |  190.844 |  254.458 |        330.795 |          16.0 |
+| Pu_s        |  158.508 |  211.344 |        274.747 |          16.0 |
+| Ra_sv       |  178.025 |  237.367 |        308.577 |          10.0 |
+| Rb_pv       |   91.439 |  121.919 |        158.495 |           7.0 |
+| Rb_sv       |  165.017 |  220.022 |        286.029 |           9.0 |
+| Re          |  169.662 |  226.216 |        294.081 |           7.0 |
+| Re_pv       |  169.667 |  226.223 |        294.090 |          13.0 |
+| Rh_new      |  171.747 |  228.996 |        297.695 |           9.0 |
+| Rh          |   171.75 |    229.0 |        297.700 |           9.0 |
+| Rh_pv_new   |  185.556 |  247.408 |        321.630 |          15.0 |
+| Rh_pv       |  203.602 |   271.47 |        352.911 |          15.0 |
+| Rn          |  114.091 |  152.121 |        197.757 |           8.0 |
+| Ru_new      |  159.953 |  213.271 |        277.252 |           8.0 |
+| Ru          |  159.957 |  213.276 |        277.259 |           8.0 |
+| Ru_pv_new   |  180.037 |  240.049 |        312.064 |          14.0 |
+| Ru_pv       |  172.822 |  230.429 |        299.558 |          14.0 |
+| Ru_sv       |  239.141 |  318.855 |        414.512 |          16.0 |
+| Sb          |  129.028 |  172.037 |        223.648 |           5.0 |
+| Sc          |  116.072 |  154.763 |        201.192 |           3.0 |
+| Sc_sv_h     |  285.522 |  380.696 |        494.905 |          11.0 |
+| Sc_sv       |  166.998 |  222.664 |        289.463 |          11.0 |
+| Se_GW       |  158.666 |  211.555 |        275.022 |           6.0 |
+| Se          |  158.651 |  211.534 |        274.994 |           6.0 |
+| S_h         |  301.827 |  402.436 |        523.167 |           6.0 |
+| Si_d_GW_nr  |  184.004 |  245.338 |        318.939 |           4.0 |
+| Si_d_GW     |  184.009 |  245.345 |        318.949 |           4.0 |
+| Si_h_old    |  285.109 |  380.146 |        494.190 |           4.0 |
+| Si_h        |  285.109 |  380.146 |        494.190 |           4.0 |
+| Si_nopc     |  184.009 |  245.345 |        318.949 |           4.0 |
+| Si          |  184.009 |  245.345 |        318.949 |           4.0 |
+| Si_pv_GW    |  356.322 |  475.096 |        617.625 |          10.0 |
+| Si_sv_GW_nr |  356.326 |  475.101 |        617.631 |          12.0 |
+| Si_sv_GW    |  356.322 |  475.096 |        617.625 |          12.0 |
+| Sm_3        |  132.815 |  177.087 |        230.213 |          11.0 |
+| Sm          |  193.136 |  257.515 |        334.769 |          16.0 |
+| Sn_d        |  180.817 |   241.09 |        313.417 |          14.0 |
+| Sn_GW       |   77.427 |  103.236 |        134.207 |           4.0 |
+| Sn          |   77.427 |  103.236 |        134.207 |           4.0 |
+| S           |  194.016 |    280.0 |        364.000 |           6.0 |
+| Sr_sv       |  171.961 |  229.282 |        298.067 |          10.0 |
+| Sr          |  171.961 |  229.282 |        298.067 |          10.0 |
+| Sb          |  129.028 |  172.037 |        223.648 |           5.0 |
+| Sc          |  116.072 |  154.763 |        201.192 |           3.0 |
+| Sc_sv_h     |  285.522 |  380.696 |        494.905 |          11.0 |
+| Sc_sv       |  166.998 |  222.664 |        289.463 |          11.0 |
+| Se_GW       |  158.666 |  211.555 |        275.022 |           6.0 |
+| Se          |  158.651 |  211.534 |        274.994 |           6.0 |
+| Si_d_GW_nr  |  184.004 |  245.338 |        318.939 |           4.0 |
+| Si_d_GW     |  184.009 |  245.345 |        318.949 |           4.0 |
+| Si_h_old    |  285.109 |  380.146 |        494.190 |           4.0 |
+| Si_h        |  285.109 |  380.146 |        494.190 |           4.0 |
+| Si_nopc     |  184.009 |  245.345 |        318.949 |           4.0 |
+| Si          |  184.009 |  245.345 |        318.949 |           4.0 |
+| Si_pv_GW    |  356.322 |  475.096 |        617.625 |          10.0 |
+| Si_sv_GW_nr |  356.326 |  475.101 |        617.631 |          12.0 |
+| Si_sv_GW    |  356.322 |  475.096 |        617.625 |          12.0 |
+| Sm_3        |  132.815 |  177.087 |        230.213 |          11.0 |
+| Sm          |  193.136 |  257.515 |        334.769 |          16.0 |
+| Sn_d        |  180.817 |   241.09 |        313.417 |          14.0 |
+| Sn_GW       |   77.427 |  103.236 |        134.207 |           4.0 |
+| Sn          |   77.427 |  103.236 |        134.207 |           4.0 |
+| Sr_sv       |  171.961 |  229.282 |        298.067 |          10.0 |
+| Sr          |  171.961 |  229.282 |        298.067 |          10.0 |
+| Ta          |   167.75 |  223.667 |        290.767 |           5.0 |
+| Ta_pv       |  167.756 |  223.675 |        290.778 |          11.0 |
+| Tb_3        |  116.721 |  155.628 |        202.316 |           9.0 |
+| Tb          |  198.618 |  264.824 |        344.271 |          19.0 |
+| Tc_new      |  171.521 |  228.694 |        297.302 |           7.0 |
+| Tc          |  171.521 |  228.694 |        297.302 |           7.0 |
+| Tc_pv_new   |  197.642 |  263.523 |        342.580 |          13.0 |
+| Tc_pv       |  171.524 |  228.699 |        297.309 |          13.0 |
+| Te          |  131.236 |  174.982 |        227.477 |           6.0 |
+| Te_rel      |  131.234 |  174.979 |        227.473 |           6.0 |
+| Th          |  185.587 |  247.449 |        321.684 |          12.0 |
+| Th_s        |  127.119 |  169.492 |        220.340 |          10.0 |
+| Ti          |  133.747 |   178.33 |        231.829 |           4.0 |
+| Ti_pv       |  166.753 |  222.338 |        289.039 |          10.0 |
+| Ti_sv_GW    |  234.428 |  312.571 |        406.342 |          12.0 |
+| Ti_sv_h     |  291.524 |  388.698 |        505.307 |          12.0 |
+| Ti_sv_new2  |  205.957 |   274.61 |        356.993 |          12.0 |
+| Ti_sv_new   |  205.957 |   274.61 |        356.993 |          12.0 |
+| Ti_sv       |   205.93 |  274.574 |        356.946 |          12.0 |
+| Tl_d        |  177.797 |  237.063 |        308.182 |          13.0 |
+| Tl          |   67.605 |    90.14 |        117.182 |           3.0 |
+| Tm_3        |  111.916 |  149.221 |        193.987 |           9.0 |
+| Tm          |  193.065 |  257.419 |        334.645 |          23.0 |
+| U           |  189.462 |  252.616 |        328.401 |          14.0 |
+| U_s         |  156.802 |  209.069 |        271.790 |          14.0 |
+| V           |  144.408 |  192.543 |        250.306 |           5.0 |
+| V_pv        |  197.756 |  263.675 |        342.778 |          11.0 |
+| V_sv_h      |  292.998 |  390.664 |        507.863 |          13.0 |
+| V_sv_new    |  197.755 |  263.673 |        342.775 |          13.0 |
+| V_sv        |  197.756 |  263.675 |        342.778 |          13.0 |
+| W           |  167.293 |  223.057 |        289.974 |           6.0 |
+| W_pv_new    |  167.293 |  223.057 |        289.974 |          12.0 |
+| W_pv        |  167.299 |  223.065 |        289.985 |          12.0 |
+| Xe          |  114.823 |  153.098 |        199.027 |           8.0 |
+| Xe          |  114.823 |  153.098 |        199.027 |           8.0 |
+| Yb_2_n      |  108.514 |  144.685 |        188.091 |          10.0 |
+| Yb_2        |   84.407 |  112.543 |        146.306 |           8.0 |
+| Yb          |  189.771 |  253.028 |        328.936 |          24.0 |
+| Y_sv        |  158.731 |  211.641 |        275.133 |          11.0 |
+| Yb_2_n      |  108.514 |  144.685 |        188.091 |          10.0 |
+| Yb_2        |   84.407 |  112.543 |        146.306 |           8.0 |
+| Yb          |  189.771 |  253.028 |        328.936 |          24.0 |
+| Zn          |  207.545 |  276.727 |        359.745 |          12.0 |
+| Zn_pv       |  282.455 |  376.607 |        489.589 |          18.0 |
+| Zr          |  115.974 |  154.632 |        201.022 |           4.0 |
+| Zr_sv_GW    |  230.877 |  307.836 |        400.187 |          12.0 |
+| Zr_sv_new   |  172.424 |  229.898 |        298.867 |          12.0 |
+| Zr_sv       |  172.379 |  229.839 |        298.791 |          12.0 |
+
 
 * Python
 ** easy_install as a user
