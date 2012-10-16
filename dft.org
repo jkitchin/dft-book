@@ -5772,8 +5772,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 np.set_printoptions(precision=2)
 
-# anatase equation of stte
-volumes = [30., 33., 35., 37., 39.]  #vol of one TiO2
+# anatase equation of state
+volumes = [30., 33., 35., 37., 39.]  #vol of one TiO2 formula unit
 a_volumes, a_energies = [], []
 for v in volumes:
     with jasp('bulk/TiO2/anatase/anatase-{0}'.format(v)) as calc:
@@ -5910,7 +5910,14 @@ At a pressure of 4.5 GPa, we expect that anatase will start converting into ruti
 
 ** Bulk reaction energies
 *** Alloy formation energies
-In this section we will consider how to calculate the formation energy of an fcc Cu-Pd alloy and how to use that information to discuss relative stabilities. First, we compute the bulk energies of fcc Cu and fcc Pd.
+In this section we will consider how to calculate the formation energy of an fcc Cu-Pd alloy and how to use that information to discuss relative stabilities. The kinds of questions we can easily answer are:
+
+1. Is the formation of an alloy at a particular composition and structure energetically favorable?
+2. Given two alloy structures at the same composition, which one is more stable?
+3. Given a set of alloy structures at different compositions, which ones are stable with respect to phase separation?
+
+Each of these questions is answered by calculating the formation energy of the alloy from the parent metals. Thus, we will need the total energies of fcc Cu and fcc Pd. To get started. We get those first. Rather than compute a full equation of state for these, we will rely on the built in unit cell optimization algorithm in VASP (ISIF=3).
+
 **** Basic alloy formation energy
 #+BEGIN_SRC python :results output :exports both
 # get bulk Cu and Pd energies.
@@ -5929,7 +5936,7 @@ with jasp('bulk/alloy/cu',
           kpts=(13,13,13),
           nbands=9,
           ibrion=2,
-          isif=4,
+          isif=3,
           nsw=10,
           atoms=atoms) as calc:
     cu = atoms.get_potential_energy()
@@ -5945,7 +5952,7 @@ with jasp('bulk/alloy/pd',
           kpts=(13,13,13),
           nbands=9,
           ibrion=2,
-          isif=4,
+          isif=3,
           nsw=10,
           atoms=atoms) as calc:
     pd = atoms.get_potential_energy()
@@ -5956,9 +5963,11 @@ print 'Pd energy = {0} eV'.format(pd)
 
 #+RESULTS:
 : Cu energy = -3.723305 eV
-: Pd energy = -5.183823 eV
+: Pd energy = -5.18438 eV
 
 Note that the Pd energy is more negative than the Cu energy. This does not mean anything significant. We cannot say Pd is more stable than Cu; it is not like Cu could transmutate into Pd!
+
+Next, we will consider a question like which of two structures with composition of CuPd is more stable. These coordinates for these structures came from research of the author. The approach is pretty general, you must identify the coordinates and unit cell of the candidate structure, and then run a calculation to find the optimized geometry and unit cell. This may take some work, as previously described in the multistep process for optimizing a bulk system. Here the geometry is pretty close to optimized, so we can use the VASP optimization routines. We consider two structures with composition CuPd.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -5976,7 +5985,7 @@ with jasp('bulk/alloy/cupd-1',
           kpts=(12,12,8),
           nbands=17,
           ibrion=2,
-          isif=4,
+          isif=3,
           nsw=10,
           atoms=atoms) as calc:
     cupd1 = atoms.get_potential_energy()
@@ -5996,7 +6005,7 @@ with jasp('bulk/alloy/cupd-2',
           kpts=(8,8,8),
           nbands=34,
           ibrion=2,
-          isif=4,
+          isif=3,
           nsw=10,
           atoms=atoms) as calc:
     cupd2 = atoms.get_potential_energy()
@@ -6006,10 +6015,10 @@ print 'cupd-2 = {0} eV'.format(cupd2)
 #+END_SRC
 
 #+RESULTS:
-: cupd-1 = -9.147752 eV
-: cupd-2 = -17.97924 eV
+: cupd-1 = -9.148409 eV
+: cupd-2 = -17.979436 eV
 
-Looking at these energies, you could be tempted to say cupd-2 is more stable than cupd-1 because its energy is much lower. This is wrong, however, because cupd-2 has twice as many atoms as cupd-1. We should compare the normalized total energies.
+Looking at these energies, you could be tempted to say cupd-2 is more stable than cupd-1 because its energy is much lower. This is wrong, however, because cupd-2 has twice as many atoms as cupd-1. We should compare the normalized total energies, that is the energy normalized per CuPd formula unit, or as an alternative  the number of atoms in the unit cell. It does not matter which, as long as we normalize consistently. It is conventional in alloy calculation to normalize by the number of atoms in the unit cell.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -6027,20 +6036,22 @@ print 'cupd-2: {0} eV/atom'.format(e2)
 #+END_SRC
 
 #+RESULTS:
-: cupd-1: -4.573876 eV/atom
-: cupd-2: -4.49481 eV/atom
+: cupd-1: -4.5742045 eV/atom
+: cupd-2: -4.494859 eV/atom
 
 After normalizing by number of atoms, we can see that cupd-1 is a more stable structure. However, we are looking at total energies, and we might ask: is cupd-1 more stable than an unreacted mixture of the parent compounds, fcc Cu and Pd? In other words, is the following reaction exothermic:
 
-2Cu + 2Pd $\rightarrow$ Cu_{2}Pd_{2} for the two configurations we examined? Below, we show some pretty general code that computes these formation energies, and normalizes them by the number of atoms in the unit cell.
+Cu + Pd $\rightarrow$ CuPd for the two configurations we examined? Below, we show some pretty general code that computes these formation energies, and normalizes them by the number of atoms in the unit cell.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 
+# bulk energy 1
 with jasp('bulk/alloy/cu') as calc:
     atoms = calc.get_atoms()
     cu = atoms.get_potential_energy()/len(atoms)
 
+# bulk energy 2
 with jasp('bulk/alloy/pd') as calc:
     atoms = calc.get_atoms()
     pd = atoms.get_potential_energy()/len(atoms)
@@ -6048,12 +6059,13 @@ with jasp('bulk/alloy/pd') as calc:
 with jasp('bulk/alloy/cupd-1') as calc:
     atoms = calc.get_atoms()
     e1 = atoms.get_potential_energy()
+    # subtract bulk energies off of each atom in cell
     for atom in atoms:
         if atom.symbol == 'Cu':
             e1 -= cu
         else:
             e1 -= pd
-    e1 /= len(atoms)
+    e1 /= len(atoms)  # normalize by number of atoms in cell
 
 with jasp('bulk/alloy/cupd-2') as calc:
     atoms = calc.get_atoms()
@@ -6109,7 +6121,7 @@ with jasp('bulk/alloy/cu3pd-1',
           kpts=(8,8,8),
           nbands=34,
           ibrion=2,
-          isif=4,
+          isif=3,
           nsw=10,
           atoms=atoms) as calc:
     e3 = atoms.get_potential_energy()
@@ -6182,7 +6194,7 @@ with jasp('bulk/alloy/cu3pd-2',
           kpts=(8,8,8),
           nbands=34,
           ibrion=2,
-          isif=4,
+          isif=3,
           nsw=10,
           atoms=atoms) as calc:
     e4 = atoms.get_potential_energy()
@@ -6399,7 +6411,25 @@ print 'Reaction energy = {0} eV'.format(rxn_energy)
 #+RESULTS:
 : Reaction energy = -1.966168 eV
 
-There are a few reasons why our number does not agree with the experimental reaction energy. One reason is related to errors in the O_{2} dissociation energy, and another reason is related to localization of electrons in the Cu 3\(d\) orbitals \cite{PhysRevB.73.195107}. The first error of incorrect O_{2} dissociation error is a systematic error that can be corrected empirically \cite{PhysRevB.73.195107}. Fixing the second error requires the application of DFT+U (see [[*DFT%2BU][DFT+U]])
+This is the reaction energy for 2 Cu_{2}O \right arrow 4 CuO. In \cite{PhysRevB.73.195107}, the experimental reaction is estimated to be  about -3.14 eV.
+
+There are a few reasons why our number does not agree with the experimental reaction energy. One reason is related to errors in the O_{2} dissociation energy, and another reason is related to localization of electrons in the Cu 3\(d\) orbitals \cite{PhysRevB.73.195107}. The first error of incorrect O_{2} dissociation error is a systematic error that can be corrected empirically \cite{PhysRevB.73.195107}. Fixing the second error requires the application of DFT+U (see [[*DFT%2BU][DFT+U]]).
+
+The heat of reaction is reported to be 1000 J/g product at http://onlinelibrary.wiley.com/doi/10.1002/er.4440130107/pdf for the reaction 2CuO $\rightleftharpoons$ Cu_{2}O + 1/2 O_{2}.
+
+#+BEGIN_SRC python :results output
+from ase import Atoms
+atoms = Atoms('Cu2O')
+MW = atoms.get_masses().sum()
+
+H = 1. # kJ/g
+print 'rxn energy = {0:1.1f} eV'.format(-2*H*MW/96.4)  # convert to eV
+#+END_SRC
+
+#+RESULTS:
+: rxn energy = -3.0 eV
+
+This is pretty close to the value in \cite{PhysRevB.73.195107} and might need a temperature correction to get agreement at 298K.
 
 ** Bulk density of states
 The density of states refers to the number of electronic states in a particular energy range.
@@ -6446,6 +6476,52 @@ function, to account for the finite number of k-points used in the
 calculations. The amount of broadening is arbitrary, and should tend
 to zero as the number of k-points approaches infinity.
 
+#+BEGIN_SRC python :results output
+from jasp import *
+
+npoints = 200
+width = 0.1
+
+def delta(energies, eik):
+    return energies == eik
+
+def gaussian(energies, eik):
+    x = ((energies - eik)/width)
+    return np.exp(-x**2)/np.sqrt(np.pi)/width
+
+with jasp('bulk/pd-dos') as calc:
+
+    # kpt weights
+    wk = calc.get_k_point_weights()
+
+    # for each k-point there are a series of eigenvalues
+    # here we get all the eigenvalues for each k-point
+    e_kn = []
+    for i,k in enumerate(wk):
+        print i,k
+        e_kn.append(calc.get_eigenvalues(kpt=i))
+
+    e_kn = np.array(e_kn) - calc.get_fermi_level()
+
+    # these are the energies we want to evaluate the dos at
+    energies = np.linspace(e_kn.min(), e_kn.max(), npoints)
+
+    # this is where we build up the dos
+    dos = np.zeros(npoints)
+
+    for j in range(npoints):
+        for k in range(len(wk)): # loop over all kpoints
+            for i in range(len(e_kn[k])): # loop over eigenvalues in each k
+                dos[j] += wk[k] * gaussian(energies[j], e_kn[k][i])
+
+import matplotlib.pyplot as plt
+plt.plot(energies, dos)
+plt.show()
+#+END_SRC
+
+
+Here is a more convenient way to compute the DOS using mod:ase.dft.
+
 #+BEGIN_SRC python
 from ase import Atoms, Atom
 from jasp import *
@@ -6491,7 +6567,7 @@ plt.savefig('images/pd-dos.png')
 
 This DOS looks roughly like you would expect. The peak between -5 to 0 eV is the Pd d-band.
 
-The VASP manual [[http://cms.mpi.univie.ac.at/vasp/guide/node124.html#SECTION000933000000000000000][recommends]] a final run be made with ISMEAR=-5, which uses the tetrahedron method with Bl\"o chl corrections.
+The VASP manual [[http://cms.mpi.univie.ac.at/vasp/guide/node124.html#SECTION000933000000000000000][recommends]] a final run be made with ISMEAR=-5, which uses the tetrahedron method with Bl\"ochl corrections.
 
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -6521,7 +6597,57 @@ plt.savefig('images/pd-dos-ismear-5.png')
 #+caption: Total DOS for Pd computed with ISMEAR=-5
 #+ATTR_LaTeX: placement=[H]
 [[./images/pd-dos-ismear-5.png]]
-This is not that different from the regular ISMEAR, so I am not sure this is correct. Maybe there is another way to compute DOS when the tetrahedral method is used? This looks like the eigenvalue spectrum.
+
+#+BEGIN_SRC python
+from ase import Atoms, Atom
+from jasp import *
+import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
+from ase.dft import DOS
+import pylab as plt
+
+a = 3.9  # approximate lattice constant
+b = a / 2.
+bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
+             cell=[(0, b, b),
+                   (b, 0, b),
+                   (b, b, 0)])
+
+kpts = [8, 10, 12, 14, 16, 18, 20]
+
+for k in kpts:
+    with jasp('bulk/pd-dos-k{0}-simear-5'.format(k),
+              encut=300,
+              xc='PBE',
+              lreal=False,
+              kpts=(k,k,k),
+              atoms=bulk) as calc:
+
+        # this runs the calculation
+        try:
+            bulk.get_potential_energy()
+            dos = DOS(calc, width=0.2)
+            d = dos.get_dos() + k/4.0
+            e = dos.get_energies()
+
+            plt.plot(e,d, label='k={0}'.format(k))
+        except:
+            pass
+plt.xlabel('energy (eV)')
+plt.ylabel('DOS')
+plt.legend()
+plt.savefig('images/pd-dos-k-convergence-ismear-5.png')
+plt.show()
+#+END_SRC
+
+#+RESULTS:
+: None
+
+#+caption: Convergence of the total DOS with k-points
+#+attr_latex: placement=[H]
+[[./images/pd-dos-k-convergence-ismear-5.png]]
 
 ** Atom projected density of states
 One major disadvantage of a planewave basis set is that it is
