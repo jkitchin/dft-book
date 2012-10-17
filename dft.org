@@ -6411,7 +6411,7 @@ print 'Reaction energy = {0} eV'.format(rxn_energy)
 #+RESULTS:
 : Reaction energy = -1.966168 eV
 
-This is the reaction energy for 2 Cu_{2}O \right arrow 4 CuO. In \cite{PhysRevB.73.195107}, the experimental reaction is estimated to be  about -3.14 eV.
+This is the reaction energy for 2 Cu_{2}O $\rightarrow$ 4 CuO. In \cite{PhysRevB.73.195107}, the experimental reaction is estimated to be  about -3.14 eV.
 
 There are a few reasons why our number does not agree with the experimental reaction energy. One reason is related to errors in the O_{2} dissociation energy, and another reason is related to localization of electrons in the Cu 3\(d\) orbitals \cite{PhysRevB.73.195107}. The first error of incorrect O_{2} dissociation error is a systematic error that can be corrected empirically \cite{PhysRevB.73.195107}. Fixing the second error requires the application of DFT+U (see [[*DFT%2BU][DFT+U]]).
 
@@ -6928,7 +6928,37 @@ with jasp(wd,
 
 #+RESULTS:
 
-mod:jasp does not have a fancy way of extracting band structures yet, so we will learn how to manually parse the EIGENVAL file here to generate the band structure.
+We will learn how to manually parse the EIGENVAL file here to generate the band structure. The structure of the EIGENVAL file looks like this:
+
+#+BEGIN_SRC sh :results output
+head -n 20 bulk/Si-bandstructure/EIGENVAL
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+    2    2    1    1
+  0.1956688E+02  0.3810853E-09  0.3810853E-09  0.3810853E-09  0.5000000E-15
+  1.000000000000000E-004
+  CAR
+ unknown system
+    8   20    8
+
+  0.5000000E+00  0.5000000E+00  0.0000000E+00  0.5000000E-01
+   1       -1.826311
+   2       -1.826306
+   3        3.153690
+   4        3.153716
+   5        6.744294
+   6        6.744321
+   7       16.392989
+   8       16.405965
+
+  0.4444444E+00  0.4444444E+00  0.0000000E+00  0.5000000E-01
+   1       -2.669062
+   2       -0.918013
+#+end_example
+
+We can ignore the first five lines.
 
 #+BEGIN_SRC python :results output
 f = open('bulk/Si-bandstructure/EIGENVAL', 'r')
@@ -6938,13 +6968,13 @@ line2 = f.readline()
 line3 = f.readline()
 line4 = f.readline()
 comment = f.readline()
-unknown, npoints, nbands = [int(x) for x in f.readline().split()]
+unknown, nkpoints, nbands = [int(x) for x in f.readline().split()]
 
 blankline = f.readline()
 
 band_energies = [[] for i in range(nbands)]
 
-for i in range(npoints):
+for i in range(nkpoints):
     x,y,z, weight = [float(x) for x in f.readline().split()]
 
     for j in range(nbands):
@@ -6957,7 +6987,7 @@ f.close()
 import matplotlib.pyplot as plt
 
 for i in range(nbands):
-    plt.plot(range(npoints), band_energies[i])
+    plt.plot(range(nkpoints), band_energies[i])
 
 ax = plt.gca()
 ax.set_xticks([]) # no tick marks
@@ -6975,31 +7005,86 @@ plt.savefig('images/Si-bandstructure.png')
 [[./images/Si-bandstructure.png]]
 
 
-Next we will examine the connection between band structures and density of states.
+Next we will examine the connection between band structures and density of states. In this example, we will compute the band structure of TiO_{2} using a function built into mod:jasp to do the analysis described above.
 #+BEGIN_SRC python :results output
 from jasp import *
 from jasp.jasp_bandstructure import *
 
 with jasp('bulk/tio2/step3') as calc:
     n,bands,p = calc.get_bandstructure(kpts_path=[('$\Gamma$',[0.0, 0.0, 0.0]),
-                                      ('X',[0.5, 0.5, 0.0]),
-                                      ('X',[0.5, 0.5, 0.0]),
-                                      ('M',[0.0, 0.5, 0.5]),
-                                      ('M',[0.0, 0.5, 0.5]),
-                                      ('$\Gamma$',[0.0, 0.0, 0.0])])
+                                                  ('X',[0.5, 0.5, 0.0]),
+                                                  ('X',[0.5, 0.5, 0.0]),
+                                                  ('M',[0.0, 0.5, 0.5]),
+                                                  ('M',[0.0, 0.5, 0.5]),
+                                                  ('$\Gamma$',[0.0, 0.0, 0.0])])
 
 p.savefig('images/tio2-bandstructure-dos.png')
 #+END_SRC
 
 #+RESULTS:
 
+#+caption: Band structure and total density of states for TiO_{2}.
+#+attr_latex: placement=[H]
 [[./images/tio2-bandstructure-dos.png]]
 
 *** TODO create example showing band dispersion with lattice constant
 
+
+#+BEGIN_SRC python
+from jasp import *
+from jasp.jasp_bandstructure import *
+
+from ase import Atom, Atoms
+JASPRC['mode']='run'
+ready = True
+for i,a in enumerate([4.7, 5.38936, 6.0]):
+
+    atoms = Atoms([Atom('Si',[0,0,0]),
+                   Atom('Si',[0.25, 0.25, 0.25])])
+
+    atoms.set_cell([[a/2., a/2., 0.0],
+                    [0.0,  a/2., a/2.],
+                    [a/2., 0.0, a/2.]],scale_atoms=True)
+
+    with jasp('bulk/Si-bs-{0}'.format(i),
+              xc='PBE',
+              prec='Medium',
+              istart=0,
+              icharg=2,
+              ediff=0.1e-03,
+              kpts=(4,4,4),
+              atoms=atoms) as calc:
+        try:
+            n,bands,p  = calc.get_bandstructure(kpts_path=[('L', [0.5,0.5,0.0]),
+                                                       ('$\Gamma$', [0,0,0]),
+                                                       ('$\Gamma$', [0,0,0]),
+                                                       ('X', [0.5,0.5,0.5])],
+                                            kpts_nintersections=10)
+        except (VaspSubmitted, VaspQueued):
+            print 'not ready {0}'.format(i)
+            ready = False
+
+    if not ready:
+        import sys; sys.exit()
+
+
+    p.savefig('images/Si-bs-{0}.png'.format(i))
+    p.show()
+#+END_SRC
+
+#+RESULTS:
+: None
+
+[[./images/Si-bs-0.png]]
+
+[[./images/Si-bs-1.png]]
+
+[[./images/Si-bs-2.png]]
+
 ** Magnetism
 *** Determining if a magnetic solution is energetically favorable
-We can force a total magnetic moment onto a unit cell and compute the total energy as function of the total magnetic moment. If there is a minimum in the energy, then we know there is a lower energy magnetic solution than a non-magnetic solution.
+We can force a total magnetic moment onto a unit cell and compute the total energy as function of the total magnetic moment. If there is a minimum in the energy, then we know there is a lower energy magnetic solution than a non-magnetic solution. We use incar:NUPDOWN to enforce the magnetic moment in the cell.
+
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase.lattice.cubic import BodyCenteredCubic
@@ -7039,10 +7124,11 @@ plt.savefig('images/Fe-fixedmagmom.png')
 
 You can see here there is a minimum in energy at a total magnetic moment somewhere between 4 and 5. There are two Fe atoms in the unit cell, which means the magnetic moment on each atom must be about 2.5 Bohr-magnetons. This is a good guess for a real calculation. Note that VASP [[http://cms.mpi.univie.ac.at/vasp/guide/node100.html#SECTION00099000000000000000][recommends]] you overestimate the magnetic moment guesses if you are looking for ferromagnetic solutions.
 
+To run a spin-polarized calculation with initial guesses on each atom, we must set the magnetic moment on the atoms. Here we set it through the =magmom= attribute on the atom. In the example after this, we set it in the =Atoms= object.
+
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase.lattice.cubic import BodyCenteredCubic
-
 
 atoms = BodyCenteredCubic(directions=[[1,0,0],
                                       [0,1,0],
