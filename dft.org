@@ -23,8 +23,8 @@
 #+latex_header: \usepackage[section]{placeins}
 #+latex_header: \usepackage{xcolor}
 #+latex_header: \usepackage{adjustbox}
-#+latex_header: \usepackage{url}
 #+latex_header: \usepackage{anysize}
+#+latex_header: \usepackage{url}
 #+latex_header: \marginsize{1in}{1in}{1in}{1in}
 #+latex_header: \makeindex
 
@@ -5030,6 +5030,7 @@ plt.xlabel('$c/a$ ($\AA$)')
 plt.ylabel('Energy (eV)')
 plt.legend()
 plt.savefig('images/Ru-covera-scan.png')
+plt.show()
 #+END_SRC
 
 #+RESULTS:
@@ -5048,7 +5049,7 @@ import matplotlib.pyplot as plt
 x = [2.5, 2.6, 2.7, 2.8, 2.9]
 y = [1.4, 1.5, 1.6, 1.7, 1.8]
 
-X,Y = meshgrid(x, y)
+X,Y = np.meshgrid(x, y)
 Z = np.zeros(X.shape)
 
 for i,a in enumerate(x):
@@ -5064,7 +5065,7 @@ for i,a in enumerate(x):
                 pass
 
 cf = plt.contourf(X, Y, Z, 20,
-                  cmap=cm.jet)
+                  cmap=plt.cm.jet)
 
 cbar = plt.colorbar(cf)
 cbar.ax.set_ylabel('Energy (eV)')
@@ -8530,7 +8531,8 @@ with jasp('surfaces/Pt-slab-O-fcc-vib') as calc:
              nsw=1)
     atoms = calc.get_atoms()
     f,v = calc.get_vibrational_modes(0)
-
+    print 'Elapsed time = {0} seconds'.format(calc.get_elapsed_time())
+    allfreq = calc.get_vibrational_modes()[0]
 from ase.units import meV
 c = 3e10 # cm/s
 h = 4.135667516e-15 # eV*s
@@ -8539,14 +8541,18 @@ print 'vibrational energy = {0} eV'.format(f)
 print 'vibrational energy = {0} meV'.format(f/meV)
 print 'vibrational freq   = {0} 1/s'.format(f/h)
 print 'vibrational freq   = {0} cm^(-1)'.format(f/(h*c))
-
+print
+print 'All energies = ',allfreq
 #+END_SRC
 
 #+RESULTS:
+: Elapsed time = 14269.345 seconds
 : vibrational energy = 0.061606647 eV
 : vibrational energy = 61.606647 meV
 : vibrational freq   = 1.48964216204e+13 1/s
 : vibrational freq   = 496.547387346 cm^(-1)
+:
+: All energies =  [0.061606647, 0.044346362, 0.044344470000000004]
 
 There are three modes for the free oxygen atom. One of them is a mode normal to the surface (the one with highest frequency. The other two are called frustrated translations. Note that we did not include the surface Pt atoms in the calculation, and this will have an effect on the result because the O atom could be coupled to the surface modes. It is typical to neglect this coupling because of the large difference in mass between O and Pt.  Next we look at the difference in results when we calculate all the modes.
 
@@ -8563,6 +8569,7 @@ with jasp('surfaces/Pt-slab-O-fcc-vib-ibrion=6') as calc:
              ediff=1e-8,
              nsw=1)
     atoms = calc.get_atoms()
+    print 'Elapsed time = {0} seconds'.format(calc.get_elapsed_time())
 
     f,m = calc.get_vibrational_modes(0)
     allfreq = calc.get_vibrational_modes()[0]
@@ -8576,14 +8583,19 @@ print 'vibrational energy = {0} eV'.format(f)
 print 'vibrational energy = {0} meV'.format(f/meV)
 print 'vibrational freq   = {0} 1/s'.format(f/h)
 print 'vibrational freq   = {0} cm^(-1)'.format(f/(h*c))
+print
+print 'All energies = ',allfreq
 #+END_SRC
 
 #+RESULTS:
+: Elapsed time = 77121.015 seconds
 : For mode 0:
 : vibrational energy = 0.063537929 eV
 : vibrational energy = 63.537929 meV
 : vibrational freq   = 1.53634035507e+13 1/s
 : vibrational freq   = 512.113451691 cm^(-1)
+:
+: All energies =  [0.06353792899999999, 0.045628623, 0.045628623, 0.023701702, 0.023701702, 0.023223747, 0.022978233, 0.022978233, 0.022190167, 0.021807461, 0.02040119, 0.02040119, 0.019677135000000002, 0.015452848, 0.015302098000000002, 0.015302098000000002, 0.0148412, 0.0148412, 0.014071851000000002, 0.012602063, 0.012602063, 0.012409611999999999, 0.012300973000000002, 0.011735683, 0.011735683, 0.011714521, 0.011482183, 0.011482183, 0.010824891, 0.010414177, 0.010414177, 0.009799697, 0.00932905, 0.00932905, 0.003859079, 0.003859079, (2.9894000000000002e-05+0j), (2.9894000000000002e-05+0j), (0.00012182999999999999+0j)]
 
 Note that now there are 39 modes, which is 3*N where N=13 atoms in the unit cell. Many of the modes are low in frequency, which correspond to slab modes that are essentially phonons. The O frequencies are not that different from the previous calculation (497 vs 512 cm$^{-1}$. This is why it is common to keep the slab atoms frozen.
 
@@ -8625,6 +8637,11 @@ print 'vibrational freq   = {0} cm^(-1)'.format(f/(h*c))
 #+END_SRC
 
 #+RESULTS:
+: [0.06691932, 0.047345270999999994, (0.020649715000000003+0j)]
+: vibrational energy = (0.020649715+0j) eV
+: vibrational energy = (20.649715+0j) meV
+: vibrational freq   = (4.99307909065e+12+0j) 1/s
+: vibrational freq   = (166.435969688+0j) cm^(-1)
 
 Note that we have one imaginary mode. This corresponds to the motion of the O atom falling into one of the neighboring 3-fold sites. It also indicates this position is not a stable minimum, but rather a saddle point. This position is a transition state for hopping between the fcc and hcp sites.
 
