@@ -16,3 +16,4 @@ test
 *.bbl
 *.blg
 *.log
+blog/gh-pages
