@@ -35,5 +35,5 @@ REVERSE_ARCHIVE_ORDER = True
 # Uncomment what ever you want to use
 GOOGLE_ANALYTICS = 'UA-35927456-1'
 DISQUS_SITENAME = 'dftbook'
-GITHUB_URL = 'http://github.com/jkitchin/jkitchin.github.com'
+GITHUB_URL = 'http://github.com/jkitchin/dft-book'
 #TWITTER_USERNAME = 'username'
