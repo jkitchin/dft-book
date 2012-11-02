@@ -14,7 +14,7 @@ def push(commit_message=None):
     if commit_message is None:
         commit_message = 'standard commit'
     local('git add .')
-    with settings(warn_only=True):
+    with settings(warn_only=False):
         local('git commit -am "{0}"'.format(commit_message))
     local('git push')
 
