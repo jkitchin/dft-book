@@ -9,12 +9,14 @@ def pelican():
     local('pelican . -o ../ -s settings.py')
 
 
-def push(commit_message):
+def push(commit_message=None):
     """Commits the current changes."""
+    if commit_message is None:
+        commit_message = 'standard commit'
     local('git add .')
     with settings(warn_only=True):
         local('git commit -am "{0}"'.format(commit_message))
-    local('git push origin source')
+    local('git push')
 
 
 def publish(commit_message):
