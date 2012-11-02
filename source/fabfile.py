@@ -17,14 +17,3 @@ def push(commit_message=None):
     with settings(warn_only=False):
         local('git commit -am "{0}"'.format(commit_message))
     local('git push')
-
-
-def publish(commit_message):
-    """Re-generates the blog, commits and pushes to github."""
-    push(commit_message)
-    pelican()
-    with lcd('..'):
-        local('git add .')
-        with settings(warn_only=True):
-            local('git commit -am "Pelican autocommit"')
-        local('git push origin master')

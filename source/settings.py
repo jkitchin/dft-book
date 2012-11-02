@@ -1,7 +1,7 @@
 """Settings for pelican."""
 AUTHOR = 'John Kitchin'
-SITENAME = 'jasp'
-SITEURL = 'http://jkitchin.github.com/jasp'
+SITENAME = 'dft-book'
+SITEURL = 'http://jkitchin.github.com/dft-book'
 
 # This can also be the absolute path to a theme that you downloaded
 # i.e. './themes/anothertheme/'
@@ -25,9 +25,8 @@ DEFAULT_CATEGORY = 'Blog'
 # I like to have ``Archives`` in the main menu.
 MENUITEMS = (
     ('Archives', '{0}/archives.html'.format(SITEURL)),
+    ('dft-book', 'http://github.com/jkitchin/dft-book')
 )
-
-
 
 WITH_PAGINATION = True
 DEFAULT_PAGINATION = 10
@@ -35,6 +34,6 @@ REVERSE_ARCHIVE_ORDER = True
 
 # Uncomment what ever you want to use
 GOOGLE_ANALYTICS = 'UA-35927456-1'
-#DISQUS_SITENAME = 'yourdisqushandle'
+DISQUS_SITENAME = 'dftbook'
 GITHUB_URL = 'http://github.com/jkitchin/jkitchin.github.com'
 #TWITTER_USERNAME = 'username'
