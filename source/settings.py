@@ -14,6 +14,8 @@ STATIC_PATHS = ['images', ]
 # See http://pelican.notmyidea.org/en/latest/settings.html#timezone
 TIMEZONE = 'UTC'
 
+MARKUP = ('rst', 'md', 'html')
+
 # Pelican will take the ``Date`` metadata and put the articles into folders
 # like ``/posts/2012/02/`` when generating the output.
 #ARTICLE_PERMALINK_STRUCTURE = '/%Y/%m/'

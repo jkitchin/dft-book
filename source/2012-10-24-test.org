@@ -1,8 +1,12 @@
+
+
 #+begin_html
----
-layout: default
-title: My Page Title.
----
+Date:2012-10-24
+title:My Page Title
+Category: Blog
+Tags: test, testing
 #+end_html
 
-what!!!
+Woohoo!!! org-mode + pelican finally working.
+
+(org-export-as-html nil nil nil nil  t nil)
