@@ -7933,7 +7933,7 @@ plt.savefig('images/Cu-unrelaxed-surface-energy.png')
 : nlayers =  9 sigma = 0.593 eV/atom
 : nlayers = 10 sigma = 0.402 eV/atom
 
-#+caption: Surface energy of an Al(111) slab as a function of thickness.
+#+caption: Surface energy of a Cu(111) slab as a function of thickness.
 #+ATTR_LaTeX: placement=[H]
 [[./images/Cu-unrelaxed-surface-energy.png]]
 One reason for the oscillations may be quantum size effects \cite{Fiolhais2003209}. In \cite{PhysRevB.75.115131} the surface energy of Cu(111) is reported as 0.48 eV/atom, or 1.36 J/m$^2$. Here is an example showing a conversion between these two units. We use ase to compute the area of the unit cell from the norm of the cross-product of the vectors defining the surface unit cell.
@@ -8195,7 +8195,7 @@ with jasp('surfaces/Pt-slab-O-fcc',
 
 #+RESULTS:
 
-***** bridge site
+***** TODO bridge site
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase.lattice.surface import fcc111, add_adsorbate
@@ -8313,6 +8313,7 @@ The bridge site (Figure \ref{fig:bridge}, however, is clearly not at a bridge si
 
 Let us see what the original geometry and final geometry for the bridge site were. The POSCAR contains the initial geometry (as long as you haven't copied CONTCAR to POSCAR), and the CONTCAR contains the final geometry.
 
+TODO
 #+BEGIN_SRC python
 from ase.io import read, write
 
@@ -8323,9 +8324,12 @@ atoms = read('surfaces/Pt-slab-O-bridge/CONTCAR')
 write('images/Pt-o-brige-final.png', atoms, show_unit_cell=2)
 #+END_SRC
 
+#+RESULTS:
+: None
+
 #+caption: Initial geometry of the bridge site. It is definitely on the bridge.
 #+ATTR_LaTeX: width=203bp,placement=[H]
- [[./images/Pt-o-brige-ori.png]]
+[[./images/Pt-o-brige-ori.png]]
 
 #+caption: Final geometry of the bridge site. It has fallen into the fcc site.
 #+ATTR_LaTeX: width=203bp,placement=[H]
