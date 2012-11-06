@@ -1,4 +1,6 @@
 # -*- org-export-babel-evaluate: nil -*-
+#+DRAWERS: HIDDEN
+:HIDDEN:
 #+TITLE:     Modeling materials using density functional theory
 #+AUTHOR:    John Kitchin
 #+EMAIL:     jkitchin@cmu.edu
@@ -75,8 +77,8 @@
     \end{adjustbox}%
 }
 #+end_latex
-
-[[figure:./images/cover-page.svg]]
+:END:
+[[./images/cover-page.png]]
 
 #+latex: \listoffigures
 
