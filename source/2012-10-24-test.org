@@ -1,0 +1,12 @@
+
+
+#+begin_html
+Date:2012-10-24
+title:My Page Title
+Category: Blog
+Tags: test, testing
+#+end_html
+
+Woohoo!!! org-mode + pelican finally working.
+
+(org-export-as-html nil nil nil nil  t nil)

@@ -17,3 +17,4 @@ test
 *.blg
 *.log
 blog/gh-pages
+*.pyc
