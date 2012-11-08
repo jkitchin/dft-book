@@ -1,5 +1,7 @@
 This is a project to compile a pretty comprehensive set of notes and examples on using density functional theory to model properties of materials.
 
+Check out the new blog at http://jkitchin.github.com/dft-book.
+
 Bug/typo/error reports should be sent to:
 
-John Kitchin (jkitchin@andrew.cmu.edu)
+John Kitchin (jkitchin@andrew.cmu.edu) or reported as an [[https://github.com/jkitchin/dft-book/issues][issue]].
