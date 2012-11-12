@@ -1,6 +1,5 @@
 # -*- org-export-babel-evaluate: nil -*-
 #+DRAWERS: HIDDEN
-:HIDDEN:
 #+TITLE:     Modeling materials using density functional theory
 #+AUTHOR:    John Kitchin
 #+EMAIL:     jkitchin@cmu.edu
@@ -8,7 +7,7 @@
 #+DESCRIPTION: A book on using density functional theory to model materials.
 #+KEYWORDS: Density functional theory, materials, VASP
 #+LANGUAGE:  en
-#+OPTIONS:   H:10 num:t toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t
+#+OPTIONS:   H:10 num:t toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t d:HIDDEN
 #+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
 #+OPTIONS:   LaTeX:dvipng
 #+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
@@ -77,12 +76,13 @@
     \end{adjustbox}%
 }
 #+end_latex
-:END:
-[[./images/cover-page.png]]
+
+[[./images/cover-page.png]]Copyright \copyright 2012--\the\year\ John Kitchin\par
 
 #+latex: \listoffigures
 
 #+latex: \listoftables
+
 
 * Tasks :noexport:
 ** replace all % formating with .format
