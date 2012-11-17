@@ -1,4 +1,5 @@
 * Item :drill:
+  SCHEDULED: <2012-11-20 Tue>
   :PROPERTIES:
   :ID:       f9e3d6dc-1652-4ecf-9756-d712eec1371d
   :DRILL_LAST_INTERVAL: 4.14
@@ -10,12 +11,10 @@
   :DRILL_LAST_QUALITY: 5
   :DRILL_LAST_REVIEWED: [2012-11-16 Fri 09:08]
   :END:
-An atom is represented by the [ase.Atom] class.
-
-** example usage
-Atom('C',[0., 0.,0.])
+An [equation of state] describes the relationship between the total energy of a unit cell and its volume.
 
 * Item :drill:
+  SCHEDULED: <2012-11-20 Tue>
   :PROPERTIES:
   :ID:       904bb17f-4319-44c5-ad7e-58ba8c4e770a
   :DRILL_LAST_INTERVAL: 4.14
@@ -27,14 +26,12 @@ Atom('C',[0., 0.,0.])
   :DRILL_LAST_QUALITY: 5
   :DRILL_LAST_REVIEWED: [2012-11-16 Fri 09:08]
   :END:
-A collection of atoms in a unit cell is represented by the [ase.Atoms] class.
 
-** example usage
-Atoms([Atom('C',[0., 0.,0.]),
-       Atom('O',[1.1,0.,0.])],
-      cell=(10,10,10))
+Pressure is defined by [-\frac{\partial E}{\partial V}].
+
 
 * Item :drill:
+  SCHEDULED: <2012-11-20 Tue>
   :PROPERTIES:
   :ID:       b8659ece-1f5f-4f6e-b3bd-0bb712aa3825
   :DRILL_LAST_INTERVAL: 3.86
@@ -46,7 +43,14 @@ Atoms([Atom('C',[0., 0.,0.]),
   :DRILL_LAST_QUALITY: 3
   :DRILL_LAST_REVIEWED: [2012-11-16 Fri 09:09]
   :END:
-The [ase.io] module contains functions to save an ase.Atoms object to images or other formats.
 
-** example usage
-write('images/simple-cubic-cell.png', atoms, show_unit_cell=2)
+There are [6] independent degrees of freedom in a unit cell.
+
+** The stress components
+The traditional Voigt order of components is xx, yy, zz, yz, xz, xy
+
+In matrix form it is:
+
+     | xx | xy | xz |
+S =  | xy | yy | yz |
+     | xz | yz | zz |
