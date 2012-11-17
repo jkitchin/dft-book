@@ -1,5 +1,5 @@
 # -*- org-export-babel-evaluate: nil -*-
-#+DRAWERS: HIDDEN
+#+DRAWERS: HIDDEN HINT SOLUTION
 #+TITLE:     Modeling materials using density functional theory
 #+AUTHOR:    John Kitchin
 #+EMAIL:     jkitchin@cmu.edu
@@ -83,12 +83,12 @@
 
 #+latex: \listoftables
 
-
 * Tasks :noexport:
 ** replace all % formating with .format
 
 ** make func and mod links un-hyphenatable.
-
+** move as much raw latex code out of org-file.
+** Create flashcard exercises for ase commands
 * Introduction to this book
 This book serves two purposes: 1) to provide worked examples of using DFT to model materials properties, and 2) to provide references to more advanced treatments of these topics in the literature. It is not a definitive reference on density functional theory. Along the way to learning how to perform the calculations, you will learn how to analyze the data, make plots, and how to interpret the results. This book is very much "recipe" oriented, with the intention of giving you enough information and knowledge to start your research. In that sense, many of the computations are not publication quality with respect to convergence of calculation parameters.
 
@@ -555,7 +555,7 @@ atoms = Atoms([Atom('C',[0., 0.,0.]),
 
 print 'V = {0:1.0f} Angstrom^3'.format(atoms.get_volume())
 
-write('images/simple-cubic-cell.png',atoms,show_unit_cell=2)
+write('images/simple-cubic-cell.png', atoms, show_unit_cell=2)
 #+END_SRC
 
 #+RESULTS:
@@ -622,6 +622,8 @@ print '|a3| = {0:1.2f} Ang'.format(np.sum(a3**2)**0.5)
 : |a1| = 10.04 Ang
 : |a2| = 10.04 Ang
 : |a3| = 10.04 Ang
+
+[[elisp:(progn (setq org-drill-scope '("study-guides/molecules-drill.org")) (org-drill))][Help me study!]]
 
 *** Reading other data formats into a calculation
 
@@ -4966,13 +4968,13 @@ for lc, e in zip(bcc_LC, bcc_energies):
 #+tblname: bcc-data
 #+caption: Total energy vs. lattice constant for BCC Cu.
 | Lattice constant (\AA$^3$) | Total energy (eV) |
-|-
-| 2.75 | -3.587523 |
-| 2.8 | -3.668112 |
-| 2.85 | -3.708699 |
-| 2.9 | -3.716496 |
-| 2.95 | -3.697781 |
-| 3.0 | -3.657913 |
+|----------------------------+-------------------|
+|                       2.75 |         -3.587523 |
+|                        2.8 |         -3.668112 |
+|                       2.85 |         -3.708699 |
+|                        2.9 |         -3.716496 |
+|                       2.95 |         -3.697781 |
+|                        3.0 |         -3.657913 |
 
 
 #+begin_exercise
