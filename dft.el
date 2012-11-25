@@ -222,7 +222,7 @@
                  ["Reset study data" org-drill-strip-all-data t])
                 ;; these will be integrated with git
                 ("Version Control"
-                 ["Commit your changes" (vc-next-action t) t]
+                 ["Commit your changes" (vc-next-action nil) t]
                  ["Undo your changes" () t]
                  ["Get latest version" () t])
                 ["Help" (find-file "help.org") t]
