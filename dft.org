@@ -8263,7 +8263,6 @@ The bridge site (Figure \ref{fig:bridge}, however, is clearly not at a bridge si
 
 Let us see what the original geometry and final geometry for the bridge site were. The POSCAR contains the initial geometry (as long as you haven't copied CONTCAR to POSCAR), and the CONTCAR contains the final geometry.
 
-TODO
 #+BEGIN_SRC python
 from ase.io import read, write
 
