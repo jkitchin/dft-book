@@ -224,7 +224,7 @@
                 ("Version Control"
                  ["Commit your changes" (vc-next-action nil) t]
                  ["Undo your changes" () t]
-                 ["Get latest version" () t])
+                 ["Get latest version" (vc-pull) t])
                 ["Help" (find-file "help.org") t]
                 ["VASP website" (browse-url "http://www.vasp.at/") t]
                 ["VASP forum" (browse-url "http://cms.mpi.univie.ac.at/vasp-forum/forum.php") t]
@@ -277,15 +277,6 @@ Lisp code that opens dft-book at point
     (message-goto-body) ; go back to beginning of email body
     (next-line)         ; and down one line
     (message "Type C-c C-c to send message"))
-
-
-(defun update-dft-book ()
-  "Run git pull to get the latest version of the book.
-
-  This only works for a dft-book checked out from github. I am not sure what will happen if you have modified the book."
-  (interactive)
-  (vc-pull))
-
 
 
 (defun dft-book () (find-file "dft.org"))
