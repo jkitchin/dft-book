@@ -60,11 +60,66 @@
 (setq org-link-abbrev-alist
       '(("pydoc" . "shell:pydoc %s")))
 
+
+;; [[lof:lof][List of Figures]]
+;; the keyword is totally arbitrary
+(org-add-link-type "lof"
+  ; function executed when clicked on
+  (lambda (keyword)
+    (message "One day this will generate a list of clickable figure captions"))
+  ; export functions
+  (lambda (keyword link format)
+   (cond
+    ((eq format 'html)
+     ("")) ; nothing for html. one day maybe get a list of captions
+    ((eq format 'latex)
+     ("\listoffigures")))))
+
+;; [[lot:lot][List of Tables]]
+;; the keyword is totally arbitrary
+(org-add-link-type "lot"
+  ; function executed when clicked on
+  (lambda (keyword)
+    (message "One day this will generate a list of clickable table captions"))
+  ; export functions
+  (lambda (keyword link format)
+   (cond
+    ((eq format 'html)
+     ("")) ; nothing for html. one day maybe get a list of captions
+    ((eq format 'latex)
+     ("\listoftables")))))
+
+;; [[printindex:ind][Print index]]
+;; the keyword is totally arbitrary
+(org-add-link-type "printindex"
+  ; function executed when clicked on
+  (lambda (keyword)
+    (message "One day this will generate a clickable index"))
+  ; export functions
+  (lambda (keyword link format)
+   (cond
+    ((eq format 'html)
+     ("")) ; nothing for html. one day maybe make an html indiex
+    ((eq format 'latex)
+     ("\printindex")))))
+
+;; add index link which creates an citation entry in latex and does nothing for html.
+(org-add-link-type  "index"
+ (lambda (arg)
+   ()) ; do nothing when clicked on.
+ (lambda (keyword desc format)
+   (cond
+    ((eq format 'html)
+     (format ""))
+    ((eq format 'latex)
+     (format "\\index{%s}" keyword)))))
+
 ;; [[incar:keyword]]
 ;; this makes nice links in org-mode to the online documentation and
 ;; renders useful links in output
 (org-add-link-type  "incar"
-   (browse-url
+   (lambda (keyword)
+     browse-url
     (format "http://cms.mpi.univie.ac.at/wiki/index.php/%s" keyword))
   ; this function is for formatting
   (lambda (keyword link format)
@@ -104,17 +159,6 @@
     ((eq format 'latex)
      (format "\\texttt{%s}" path)))))
 
-
-;; add index link which creates an citation entry in latex and does nothing for html.
-(org-add-link-type  "index"
- (lambda (arg)
-   ()) ; do nothing when clicked on.
- (lambda (keyword desc format)
-   (cond
-    ((eq format 'html)
-     (format ""))
-    ((eq format 'latex)
-     (format "\\index{%s}" keyword)))))
 
 ;; Add a figure link so I can export images in a format appropriate for
 ;; the export. E.g. figure:test.svg will use test.pdf for a pdf file, and
@@ -183,12 +227,63 @@
                 ["Help" (find-file "help.org") t]
                 ["VASP website" (browse-url "http://www.vasp.at/") t]
                 ["VASP forum" (browse-url "http://cms.mpi.univie.ac.at/vasp-forum/forum.php") t]
+                ["Email a bug/typo/question" email-bug-typo-question t]
                 )
               )
 
 (global-set-key "\C-cm" '(lambda ()
    (interactive)
    (popup-menu 'dft-book)))
+
+(defun email-bug-typo-question ()
+  "Construct and send an email about a bug/typo/question in the book.
+
+The email body will contain
+1. an optional message from the user.
+2. the current line text
+3. the git revision number
+4. Some lisp code to make it trivial to open the file up to exactly the point."
+  (interactive)
+
+  ; create the lisp code that will open the file at the point
+  (setq lisp-code (format "(progn (find-file \"%s\") (goto-char %d))" "dft.org" (point)))
+
+  ; now create the body of the email
+    (setq email-body
+     (format "Type your note here:
+
+======================================================
+Line where point was:
+%s: %s
+======================================================
+git rev-pars HEAD: %s
+======================================================
+Lisp code that opens dft-book at point
+%s
+======================================================"
+          (what-line)
+          (thing-at-point 'line)
+          (shell-command-to-string "git rev-parse HEAD")
+          lisp-code))
+    (compose-mail-other-frame)
+    (message-goto-to)
+    (insert "jkitchin@andrew.cmu.edu")
+    (message-goto-subject)
+    (insert "Bug/typo/question report for dft-book")
+    (message-goto-body)
+    (insert email-body)
+    (message-goto-body) ; go back to beginning of email body
+    (next-line)         ; and down one line
+    (message "Type C-c C-c to send message"))
+
+
+(defun update-dft-book ()
+  "Run git pull to get the latest version of the book.
+
+  This only works for a dft-book checked out from github. I am not sure what will happen if you have modified the book."
+  (interactive)
+  (vc-pull))
+
 
 
 (defun dft-book () (find-file "dft.org"))
@@ -197,7 +292,7 @@
 
 
 
-
+; some notes on what it might take to make EnableWrite/shell-escape globally true.
 ;C:\Users\jkitchin>initexmf --edit-config-file=miktex\config\pdflatex.ini
 
 ;C:\Users\jkitchin>initexmf --edit-config-file=miktex\config\pdflatex.ini
