@@ -22,6 +22,9 @@ tex: dft.org dft.bib
 	$(BATCH_EMACS) -f org-export-as-latex
 
 pdf: tex $(PDFIMAGES)
+	# note I do not use the org-export-as-pdf function here. I do not
+	# remember why. Maybe to avoid the problem with enabling
+	# -shell-escape globally?
 	pdflatex -shell-escape dft
 	bibtex dft
 	pdflatex -shell-escape dft
