@@ -17,71 +17,15 @@
 #+LINK_HOME:
 #+XSLT:
 
-#+latex_header: \usepackage[super,sort&compress]{natbib}
-#+latex_header: \usepackage{natmove}
-#+latex_header: \usepackage{underscore}
-#+latex_header: \usepackage{makeidx}
-#+latex_header: \usepackage[section]{placeins}
-#+latex_header: \usepackage{xcolor}
-#+latex_header: \usepackage{adjustbox}
-#+latex_header: \usepackage{anysize}
-#+latex_header: \usepackage{url}
-#+latex_header: \marginsize{1in}{1in}{1in}{1in}
-#+latex_header: \makeindex
+#+latex_header: \usepackage{dftbook}
 
-# export code and results. need to figure out how to handle org environments
-#+PROPERTY: exports both
 
-# http://orgmode.org/worg/org-contrib/org-special-blocks.html
-# http://en.wikibooks.org/wiki/LaTeX/Customizing_LaTeX#New_Environments
-
-# http://en.wikibooks.org/wiki/LaTeX/Colors
-
-#+begin_latex
-% environment to put exercises in a gray, numbered box
-\newcounter{ExerciseCount}
-\setcounter{ExerciseCount}{0}
-\definecolor{MyGray}{rgb}{0.96,0.97,0.98}
-
-\newenvironment{exercise}[0]{%
-\stepcounter{ExerciseCount} \begin{adjustbox}{minipage=[b]{380px},margin=1ex,bgcolor=MyGray,env=center}%
-        \textbf{Exercise \thesection.\theExerciseCount}\\
-}{%
-    \end{adjustbox}%
-}
-#+end_latex
-
-#+begin_latex
-% environment to put notes a light blue box 173-216-230
-% see http://www.tayloredmktg.com/rgb/ for colors
-\definecolor{LightBlue}{rgb}{0.68,0.85,0.90}
-
-\newenvironment{note}[0]{%
-\begin{adjustbox}{minipage=[b]{380px},margin=1ex,bgcolor=LightBlue,env=center}%
-        \textbf{Note: }\\
-}{%
-    \end{adjustbox}%
-}
-#+end_latex
-
-#+begin_latex
-% environment to put warnings a pink box 255-192-203
-% see http://www.tayloredmktg.com/rgb/ for colors
-\definecolor{Pink}{rgb}{1.0,0.75,0.80}
-
-\newenvironment{warning}[0]{%
-\begin{adjustbox}{minipage=[b]{380px},margin=1ex,bgcolor=Pink,env=center}%
-        \textbf{Warning: }\\
-}{%
-    \end{adjustbox}%
-}
-#+end_latex
 
 [[./images/cover-page.png]]Copyright \copyright 2012--\the\year\ John Kitchin\par
 
-#+latex: \listoffigures
+[[lof:lof][List of Figures]]
 
-#+latex: \listoftables
+[[lot:lot][List of Tables]]
 
 * Tasks :noexport:
 ** replace all % formating with .format
@@ -1749,7 +1693,7 @@ plt.savefig('images/co-ados.png')
 [[./images/co-ados.png]]
 
 *** TODO Electrostatic potential
-This is an example of the so-called \sigma hole in a [[http://pubs.acs.org/cen/science/87/8738sci2.html][halogen bond]]. The coordinates for the CF_{3}Br molecule were found at http://cccbdb.nist.gov/exp2.asp?casno=75638.
+This is an example of the so-called \sigma hole in a [[http://pubs.acs.org/cen/science/87/8738sci2.html][halogen bond]]. The coordinates for the CF_{3}Br molecule were found at [[http://cccbdb.nist.gov/exp2.asp?casno=75638]].
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -7373,7 +7317,7 @@ with jasp('surfaces/Al-slab-unrelaxed') as calc:
 
 To reduce the forces, we can let VASP relax the geometry. We have to make some decisions about how to relax the slab. One choice would be to relax all the atoms in the slab. If we do that, then there will be no atoms with bulk like spacing unless we increase the slab thickness pretty dramatically. It is pretty common to freeze some atoms at the bulk coordinates, and let the others relax. We will freeze the bottom two layers (defined by tags 3 and 4) and let the first two layers relax. To do that we add constraints to the slab.
 
-Note: the [[https://wiki.fysik.dtu.dk/ase/ase/constraints.html][ase constraints]] are only partially used by =jasp=. The mod:ase.constraints.FixAtoms constraint gets written to the POSCAR file, and is then used internally in VASP. The only other constraint that VASP can use internally is mod:ase.constraints.FixScaled. The other constraints are not written to the POSCAR and are not used by VASP.
+Note: the [[https://wiki.fysik.dtu.dk/ase/ase/constraints.html][ase constraints]] are only partially used by =jasp=. The mod:ase.constraints.FixAtoms constraint gets written to the POSCAR file, and is then used internally in VASP. The only other constraint that VASP can use internally is [[mod:ase.constraints.FixScaled]]. The other constraints are not written to the POSCAR and are not used by VASP.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -8199,7 +8143,7 @@ with jasp('surfaces/Pt-slab-O-fcc',
 
 #+RESULTS:
 
-***** TODO bridge site
+***** O atom on the bridge site
 #+BEGIN_SRC python :results output
 from jasp import *
 from ase.lattice.surface import fcc111, add_adsorbate
@@ -8222,9 +8166,11 @@ with jasp('surfaces/Pt-slab-O-bridge',
           atoms=atoms) as calc:
 
     calc.calculate()
+    print atoms.get_potential_energy()
 #+END_SRC
 
 #+RESULTS:
+: -73.663615
 
 ***** hcp site
 #+BEGIN_SRC python :results output
@@ -8609,7 +8555,7 @@ Note that now there are 39 modes, which is 3*N where N=13 atoms in the unit cell
 
 Calculating these results took 39*2 finite differences. It took about a day to get these results on a single CPU. It pays to use constraints to minimize the number of these calculations.
 
-*** TODO Vibrations of the bridge site
+*** Vibrations of the bridge site
 Here we consider the vibrations of an O atom in a bridge site, which we saw earlier is a metastable saddle point.
 
 #+BEGIN_SRC python :results output  :exports both
@@ -12648,4 +12594,4 @@ print 'x_cu = {0}'.format(x_Cu)
 \bibliography{dft}
 
 * Index
-\printindex
+[[printindex:pind][Print index]]
