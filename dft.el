@@ -42,6 +42,7 @@
         ("" "attachfile" t)
         "\\tolerance=1000")))
 
+;; code for syntax highlighting
 (setq org-export-latex-listings 'minted)
 (setq org-export-latex-minted-options
            '(("frame" "lines")
@@ -73,7 +74,7 @@
     ((eq format 'html)
      ("")) ; nothing for html. one day maybe get a list of captions
     ((eq format 'latex)
-     ("\listoffigures")))))
+     ("\\listoffigures")))))
 
 ;; [[lot:lot][List of Tables]]
 ;; the keyword is totally arbitrary
@@ -87,7 +88,7 @@
     ((eq format 'html)
      ("")) ; nothing for html. one day maybe get a list of captions
     ((eq format 'latex)
-     ("\listoftables")))))
+     ("\\listoftables")))))
 
 ;; [[printindex:ind][Print index]]
 ;; the keyword is totally arbitrary
@@ -101,7 +102,7 @@
     ((eq format 'html)
      ("")) ; nothing for html. one day maybe make an html indiex
     ((eq format 'latex)
-     ("\printindex")))))
+     ("\\printindex")))))
 
 ;; add index link which creates an citation entry in latex and does nothing for html.
 (org-add-link-type  "index"
@@ -221,13 +222,14 @@
                  ["Reset study data" org-drill-strip-all-data t])
                 ;; these will be integrated with git
                 ("Version Control"
-                 ["Commit your changes" () t]
+                 ["Commit your changes" (vc-next-action t) t]
                  ["Undo your changes" () t]
                  ["Get latest version" () t])
                 ["Help" (find-file "help.org") t]
                 ["VASP website" (browse-url "http://www.vasp.at/") t]
                 ["VASP forum" (browse-url "http://cms.mpi.univie.ac.at/vasp-forum/forum.php") t]
                 ["Email a bug/typo/question" email-bug-typo-question t]
+                ["Get TODO agenda" (org-agenda "4" "t" "<") t]
                 )
               )
 
