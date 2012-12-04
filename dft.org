@@ -36,10 +36,10 @@
 [[lot:lot][List of Tables]]
 
 * Tasks :noexport:
-** replace all % formating with .format
-
+** TODO replace all % formating with .format
 ** make func and mod links un-hyphenatable.
-** move as much raw latex code out of org-file.
+** TODO move as much raw latex code out of org-file.
+The highest priority is the \cite commands so these can be clickable links to the bib file.
 ** Create flashcard exercises for ase commands
 * Introduction to this book
 This book serves two purposes: 1) to provide worked examples of using DFT to model materials properties, and 2) to provide references to more advanced treatments of these topics in the literature. It is not a definitive reference on density functional theory. Along the way to learning how to perform the calculations, you will learn how to analyze the data, make plots, and how to interpret the results. This book is very much "recipe" oriented, with the intention of giving you enough information and knowledge to start your research. In that sense, many of the computations are not publication quality with respect to convergence of calculation parameters.
@@ -65,7 +65,7 @@ This book makes heavy use of many computational tools including:
 
 - [[https://github.com/jkitchin/jasp][jasp]]
 index:jasp
-=jasp= is a sophisticated wrapper to the mod:ase.calculators.vasp python interface to the VASP calculator. It was written by me to facilitate writing this book and to develop the best possible way to run DFT calculations. The best way to learn to use jasp is from this book. It probably requires the latest svn version of ase to work since I have been adding new functionality to mod:ase.calculators.vasp as mod:jasp is developed. =jasp= is available at https://github.com/jkitchin/jasp.
+mod:jasp is a sophisticated wrapper to the mod:ase.calculators.vasp python interface to the VASP calculator. It was written by me to facilitate writing this book and to develop the best possible way to run DFT calculations. The best way to learn to use jasp is from this book. It probably requires the latest svn version of ase to work since I have been adding new functionality to mod:ase.calculators.vasp as mod:jasp is developed. mod:jasp is available at https://github.com/jkitchin/jasp.
 
 The goal in writing mod:jasp was to create a computational environment where you write one script to create, run and analyze your calculations. The code is smart, and submits jobs to a queue system when required, does not submit jobs more than once, allows many jobs to run in parallel, and gives you answers when available. mod:jasp takes care of changing into VASP calculation directories, and then changing back to where you started from. mod:jasp has an interface to sqlite, and to version control (git) software. mod:jasp has some features that
 mod:ase.calculators.vasp does not have yet. They may get incorporated into ase one day.
