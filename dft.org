@@ -1,4 +1,5 @@
-# -*- org-export-babel-evaluate: nil -*-
+# -*- org-export-babel-evaluate: nil; eval: (load-file "dft.el") -*-
+
 #+DRAWERS: HIDDEN HINT SOLUTION
 #+TITLE:     Modeling materials using density functional theory
 #+AUTHOR:    John Kitchin
@@ -12597,9 +12598,10 @@ print 'x_cu = {0}'.format(x_Cu)
 
 * References
 \bibliographystyle{unsrtnat}
-\bibliography{dft}
+bibliography:dft.bib
 
 * GNU Free Documentation License
+#+begin_example
                 GNU Free Documentation License
                  Version 1.3, 3 November 2008
 
@@ -13020,6 +13022,7 @@ in part into the MMC, (1) had no cover texts or invariant sections, and
 The operator of an MMC Site may republish an MMC contained in the site
 under CC-BY-SA on the same site at any time before August 1, 2009,
 provided the MMC is eligible for relicensing.
+#+end_example
 
 * Index
 [[printindex:pind][Print index]]
