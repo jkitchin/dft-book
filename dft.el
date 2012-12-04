@@ -106,8 +106,7 @@
 
 ;; add index link which creates an citation entry in latex and does nothing for html.
 (org-add-link-type  "index"
- (lambda (arg)
-   ()) ; do nothing when clicked on.
+ (lambda (arg) (message "One day this will generate a clickable index for you!"))
  (lambda (keyword desc format)
    (cond
     ((eq format 'html)
@@ -193,7 +192,14 @@
 " (replace-in-string keyword ".svg" ".pdf"))
 )))))
 
-
+;; link to hold a bibliography bibtex file. Mostly so I can click on the link and open the file.
+(org-add-link-type "bibliography"
+(lambda (arg) (find-file arg)) ; open file on click
+(lambda (keyword desc format)
+  (cond
+   ((eq format 'latex)
+    ; write out the latex bibliography command
+    (format "\\bibliography{%s}" (replace-in-string keyword ".bib" ""))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Menu for dft-book
