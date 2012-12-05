@@ -1,0 +1,47 @@
+\ProvidesPackage{dftbook}
+
+\usepackage[super,sort&compress]{natbib}
+\usepackage{natmove}
+\usepackage{underscore}
+\usepackage{makeidx}
+\usepackage[section]{placeins}
+\usepackage{xcolor}
+\usepackage{adjustbox}
+\usepackage{anysize}
+\usepackage{url}
+\marginsize{1in}{1in}{1in}{1in}
+\makeindex
+
+% environment to put exercises in a gray, numbered box
+\newcounter{ExerciseCount}
+\setcounter{ExerciseCount}{0}
+\definecolor{MyGray}{rgb}{0.96,0.97,0.98}
+
+\newenvironment{exercise}[0]{%
+\stepcounter{ExerciseCount} \begin{adjustbox}{minipage=[b]{380px},margin=1ex,bgcolor=MyGray,env=center}%
+        \textbf{Exercise \thesection.\theExerciseCount}\\
+}{%
+    \end{adjustbox}%
+}
+
+% environment to put notes a light blue box 173-216-230
+% see http://www.tayloredmktg.com/rgb/ for colors
+\definecolor{LightBlue}{rgb}{0.68,0.85,0.90}
+
+\newenvironment{note}[0]{%
+\begin{adjustbox}{minipage=[b]{380px},margin=1ex,bgcolor=LightBlue,env=center}%
+        \textbf{Note: }\\
+}{%
+    \end{adjustbox}%
+}
+
+% environment to put warnings a pink box 255-192-203
+% see http://www.tayloredmktg.com/rgb/ for colors
+\definecolor{Pink}{rgb}{1.0,0.75,0.80}
+
+\newenvironment{warning}[0]{%
+\begin{adjustbox}{minipage=[b]{380px},margin=1ex,bgcolor=Pink,env=center}%
+        \textbf{Warning: }\\
+}{%
+    \end{adjustbox}%
+}
