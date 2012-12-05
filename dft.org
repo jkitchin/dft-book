@@ -1,5 +1,4 @@
-# -*- org-export-babel-evaluate: nil; eval: (load-file "dft.el") -*-
-
+# -*- eval: (load-file "dft.el"); -*-
 #+DRAWERS: HIDDEN HINT SOLUTION
 #+TITLE:     Modeling materials using density functional theory
 #+AUTHOR:    John Kitchin
@@ -19,8 +18,6 @@
 #+XSLT:
 
 #+latex_header: \usepackage{dftbook}
-
-
 
 [[./images/cover-page.png]]
     Copyright \copyright 2012--\the\year\ John Kitchin\par
@@ -8501,18 +8498,20 @@ h = 4.135667516e-15 # eV*s
 print 'vibrational energy = {0} eV'.format(f)
 print 'vibrational energy = {0} meV'.format(f/meV)
 print 'vibrational freq   = {0} 1/s'.format(f/h)
-print 'vibrational freq   = {0} cm^(-1)'.format(f/(h*c))
+print 'vibrational freq   = {0} cm^{{-1}}'.format(f/(h*c))
 print
 print 'All energies = ',allfreq
 #+END_SRC
 
 #+RESULTS:
-: Elapsed time = 14269.345 seconds
-: vibrational energy = 0.061606647 eV
-: vibrational energy = 61.606647 meV
-: vibrational freq   = 1.48964216204e+13 1/s
-: vibrational freq   = 496.547387346 cm^(-1)
-:
+=Elapsed time = 14269.345 seconds
+vibrational energy = 0.061606647 eV
+vibrational energy = 61.606647 meV
+vibrational freq   = 1.48964216204e+13 1/s
+vibrational freq   = 496.547387346 cm^{-1}
+
+All energies =  [0.061606647, 0.044346362, 0.044344470000000004]
+=:
 : All energies =  [0.061606647, 0.044346362, 0.044344470000000004]
 
 There are three modes for the free oxygen atom. One of them is a mode normal to the surface (the one with highest frequency. The other two are called frustrated translations. Note that we did not include the surface Pt atoms in the calculation, and this will have an effect on the result because the O atom could be coupled to the surface modes. It is typical to neglect this coupling because of the large difference in mass between O and Pt.  Next we look at the difference in results when we calculate all the modes.
@@ -8543,19 +8542,21 @@ print 'For mode 0:'
 print 'vibrational energy = {0} eV'.format(f)
 print 'vibrational energy = {0} meV'.format(f/meV)
 print 'vibrational freq   = {0} 1/s'.format(f/h)
-print 'vibrational freq   = {0} cm^(-1)'.format(f/(h*c))
+print 'vibrational freq   = {0} cm^{{-1}}'.format(f/(h*c))
 print
 print 'All energies = ',allfreq
 #+END_SRC
 
 #+RESULTS:
-: Elapsed time = 77121.015 seconds
-: For mode 0:
-: vibrational energy = 0.063537929 eV
-: vibrational energy = 63.537929 meV
-: vibrational freq   = 1.53634035507e+13 1/s
-: vibrational freq   = 512.113451691 cm^(-1)
-:
+=Elapsed time = 77121.015 seconds
+For mode 0:
+vibrational energy = 0.063537929 eV
+vibrational energy = 63.537929 meV
+vibrational freq   = 1.53634035507e+13 1/s
+vibrational freq   = 512.113451691 cm^{-1}
+
+All energies =  [0.06353792899999999, 0.045628623, 0.045628623, 0.023701702, 0.023701702, 0.023223747, 0.022978233, 0.022978233, 0.022190167, 0.021807461, 0.02040119, 0.02040119, 0.019677135000000002, 0.015452848, 0.015302098000000002, 0.015302098000000002, 0.0148412, 0.0148412, 0.014071851000000002, 0.012602063, 0.012602063, 0.012409611999999999, 0.012300973000000002, 0.011735683, 0.011735683, 0.011714521, 0.011482183, 0.011482183, 0.010824891, 0.010414177, 0.010414177, 0.009799697, 0.00932905, 0.00932905, 0.003859079, 0.003859079, (2.9894000000000002e-05+0j), (2.9894000000000002e-05+0j), (0.00012182999999999999+0j)]
+=:
 : All energies =  [0.06353792899999999, 0.045628623, 0.045628623, 0.023701702, 0.023701702, 0.023223747, 0.022978233, 0.022978233, 0.022190167, 0.021807461, 0.02040119, 0.02040119, 0.019677135000000002, 0.015452848, 0.015302098000000002, 0.015302098000000002, 0.0148412, 0.0148412, 0.014071851000000002, 0.012602063, 0.012602063, 0.012409611999999999, 0.012300973000000002, 0.011735683, 0.011735683, 0.011714521, 0.011482183, 0.011482183, 0.010824891, 0.010414177, 0.010414177, 0.009799697, 0.00932905, 0.00932905, 0.003859079, 0.003859079, (2.9894000000000002e-05+0j), (2.9894000000000002e-05+0j), (0.00012182999999999999+0j)]
 
 Note that now there are 39 modes, which is 3*N where N=13 atoms in the unit cell. Many of the modes are low in frequency, which correspond to slab modes that are essentially phonons. The O frequencies are not that different from the previous calculation (497 vs 512 cm$^{-1}$. This is why it is common to keep the slab atoms frozen.
