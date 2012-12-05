@@ -1,5 +1,5 @@
 EMACS=emacs
-BATCH_EMACS=$(EMACS) --batch -l ~/Dropbox/.emacs.d/init.el dft.org
+BATCH_EMACS=$(EMACS) --batch -l ~/Dropbox/.emacs.d/init.el -l dft.el dft.org
 REQUIREMENTS=python
 PDFLATEX=pdflatex -shell-escape
 LATEX=latex -shell-escape
