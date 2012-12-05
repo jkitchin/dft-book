@@ -5,7 +5,6 @@
 ;; sets up the dft-book menu
 ;; adapted from http://ergoemacs.org/emacs/elisp_menu.html
 
-(require 'org-install)
 (require 'org-list)
 (require 'org-special-blocks)
 (require 'org-drill)
@@ -42,6 +41,8 @@
         ("" "attachfile" t)
         "\\tolerance=1000")))
 
+(setq org-export-babel-evaluate nil) ; do not evaluate on export
+
 ;; code for syntax highlighting
 (setq org-export-latex-listings 'minted)
 (setq org-export-latex-minted-options
@@ -58,9 +59,7 @@
 ;;; new link formats for org-mode that I wrote
 
 ; here is a way to get pydoc in a link: [[pydoc:numpy]]
-(setq org-link-abbrev-alist
-      '(("pydoc" . "shell:pydoc %s")))
-
+(setq org-link-abbrev-alist '(("pydoc" . "shell:pydoc %s")))
 
 ;; [[lof:lof][List of Figures]]
 ;; the keyword is totally arbitrary
@@ -74,7 +73,7 @@
     ((eq format 'html)
      ("")) ; nothing for html. one day maybe get a list of captions
     ((eq format 'latex)
-     ("\\listoffigures")))))
+     (format "\\listoffigures")))))
 
 ;; [[lot:lot][List of Tables]]
 ;; the keyword is totally arbitrary
@@ -88,7 +87,7 @@
     ((eq format 'html)
      ("")) ; nothing for html. one day maybe get a list of captions
     ((eq format 'latex)
-     ("\\listoftables")))))
+     (format "\\listoftables")))))
 
 ;; [[printindex:ind][Print index]]
 ;; the keyword is totally arbitrary
@@ -102,7 +101,7 @@
     ((eq format 'html)
      ("")) ; nothing for html. one day maybe make an html indiex
     ((eq format 'latex)
-     ("\\printindex")))))
+     (format "\\printindex")))))
 
 ;; add index link which creates an citation entry in latex and does nothing for html.
 (org-add-link-type  "index"
@@ -127,9 +126,7 @@
     ((eq format 'html)
      (format "<a href=http://cms.mpi.univie.ac.at/wiki/index.php/%s>%s</a>" keyword keyword))
     ((eq format 'latex)
-     (format "\\href{http://cms.mpi.univie.ac.at/wiki/index.php/%s}{%s}"  keyword keyword)
-
-))))
+     (format "\\href{http://cms.mpi.univie.ac.at/wiki/index.php/%s}{%s}"  keyword keyword)))))
 
 ;; these allow me to write mod:numpy or func:numpy.dot to get
 ;; clickable links to documentation. I made separate ones to
@@ -218,31 +215,6 @@
 (defun dft-book-help ()
   (find-file "help.org"))
 
-;; Create the book menu
-(easy-menu-define dft-book-menu global-map "DFT-BOOK-MENU"
-		      '("dft-book"
-                ["Toggle equation images" (org-preview-latex-fragment 16) t]
-                ("Study"
-                 ["Molecules" (dft-book-study '("study-guides/molecules-drill.org")) t]
-                 ["Bulk"      (dft-book-study '("study-guides/bulk-drill.org")) t]
-                 ["Reset study data" org-drill-strip-all-data t])
-                ;; these will be integrated with git
-                ("Version Control"
-                 ["Commit your changes" (vc-next-action nil) t]
-                 ["Undo your changes" () t]
-                 ["Get latest version" (vc-pull) t])
-                ["Help" (find-file "help.org") t]
-                ["VASP website" (browse-url "http://www.vasp.at/") t]
-                ["VASP forum" (browse-url "http://cms.mpi.univie.ac.at/vasp-forum/forum.php") t]
-                ["Email a bug/typo/question" email-bug-typo-question t]
-                ["Get TODO agenda" (org-agenda "4" "t" "<") t]
-                )
-              )
-
-(global-set-key "\C-cm" '(lambda ()
-   (interactive)
-   (popup-menu 'dft-book)))
-
 (defun email-bug-typo-question ()
   "Construct and send an email about a bug/typo/question in the book.
 
@@ -258,7 +230,7 @@ The email body will contain
 
   ; now create the body of the email
     (setq email-body
-     (format "Type your note here:
+     (format "Type your note here, and press C-c C-c when you are done:
 
 ======================================================
 Line where point was:
@@ -284,12 +256,43 @@ Lisp code that opens dft-book at point
     (next-line)         ; and down one line
     (message "Type C-c C-c to send message"))
 
+(defvar dft-book-mode nil "Mode variable for dft-book-minor-mode")
+(make-variable-buffer-local 'dft-book-mode)
 
-(defun dft-book () (find-file "dft.org"))
+(defun dft-book-mode (&optional arg)
+  "dft-book minor mode"
+  (interactive "P")
+  (setq dft-book-mode
+        (if (null arg)
+            (not dft-book-mode) ;set the value of dft-book-mode to the
+                                ;opposite if its current value if no
+                                ;arg is given
+          (> (prefix-numeric-value arg) 0))) ;;if an arg was given, set it to t if arg > 0, otherwise set to nil
+  (if dft-book-mode
+      (easy-menu-define dft-book-menu global-map "DFT-BOOK-MENU"
+        '("dft-book"
+          ["Toggle equation images" (org-preview-latex-fragment 16) t]
+          ("Study"
+           ["Molecules" (dft-book-study '("study-guides/molecules-drill.org")) t]
+           ["Bulk"      (dft-book-study '("study-guides/bulk-drill.org")) t]
+           ["Reset study data" org-drill-strip-all-data t])
+          ;; these will be integrated with git
+          ("Version Control"
+           ["Commit your changes" (vc-next-action nil) t]
+           ["Undo your changes" () t]
+           ["Get latest version" (vc-pull) t])
+          ["Help" (find-file "help.org") t]
+          ["VASP website" (browse-url "http://www.vasp.at/") t]
+          ["VASP forum" (browse-url "http://cms.mpi.univie.ac.at/vasp-forum/forum.php") t]
+          ["Email a bug/typo/question" email-bug-typo-question t]
+          ["Get TODO agenda" (org-agenda "4" "t" "<") t]
+          ["Exit" (progn (global-unset-key [menu-bar dft-book])
+                         (kill-buffer "dft.org")) t]
+          ))           ; code to turn on the mode
+    (progn (global-unset-key [menu-bar dft-book])
+                         (kill-buffer "dft.org"))))           ; code to turn off the mode
 
-(dft-book)
-
-
+(dft-book-mode)
 
 ; some notes on what it might take to make EnableWrite/shell-escape globally true.
 ;C:\Users\jkitchin>initexmf --edit-config-file=miktex\config\pdflatex.ini
