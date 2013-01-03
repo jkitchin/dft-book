@@ -35,8 +35,7 @@
 * Tasks :noexport:
 ** TODO replace all % formating with .format
 ** make func and mod links un-hyphenatable.
-** TODO move as much raw latex code out of org-file.
-The highest priority is the \cite commands so these can be clickable links to the bib file.
+
 ** Create flashcard exercises for ase commands
 * Introduction to this book
 This book serves two purposes: 1) to provide worked examples of using DFT to model materials properties, and 2) to provide references to more advanced treatments of these topics in the literature. It is not a definitive reference on density functional theory. Along the way to learning how to perform the calculations, you will learn how to analyze the data, make plots, and how to interpret the results. This book is very much "recipe" oriented, with the intention of giving you enough information and knowledge to start your research. In that sense, many of the computations are not publication quality with respect to convergence of calculation parameters.
@@ -113,45 +112,45 @@ extensive literature available and to point out potential difficulties
 and pitfalls in these calculations.
 
 A fairly standard textbook on DFT is the one written by Parr and Yang
-\cite{parr-yang}.  The Chemist's Guide to DFT \cite{koch2001} is more
+cite:parr-yang.  The Chemist's Guide to DFT cite:koch2001 is more
 readable and contains more practical information for running
 calculations, but both of these books focus on molecular systems.
- The standard texts in this solid state physics are by Kittel \cite{kittel}
-and Ashcroft and Mermin \cite{ashcroft-mermin}. Both have their fine
+ The standard texts in this solid state physics are by Kittel cite:kittel
+and Ashcroft and Mermin cite:ashcroft-mermin. Both have their fine
 points, the former being more mathematically rigorous and the latter
 more readable.  However, neither of these books is particularly easy
 to relate to chemistry.  For this, one should consult the
 exceptionally clear writings of Roald Hoffman
-\cite{hoffmann1987,RevModPhys.60.601}, and follow these with the work of
+cite:hoffmann1987,RevModPhys.60.601, and follow these with the work of
 N\o rskov and coworkers
-\cite{hammer2000:adv-cat,greeley2002:elect}.
+cite:hammer2000:adv-cat,greeley2002:elect.
 
 In this chapter, only the elements of DFT that are relevant to this
 work will be discussed.  An excellent review on other implementations
-of DFT can be found in Reference \citealp{freeman1995:densit}, and
+of DFT can be found in Reference citealp:freeman1995:densit,  and
 details on the various algorithms used in DFT codes can be found in
-Refs.  \citealp{payne1992:iterat,Kresse199615}.
+Refs.  citealp:payne1992:iterat,Kresse199615.
 
 One of the most useful sources of information has been the
 dissertations of other students, perhaps because the difficulties they
 faced in learning the material are still fresh in their minds. Thomas
 Bligaard, a coauthor of Dacapo, wrote a particularly relevant thesis
 on exchange/correlation functionals
-\cite{bligaard2000:exchan-correl-funct} and a dissertation
+cite:bligaard2000:exchan-correl-funct and a dissertation
 illustrating the use of DFT to design new alloys with desirable
 thermal and mechanical properties
-\cite{bligaard2003:under-mater-proper-basis-densit}.  The Ph.D.
+cite:bligaard2003:under-mater-proper-basis-densit.  The Ph.D.
 thesis of Ari Seitsonen contains several useful appendices on k-point
 setups, and convergence tests of calculations, in addition to a
 thorough description of DFT and analysis of calculation output
-\cite{seitsonen2000:phd}. Finally, another excellent overview of DFT
+cite:seitsonen2000:phd. Finally, another excellent overview of DFT
 and its applications to bimetallic alloy phase diagrams and surface
 reactivity is presented in the PhD thesis of Robin Hirschl
-\cite{hirschl2002:binar-trans-metal-alloy-their-surfac}.
+cite:hirschl2002:binar-trans-metal-alloy-their-surfac.
 
 ** Background
 In 1926, Erwin Schr\"odinger published the first accounts of his now
-famous wave equation \cite{pauling1963}. He later shared the Nobel
+famous wave equation cite:pauling1963. He later shared the Nobel
 prize with Paul A. M. Dirac in 1933 for this discovery. Schr\"odinger's
 wave function seemed extremely promising, as it contains all of the
 information available about a system. Unfortunately, most practical
@@ -159,7 +158,7 @@ systems of interest consist of many interacting electrons, and the
 effort required to find solutions to Schr\"odinger's equation increases
 exponentially with the number of electrons, limiting this approach to
 systems with a small number of relevant electrons, $N \lesssim O(10)$
-\cite{RevModPhys.71.1253}. Even if this rough estimate is off by an order of
+cite:RevModPhys.71.1253. Even if this rough estimate is off by an order of
 magnitude, a system with 100 electrons is still very small, for
 example, two Ru atoms if all the electrons are counted, or perhaps ten
 Pt atoms if only the valence electrons are counted. Thus, the wave
@@ -171,11 +170,11 @@ necessary for the mathematical theory of a large part of physics and
 the whole of chemistry are thus completely known, and the difficulty
 is only that the application of these laws leads to equations much too
 complicated to be soluble."
-\cite{dirac1929:quant-mechan-many-elect-system}.
+cite:dirac1929:quant-mechan-many-elect-system.
 
 In 1964, Hohenberg and Kohn showed that the ground state total energy
 of a system of interacting electrons is a unique functional of the
-electron density \cite{PhysRev.136.B864}. By definition,
+electron density cite:PhysRev.136.B864. By definition,
 a function returns a number when given a number. For example, in
 $f(x)=x^2$, $f(x)$ is the function, and it equals four when $x=2$. A
 functional returns a number when given a function. Thus, in
@@ -192,7 +191,7 @@ In 1965, Kohn and Sham made a significant breakthrough when they
 showed that the problem of many interacting electrons in an external
 potential can be mapped exactly to a set of noninteracting electrons
 in an effective external potential
-\cite{PhysRev.140.A1133}.  This led to a set of
+cite:PhysRev.140.A1133.  This led to a set of
 self-consistent, single particle equations known as the Kohn-Sham (KS)
 equations:
 \begin{equation}\label{eq:KS}
@@ -224,18 +223,18 @@ result from the solution are the same as the $\varphi_j(\mathbf{r})$ that are
 used to define the equations, that is, the solutions are
 self-consistent.  Finally, the ground state energy is given by:
 
-\begin{equation}\label{eq:dftEnergy}
+\begin{equation}\label{eq:dftEnergy} 
 \displaystyle
 E=\sum_j\epsilon_j + E_{xc}[n(\mathbf{r})]-\int v_{xc}(\mathbf{r}) n(\mathbf{r}) d\mathbf{r}
   -\frac{1}{2}\int{\frac{n(\mathbf{r})n(\mathbf{r'})}{|\mathbf{r-r'}|}d\mathbf{r'}\mathbf{r}},
 \end{equation}
 where $E_{xc}[n(\mathbf{r})]$ is the exchange-correlation energy
 functional.  Walter Kohn shared the Nobel prize in Chemistry in 1998
-for this work \cite{RevModPhys.71.1253}. The other half of the prize went to
+for this work cite:RevModPhys.71.1253. The other half of the prize went to
 John Pople for his efforts in wave function based quantum mechanical
-methods \cite{RevModPhys.71.1267}.  Provided the
+methods cite:{RevModPhys.71.1267.  Provided the
 exchange-correlation energy functional is known, Eq.
-(\ref{eq:dftEnergy}) is exact.  However, the exact form of the
+(ref:eq:dftEnergy) is exact.  However, the exact form of the
 exchange-correlation energy functional is not known, thus
 approximations for this functional must be used.
 
@@ -245,41 +244,41 @@ The two main types of exchange/correlation functionals used in DFT are
 the local density approximation (LDA) and the generalized gradient
 approximation (GGA). In the LDA, the exchange-correlation functional
 is defined for an electron in a uniform electron gas of density $n$
-\cite{PhysRev.140.A1133}. It is obviously exact for a uniform
+cite:PhysRev.140.A1133. It is obviously exact for a uniform
 electron gas, and is anticipated to be valid for slowly varying
 densities. In molecules and solids, however, the density tends to vary
 substantially in space. Despite this, the LDA has been very
 successfully used in many systems. It tends to predict overbonding in
-both molecular and solid systems \cite{fuchs1998:pseud}, and it tends
+both molecular and solid systems cite:fuchs1998:pseud, and it tends
 to make semiconductor systems too metallic (the band gap problem)
-\cite{perdew1982:elect-kohn-sham}.
+cite:perdew1982:elect-kohn-sham.
 
 The generalized gradient approximation includes corrections for
 gradients in the electron density, and is often implemented as a
 corrective function of the LDA.  The form of this corrective function,
 or "exchange enhancement" function determines which functional it
-is, e.g. PBE, RPBE, revPBE, etc. \cite{hammer1999:improv-pbe}. In this
+is, e.g. PBE, RPBE, revPBE, etc. cite:hammer1999:improv-pbe. In this
 book the PBE GGA functional is used the most. N{\o}rskov and coworkers
 have found that the RPBE functional gives superior chemisorption
 energies for atomic and molecular bonding to surfaces, but that it
 gives worse bulk properties, such as lattice constants compared to
-experimental data \cite{hammer1999:improv-pbe}.
+experimental data cite:hammer1999:improv-pbe.
 
  Finally, there are increasingly new types of functionals
 in the literature. The so-called hybrid functionals, such as B3LYP,
 are more popular with gaussian basis sets (e.g. in Gaussian), but they
 are presently inefficient with planewave basis sets. None of these
 other types of functionals were used in this work. For more details
-see Chapter 6 in Ref. \cite{koch2001} and Thomas Bligaard's thesis on
+see Chapter 6 in Ref. citealp:koch2001 and Thomas Bligaard's thesis on
 exchange and correlation functionals
-\cite{bligaard2000:exchan-correl-funct}.
+cite:bligaard2000:exchan-correl-funct.
 
 ** Basis sets
 Briefly, VASP utilizes planewaves as the basis set to expand the
 Kohn-Sham orbitals.  In a periodic solid, one can use Bloch's theorem
 to show that the wave function for an electron can be expressed as the
 product of a planewave and a function with the periodicity of the
-lattice \cite[Ch. 8]{ashcroft-mermin}:
+lattice cite:ashcroft-mermin:
 \begin{equation}
 \psi_{n\mathbf{k}}(\mathbf{r})=\exp({i\mathbf{k}\cdot\mathbf{r}})u_{n\mathbf{k}}(\mathbf{r})
 \end{equation}
@@ -291,7 +290,7 @@ character of the wave function. If the periodic function
 $u_{n\mathbf{k}}(\mathbf{r})$ is also expanded in terms of planewaves
 determined by wave vectors of the reciprocal lattice vectors,
 $\mathbf{G}$, then the wave function can be expressed completely in
-terms of a sum of planewaves \cite{payne1992:iterat}:
+terms of a sum of planewaves cite:payne1992:iterat:
 \begin{equation}
 \psi_i(\mathbf{r})=\sum_\mathbf{G} c_{i,\mathbf{k+G}} \exp(i\mathbf{(k+G)\cdot r}).
 \end{equation}
@@ -310,7 +309,7 @@ defects in neighboring supercells. The case of the randomly ordered
 alloy is virtually hopeless as the energy of different configurations
 will fluctuate statistically about an average value.  These systems
 were not considered in this work, and for more detailed discussions
-the reader is referred to Ref. \cite{makov1995:period-bound-condit}.
+the reader is referred to Ref. citealp:makov1995:period-bound-condit.
 Once a supercell is chosen, however, Bloch's theorem can be applied to
 the new artificially periodic system.
 
@@ -322,10 +321,10 @@ truncating the planewave basis set above a cutoff energy. Careful
 testing of the effect of the cutoff energy on the total energy can be
 done to determine a suitable cutoff energy. The cutoff energy required
 to obtain a particular convergence precision is also element
-dependent, shown in Table \ref{tab:pwcut}. It can also vary with the
+dependent, shown in Table ref:tab:pwcut. It can also vary with the
 "softness" of the pseudopotential.  Thus, careful testing should be
 done to ensure the desired level of convergence of properties in
-different systems. Table \ref{tab:pwcut} refers to convergence of
+different systems. Table ref:tab:pwcut refers to convergence of
 total energies. These energies are rarely considered directly, it is
 usually differences in energy that are important. These tend to
 converge with the planewave cutoff energy much more quickly than total
@@ -333,8 +332,7 @@ energies, due to cancellations of convergence errors.  In this work,
 350 eV was found to be suitable for the H adsorption calculations, but a cutoff
 energy of 450 eV was required for O adsorption calculations.
 
-#+caption: Planewave cutoff energies (in eV) required for different convergence precisions for different elements.
-#+label: tab:pwcut
+#+caption: Planewave cutoff energies (in eV) required for different convergence precisions for different elements. \label{tab:pwcut}
 | Precision |  Low | High |
 | Mo        |  168 |  293 |
 | O         |  300 |  520 |
@@ -354,15 +352,15 @@ will be errors in the total energy associated with the finite number
 of $\mathbf{k}$, but these can be reduced and tested for convergence
 by using higher $\mathbf{k}$-point densities. An excellent discussion
 of this for aperiodic systems can be found in Ref.
-\citealp{makov1995:period-bound-condit}.
+citealp:makov1995:period-bound-condit.
 
 The most common schemes for generating $\mathbf{k}$ points are the
-Chadi-Cohen scheme \cite{PhysRevB.8.5747}, and the Monkhorst-Pack scheme
-\cite{PhysRevB.13.5188}. The use of these $\mathbf{k}$ point setups
+Chadi-Cohen scheme cite:PhysRevB.8.5747, and the Monkhorst-Pack scheme
+cite:PhysRevB.13.5188. The use of these $\mathbf{k}$ point setups
 amounts to an expansion of the periodic function in reciprocal space,
 which allows a straight-forward interpolation of the function between
 the points that is more accurate than with other $\mathbf{k}$ point
-generation schemes \cite{PhysRevB.13.5188}.
+generation schemes cite:PhysRevB.13.5188.
 
 ** Pseudopotentials
 The core electrons of an atom are computationally expensive with
@@ -375,10 +373,10 @@ functions is to ensure proper orthogonality between the valence
 electrons and core states.  Consequently, it is desirable to replace
 the atomic potential due to the core electrons with a pseudopotential
 that has the same effect on the valence electrons
-\cite{PhysRevB.43.1993}. There are essentially two kinds of
+cite:PhysRevB.43.1993. There are essentially two kinds of
 pseudopotentials, norm-conserving soft pseudopotentials
-\cite{PhysRevB.43.1993} and Vanderbilt ultrasoft pseudopotentials
-\cite{PhysRevB.41.7892}. In either case, the pseudopotential
+cite:PhysRevB.43.1993 and Vanderbilt ultrasoft pseudopotentials
+cite:PhysRevB.41.7892. In either case, the pseudopotential
 function is generated from an all-electron calculation of an atom in
 some reference state. In norm-conserving pseudopotentials, the charge
 enclosed in the pseudopotential region is the same as that enclosed by
@@ -391,11 +389,12 @@ fewer planewaves are required to expand it.
 The pseudopotentials are not unique, and calculated properties depend
 on them. However, there are standard methods for ensuring the quality
 and transferability (to different chemical environments) of the
-pseudopotentials \cite{PhysRevB.56.15629}.
+pseudopotentials cite:PhysRevB.56.15629.
 
-TODO: PAW description
+*************** TODO PAW description
+*************** END
 
-VASP provides a database of PAW potentials \cite{PhysRevB.50.17953,PhysRevB.59.1758}.
+VASP provides a database of PAW potentials cite:PhysRevB.50.17953,PhysRevB.59.1758.
 
 ** Fermi Temperature and band occupation numbers
 At absolute zero, the occupancies of the bands of a system are
@@ -416,16 +415,16 @@ the Brillouin zone integral (which in practice is performed as a sum
 over a finite number of $\mathbf{k}$ points) that defines the band
 energy converges very slowly with the number of $\mathbf{k}$ points
 due to the discontinuity in occupancies in a continuous distribution
-of states for metals \cite{gillan1989:calcul,Kresse199615}.  The
+of states for metals cite:gillan1989:calcul,Kresse199615.  The
 difficulty arises because the temperature in most DFT calculations is
 at absolute zero.  At higher temperatures, the DOS is smeared across
 the Fermi level, resulting in a continuous occupation function over
 the distribution of states. A finite-temperature version of DFT was
-developed \cite{PhysRev.137.A1441}, which is the foundation on which one
+developed cite:PhysRev.137.A1441, which is the foundation on which one
 solution to this problem is based. In this solution, the step function
 is replaced by a smoothly varying function such as the Fermi-Dirac
 function at a small, but non-zero temperature
-\cite{Kresse199615}. The total energy is then extrapolated back
+cite:Kresse199615. The total energy is then extrapolated back
 to absolute zero.
 
 ** Spin polarization and magnetism
@@ -444,7 +443,7 @@ corresponds to the ground state for an oxygen atom. A classically
 known problem involving spin polarization is the dissociation of a
 hydrogen molecule. In this case, the molecule starts with no net spin,
 but it dissociates into two atoms, each of which has an unpaired
-electron.  See section 5.3.5 in Reference \citealp{koch2001} for more
+electron.  See section 5.3.5 in Reference citealp:koch2001 for more
 details on this.
 
 
@@ -452,9 +451,9 @@ In VASP, spin polarization is not considered by default; it must be
 turned on, and an initial guess for the magnetic moment of each atom
 in the unit cell must be provided (typically about one Bohr-magneton
 per unpaired electron). For Fe, Co, and Ni, the experimental values
-are 2.22, 1.72, and 0.61 Bohr-magnetons, respectively \cite{kittel}
+are 2.22, 1.72, and 0.61 Bohr-magnetons, respectively cite:kittel
 and are usually good initial guesses. See Reference
-\citealp{PhysRevB.56.15629} for a very thorough discussion of
+citealp:PhysRevB.56.15629 for a very thorough discussion of
 the determination of the magnetic properties of these metals with
 DFT. For a hydrogen atom, an initial guess of 1.0 Bohr-magnetons
 (corresponding to one unpaired electron) is usually good. An oxygen
@@ -473,25 +472,25 @@ doubles the calculation time.
 ** TODO Recommended reading
 This section needs cleaning up.
 
-Original papers on DFT \cite{PhysRev.136.B864,PhysRev.140.A1133}
+Original papers on DFT cite:PhysRev.136.B864,PhysRev.140.A1133
 
-Kohn's Nobel Lecture \cite{RevModPhys.71.1253}, Pople's Nobel Lecture \cite{RevModPhys.71.1267}
+Kohn's Nobel Lecture cite:RevModPhys.71.1253, Pople's Nobel Lecture cite:RevModPhys.71.1267
 
-\cite{RevModPhys.60.601} Hoffman
+cite:RevModPhys.60.601 Hoffman
 
-PAW in GPAW \cite{PhysRevB.71.035109}
+PAW in GPAW cite:PhysRevB.71.035109
 
-All calculations were performed using VASP \cite{Kresse199615, PhysRevB.54.11169, PhysRevB.49.14251, PhysRevB.47.558} with the projector augmented wave (PAW) potentials provided in VASP .
+All calculations were performed using VASP cite:Kresse199615,PhysRevB.54.11169,PhysRevB.49.14251,PhysRevB.47.558 with the projector augmented wave (PAW) potentials provided in VASP.
 
 
-Monkhorst-Pack k-points \cite{PhysRevB.13.5188}
+Monkhorst-Pack k-points cite:PhysRevB.13.5188
 
 * Molecules
-In this chapter we consider how to construct models of molecules, how to manipulate them, and how to calculate many properties of molecules. For a nice comparison of VASP and Gaussian see \citealp{paier:234102}.
+In this chapter we consider how to construct models of molecules, how to manipulate them, and how to calculate many properties of molecules. For a nice comparison of VASP and Gaussian see citealp:paier:234102.
 ** Defining and visualizing molecules
 We start by learning how to define a molecule and visualize it. We will begin with defining molecules from scratch, then reading molecules from data files, and finally using some built-in databases in =ase=.
 *** From scratch
-When there is no data file for the molecule you want, or no database to get it from, you have to define your atoms geometry by hand. Here is how that is done for a CO molecule (Figure \ref{fig:co-origin}). We must define the type and position of each atom, and the unit cell the atoms are in.
+When there is no data file for the molecule you want, or no database to get it from, you have to define your atoms geometry by hand. Here is how that is done for a CO molecule (Figure ref:fig:co-origin). We must define the type and position of each atom, and the unit cell the atoms are in.
 
 #+BEGIN_SRC python :results output
 from ase import Atoms, Atom
@@ -510,8 +509,7 @@ write('images/simple-cubic-cell.png', atoms, show_unit_cell=2)
 #+RESULTS:
 : V = 1000 Ang^3
 
-#+caption: Image of a CO molecule with the C at the origin.
-#+label: fig:co-origin
+#+caption: Image of a CO molecule with the C at the origin. \label{fig:co-origin}
 #+ATTR_LaTeX: placement=[H]
 [[./images/simple-cubic-cell.png]]
 
@@ -521,7 +519,7 @@ There are two inconvenient features of the simple cubic cell:
 
 2. Due to the geometry of the cube, you need fairly large cubes to make sure the electron density of the molecule does not overlap with that of its images. Electron-electron interactions are repulsive, and the overlap makes the energy increase significantly. Here, the CO molecule has 6 images due to periodic boundary conditions that are 10 \AA away. The volume of the unit cell is 1000 \AA$^3$.
 
-The first problem is easily solved by centering the atoms in the unit cell. The second problem can be solved by using a face-centered cubic lattice, which is the lattice with the closest packing. We show the results of the centering in Figure \ref{fig:co-fcc}, where we have guessed values for $b$ until the CO molecules are on average 10 \AA apart. Note the final volume is only about 715 \AA$^3$, which is smaller than the cube. This will result in less computational time to compute properties.
+The first problem is easily solved by centering the atoms in the unit cell. The second problem can be solved by using a face-centered cubic lattice, which is the lattice with the closest packing. We show the results of the centering in Figure ref:fig:co-fcc, where we have guessed values for $b$ until the CO molecules are on average 10 \AA apart. Note the final volume is only about 715 \AA$^3$, which is smaller than the cube. This will result in less computational time to compute properties.
 
 #+BEGIN_SRC python :results output
 from ase import Atoms, Atom
@@ -542,8 +540,7 @@ write('images/fcc-cell.png', atoms, show_unit_cell=2)
 #+RESULTS:
 : V = 716 Ang^3
 
-#+caption: CO in a face-centered cubic unit cell.
-#+label: fig:co-fcc
+#+caption: CO in a face-centered cubic unit cell. \label{fig:co-fcc}
 #+ATTR_LaTeX: placement=[H]
 [[./images/fcc-cell.png]]
 
@@ -636,7 +633,7 @@ often a comment. What follows is one line per atom with the symbol and
 Cartesian coordinates in \AA. Note that the XYZ format does not have
 unit cell information in it, so you will have to figure out a way to
 provide it. In this example, we center the atoms in a box with vacuum
-on all sides (Figure \ref{fig:isobutane}).
+on all sides (Figure ref:fig:isobutane).
 
 #+BEGIN_SRC python
 from ase.io import read,write
@@ -650,15 +647,14 @@ write('images/isobutane-xyz.png', atoms, show_unit_cell=2)
 #+RESULTS:
 : None
 
-#+caption: An isobutane molecule read in from an XYZ formatted data file.
-#+label: fig:isobutane
+#+caption: An isobutane molecule read in from an XYZ formatted data file. \label{fig:isobutane}
 #+ATTR_LaTeX: placement=[H]
 [[./images/isobutane-xyz.png]]
 *** Predefined molecules
 
 mod:ase defines a number of molecular geometries in the
 mod:ase.data.molecules database.  For example, the database includes
-the molecules in the G2/97 database \cite{curtiss:1063}. This database
+the molecules in the G2/97 database cite:curtiss:1063. This database
 contains a broad set of atoms and molecules for which good
 experimental data exists, making them useful for benchmarking studies.
 See [[http://www.cse.anl.gov/OldCHMwebsiteContent/compmat/comptherm.htm][this site]] for the original files.
@@ -735,7 +731,7 @@ CH3SCH3                  H2CO                     CH3CN
 
 Some other databases include the mod:ase.data.s22 for weakly interacting dimers and complexes, and mod:ase.data.extra_molecules which has a few extras like biphenyl and C60.
 
-Here is an example of getting the geometry of an acetonitrile molecule and writing an image to a file. Note that the default unit cell is a $1 \mathrm{\AA} \times 1 \mathrm{\AA} \times 1 \mathrm{\AA}$ cubic cell. That is too small to use if your calculator uses periodic boundary conditions. We center the atoms in the unit cell and add vacuum on each side. We will add 6 \AA of vacuum on each side. In the write command we use the option =show_unit_cell= =2 to draw the unit cell boundaries. See Figure \ref{fig:ch3cn}.
+Here is an example of getting the geometry of an acetonitrile molecule and writing an image to a file. Note that the default unit cell is a $1 \mathrm{\AA} \times 1 \mathrm{\AA} \times 1 \mathrm{\AA}$ cubic cell. That is too small to use if your calculator uses periodic boundary conditions. We center the atoms in the unit cell and add vacuum on each side. We will add 6 \AA of vacuum on each side. In the write command we use the option =show_unit_cell= =2 to draw the unit cell boundaries. See Figure ref:fig:ch3cn.
 
 #+BEGIN_SRC python :results output :exports both
 from ase.data.molecules import molecule
@@ -758,13 +754,12 @@ write('images/ch3cn.png', atoms, show_unit_cell=2)
 :  [  0.        13.537479   0.      ]
 :  [  0.         0.        15.014576]]
 
-#+caption: A CH_{3}CN molecule in a box.
-#+label: fig:ch3cn
+#+caption: A CH_{3}CN molecule in a box. \label{fig:ch3cn}
 #+ATTR_LaTeX: placement=[H]
 [[./images/ch3cn.png]]
 
 
-It is possible to rotate the atoms with func:ase.io.write if you wanted to see pictures from another angle. In the next example we rotate 45 degrees about the $x$-axis, then 45 degrees about the $y$-axis. Note that this only affects the image, not the actual coordinates. See Figure \ref{fig:ch3cn-rot}
+It is possible to rotate the atoms with func:ase.io.write if you wanted to see pictures from another angle. In the next example we rotate 45 degrees about the $x$-axis, then 45 degrees about the $y$-axis. Note that this only affects the image, not the actual coordinates. See Figure ref:fig:ch3cn-rot.
 
 #+BEGIN_SRC python :results output
 from ase.data.molecules import molecule
@@ -788,8 +783,7 @@ write('images/ch3cn-rotated.png', atoms,
 :  [  0.        13.537479   0.      ]
 :  [  0.         0.        15.014576]]
 
-#+caption: The rotated version of CH_{3}CN.
-#+label: fig:ch3cn-rot
+#+caption: The rotated version of CH_{3}CN. \label{fig:ch3cn-rot}
 #+ATTR_LaTeX: placement=[H]
 [[./images/ch3cn-rotated.png]]
 
@@ -836,7 +830,7 @@ for i, d in enumerate(diff):
 Note in this last case the unit cell is oriented differently than the previous example, since we chose not to rotate the unit cell.
 
 *** Combining Atoms objects
-It is frequently useful to combine two =Atoms= objects, e.g. for computing reaction barriers, or other types of interactions. In =ase=, we simply add two =Atoms= objects together. Here is an example of getting an ammonia and oxygen molecule in the same unit cell. See Figure \ref{fig:combined-atoms}. We set the =Atoms= about three \AA apart using the func:ase.Atoms.translate function.
+It is frequently useful to combine two =Atoms= objects, e.g. for computing reaction barriers, or other types of interactions. In =ase=, we simply add two =Atoms= objects together. Here is an example of getting an ammonia and oxygen molecule in the same unit cell. See Figure ref:fig:combined-atoms. We set the =Atoms= about three \AA apart using the func:ase.Atoms.translate function.
 
 #+BEGIN_SRC python :results output
 from ase.data.molecules import molecule
@@ -855,8 +849,7 @@ write('images/bothatoms.png', bothatoms, show_unit_cell=2, rotation='90x')
 
 #+RESULTS:
 
-#+caption: Image featuring ammonia and oxygen molecule in one unit cell.
-#+label: fig:combined-atoms
+#+caption: Image featuring ammonia and oxygen molecule in one unit cell. \label{fig:combined-atoms}
 #+ATTR_LaTeX: placement=[H]
 [[./images/bothatoms.png]]
 
@@ -1147,7 +1140,7 @@ print 'theta = {0} degrees'.format(atoms.get_angle([1,0,2])*180./pi)
 : theta = 106.334624232 degrees
 
 **** Dihedral angles
-There is support in ase for computing [[http://en.wikipedia.org/wiki/Dihedral_angle][dihedral angles]]. Let us illustrate that for ethane. We will compute the dihedral angle between atoms 5, 1, 0, and 4. That is a H-C-C-H dihedral angle, and one can visually see (although not here) that these atoms have a dihedral angle of 60^{\circ} (Figure \ref{fig:ethane-dihedral}).
+There is support in ase for computing [[http://en.wikipedia.org/wiki/Dihedral_angle][dihedral angles]]. Let us illustrate that for ethane. We will compute the dihedral angle between atoms 5, 1, 0, and 4. That is a H-C-C-H dihedral angle, and one can visually see (although not here) that these atoms have a dihedral angle of 60^{\circ} (Figure ref:fig:ethane-dihedral).
 
 #+BEGIN_SRC python :results output :exports both
 # calculate an ethane dihedral angle
@@ -1180,8 +1173,7 @@ atom symbol
 dihedral angle = 60.00 degrees
 #+end_example
 
-#+caption: Schematic of the calculated ethane dihedral angle.
-#+label: fig:ethane-dihedral
+#+caption: Schematic of the calculated ethane dihedral angle. \label{fig:ethane-dihedral}
 #+ATTR_LaTeX: width=86bp,placement=[H]
 [[./images/ethane-dihedral.png]]
 In this section we cover properties that require simple calculations, but not DFT calculations, to compute.
@@ -1369,7 +1361,7 @@ Although here the times do not seem that unreasonable, note we increased the tim
 
 *** Visualizing electron density
 
-The electron density is a 3\(d\) quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure \ref{fig:cd1}) of plotting the charge density, and we consider some issues we have to consider when visualizing volumetric data in unit cells with periodic boundary conditions. We will use the results from a previous calculation.
+The electron density is a 3\(d\) quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure ref:fig:cd1) of plotting the charge density, and we consider some issues we have to consider when visualizing volumetric data in unit cells with periodic boundary conditions. We will use the results from a previous calculation.
 
 #+BEGIN_SRC python
 from jasp import *
@@ -1427,9 +1419,8 @@ mlab.show()
 #+RESULTS:
 : None
 
-#+caption: Charge density of a CO molecule that is located at the origin. The electron density that is outside the cell is wrapped around to the other corners.
+#+caption: Charge density of a CO molecule that is located at the origin. The electron density that is outside the cell is wrapped around to the other corners. \label{fig:cd1}
 #+ATTR_LaTeX: placement=[H]
-#+label: fig:cd1
 [[./images/co-cd.png]]
 
 If we take care to center the CO molecule in the unit cell, we get a nicer looking result.
@@ -1503,9 +1494,8 @@ mlab.show()
 
 #+RESULTS:
 
-#+caption: Charge density of a CO molecule centered in the unit cell. Now the electron density is centered in the unit cell.
+#+caption: Charge density of a CO molecule centered in the unit cell. Now the electron density is centered in the unit cell. \label{fig:cd2}
 #+ATTR_LaTeX: placement=[H]
-#+label: fig:cd2
 [[./images/co-centered-cd.png]]
 *** Dipole moments
 [[index:dipole moment]]
@@ -1776,7 +1766,7 @@ need to read wavecar files! We cannot do this yet. There is some hope at http://
 
 *** Bader analysis
 index:bader
-Bader analysis is a charge partitioning scheme where charge is divided by surfaces of zero flux that define atomic basins of charge. The most modern way of calculating the Bader charges is using the =bader= program from Graeme Henkelmen's group \cite{Henkelman2006354,doi.10.1021/ct100125x}. Let us consider a water molecule, centered in a box. The strategy is first to run the calculation, then run the bader program on the results.
+Bader analysis is a charge partitioning scheme where charge is divided by surfaces of zero flux that define atomic basins of charge. The most modern way of calculating the Bader charges is using the =bader= program from Graeme Henkelmen's group cite:Henkelman2006354,doi.10.1021/ct100125x. Let us consider a water molecule, centered in a box. The strategy is first to run the calculation, then run the bader program on the results.
 
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -1994,7 +1984,7 @@ forces = (eV/ang)
 
 #+end_example
 
-To find the minimum we could run more calculations, but a simpler and faster way is to fit a polynomial to the data, and find the analytical minimum. The results are shown in Figure \ref{fig:co-bondlengths}.
+To find the minimum we could run more calculations, but a simpler and faster way is to fit a polynomial to the data, and find the analytical minimum. The results are shown in Figure ref:fig:co-bondlengths.
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -2046,8 +2036,7 @@ plt.show()
 : The minimum energy is [-14.843] eV at V = [ 1.144] Ang^3
 
 
-#+caption: Energy vs CO bond length.
-#+label: fig:co-bondlengths
+#+caption: Energy vs CO bond length. \label{fig:co-bondlengths}
 #+ATTR_LaTeX: placement=[H]
 [[./images/co-bondlengths.png]]
 
@@ -2194,7 +2183,7 @@ plt.show()
 : roots of first derivative are [ 1.43384501  1.14425395]
 : The frequency is 2143.60766258 cm^{-1}
 
-This result is in good agreement with [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C630080&Units=SI&Type=IR-SPEC&Index=0#IR-SPEC][experiment]]. The procedure described above is basically how many vibrational calculations are performed. With more atoms, you have to determine a force constant matrix and diagonalize it. For more details, see \cite{wilson1955}. In practice, we usually allow a packaged code to automate this, which we cover in [[*Automated%20vibrational%20calculations][Automated vibrational calculations]]
+This result is in good agreement with [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C630080&Units=SI&Type=IR-SPEC&Index=0#IR-SPEC][experiment]]. The procedure described above is basically how many vibrational calculations are performed. With more atoms, you have to determine a force constant matrix and diagonalize it. For more details, see cite:wilson1955. In practice, we usually allow a packaged code to automate this, which we cover in [[*Automated%20vibrational%20calculations][Automated vibrational calculations]].
 
 We now consider how much energy is in this vibration. This is commonly called zero-point energy (ZPE) and it is defined as $E_{ZPE} = \frac{1}{2} h \nu$ for a single mode, and $h$ is Planck's constant (4.135667516e-15 eV/s).
 
@@ -2566,7 +2555,7 @@ cd ../..
 
 The interpretation of these results is that the mode at 3713 cm^{-1} would be nearly invisible in the IR spectrum. Earlier we interpreted that as the symmetric stretch. In this mode, there is only a small change in the molecule dipole moment, so there is a small IR intensity.
 
-See also \cite{giannozzi:8537}. For HREELS simulations see \cite{0953-8984-22-26-265006}.
+See also cite:giannozzi:8537. For HREELS simulations see cite:0953-8984-22-26-265006.
 
 The shell script above has been translated to a convenient python function in mod:jasp.
 #+BEGIN_SRC python :results output
@@ -2595,7 +2584,7 @@ mode  Relative intensity
 index:thermochemistry
 mod:ase.thermochemistry can be used to estimate thermodynamic properties of gases in the ideal gas limit. The module needs as input the geometry, the total energy, the vibrational energies, and some information about the molecular symmetry. We first consider an N_{2} molecule.
 
-The symmetry numbers are determined by the molecular point group \cite{springerlink-10.1007/s00214-007-0328-0}. Here is a table of the most common ones.
+The symmetry numbers are determined by the molecular point group cite:springerlink-10.1007/s00214-007-0328-0. Here is a table of the most common ones.
 
 #+caption: Symmetry numbers for common point groups
 | point group    | $\sigma$ | examples      |
@@ -2867,12 +2856,11 @@ plt.savefig('images/O2-sp-dos.png')
 : number of up states = 7.00000343617
 : number of down states = 5.00001715094
 
-#+caption: Spin-polarized DOS for the O_{2} molecule.
-#+label: fig:o2-sp-dos
+#+caption: Spin-polarized DOS for the O_{2} molecule. \label{fig:o2-sp-dos}
 #+ATTR_LaTeX: placement=[H]
 [[./images/O2-sp-dos.png]]
 
-You can see in Figure \ref{fig:o2-sp-dos} that there are two different densities of states for the two spins. One has 7 electrons in it (the blue lines), and the other has 5 electrons in it (the green line). The difference of two electrons leads to the magnetic moment of 2 which we calculated earlier. Remember that only peaks in the DOS below the Fermi level are occupied. It is customary to set the Fermi level to 0 eV in DOS plots. The peaks roughly correspond to electrons. For example, the blue peak between -25 and -30 eV corresponds to one electron, in a 1s orbital, where as the blue peak between -5 and -10 eV corresponds to three electrons.
+You can see in Figure ref:fig:o2-sp-dos that there are two different densities of states for the two spins. One has 7 electrons in it (the blue lines), and the other has 5 electrons in it (the green line). The difference of two electrons leads to the magnetic moment of 2 which we calculated earlier. Remember that only peaks in the DOS below the Fermi level are occupied. It is customary to set the Fermi level to 0 eV in DOS plots. The peaks roughly correspond to electrons. For example, the blue peak between -25 and -30 eV corresponds to one electron, in a 1s orbital, where as the blue peak between -5 and -10 eV corresponds to three electrons.
 
 **** Convergence study of the O_{2} dissociation energy
 index:convergence!ENCUT
@@ -2936,12 +2924,11 @@ plt.savefig('images/O2-dissociation-convergence.png')
 : O2 -> 2O encut = 500  D = 6.648 eV
 : O2 -> 2O encut = 550  D = 6.650 eV
 
-#+caption: Convergence study of the O_{2} dissociation energy as a function of ENCUT.
-#+label: fig:o2-encut
+#+caption: Convergence study of the O_{2} dissociation energy as a function of ENCUT. \label{fig:o2-encut}
 #+ATTR_LaTeX: placement=[H]
 [[./images/O2-dissociation-convergence.png]]
 
-Based on these results (Figure \ref{fig:o2-encut}), you could argue the dissociation energy is converged to about 2 meV at a planewave cutoff of 450 eV, and within 50 meV at 350 eV cutoff. You have to decide what an appropriate level of convergence is. Note that increasing the planewave cutoff significantly increases the computational time, so you are balancing level of convergence with computational speed. It would appear that planewave cutoff is not the cause for the discrepancy between our calculations and literature values.
+Based on these results (Figure ref:fig:o2-encut), you could argue the dissociation energy is converged to about 2 meV at a planewave cutoff of 450 eV, and within 50 meV at 350 eV cutoff. You have to decide what an appropriate level of convergence is. Note that increasing the planewave cutoff significantly increases the computational time, so you are balancing level of convergence with computational speed. It would appear that planewave cutoff is not the cause for the discrepancy between our calculations and literature values.
 
 #+BEGIN_SRC python :results output :exports both
 encuts = [250, 300, 350, 400, 450, 500, 550]
@@ -2979,11 +2966,11 @@ for encut in encuts:
 
 The methodology for extrapolation of the total energy to absolute zero is
 only valid for a continuous density of states at the Fermi level
-\cite{Kresse199615}. Consequently, it should not be used for
+cite:Kresse199615. Consequently, it should not be used for
 semiconductors, molecules or atoms. In VASP, this means a very small
 Fermi temperature (SIGMA) should be used.  The O_{2} dissociation energy
 as a function of SIGMA is shown in Figure
-\ref{fig:sigma-o2-diss}. A variation of nearly 0.2 eV is seen from the
+ref:fig:sigma-o2-diss. A variation of nearly 0.2 eV is seen from the
 default Fermi temperature of $k_bT=0.2$ eV and the value of
 $k_bT=0.0001$ eV. However, virtually no change was observed for a
 hydrogen atom or molecule or for an oxygen molecule as a function of
@@ -3055,8 +3042,7 @@ plt.savefig('images/O2-dissociation-sigma-convergence.png')
 : O2 -> 2O sigma = 0.01  D = 6.815 eV
 : O2 -> 2O sigma = 0.001  D = 6.822 eV
 
-#+caption: Effect of SIGMA on the oxygen dissociation energy.
-#+label: fig:sigma-o2-diss
+#+caption: Effect of SIGMA on the oxygen dissociation energy. \label{fig:sigma-o2-diss}
 #+ATTR_LaTeX: placement=[H]
 [[./images/O2-dissociation-sigma-convergence.png]]
 
@@ -3971,7 +3957,7 @@ You can see a few things here. One is that at near 298K, the Gibbs free energy i
 
 
 ** Molecular reaction barriers
-We will consider a simple example of the barrier for NH_{3} inversion. We have to create an NH_{3} molecule in the initial and inverted state (these have exactly the same energy), and then interpolate a band of images. Then, we use the NEB method to compute the barrier to inversion.
+We will consider a simple example of the barrier for NH_{3} inversion. We have to create an NH_{3} molecule in the initial and inverted state (these have exactly the same energy), and then interpolate a band of images. Then, we use the NEB method cite:sheppard:134106 to compute the barrier to inversion. The NEB class of methods are pretty standard, but other algorithms for finding barriers (saddle-points) exist that may be relevant cite:olsen:9776.
 
 *** Get initial and final states
 #+BEGIN_SRC python :exports code
@@ -4413,7 +4399,7 @@ We get exactly the same result as the website! Why is this helpful then? Well, w
 *** k-point convergence
 In the section on molecules, we learned that the total energy is a function of the planewave cutoff energy (ENCUT) used. In bulk systems that is true also. There is also another calculation parameter you must consider, the k-point grid. The k-point grid is a computational tool used to approximate integrals of some property, e.g. the electron density, over the entire unit cell. The integration is performed in reciprocal space (i.e. in the Brillouin zone) for convenience and efficiency, and the k-point grid is where the property is sampled for the integration. The higher the number of sampled points, the more accurately the integrals are approximated.
 
-We will typically use a Monkhorst-Pack \cite{PhysRevB.13.5188} k-point grid, which is essentially a uniformly spaced grid in the Brillouin zone. Another less commonly used scheme is the Chadi-Cohen k-point grid \cite{PhysRevB.8.5747}. The Monkhorst-Pack grids are specified as $n1 \times n2 \times n3$ grids, and the total number of k-points is $n1 \cdot n2 \cdot n3$. The computational cost is linear in the total number of k-points, so  a calculation on a $4 \times 4 \times 4$ grid will be roughly 8 times more expensive than on a $2 \times 2 \times 2$ grid. Hence, one seeks again to balance convergence with computational tractability. Below we consider the k-point convergence of fcc Ag.
+We will typically use a Monkhorst-Pack cite:PhysRevB.13.5188 $k$-point grid, which is essentially a uniformly spaced grid in the Brillouin zone. Another less commonly used scheme is the Chadi-Cohen k-point grid cite:PhysRevB.8.5747. The Monkhorst-Pack grids are specified as $n1 \times n2 \times n3$ grids, and the total number of k-points is $n1 \cdot n2 \cdot n3$. The computational cost is linear in the total number of k-points, so  a calculation on a $4 \times 4 \times 4$ grid will be roughly 8 times more expensive than on a $2 \times 2 \times 2$ grid. Hence, one seeks again to balance convergence with computational tractability. Below we consider the k-point convergence of fcc Ag.
 
 #+BEGIN_SRC python
 from ase.lattice.cubic import FaceCenteredCubic
@@ -4483,7 +4469,7 @@ must be included in the calculation to allow for the partially
 occupied states above the Fermi level; the number of extra bands depends on
 the temperature used.  An example of the maximum occupancies of the
 bands for an Al(111) slab as a function of the Fermi temperature is
-shown in Figure \ref{fig:sigma-occ}. Obviously, as the Fermi temperature
+shown in Figure ref:fig:sigma-occ. Obviously, as the Fermi temperature
 approaches 0 K, the occupancy approaches a step function.  It is preferable
 that the occupancy of several of the highest bands be zero (or at
 least of order $1\times 10^{-8}$) to ensure enough variational freedom was
@@ -4542,8 +4528,7 @@ plt.show()
 
 #+RESULTS:
 
-#+caption: Effects of SIGMA on the occupancies of the Cu system.
-#+label: fig:sigma-occ
+#+caption: Effects of SIGMA on the occupancies of the Cu system. \label{fig:sigma-occ}
 #+ATTR_LaTeX: placement=[H]
 [[./images/occ-sigma.png]]
 
@@ -4727,7 +4712,7 @@ All of these questions can often be addressed by finding the volume, shape and a
 
 *** fcc/bcc crystal structures
 
-The fcc and bcc structures are simple. They only have one degree of freedom: the lattice constant. In this section we show how to calculate the equilibrium volume of each structure, and determine which one is more stable. We start with the fcc crystal structure of Cu. We will manually define the crystal structure based on the definitions in Kittel \cite{kittel} (Chapter 1).
+The fcc and bcc structures are simple. They only have one degree of freedom: the lattice constant. In this section we show how to calculate the equilibrium volume of each structure, and determine which one is more stable. We start with the fcc crystal structure of Cu. We will manually define the crystal structure based on the definitions in Kittel cite:kittel (Chapter 1).
 
 #+BEGIN_SRC python :results output org raw
 from jasp import *
@@ -4946,7 +4931,7 @@ What can we say about the relative stability of fcc to hcp? Nothing, until we ca
 
 
 *** Optimizing the hcp lattice constant
-The hcp lattice is more complicated than the fcc/bcc lattices because there are two lattice parameters: $a$ and $c$ or equivalently: $a$ and $c/a$. We will start by making a grid of values and find the set of parameters that minimizes the energy. See Figure \ref{fig:ru-e-ca}.
+The hcp lattice is more complicated than the fcc/bcc lattices because there are two lattice parameters: $a$ and $c$ or equivalently: $a$ and $c/a$. We will start by making a grid of values and find the set of parameters that minimizes the energy. See Figure ref:fig:ru-e-ca.
 
 #+BEGIN_SRC python :results output
 from ase.lattice.hexagonal import HexagonalClosedPacked
@@ -4988,12 +4973,11 @@ plt.show()
 
 #+RESULTS:
 
-#+caption: Total energy vs. $c/a$ for different values of $a$.
+#+caption: Total energy vs. $c/a$ for different values of $a$. \label{fig:ru-e-ca}
 #+attr_latex: placement=[H]
-#+label: fig:ru-e-ca
 [[./images/Ru-covera-scan.png]]
 
-It looks like there is a minimum in the a=2.7  \AA  curve, at a $c/a$ ratio of about 1.6. We can look at the same data in a contour plot which shows more clearly there is minimum in all directions near that point (Figure \ref{fig:ru-contourf}).
+It looks like there is a minimum in the a=2.7  \AA  curve, at a $c/a$ ratio of about 1.6. We can look at the same data in a contour plot which shows more clearly there is minimum in all directions near that point (Figure ref:fig:ru-contourf).
 
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -5032,9 +5016,8 @@ plt.show()
 #+END_SRC
 #+RESULTS:
 
-#+caption: Contour plot of the total energy of hcp Ru for different values of $a$ and $c/a$.
+#+caption: Contour plot of the total energy of hcp Ru for different values of $a$ and $c/a$. \label{fig:ru-contourf}
 #+attr_latex: placement=[H]
-#+label: fig:ru-contourf
 [[./images/ru-contourf.png]]
 
 
@@ -5353,7 +5336,7 @@ with jasp('bulk/tio2/step4',
 The difference here is on the order of a meV. That does not seem significant here. I suspect the recommended practice stems from early days when much smaller ENCUT values were used and changes in the number of basis functions were more significant.
 
 *** Effect of XC on bulk properties
-The exchange correlation functional can significantly affect computed bulk properties. Here, we examine the effect on the bulk lattice constant of Pd (exp. 3.881). An excellent review of this can be found in \cite{mattsson-084714}. We examine several functionals. The =xc= keyword in =jasp= is used to select the POTCARs. The value of xc can be 'LDA', 'PW91' or 'PBE'. Let us consider the LDA functional first.
+The exchange correlation functional can significantly affect computed bulk properties. Here, we examine the effect on the bulk lattice constant of Pd (exp. 3.881). An excellent review of this can be found in cite:mattsson-084714. We examine several functionals. The =xc= keyword in =jasp= is used to select the POTCARs. The value of xc can be 'LDA', 'PW91' or 'PBE'. Let us consider the LDA functional first.
 
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -5439,7 +5422,7 @@ for key in GGA:
 : RPBE   lattice constant is 3.990 Ang^3
 : PBE    lattice constant is 3.952 Ang^3
 
-These results compare very favorably to those in \cite{mattsson-084714}. It is typical that LDA functionals underestimate the lattice constants, and that GGAs tend to overestimate the lattice constants. PBEsol and AM05 were designed specifically for solids, and for Pd, these functionals do an exceptional job of reproducing the lattice constants. RPBE is particularly bad at the lattice constant, but it has been reported to be a superior functional for reactivity \cite{hammer1999:improv-pbe}.
+These results compare very favorably to those in cite:mattsson-084714. It is typical that LDA functionals underestimate the lattice constants, and that GGAs tend to overestimate the lattice constants. PBEsol and AM05 were designed specifically for solids, and for Pd, these functionals do an exceptional job of reproducing the lattice constants. RPBE is particularly bad at the lattice constant, but it has been reported to be a superior functional for reactivity cite:hammer1999:improv-pbe.
 
 ** Cohesive energy
 [[index:cohesive energy]]
@@ -5568,12 +5551,12 @@ print 'The cohesive energy is {0:1.3f} eV'.format(cohesive_energy)
 #+RESULTS:
 : The cohesive energy is 5.887 eV
 
-Again, the value in Kittel \cite{kittel} is 5.75 eV which is very close to this value. Finally, it is also possible there is a lower energy non-spherical atom energy; we did not check that at all (see [[*Estimating%20triplet%20oxygen%20dissociation%20energy%20with%20low%20symmetry][Estimating triplet oxygen dissociation energy with low symmetry]]).
+Again, the value in Kittel cite:kittel is 5.75 eV which is very close to this value. Finally, it is also possible there is a lower energy non-spherical atom energy; we did not check that at all (see [[*Estimating%20triplet%20oxygen%20dissociation%20energy%20with%20low%20symmetry][Estimating triplet oxygen dissociation energy with low symmetry]]).
 
 ** TODO Elastic properties
-See this reference \cite{PhysRevB.65.104104}.
+See this reference cite:PhysRevB.65.104104.
 ** Bulk thermodynamics
-We can predict temperature dependent thermodynamic properties of bulk materials without too much effort. As with the thermochemical properties of ideal gases, we must use some simple models that we parameterize by DFT. Here we follow the example in Reference \cite{Shang20101040} for computing the thermal coefficient of expansion, heat capacity, enthalpy and entropy for Ni as a function of temperature.
+We can predict temperature dependent thermodynamic properties of bulk materials without too much effort. As with the thermochemical properties of ideal gases, we must use some simple models that we parameterize by DFT. Here we follow the example in Reference citealp:Shang20101040 for computing the thermal coefficient of expansion, heat capacity, enthalpy and entropy for Ni as a function of temperature.
 
 We start by computing the equation of state for fcc Ni.
 #+BEGIN_SRC python
@@ -5857,8 +5840,7 @@ plt.savefig('images/eos-common-tangent.png')
 
 At a pressure of 4.5 GPa, we expect that anatase will start converting into rutile. Along this common tangent, a mixture of the two phases will be more stable than either pure phase.
 
-#+caption: Illustration of the common tangent that shows the pressure where anatase and rutile coexist before anatase converts to rutile.
-#+label: fig:tio2-cotangent
+#+caption: Illustration of the common tangent that shows the pressure where anatase and rutile coexist before anatase converts to rutile. \label{fig:tio2-cotangent}
 #+ATTR_LaTeX: placement=[H]
 [[./images/eos-common-tangent.png]]
 
@@ -6039,10 +6021,9 @@ print 'Delta Hf cupd-2 = {0:1.2f} eV/atom'.format(e2)
 : Delta Hf cupd-1 = -0.12 eV/atom
 : Delta Hf cupd-2 = -0.04 eV/atom
 
-The answer is yes. Both structures are energetically more favorable than an equal composition mixture of the parent metals. The heat of formation for both structures is exothermic, but the cupd-1 structure is more stable than the cupd-2 structure. This is shown conceptually in Figure \ref{fig:alloy1}.
+The answer is yes. Both structures are energetically more favorable than an equal composition mixture of the parent metals. The heat of formation for both structures is exothermic, but the cupd-1 structure is more stable than the cupd-2 structure. This is shown conceptually in Figure ref:fig:alloy1.
 
-#+caption: Conceptual picture of two alloys with exothermic formation energies. The dashed line represents a composition weighted average energy of the parent metals. E4 and E3 are energies associated with two different alloy structures at the same composition. Both structures are more stable than a mixture of pure metals with the same composition, but E3 is more stable than E4.
-#+label: fig:alloy1
+#+caption: Conceptual picture of two alloys with exothermic formation energies. The dashed line represents a composition weighted average energy of the parent metals. E4 and E3 are energies associated with two different alloy structures at the same composition. Both structures are more stable than a mixture of pure metals with the same composition, but E3 is more stable than E4. \label{fig:alloy1}
 #+ATTR_LaTeX: placement=[H]
 [[./images/alloy-stability.png]]
 
@@ -6111,11 +6092,10 @@ print 'Composition weighted average  = {0} eV'.format(Hf1 + (x0-x)/(x0-x3)*(Hf3 
 #+RESULTS:
 : Composition weighted average  = -0.06 eV
 
-We find the weighted composition formation energy of pure Cu and cupd-1 is more favorable than the formation energy of cu3pd-1. Therefore, we could expect that structure to phase separate into a mixture of pure Cu and cupd-1. Schematically what we are seeing is shown in Figure \ref{fig:alloy-phase-separation}.
+We find the weighted composition formation energy of pure Cu and cupd-1 is more favorable than the formation energy of cu3pd-1. Therefore, we could expect that structure to phase separate into a mixture of pure Cu and cupd-1. Schematically what we are seeing is shown in Figure \ref:fig:alloy-phase-separation.
 
 # inkscape images/alloy-phase-stability.svg
-#+caption: Illustration of of an alloy structure with an exothermic formation energy that is not stable with respect to phase separation. The solid line shows the composition weighted average energy of a mixture of Cu and cupd-2. Since the energy of cu3pd-1 is above the solid line, it is less favorable than a mixture of Cu and cupd-2 with the same composition.
-#+label: fig:alloy-phase-separation
+#+caption: Illustration of of an alloy structure with an exothermic formation energy that is not stable with respect to phase separation. The solid line shows the composition weighted average energy of a mixture of Cu and cupd-2. Since the energy of cu3pd-1 is above the solid line, it is less favorable than a mixture of Cu and cupd-2 with the same composition. \label{fig:alloy-phase-separation}
 #+ATTR_LaTeX: placement=[H]
 [[./images/alloy-phase-stability.png]]
 
@@ -6167,12 +6147,11 @@ print 'Delta Hf cu3pd-2 = {0:1.2f} eV/atom'.format(e4)
 This looks promising: the formation energy is much more favorable than cu3pd-1, and it is below the composition weighted formation energy of -0.06 eV/atom. Consequently, we conclude that this structure will not phase separate into a mixture of Cu and CuPd. We cannot say, however, if there is a more stable phase not yet considered, or if it might phase separate into two other phases. We also note here that we have ignored a few other contributions to alloy stability. We have only considered the electronic energy contributions to the formation energy. At temperatures above absolute zero there are additional contributions including configurational and vibrational entropy, which may stabilize some structures more than others. Finally, our analysis is limited to comparisons of the structures computed on the fcc lattice. In fact, it is known that the CuPd alloy forms a bcc structure. We did not calculate that structure, so we can not say if it is more or less stable than the obvious fcc structure we found.
 
 # convert ./images/alloy-phase-stability-2.svg ./images/alloy-phase-stability-2.png
-#+caption: Illustration that cu3pd-2 is more stable than cu3pd-1 and that is it is more stable than a composition weighted mixture of Cu and cupd-1. The dotted line shows the energy of a composition weighted average energy of a mixture of Cu and cupd-1. Since cu3pd-2 is below the dotted line, it is more stable than the phase-separated mixture.
-#+label: fig:alloy-phase-separation-2
+#+caption: Illustration that cu3pd-2 is more stable than cu3pd-1 and that is it is more stable than a composition weighted mixture of Cu and cupd-1. The dotted line shows the energy of a composition weighted average energy of a mixture of Cu and cupd-1. Since cu3pd-2 is below the dotted line, it is more stable than the phase-separated mixture. \label{fig:alloy-phase-separation-2}
 #+ATTR_LaTeX: placement=[H]
 [[./images/alloy-phase-stability-2.png]]
 
-The construction of alloy phase diagrams is difficult. You are always faced with the possibility that there is a phase that you have not calculated that is more stable than the ones you did calculate. One approach is to use a tool that automates the discovery of relevant structures such as the Alloy Theoretic Automated Toolkit ([[http://www.its.caltech.edu/~avdw/atat/][ATAT]]) \cite{vandeWalle2002539,vandeWalle2009266} which uses a cluster expansion methodology.
+The construction of alloy phase diagrams is difficult. You are always faced with the possibility that there is a phase that you have not calculated that is more stable than the ones you did calculate. One approach is to use a tool that automates the discovery of relevant structures such as the Alloy Theoretic Automated Toolkit ([[http://www.its.caltech.edu/~avdw/atat/][ATAT]]) cite:vandeWalle2002539,vandeWalle2009266 which uses a cluster expansion methodology.
 
 *** Metal oxide oxidation energies
 We will consider here the reaction 2 Cu_{2}O + O_{2} $\rightleftharpoons$ 4 CuO. The reaction energy is:
@@ -6365,9 +6344,9 @@ print 'Reaction energy = {0} eV'.format(rxn_energy)
 #+RESULTS:
 : Reaction energy = -1.966168 eV
 
-This is the reaction energy for 2 Cu_{2}O $\rightarrow$ 4 CuO. In \cite{PhysRevB.73.195107}, the experimental reaction is estimated to be  about -3.14 eV.
+This is the reaction energy for 2 Cu_{2}O $\rightarrow$ 4 CuO. In cite:PhysRevB.73.195107, the experimental reaction is estimated to be  about -3.14 eV.
 
-There are a few reasons why our number does not agree with the experimental reaction energy. One reason is related to errors in the O_{2} dissociation energy, and another reason is related to localization of electrons in the Cu 3\(d\) orbitals \cite{PhysRevB.73.195107}. The first error of incorrect O_{2} dissociation error is a systematic error that can be corrected empirically \cite{PhysRevB.73.195107}. Fixing the second error requires the application of DFT+U (see [[*DFT%2BU][DFT+U]]).
+There are a few reasons why our number does not agree with the experimental reaction energy. One reason is related to errors in the O_{2} dissociation energy, and another reason is related to localization of electrons in the Cu 3\(d\) orbitals cite:PhysRevB.73.195107. The first error of incorrect O_{2} dissociation error is a systematic error that can be corrected empirically cite:PhysRevB.73.195107. Fixing the second error requires the application of DFT+U (see [[*DFT%2BU][DFT+U]]).
 
 The heat of reaction is reported to be 1000 J/g product at http://onlinelibrary.wiley.com/doi/10.1002/er.4440130107/pdf for the reaction 2CuO $\rightleftharpoons$ Cu_{2}O + 1/2 O_{2}.
 
@@ -6383,7 +6362,7 @@ print 'rxn energy = {0:1.1f} eV'.format(-2*H*MW/96.4)  # convert to eV
 #+RESULTS:
 : rxn energy = -3.0 eV
 
-This is pretty close to the value in \cite{PhysRevB.73.195107} and might need a temperature correction to get agreement at 298K.
+This is pretty close to the value in cite:PhysRevB.73.195107 and might need a temperature correction to get agreement at 298K.
 
 ** Bulk density of states
 The density of states refers to the number of electronic states in a particular energy range.
@@ -6391,39 +6370,41 @@ The density of states refers to the number of electronic states in a particular 
 The solution to Eq. \eqref{eq:KS} yields a set of Kohn-Sham (K-S) orbitals and an
 associated set of eigenvalues that correspond to the energies of these
 orbitals, neither of which have any known directly observable meaning
-\cite{RevModPhys.71.1253}.  The sum of the squared K-S orbitals,
+cite:RevModPhys.71.1253.  The sum of the squared K-S orbitals,
 however, is equal to the electron density (Eq. \eqref{eq:density}),
 and the sum of the eigenvalues is a significant part of the total
 energy (Eq.  \eqref{eq:dftEnergy}). Thus, it seems reasonable to
 suppose these quantities have other significant relationships to
 physical observables. Perdew et al. showed that the highest occupied
 eigenvalue is equal to the ionization energy of a system within an
-exact density functional theory \cite{perdew1982:elect-kohn-sham}, but
+exact density functional theory cite:perdew1982:elect-kohn-sham, but
 their interpretation has been vigorously debated in the literature
-\cite{kleinman1997:signif-kohn-sham,perdew1997,kleinman1997:reply-commen-kohn-sham},
+cite:kleinman1997:signif-kohn-sham,perdew1997,kleinman1997:reply-commen-kohn-sham,
 and is only true for the exact exchange/correlation functional, not
-the approximate ones used in practice \cite[Section 5.3.3]{koch2001}.
+the approximate ones used in practice cite:koch2001.
 Stowasser and Hoffmann discussed an approach to using the K-S orbitals
 in more traditional molecular orbital interpretations, but the results
-were primarily qualitative \cite{stowasser1999:what-kohn-sham}. More
+were primarily qualitative cite:stowasser1999:what-kohn-sham. More
 recently, a DFT analog of Koopmans' theorem has been developed that
 formally identifies the eigenvalues with vertical ionization
 potentials, which can be measured with photoelectron spectroscopy
-\cite{gritsenko2002}.
+cite:gritsenko2002.
 
 Despite the arguments against ascribing physical meaning to the K-S
 orbitals and eigenvalues, it has become fairly standard, especially
 for solids, to use them to calculate the density of states (DOS)
-\cite[Sec.  VI.  B]{jones1989}.  This has been found to yield
+cite:jones1989 [Sec.  VI.  B].  This has been found to yield
 reasonable results for the valence bands in metals, but poor results
 for tightly bound orbitals and band gaps
-\cite{perdew1982:elect-kohn-sham}. A highly technical discussion of
-this issue can be found in Ref. \citealp{perdew1981:self}.  The
+cite:perdew1982:elect-kohn-sham. A highly technical discussion of
+this issue can be found in Ref. citealp:perdew1981:self.  The
 density of states can be calculated by a sum over the k-points
-\cite{seitsonen2000:phd}:
+cite:seitsonen2000:phd:
+
 \begin{equation}\label{eq:dos}
 \rho(\epsilon)=\sum_\mathbf{\mathrm{k}} \omega_\mathbf{\mathrm{k}} \sum_i \beta(\epsilon -\epsilon_{i\mathbf{\mathrm{k}}})
 \end{equation}
+
 where $\omega_\mathbf{\mathrm{k}}$ is the weight associated with the
 k-point, and $\beta$ is a broadening function, typically a gaussian
 function, to account for the finite number of k-points used in the
@@ -6608,10 +6589,10 @@ One major disadvantage of a planewave basis set is that it is
 difficult to relate the completely delocalized planewaves to
 localized phenomena such as bonding. Much insight into bonding has
 been gained by atomic/molecular orbital theory, which has carried over
-to the solid-state arena \cite{RevModPhys.60.601}. Consequently, several
+to the solid-state arena cite:RevModPhys.60.601. Consequently, several
 schemes have been developed to project the one-electron Kohn-Sham wave
 functions onto atomic wave functions
-\cite{sanchez-portal1995:projec,segall1996:popul,segall1996:popul-mp}.
+cite:sanchez-portal1995:projec,segall1996:popul,segall1996:popul-mp.
 In VASP, the one electron wave functions can be projected onto
 spherical harmonic orbitals. The radial component of the atomic
 orbitals extends to infinity. In a solid, this means that the
@@ -6637,8 +6618,8 @@ here.  Thus, a discussion of the analysis and results is warranted.
 The s and p states in a metal are typically delocalized in space and
 more like free-electrons, whereas the d-orbitals are fairly localized
 in space and have been treated successfully with tight-binding
-theories such as extended H\"u ckel theory \cite{RevModPhys.60.601}, and
-linear muffin tin orbital theory \cite{ruban1997:surfac}.
+theories such as extended H\"u ckel theory cite:RevModPhys.60.601, and
+linear muffin tin orbital theory cite:ruban1997:surfac.
 Consequently, the remaining discussion will be focused on the
 properties of the projected d-states.
 
@@ -6651,12 +6632,12 @@ filling can be determined.  It is not obvious what the electron count
 in the d-band should be for an atom in a metal.  For a gas-phase,
 neutral metal atom in the ground state, however, the d-orbital
 electron count is well defined, so it will be used as an initial
-reference point for comparison \cite{kittel}.
+reference point for comparison cite:kittel.
 
 A powerful method for characterizing distributions is to examine
 various moments of the distribution (see Chapter 4 in Ref.
-\citealp{cottrell1988} and Chapter 6 in Refs. \citealp{ducastelle1991}
-and \citealp{pettifor1992:elect-theor-alloy-desig}). The $n^{th}$
+citealp:cottrell1988 and Chapter 6 in Refs. citealp:ducastelle1991
+and citealp:pettifor1992:elect-theor-alloy-desig). The $n^{th}$
 order moment, $\mu_n$, of a distribution of states $\rho(\epsilon)$
 with respect to a reference $\epsilon_o$ is defined by
 \begin{equation}
@@ -7153,11 +7134,11 @@ You can see that even though the total magnetic moment is 0, there is a spin on 
 
 *** TODO NiO-FeO formation energies with magnetism
 ** TODO phonons
-\cite{RevModPhys.73.515}
+cite:RevModPhys.73.515
 
 ** TODO solid state NEB
-\cite{Caspersen10052005} Carter paper
-\cite{sheppard:074103} recent Henkelman paper
+cite:Caspersen10052005 Carter paper
+cite:sheppard:074103 recent Henkelman paper
 * Surfaces
 ** Surface structures
 As with molecules and bulk systems mod:ase provides several convenience functions for making surfaces.
@@ -7420,9 +7401,9 @@ Depending on the layer there is either slight contraction or expansion. These qu
 ** Surface reconstruction
 index:reconstruction
 
-We previously considered how relaxation can lower the surface energy. For some surfaces, a more extreme effect can reduce the surface energy: reconstruction. In a simple surface relaxation, the basic structure of a surface is preserved. However, sometimes there is a different surface structure that may have a lower surface energy. Some famous reconstructions include: Si-\(\sqrt{7}\times\sqrt{7}\), Pt(100) hex reconstruction \cite{PhysRevB.56.10518,PhysRevB.82.161418}, and the Au(111) herringbone reconstruction.
+We previously considered how relaxation can lower the surface energy. For some surfaces, a more extreme effect can reduce the surface energy: reconstruction. In a simple surface relaxation, the basic structure of a surface is preserved. However, sometimes there is a different surface structure that may have a lower surface energy. Some famous reconstructions include: Si-\(\sqrt{7}\times\sqrt{7}\), Pt(100) hex reconstruction cite:PhysRevB.56.10518,PhysRevB.82.161418, and the Au(111) herringbone reconstruction.
 
-We will consider the (110) missing row reconstruction \cite{PhysRevB.83.075415}. For some metals, especially Pt and Au, it is energetically favorable to form the so-called missing row reconstruction where every other row in the surface is "missing". It is favorable because it lowers the surface energy. Let us consider how we might calculate and predict that. It is straightforward to compute the energy of a (110) slab, and of a (110) slab with one row missing. However, these slabs contain different numbers of atoms, so we cannot directly compare the total energies to determine which energy is lower.
+We will consider the (110) missing row reconstruction cite:PhysRevB.83.075415. For some metals, especially Pt and Au, it is energetically favorable to form the so-called missing row reconstruction where every other row in the surface is "missing". It is favorable because it lowers the surface energy. Let us consider how we might calculate and predict that. It is straightforward to compute the energy of a (110) slab, and of a (110) slab with one row missing. However, these slabs contain different numbers of atoms, so we cannot directly compare the total energies to determine which energy is lower.
 
 We have to consider where the missing row atoms have gone, so we can account for their energy. We will consider that they have gone into the bulk, and so we to consider the energy associated with the following transformation:
 
@@ -7649,7 +7630,7 @@ print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
 : natoms bulk        = 1
 : dE = -0.008 eV
 
-For Ag(110), the missing row formation energy is practically thermoneutral, i.e. not that favorable. This energy is so close to 0eV, that we cannot confidently say whether the reconstruction is favorable or not. Experimentally, the reconstruction is not seen on very clean Ag(110) although it is reported that some adsorbates may induce the reconstruction \cite{PhysRevLett.59.2307}.
+For Ag(110), the missing row formation energy is practically thermoneutral, i.e. not that favorable. This energy is so close to 0eV, that we cannot confidently say whether the reconstruction is favorable or not. Experimentally, the reconstruction is not seen on very clean Ag(110) although it is reported that some adsorbates may induce the reconstruction cite:PhysRevLett.59.2307.
 
 *** Cu(110) missing row reconstruction :noexport:
 **** Clean Cu(110) slab
@@ -7821,13 +7802,13 @@ where $E_{slab}$ is the total energy of a symmetric slab (i.e. one with inversio
 #+ATTR_LaTeX: placement=[H]
 [[./images/surface-construction.png]]
 
-Unfortunately, this approach does not always work. The bulk system is treated subtly different than the slab system, particularly in the $z$-direction where the vacuum is (where typically only one $k$-point is used in slabs). Consequently, the $k$-point sampling is not equivalent in the two systems, and one can in general expect some errors due to this, with the best case being cancellation of the errors due to total $k$-point convergence. In the worst case, one can get a linear divergence in the surface energy with slab thickness \cite{PhysRevB.49.16798}.
+Unfortunately, this approach does not always work. The bulk system is treated subtly different than the slab system, particularly in the $z$-direction where the vacuum is (where typically only one $k$-point is used in slabs). Consequently, the $k$-point sampling is not equivalent in the two systems, and one can in general expect some errors due to this, with the best case being cancellation of the errors due to total $k$-point convergence. In the worst case, one can get a linear divergence in the surface energy with slab thickness cite:PhysRevB.49.16798.
 
-A variation of this method that usually results in better $k$-point error cancellation is to calculate the bulk unit cell energy using the slab unit cell with no vacuum space, with the same $k$-point mesh in the $x$ and $y$ directions, but with increased $k$-points in the $z$-direction. Thus, the bulk system and slab system have the same Brillouin zone in at least two dimensions. This maximizes the cancellation of $k$-point errors, but still does not guarantee convergence of the surface energy, as discussed in \cite{PhysRevB.49.16798,0953-8984-10-4-017}.
+A variation of this method that usually results in better $k$-point error cancellation is to calculate the bulk unit cell energy using the slab unit cell with no vacuum space, with the same $k$-point mesh in the $x$ and $y$ directions, but with increased $k$-points in the $z$-direction. Thus, the bulk system and slab system have the same Brillouin zone in at least two dimensions. This maximizes the cancellation of $k$-point errors, but still does not guarantee convergence of the surface energy, as discussed in cite:PhysRevB.49.16798,0953-8984-10-4-017.
 
 For quick estimates of the surface energy, one of the methods described above is likely sufficient. The advantage of these methods is the small number of calculations required to obtain the estimate, one needs only a bulk calculation (which must be done anyhow to get the bulk lattice constant to create the slab), and a slab calculation that is sufficiently thick to get the estimate. Additional calculations are only required to test the convergence of the surface energy.
 
-An alternative method for calculating surface energies that does not involve an explicit bulk calculation follows Ref. \cite{0953-8984-10-4-017}. The method follows from equation (ref{eq:se}) where for a N-atom slab, in the limit of N \rightarrow \infty,
+An alternative method for calculating surface energies that does not involve an explicit bulk calculation follows Ref. citealp:0953-8984-10-4-017. The method follows from equation (ref{eq:se}) where for a N-atom slab, in the limit of N \rightarrow \infty,
 
 $E_{slab} \approx 2\sigma + \frac{N_{slab}}{N_{bulk}} E_{bulk}$
 
@@ -7889,7 +7870,7 @@ plt.savefig('images/Cu-unrelaxed-surface-energy.png')
 #+caption: Surface energy of a Cu(111) slab as a function of thickness.
 #+ATTR_LaTeX: placement=[H]
 [[./images/Cu-unrelaxed-surface-energy.png]]
-One reason for the oscillations may be quantum size effects \cite{Fiolhais2003209}. In \cite{PhysRevB.75.115131} the surface energy of Cu(111) is reported as 0.48 eV/atom, or 1.36 J/m$^2$. Here is an example showing a conversion between these two units. We use ase to compute the area of the unit cell from the norm of the cross-product of the vectors defining the surface unit cell.
+One reason for the oscillations may be quantum size effects cite:Fiolhais2003209. In citealp:PhysRevB.75.115131 the surface energy of Cu(111) is reported as 0.48 eV/atom, or 1.36 J/m$^2$. Here is an example showing a conversion between these two units. We use ase to compute the area of the unit cell from the norm of the cross-product of the vectors defining the surface unit cell.
 
 #+BEGIN_SRC python :results output :exports both
 from ase.lattice.surface import fcc111
@@ -7910,9 +7891,9 @@ print 'sigma = {0} J/m^2'.format(sigma/area/(J/m**2))
 : sigma = 1.3628146074 J/m^2
 
 *** Advanced topics in surface energy
-The surface energies can be used to estimate the shapes of nanoparticles using a Wulff construction. See \cite{doi.10.1021/jp200950a} for an example of computing Mo_{2}C surface energies and particle shapes, and \cite{Inoglu2009188} for an example of the influence of adsorbates on surface energies and particle shapes of Cu.
+The surface energies can be used to estimate the shapes of nanoparticles using a Wulff construction. See citealp:doi.10.1021/jp200950a for an example of computing Mo_{2}C surface energies and particle shapes, and cite:Inoglu2009188 for an example of the influence of adsorbates on surface energies and particle shapes of Cu.
 
-For a classic paper on trends in surface energies see \cite{Vitos1998186}.
+For a classic paper on trends in surface energies see cite:Vitos1998186.
 
 ** Dipole correction
 [[index:dipole correction]]
@@ -7929,14 +7910,14 @@ problem is to use slabs with adsorbates on both sides, but then very
 thick (eight to ten layers) slabs must be used to ensure the
 adsorbates do not interact through the slab. An alternative solution,
 the dipole correction scheme, was developed by Neugebauer and
-Scheffler \cite{PhysRevB.46.16067} and later corrected by Bengtsson
-\cite{PhysRevB.59.12301}. In this technique, an external field is
+Scheffler cite:PhysRevB.46.16067 and later corrected by Bengtsson
+cite:PhysRevB.59.12301. In this technique, an external field is
 imposed in the vacuum region that exactly cancels the artificial field
 caused by the slab dipole moment. The advantage of this approach is
 that thinner slabs with adsorbates on only one side can be used.
 
 There are also literature reports that the correction is small
-\cite{morikawa2001:c2h2-si}.  Nevertheless, in the literature the use
+cite:morikawa2001:c2h2-si.  Nevertheless, in the literature the use
 of this correction is fairly standard, and it is typical to at least
 consider the correction.
 
@@ -8246,23 +8227,20 @@ print 'Hads (bridge) = {0} eV/O'.format(Hads_bridge)
 : Hads (hcp)    = -0.5986145 eV/O
 : Hads (bridge) = -1.0384575 eV/O
 
-You can see the hcp site is not as energetically favorable as the fcc site. Interestingly, the bridge site seems to be as favorable as the fcc site. This is not correct, and to see why, we have to look at the final geometries of each calculation. First the fcc (Figure \ref{fig:fcc} and hcp (Figure \ref{fig:hcp} sites, which look like we expect.
+You can see the hcp site is not as energetically favorable as the fcc site. Interestingly, the bridge site seems to be as favorable as the fcc site. This is not correct, and to see why, we have to look at the final geometries of each calculation. First the fcc (Figure ref:fig:fcc and hcp (Figure ref:fig:hcp sites, which look like we expect.
 
-#+caption: Final geometry of the fcc site.
-#+label: fig:fcc
+#+caption: Final geometry of the fcc site. \label{fig:fcc}
 #+ATTR_LaTeX: width=203bp,placement=[H]
 [[./images/pt-slab-fcc-o.png]]
 
 
-#+caption: Final geometry of the hcp site.
-#+label: fig:hcp
+#+caption: Final geometry of the hcp site. \label{fig:hcp}
 #+ATTR_LaTeX: width=203bp,placement=[H]
 [[./images/pt-slab-hcp-o.png]]
 
-The bridge site (Figure \ref{fig:bridge}, however, is clearly not at a bridge site!
+The bridge site (Figure ref:fig:bridge, however, is clearly not at a bridge site!
 
-#+caption: Final geometry of the bridge site. You can see that the oxygen atom ended up in the fcc site.
-#+label: fig:bridge
+#+caption: Final geometry of the bridge site. You can see that the oxygen atom ended up in the fcc site. \label{fig:bridge}
 #+ATTR_LaTeX: width=203bp,placement=[H]
 [[./images/pt-slab-bridge-o.png]]
 
@@ -8364,13 +8342,13 @@ You can see that only the \(z\)-position of the O atom changed. Also, the adsorp
 [[./images/Pt-O-bridge-constrained-final.png]]
 
 *** Coverage dependence
-The adsorbates on the surface can interact with each other which results in coverage dependent adsorption energies \cite{PhysRevB.82.045414}. Coverage dependence is not difficult to model; we simply compute adsorption energies in different size unit cells, and/or with different adsorbate configurations. Here we consider dissociative oxygen adsorption at 1ML on Pt(111) in an fcc site, which is one oxygen atom in a $1\times 1$ unit cell.
+The adsorbates on the surface can interact with each other which results in coverage dependent adsorption energies cite:PhysRevB.82.045414. Coverage dependence is not difficult to model; we simply compute adsorption energies in different size unit cells, and/or with different adsorbate configurations. Here we consider dissociative oxygen adsorption at 1ML on Pt(111) in an fcc site, which is one oxygen atom in a $1\times 1$ unit cell.
 
 For additional reading, see these references from our work:
-- Correlations of coverage dependence of oxygen adsorption on different metals \cite{miller:104709,Miller2009794}
-- Coverage effects of atomic adsorbates on Pd(111) \cite{PhysRevB.79.205412}
-- Simple model for estimating coverage dependence \cite{PhysRevB.82.045414}
-- Coverage effects on alloys \cite{PhysRevB.77.075437}
+- Correlations of coverage dependence of oxygen adsorption on different metals cite:miller:104709,Miller2009794
+- Coverage effects of atomic adsorbates on Pd(111) cite:PhysRevB.79.205412
+- Simple model for estimating coverage dependence cite:PhysRevB.82.045414
+- Coverage effects on alloys cite:PhysRevB.77.075437
 
 **** clean slab calculation
 #+BEGIN_SRC python :results output
@@ -8609,7 +8587,7 @@ Note that we have one imaginary mode. This corresponds to the motion of the O at
 
 ** Surface Diffusion barrier
 
-See this review \cite{ANIE.ANIE200602223} of diffusion on transition metal surfaces.
+See this review cite:ANIE.ANIE200602223 of diffusion on transition metal surfaces.
 
 *** Standard nudged elastic band method
 Here we illustrate a standard NEB method. You need an initial and final state to start with. We will use the results from previous calculations of oxygen atoms in an fcc and hcp site. then we will construct a band of images connecting these two sites. Finally, we let VASP optimize the band and analyze the results to get the barrier.
@@ -8685,7 +8663,7 @@ with jasp('surfaces/Pt-O-fcc-hcp-neb',
 We should compare this barrier to what we could estimate from the simple adsorption energies in the fcc and bridge sites. The adsorption energy in the fcc site was -1.04 eV, and in the bridge site was -0.49 eV. The difference between these two is 0.55 eV, which is very close to the calculated barrier from the NEB calculation. In cases where you can determine what the transition state is, e.g. by symmetry, or other means, it is much faster to directly compute the energy of the initial and transition states for barrier determinations. This is not usually possible though.
 
 *** Climbing image NEB
-One issue with the standard NEB method is there is no image that is exactly at the transition state. That means there is some uncertainty of the true energy of the transition state, and there is no way to verify the transition state by vibrational analysis. The climbing image NEB method solves that problem by making one image climb to the top. You set [[incar:LCLIMB][LCLIMB]]==True= in =jasp= to turn on the climbing image method. Here we use the previous calculation as a starting point and turn on the climbing image method.
+One issue with the standard NEB method is there is no image that is exactly at the transition state. That means there is some uncertainty of the true energy of the transition state, and there is no way to verify the transition state by vibrational analysis. The climbing image NEB method cite:henkelman:9901 solves that problem by making one image climb to the top. You set [[incar:LCLIMB][LCLIMB]]==True= in =jasp= to turn on the climbing image method. Here we use the previous calculation as a starting point and turn on the climbing image method.
 
 #+BEGIN_SRC python :results output
 # perform a climbing image NEB calculation
@@ -8721,7 +8699,7 @@ A transition state should have exactly one imaginary degree of freedom which cor
 ** TODO Effects of electric fields on adsorbates
 Electric fields can polarize adsorbates, i.e. shift their electron density around, which changes their stability . We can model this to some extent in VASP. We have to set the incar:EFIELD parameter to specify the field strength (in V/\AA), and incar:LDIPOL to =True=, and finally specify which lattice vector the field should be applied to with incar:IDIPOL. Usually, incar:IDIPOL will be set to 3 for surfaces so it points in the direction of the third lattice vector, which is conventionally in the z-direction and normal to the surface.
 
-We will illustrate the effect using an example from \cite{doi-10.1021/jp810518x} for the effect of electric field on the adsorption energy of a CO molecule on Pt(111) at 0.25 ML. For simplicity, we will use a frozen slab, with the CO molecule in the geometry reported in that reference.
+We will illustrate the effect using an example from cite:doi-10.1021/jp810518x for the effect of electric field on the adsorption energy of a CO molecule on Pt(111) at 0.25 ML. For simplicity, we will use a frozen slab, with the CO molecule in the geometry reported in that reference.
 
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -8930,8 +8908,7 @@ plt.savefig('images/O2-mu.png')
 : Cu2O decomposition temperature is 917 K
 : Ag2O decomposition temperature is 478 K
 
-#+caption: \Delta \(\mu_{O_2}\)(T,p) at different pressures and temperatures.
-#+label: fig:mu-o2
+#+caption: \Delta \(\mu_{O_2}\)(T,p) at different pressures and temperatures. \label{fig:mu-o2}
 #+ATTR_LaTeX: placement=[H]
 [[./images/O2-mu.png]]
 
@@ -9023,7 +9000,7 @@ plt.savefig('images/atomistic-thermo-hf-mu.png')
 #+attr_latex: placement=[H]
 [[./images/atomistic-thermo-hf-mu.png]]
 
-This graph shows graphically the $\Delta \mu_{O_2}$ required to make the metal more stable than the oxide. Anything less than about -2 eV will have the metal more stable. That can be achieved by any one of the following combinations (graphically estimated from Figure \ref{fig:mu-o2}):
+This graph shows graphically the $\Delta \mu_{O_2}$ required to make the metal more stable than the oxide. Anything less than about -2 eV will have the metal more stable. That can be achieved by any one of the following combinations (graphically estimated from Figure ref:fig:mu-o2):
 About 500K at 1$\times 10^{-10}$ atm, 600K at 1$\times 10^{-5}$ atm, 900K at 1atm, etc...
 
 ** Effect on adsorption
@@ -9084,7 +9061,7 @@ plt.savefig('images/atomistic-thermo-adsorption.png')
 [[./images/atomistic-thermo-adsorption.png]]
 ** Atomistic therodynamics and multiple reactions
 
-In \cite{Inoglu2009188} we considered multiple reactions in an atomistic thermodynamic framework. Let us consider these three reactions of dissociative adsorption of hydrogen and hydrogen disulfide, and consider how to compute the reaction energy for the third reaction.
+In cite:Inoglu2009188 we considered multiple reactions in an atomistic thermodynamic framework. Let us consider these three reactions of dissociative adsorption of hydrogen and hydrogen disulfide, and consider how to compute the reaction energy for the third reaction.
 
 1. $H_2 + 2* \leftrightharpoons 2H*$
 
@@ -9114,9 +9091,9 @@ index:DFT+U
 
 [[http://cms.mpi.univie.ac.at/vasp/vasp/On_site_Coulomb_interaction_L_S_DA_U.html][VASP manual on DFT+U]]
 
-It can be difficult to find the lowest energy solutions with DFT+U. Some strategies for improving this are discussed in \cite{PhysRevB.82.195128}.
+It can be difficult to find the lowest energy solutions with DFT+U. Some strategies for improving this are discussed in cite:PhysRevB.82.195128.
 *** Metal oxide oxidation energies with DFT+U
-We will reconsider here the reaction (see [[Metal oxide oxidation energies][Metal oxide oxidation energies]]) 2 Cu_{2}O + O_{2} $\rightleftharpoons$ 4 CuO. We need to compute the energy of each species, now with DFT+U. In \cite{PhysRevB.73.195107} they use a U parameter of 4 eV for Cu which gave the best agreement with the experimental value. We will also try that.
+We will reconsider here the reaction (see [[Metal oxide oxidation energies][Metal oxide oxidation energies]]) 2 Cu_{2}O + O_{2} $\rightleftharpoons$ 4 CuO. We need to compute the energy of each species, now with DFT+U. In cite:PhysRevB.73.195107 they use a U parameter of 4 eV for Cu which gave the best agreement with the experimental value. We will also try that.
 
 **** Cu_{2}O calculation with U=4.0
 #+BEGIN_SRC python :results output :exports both
@@ -9304,7 +9281,7 @@ print 'Corrected energy = {0} eV'.format(rxn_energy - 1.36)
 : Reaction energy  = -1.663819 eV
 : Corrected energy = -3.023819 eV
 
-This is still not in quantitative agreement with the result in \cite{PhysRevB.73.195107}, which at U=4 eV is about -3.14 eV (estimated from a graph). We have not applied the O$_2$ correction here yet. In that paper, they apply a constant shift of -1.36 eV per O$_2$. After we apply that correction, we agree within 0.12 eV, which is pretty good considering we have not checked for convergence.
+This is still not in quantitative agreement with the result in cite:PhysRevB.73.195107, which at U=4 eV is about -3.14 eV (estimated from a graph). We have not applied the O$_2$ correction here yet. In that paper, they apply a constant shift of -1.36 eV per O$_2$. After we apply that correction, we agree within 0.12 eV, which is pretty good considering we have not checked for convergence.
 
 **** How much does U affect the reaction energy?
 It is reasonable to consider how sensitive our results are to the U parameter. We do that here.
@@ -9357,9 +9334,9 @@ for U in [2.0, 4.0, 6.0]:
 : U = 4.0  reaction energy = -3.653819
 : U = 6.0  reaction energy = -3.397605
 
-In \cite{PhysRevB.73.195107}, the difference in reaction energy from U=2 eV to U=4 eV was about 0.5 eV (estimated from graph). Here we see a range of 0.48 eV from U=2 eV to U=4 eV. Note that for U=0 eV, we had a (corrected reaction energy of -3.96 eV). Overall, the effect of adding U decreases this reaction energy.
+In cite:PhysRevB.73.195107, the difference in reaction energy from U=2 eV to U=4 eV was about 0.5 eV (estimated from graph). Here we see a range of 0.48 eV from U=2 eV to U=4 eV. Note that for U=0 eV, we had a (corrected reaction energy of -3.96 eV). Overall, the effect of adding U decreases this reaction energy.
 
-This example highlights the challenge of using an approach like DFT+U. On one hand, U has a clear effect of changing the reaction energy. On the other hand, so does the correction factor for the O$_2$ binding energy. In \cite{PhysRevB.73.195107} the authors tried to get the O$_2$ binding energy correction from oxide calculations where U is not important, so that it is decoupled from the non-cancelling errors that U fixes. See \cite{PhysRevB.84.045115} for additional discussion of how to mix GGA and GGA+U results.
+This example highlights the challenge of using an approach like DFT+U. On one hand, U has a clear effect of changing the reaction energy. On the other hand, so does the correction factor for the O$_2$ binding energy. In cite:PhysRevB.73.195107 the authors tried to get the O$_2$ binding energy correction from oxide calculations where U is not important, so that it is decoupled from the non-cancelling errors that U fixes. See cite:PhysRevB.84.045115 for additional discussion of how to mix GGA and GGA+U results.
 
 In any case, you should be careful to use well converged results to avoid compensating for convergence errors with U.
 
@@ -9435,7 +9412,7 @@ plt.savefig('images/ni-dos-pbe-pbe0-hse06.png')
 
 ** TODO DFT+D
 http://cms.mpi.univie.ac.at/vasp/vasp/DFT_D2_method_Grimme.html
-\cite{PhysRevB.82.081101}
+cite:PhysRevB.82.081101
 
 Van der Waal forces can play a considerable role in binding of aromatic molecules to metal surfaces [[http://th.fhi-berlin.mpg.de/site/uploads/Publications/PRL_submitted_2012063-582-586-2012.pdf][(ref)]]. Here we consider the effects of these forces on the adsorption energy of benzene on an Au(111) surface.First, we consider the regular PBE functional.
 
@@ -9530,7 +9507,7 @@ with jasp('surfaces/Au-benzene-pbe',
 #+RESULTS:
 
 *** DFT-D2
-To turn on the van der Waals corrections \cite{JCC-JCC20495} we set incar:LVDW to =True=.
+To turn on the van der Waals corrections cite:JCC-JCC20495 we set incar:LVDW to =True=.
 **** gas-phase benzene
 #+BEGIN_SRC python
 from jasp import *
@@ -9662,23 +9639,21 @@ with jasp('molecules/cf4-elf',
 : None
 
 
-#+caption: ELF for an isosurface of 0.3 for CF$_4$.
-#+label: fig:elf1
+#+caption: ELF for an isosurface of 0.3 for CF$_4$. \label{fig:elf1}
 #+attr_latex: placement=[H]
 [[./images/cf4-elf-3.png]]
 
 
-#+caption: ELF for an isosurface of 0.75 for CF$_4$.
-#+label: fig:elf2
+#+caption: ELF for an isosurface of 0.75 for CF$_4$. \label{fig:elf2}
 #+attr_latex: placement=[H]
 [[./images/cf4-elf-75.png]]
 
-These images (Figure \ref{fig:elf1} and \ref{fig:elf2}) are basically consistent with those in Reference \cite{silvi1994}.
+These images (Figure ref:fig:elf1 and ref:fig:elf2) are basically consistent with those in Reference cite:silvi1994.
 
 ** TODO Charge partitioning schemes
 ** TODO COOP/COHP                                                  :noexport:
 
-\cite{doi.10.1021/jp202489s}
+cite:doi.10.1021/jp202489s
 
 ** TODO Modeling Core level shifts
 * Acknowledgments
@@ -10194,13 +10169,12 @@ The principle we will use to develop an interpolation function in 3D is called t
 We know a scalar field inside a unit cell on a regularly spaced grid. In VASP these fields may be the charge density or electrostatic potential for example, and they are known on the fft grids. We want to estimate the value of the scalar field at a point not on the grid, say P=(a,b,c).
 
 Solution: Find the cube that contains the point, and is defined by points
-    P1-P8 as shown in Figure \ref{fig:trilinearpinterp}.
+    P1-P8 as shown in Figure ref:fig:trilinearpinterp.
 
 
 # convert images/trilinear-interpolation.svg images/trilinear-interpolation.png
 # inkscape images/trilinear-interpolation.svg
-#+caption: Trilinear interpolation scheme.
-#+label: fig:trilinearpinterp
+#+caption: Trilinear interpolation scheme. \label{fig:trilinearpinterp}
 #+ATTR+LaTeX: width=270bp,placement=[H]
 [[./images/trilinear-interpolation.png]]
 
@@ -11203,7 +11177,7 @@ references to the relevant literature. In each of these cases we show equations 
 This is probably the most common equation of state used most often,
 and is a modification of the original Murnaghan EOS described below. A
 current description of the equation is in reference
-\cite{PhysRevB.70.224107}. You can also find the equations for the Vinet and
+cite:PhysRevB.70.224107. You can also find the equations for the Vinet and
 Poirier-Tarantola equations of state in that reference.
 
 Birch-Murnaghan EOS:
@@ -11226,8 +11200,8 @@ and the Poirier-Tarantola EOS:
 with $\varrho=-3 \ln(\eta)$.
 
 *** Murnaghan
-The equation most often used in the Murnaghan  \cite{Murnaghan1944}
-equation of state is described in \cite{PhysRevB.28.5480}.
+The equation most often used in the Murnaghan  cite:Murnaghan1944
+equation of state is described in citealp:PhysRevB.28.5480.
 
 
    $E = E_T+\frac{B_0 V}{B'_0}\left[\frac{(V_0/V)^{B'_0}}{B'_0-1}+1\right]-\frac{V_0 B_0}{B'_0-1}$
@@ -11241,12 +11215,12 @@ guess of 2-4 for $B'_0$ is usually a good start.
 *** Birch
 
 
-The original Birch equation \cite{Birch} is:
+The original Birch equation cite:Birch is:
 
 
    $E = E_0 + \frac{9}{8} B_0 V_0 \left(\left(\frac{V_0}{V}\right)^{\frac{2}{3}}-1\right)^2+\frac{9}{16} B_0 V_0 (B'_0-4)\left(\left(\frac{V}{V_0}\right)^{2/3}-1\right)^3$
 
-*** The Anton-Schmidt Equation of state \cite{Mayer200323}
+*** The Anton-Schmidt Equation of state cite:Mayer200323
 
    $E(V) = E_\infty + \frac{B V_0}{n+1}\left(\frac{V}{V_0}\right)^{n+1} \left( \ln{\frac{V}{V_0}} - \frac{1}{n+1}\right)$
 
