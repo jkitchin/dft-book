@@ -161,42 +161,61 @@
 ;; the export. E.g. figure:test.svg will use test.pdf for a pdf file, and
 ;; test.png for html.  [[figure:path.svg][caption text]]
 
-(org-add-link-type
- "figure"
- (lambda (arg)
-   (find-file arg)) ; open file when clicked on
- (lambda (keyword desc format)
-   (cond
-    ((eq format 'html) ; table of image and caption
-     (format "
-<table class='image'>
-<tr><td><img src='%s.png' alt='%s'/></td></tr>
-<tr><td class='caption'>%s</td></tr>
-</table>
-" keyword desc desc))
-    ((eq format 'latex) ; this is actually for pdflatex
-     (if desc
-         (format "
-\\begin{figure}[H]
-\\includegraphics[width=0.7\\textwidth]{%s}
-\\caption{%s}
-\\end{figure}
-" (replace-in-string keyword ".svg" ".pdf") desc)
-         (format "
-\\begin{figure}[H]
-\\includegraphics[width=0.7\\textwidth]{%s}
-\\end{figure}
-" (replace-in-string keyword ".svg" ".pdf"))
-)))))
+;; (org-add-link-type
+;;  "figure"
+;;  (lambda (arg)
+;;    (find-file arg)) ; open file when clicked on
+;;  (lambda (keyword desc format)
+;;    (cond
+;;     ((eq format 'html) ; table of image and caption
+;;      (format "
+;; <table class='image'>
+;; <tr><td><img src='%s.png' alt='%s'/></td></tr>
+;; <tr><td class='caption'>%s</td></tr>
+;; </table>
+;; " keyword desc desc))
+;;     ((eq format 'latex) ; this is actually for pdflatex
+;;      (if desc
+;;          (format "
+;; \\begin{figure}[H]
+;; \\includegraphics[width=0.7\\textwidth]{%s}
+;; \\caption{%s}
+;; \\end{figure}
+;; " (replace-in-string keyword ".svg" ".pdf") desc)
+;;          (format "
+;; \\begin{figure}[H]
+;; \\includegraphics[width=0.7\\textwidth]{%s}
+;; \\end{figure}
+;; " (replace-in-string keyword ".svg" ".pdf"))
+;; )))))
 
 ;; link to hold a bibliography bibtex file. Mostly so I can click on the link and open the file.
 (org-add-link-type "bibliography"
-(lambda (arg) (find-file arg)) ; open file on click
+(lambda (link-string)
+    (save-excursion
+     (beginning-of-line) ; search forward from beginning of the line
+     (search-forward link-string nil t 1)
+     (setq link-string-beginning (match-beginning 0))
+     (setq link-string-end (match-end 0)))
+   ;; now we want to search forward to next comma from point
+   (save-excursion
+     (if (search-forward "," link-string-end 1 1)
+         (setq key-end (- (match-end 0) 1)) ; we found a match
+       (setq key-end (point)))) ; no comma found so take the point
+   ;; and backward to previous comma from point
+   (save-excursion
+     (if (search-backward "," link-string-beginning 1 1)
+         (setq key-beginning (+ (match-beginning 0) 1)) ; we found a match
+       (setq key-beginning (point)))) ; no match found
+                                        ; save the key we clicked on.
+   (setq bibfile (cite-strip-key (buffer-substring key-beginning key-end)))
+(find-file bibfile)) ; open file on click
+;; formatting code
 (lambda (keyword desc format)
   (cond
    ((eq format 'latex)
     ; write out the latex bibliography command
-    (format "\\bibliography{%s}" (replace-in-string keyword ".bib" ""))))))
+    (format "\\bibliography{%s}" (replace-regexp-in-string  ".bib" "" keyword))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Menu for dft-book

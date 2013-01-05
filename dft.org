@@ -232,7 +232,7 @@ where $E_{xc}[n(\mathbf{r})]$ is the exchange-correlation energy
 functional.  Walter Kohn shared the Nobel prize in Chemistry in 1998
 for this work cite:RevModPhys.71.1253. The other half of the prize went to
 John Pople for his efforts in wave function based quantum mechanical
-methods cite:{RevModPhys.71.1267.  Provided the
+methods cite:RevModPhys.71.1267.  Provided the
 exchange-correlation energy functional is known, Eq.
 (ref:eq:dftEnergy) is exact.  However, the exact form of the
 exchange-correlation energy functional is not known, thus
