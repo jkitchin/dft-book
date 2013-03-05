@@ -118,6 +118,9 @@ for the JavaScript code in this tag.
 <h1 class="title">Modeling materials using density functional theory</h1>
 
 
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
 <p>
 <img src="./images/cover-page.png"  alt="./images/cover-page.png" />
     Copyright \copyright 2012&ndash;\the\year\ John Kitchin</p ><p >
@@ -1208,7 +1211,7 @@ There are two inconvenient features of the simple cubic cell:
 <li>Since the CO molecule is at the corner, its electron density is spread over the 8 corners of the box, which is not convenient for visualization later (see <a href="#sec-3-3-2">Visualizing electron density</a>).
 
 </li>
-<li>Due to the geometry of the cube, you need fairly large cubes to make sure the electron density of the molecule does not overlap with that of its images. Electron-electron interactions are repulsive, and the overlap makes the energy increase significantly. Here, the CO molecule has 6 images due to periodic boundary conditions that are 10 &Aring; away. The volume of the unit cell is 1000 &Aring;<img src="ltxpng/dft_41d7b41d79e3d02737649e7edc9fdcbbb8c63e56.png" alt="$^3$"/>.
+<li>Due to the geometry of the cube, you need fairly large cubes to make sure the electron density of the molecule does not overlap with that of its images. Electron-electron interactions are repulsive, and the overlap makes the energy increase significantly. Here, the CO molecule has 6 images due to periodic boundary conditions that are 10 &Aring; away. The volume of the unit cell is 1000 &Aring;<img src="ltxpng/dft_22bf122173bebdf25b77af8afac94b9baab0fa7f.png" alt="$^3$"/>.
 </li>
 </ol>
 
@@ -7410,7 +7413,7 @@ The cohesive energy is 6.187 eV
 According to Kittel, the cohesive energy of Rh is 5.75 eV. There are a few reasons we may have discrepancy here:
 </p>
 <ol>
-<li>The k-point grid used in the bulk state is not very dense. However, you can see below that the total energy is pretty converged by a <img src="ltxpng/dft_d28ec367f0fe0f86697e4621ace94f9fffa7ed05.png" alt="$6 \times 6 \times 6$"/> <img src="ltxpng/dft_46adfe0c9e4e7c6366cc9967441056c1fca5d81e.png" alt="$k$"/>-point grid.
+<li>The k-point grid used in the bulk state is not very dense. However, you can see below that the total energy is pretty converged by a <img src="ltxpng/dft_78eef7d6b47c934750b2a9634b4c18fe6f6818c6.png" alt="$6 \times 6 \times 6$"/> <img src="ltxpng/dft_c57fd53cc897193daa6bb178fd4c4d8535d92fae.png" alt="$k$"/>-point grid.
 </li>
 <li>We did not check for convergence with the planewave cutoff.
 </li>
@@ -10876,9 +10879,9 @@ Some final notes:
 </li>
 <li>The slabs were pretty thin. It is typical these days to see slabs that are 4-5 or more layers thick.
 </li>
-<li>We did not consider how well converged the calculations were with respect to <img src="ltxpng/dft_5b7dee8fddb719e98e246e986e89de227e677cc3.png" alt="$k$"/>-points or <a href=http://cms.mpi.univie.ac.at/wiki/index.php/ENCUT>ENCUT</a>.
+<li>We did not consider how well converged the calculations were with respect to <img src="ltxpng/dft_2a27b1c2ac8a0551a06ffcbd71e195e9b08b4b55.png" alt="$k$"/>-points or <a href=http://cms.mpi.univie.ac.at/wiki/index.php/ENCUT>ENCUT</a>.
 </li>
-<li>We did not consider the effect of the error in O<img src="ltxpng/dft_d66b2df35b3683bd047d7baa9db7a2aead00b764.png" alt="$_2$"/> dissociation energy on the adsorption energies.
+<li>We did not consider the effect of the error in O<img src="ltxpng/dft_995e302ad013cdfb48766e9ab7aec6391a562d86.png" alt="$_2$"/> dissociation energy on the adsorption energies.
 </li>
 <li>We did not consider coverage effects (see <a href="#sec-5-8-2">Coverage dependence</a>).
 </li>
@@ -11136,10 +11139,10 @@ You can see here that the adsorption energy serves to stabilize, or reduce the s
 Some final notes about the equations above:
 </p>
 <ul>
-<li>We were not careful about stoichiometry. As written, it is assumed there are the same number of atoms (not including the adsorbates) in the slabs and bulk, and the same number of adsorbate atoms in the slab and <img src="ltxpng/dft_31bc66836794a5db4875f48b889c6e47ebb40fed.png" alt="$E_{ads}$"/>. Appropriate normalization factors must be included if that is not true.
+<li>We were not careful about stoichiometry. As written, it is assumed there are the same number of atoms (not including the adsorbates) in the slabs and bulk, and the same number of adsorbate atoms in the slab and <img src="ltxpng/dft_9c7b407d74cbdb3a6ffca8869e10480688ce639a.png" alt="$E_{ads}$"/>. Appropriate normalization factors must be included if that is not true.
 
 </li>
-<li>It is not necessary to perform a symmetric slab calculation to determine the effect of adsorption on the surface energy! You can examine <img src="ltxpng/dft_13d43dbd90c1ffc12ac1e491369012a3caaa02db.png" alt="$\gamma - \gamma_{clean}$"/> with knowledge of only the adsorption energies!
+<li>It is not necessary to perform a symmetric slab calculation to determine the effect of adsorption on the surface energy! You can examine <img src="ltxpng/dft_ebf2c915d23b9f4c7b1acc307b9168164f09bb72.png" alt="$\gamma - \gamma_{clean}$"/> with knowledge of only the adsorption energies!
 </li>
 </ul>
 
@@ -11970,13 +11973,13 @@ None
 In (<cite>Inoglu2009188</cite>) we considered multiple reactions in an atomistic thermodynamic framework. Let us consider these three reactions of dissociative adsorption of hydrogen and hydrogen disulfide, and consider how to compute the reaction energy for the third reaction.
 </p>
 <ol>
-<li><img src="ltxpng/dft_dd1435c6b3a0d88470a86f4fa8b52701ad0b2b7d.png" alt="$H_2 + 2* \leftrightharpoons 2H*$"/>
+<li><img src="ltxpng/dft_f92a7f5cdf79caa0ecb5822f179db39aeea6c813.png" alt="$H_2 + 2* \leftrightharpoons 2H*$"/>
 
 </li>
-<li><img src="ltxpng/dft_1449d826e4513edb776cfa379cf65ec64b1e5c2d.png" alt="$H_2S + 2* \leftrightharpoons H* + SH*$"/>
+<li><img src="ltxpng/dft_c244b404a6f53bcd05efe542251482d785007299.png" alt="$H_2S + 2* \leftrightharpoons H* + SH*$"/>
 
 </li>
-<li><img src="ltxpng/dft_e9cac7f932d450f6811e4d736b1a89a4df664fda.png" alt="$SH* + * \leftrightharpoons S* + H*$"/>
+<li><img src="ltxpng/dft_edd09b2f5a8dfdca9a32ab0018350a919beb0155.png" alt="$SH* + * \leftrightharpoons S* + H*$"/>
 </li>
 </ol>
 
