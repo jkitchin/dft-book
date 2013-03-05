@@ -71,7 +71,7 @@
   (lambda (keyword link format)
    (cond
     ((eq format 'html)
-     ("")) ; nothing for html. one day maybe get a list of captions
+     (format "")) ; nothing for html. one day maybe get a list of captions
     ((eq format 'latex)
      (format "\\listoffigures")))))
 
@@ -85,7 +85,7 @@
   (lambda (keyword link format)
    (cond
     ((eq format 'html)
-     ("")) ; nothing for html. one day maybe get a list of captions
+     (format "")) ; nothing for html. one day maybe get a list of captions
     ((eq format 'latex)
      (format "\\listoftables")))))
 
@@ -99,7 +99,7 @@
   (lambda (keyword link format)
    (cond
     ((eq format 'html)
-     ("")) ; nothing for html. one day maybe make an html indiex
+     (format "")) ; nothing for html. one day maybe make an html indiex
     ((eq format 'latex)
      (format "\\printindex")))))
 
@@ -213,6 +213,7 @@
 ;; formatting code
 (lambda (keyword desc format)
   (cond
+   ((eq format 'html) (format "Bibliography"))
    ((eq format 'latex)
     ; write out the latex bibliography command
     (format "\\bibliography{%s}" (replace-regexp-in-string  ".bib" "" keyword))))))
@@ -321,3 +322,6 @@ Lisp code that opens dft-book at point
 ;C:\Users\jkitchin>initexmf --edit-config-file=miktex\config\latex.ini
 
 ;C:\Users\jkitchin>initexmf --edit-config-file=miktex\config\pdftex.ini
+
+
+
