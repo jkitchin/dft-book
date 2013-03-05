@@ -18,6 +18,7 @@
 #+XSLT:
 
 #+latex_header: \usepackage{dftbook}
+#+STYLE: <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
 
 [[./images/cover-page.png]]
     Copyright \copyright 2012--\the\year\ John Kitchin\par
@@ -7018,7 +7019,7 @@ for i,a in enumerate([4.7, 5.38936, 6.0]):
 
 ** Magnetism
 *** Determining if a magnetic solution is energetically favorable
-We can force a total magnetic moment onto a unit cell and compute the total energy as function of the total magnetic moment. If there is a minimum in the energy, then we know there is a lower energy magnetic solution than a non-magnetic solution. We use incar:NUPDOWN to enforce the magnetic moment in the cell.
+We can force a total magnetic moment onto a unit cell and compute the total energy as function of the total magnetic moment. If there is a minimum in the energy, then we know there is a lower energy magnetic solution than a non-magnetic solution. We use incar:NUPDOWN to enforce the magnetic moment in the cell. Note that NUPDOWN can only be an integer. You cannot set it to be an arbitrary float.
 
 #+BEGIN_SRC python :results output
 from jasp import *
@@ -7073,6 +7074,7 @@ atoms = BodyCenteredCubic(directions=[[1,0,0],
                                       size=(1,1,1),
                                       symbol='Fe')
 
+# set magnetic moments on each atom
 for atom in atoms:
     atom.magmom = 2.5
 
