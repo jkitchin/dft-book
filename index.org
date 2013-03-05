@@ -1,0 +1,5 @@
+Redirecting you to the content.
+#+BEGIN_HTML
+<meta http-equiv="refresh" content="0; url=http://jkitchin.github.com/dft-book/dft.html"> 
+#+END_HTML
+
