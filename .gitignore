@@ -18,3 +18,8 @@ test
 *.log
 blog/gh-pages
 *.pyc
+bulk
+surfaces
+molecules
+ltxpnggh-pages
+gh-pages
