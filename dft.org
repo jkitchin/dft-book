@@ -16,11 +16,14 @@
 #+LINK_UP:
 #+LINK_HOME:
 #+XSLT:
+#+STYLE: <link rel="stylesheet" type="text/css" href="dft.css"/>
 
 #+latex_header: \usepackage{dftbook}
 #+STYLE: <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
 
+#+ATTR_HTML: width="500px"
 [[./images/cover-page.png]]
+
     Copyright \copyright 2012--\the\year\ John Kitchin\par
     Permission is granted to copy, distribute and/or modify this document
     under the terms of the GNU Free Documentation License, Version 1.3
@@ -4180,7 +4183,6 @@ write('images/AgPd-bulk.png', atoms, show_unit_cell=2)
 
 #+caption: A simple fcc Ag bulk structure in the traditional unit cell.
 #+ATTR_LaTeX: width=114bp,placement=[H]
-
 [[./images/Ag-bulk.png]]
 
 #+caption: A simple Ag_{3}Pd bulk structure.
