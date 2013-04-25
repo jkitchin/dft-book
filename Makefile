@@ -35,12 +35,13 @@ xhtml: $(PNGIMAGES)
 	htlatex dft.tex "xhtml,mathml" " -cunihtf" "-cvalidate"
 
 html: $(PNGIMAGES)
+	cp dftbook.sty /tmp
 	$(BATCH_EMACS) -f org-export-as-html
 
 mobi: html
 	/home/jkitchin/kindlegen/kindlegen dft.html
 
-all: pdf html mobi
+all: pdf html
 
 clean:
 	rm -f *.aux *.log *.dvi *.blg *.bbl *.toc *~ *.out *.idx *.ilg *.ind *.lof *.lot *.css *.idv *.lg *.tmp *.xref *.4ct *.4tc
