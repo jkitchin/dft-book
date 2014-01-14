@@ -1,0 +1,21 @@
+#+EMAIL:     jkitchin@cmu.edu
+#+DATE:      2012-07-11 Wed
+#+DESCRIPTION: A book on using density functional theory to model materials.
+#+KEYWORDS: Density functional theory, materials, VASP
+#+LANGUAGE:  en
+#+OPTIONS:   H:10 num:t toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t d:HIDDEN
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+OPTIONS:   LaTeX:dvipng
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:
+#+LINK_HOME:
+#+XSLT:
+#+STYLE: <link rel="stylesheet" type="text/css" href="dft.css"/>
+
+#+latex_header: \usepackage{dftbook}
+#+STYLE: <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
+
+#+ATTR_HTML: width="500px"
+[[./images/cover-page.png]]
