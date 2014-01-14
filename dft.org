@@ -1,28 +1,7 @@
-# -*- eval: (load-file "dft.el"); -*-
 #+DRAWERS: HIDDEN HINT SOLUTION
 #+TITLE:     Modeling materials using density functional theory
 #+AUTHOR:    John Kitchin
-#+EMAIL:     jkitchin@cmu.edu
-#+DATE:      2012-07-11 Wed
-#+DESCRIPTION: A book on using density functional theory to model materials.
-#+KEYWORDS: Density functional theory, materials, VASP
-#+LANGUAGE:  en
-#+OPTIONS:   H:10 num:t toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t d:HIDDEN
-#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
-#+OPTIONS:   LaTeX:dvipng
-#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
-#+EXPORT_SELECT_TAGS: export
-#+EXPORT_EXCLUDE_TAGS: noexport
-#+LINK_UP:
-#+LINK_HOME:
-#+XSLT:
-#+STYLE: <link rel="stylesheet" type="text/css" href="dft.css"/>
-
-#+latex_header: \usepackage{dftbook}
-#+STYLE: <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
-
-#+ATTR_HTML: width="500px"
-[[./images/cover-page.png]]
+#+INCLUDE: header.org 
 
     Copyright \copyright 2012--\the\year\ John Kitchin\par
     Permission is granted to copy, distribute and/or modify this document
@@ -36,11 +15,6 @@
 
 [[lot:lot][List of Tables]]
 
-* Tasks :noexport:
-** TODO replace all % formating with .format
-** make func and mod links un-hyphenatable.
-
-** Create flashcard exercises for ase commands
 * Introduction to this book
 This book serves two purposes: 1) to provide worked examples of using DFT to model materials properties, and 2) to provide references to more advanced treatments of these topics in the literature. It is not a definitive reference on density functional theory. Along the way to learning how to perform the calculations, you will learn how to analyze the data, make plots, and how to interpret the results. This book is very much "recipe" oriented, with the intention of giving you enough information and knowledge to start your research. In that sense, many of the computations are not publication quality with respect to convergence of calculation parameters.
 
@@ -102,6 +76,9 @@ Review all the hyperlinks in this chapter.
 #+end_exercise
 
 * Introduction to DFT
+  :PROPERTIES:
+  :ID:       948b9c8b-a583-43d5-aa23-4927aa3633cb
+  :END:
 
 A comprehensive overview of DFT is beyond the scope of this book, as
 excellent reviews on these subjects are readily found in the
@@ -115,11 +92,11 @@ of this chapter is to provide new users with a path through the
 extensive literature available and to point out potential difficulties
 and pitfalls in these calculations.
 
-A fairly standard textbook on DFT is the one written by Parr and Yang
+A modern and practical introduction to density functional theory can be found in Sholl and Steckel cite:sholl-2009-densit-funct-theor. A fairly standard textbook on DFT is the one written by Parr and Yang
 cite:parr-yang.  The Chemist's Guide to DFT cite:koch2001 is more
 readable and contains more practical information for running
 calculations, but both of these books focus on molecular systems.
- The standard texts in this solid state physics are by Kittel cite:kittel
+ The standard texts in solid state physics are by Kittel cite:kittel
 and Ashcroft and Mermin cite:ashcroft-mermin. Both have their fine
 points, the former being more mathematically rigorous and the latter
 more readable.  However, neither of these books is particularly easy
@@ -127,7 +104,7 @@ to relate to chemistry.  For this, one should consult the
 exceptionally clear writings of Roald Hoffman
 cite:hoffmann1987,RevModPhys.60.601, and follow these with the work of
 N\o rskov and coworkers
-cite:hammer2000:adv-cat,greeley2002:elect.
+cite:hammer2000:adv-cat,greeley2002:elect. 
 
 In this chapter, only the elements of DFT that are relevant to this
 work will be discussed.  An excellent review on other implementations
@@ -248,8 +225,8 @@ The two main types of exchange/correlation functionals used in DFT are
 the local density approximation (LDA) and the generalized gradient
 approximation (GGA). In the LDA, the exchange-correlation functional
 is defined for an electron in a uniform electron gas of density $n$
-cite:PhysRev.140.A1133. It is obviously exact for a uniform
-electron gas, and is anticipated to be valid for slowly varying
+cite:PhysRev.140.A1133. It is exact for a uniform
+electron gas, and is anticipated to be a reasonable approximation  for slowly varying
 densities. In molecules and solids, however, the density tends to vary
 substantially in space. Despite this, the LDA has been very
 successfully used in many systems. It tends to predict overbonding in
@@ -490,6 +467,9 @@ All calculations were performed using VASP cite:Kresse199615,PhysRevB.54.11169,P
 Monkhorst-Pack k-points cite:PhysRevB.13.5188
 
 * Molecules
+  :PROPERTIES:
+  :ID:       0ba173be-1449-4c71-b040-02864f3af5a5
+  :END:
 In this chapter we consider how to construct models of molecules, how to manipulate them, and how to calculate many properties of molecules. For a nice comparison of VASP and Gaussian see citealp:paier:234102.
 ** Defining and visualizing molecules
 We start by learning how to define a molecule and visualize it. We will begin with defining molecules from scratch, then reading molecules from data files, and finally using some built-in databases in =ase=.
@@ -511,7 +491,7 @@ write('images/simple-cubic-cell.png', atoms, show_unit_cell=2)
 #+END_SRC
 
 #+RESULTS:
-: V = 1000 Ang^3
+: V = 1000 Angstrom^3
 
 #+caption: Image of a CO molecule with the C at the origin. \label{fig:co-origin}
 #+ATTR_LaTeX: placement=[H]
@@ -649,7 +629,6 @@ write('images/isobutane-xyz.png', atoms, show_unit_cell=2)
 #+END_SRC
 
 #+RESULTS:
-: None
 
 #+caption: An isobutane molecule read in from an XYZ formatted data file. \label{fig:isobutane}
 #+ATTR_LaTeX: placement=[H]
@@ -1183,6 +1162,9 @@ dihedral angle = 60.00 degrees
 In this section we cover properties that require simple calculations, but not DFT calculations, to compute.
 
 ** Simple properties that require single computations
+   :PROPERTIES:
+   :ID:       4fff14db-59ee-4e84-bbd2-f4428d1679f9
+   :END:
 There are many properties that only require a single DFT calculation to obtain the energy, forces, density of states, electron denisty and electrostatic potential. This section describes some of these calculations and their analysis.
 *** Energy and forces
 Two of the most important quantities we are interested in are the total
@@ -1341,7 +1323,6 @@ plt.savefig('images/co-encut-v.png')
 #+END_SRC
 
 #+RESULTS:
-: None
 
 #+caption: Dependence of the total energy of CO molecule on ENCUT.
 #+attr_latex: placement=[H]
@@ -1421,7 +1402,6 @@ mlab.show()
 #+END_SRC
 
 #+RESULTS:
-: None
 
 #+caption: Charge density of a CO molecule that is located at the origin. The electron density that is outside the cell is wrapped around to the other corners. \label{fig:cd1}
 #+ATTR_LaTeX: placement=[H]
@@ -1621,7 +1601,6 @@ plt.savefig('images/co-dos.png')
 #+END_SRC
 
 #+RESULTS:
-: None
 
 #+caption: Density of states for a CO molecule.
 #+ATTR_LaTeX: placement=[H]
@@ -1691,7 +1670,7 @@ plt.savefig('images/co-ados.png')
 #+ATTR_LaTeX: placement=[H]
 [[./images/co-ados.png]]
 
-*** TODO Electrostatic potential
+*** Electrostatic potential
 This is an example of the so-called \sigma hole in a [[http://pubs.acs.org/cen/science/87/8738sci2.html][halogen bond]]. The coordinates for the CF_{3}Br molecule were found at [[http://cccbdb.nist.gov/exp2.asp?casno=75638]].
 
 #+BEGIN_SRC python :results output :exports both
@@ -1792,17 +1771,17 @@ with jasp('molecules/h2o-bader',
 
   GRID BASED BADER ANALYSIS  (Version 0.27e 05/09/11)
 
-  OPEN ... CHG
+  OPEN ... CHG                 
   VASP-STYLE INPUT FILE
  VASP5 format
   FFT-grid:   112 x 128 x 120
-  CLOSE ... CHG
+  CLOSE ... CHG                 
 
-  RUN TIME:    0.73 SECONDS
+  RUN TIME:    0.77 SECONDS
 
   CALCULATING BADER CHARGE DISTRIBUTION
                  0  10  25  50  75  100
-  PERCENT DONE:  **********************
+  PERCENT DONE:  ********************** 
 
   REFINING AUTOMATICALLY
   ITERATION: 1
@@ -1830,13 +1809,13 @@ with jasp('molecules/h2o-bader',
   CHECKED POINTS:         26
   REASSIGNED POINTS:       0
 
-  RUN TIME:      27.04 SECONDS
+  RUN TIME:      26.28 SECONDS
 
   CALCULATING MINIMUM DISTANCES TO ATOMS
                  0  10  25  50  75  100
   PERCENT DONE:  **********************
 
-  RUN TIME:    1.30 SECONDS
+  RUN TIME:    1.31 SECONDS
 
   WRITING BADER ATOMIC CHARGES TO ACF.dat
   WRITING BADER VOLUME CHARGES TO BCF.dat
@@ -1845,14 +1824,14 @@ with jasp('molecules/h2o-bader',
       SIGNIFICANT MAXIMA FOUND:             10
            NUMBER OF ELECTRONS:        7.99999
 
-  WRITING ATOMIC VOLUMES
+  WRITING ATOMIC VOLUMES 
                  0  10  25  50  75  100
   PERCENT DONE:  **********************
 
-  RUN TIME:    4.06 SECONDS
+  RUN TIME:    3.90 SECONDS
 
   WRITING BADER ATOMIC INDEX TO AtIndex.dat
-
+ 
 #+end_example
 
 #+BEGIN_src sh :dir /home/jkitchin/dft-org/molecules/h2o-bader :results output
@@ -1910,6 +1889,9 @@ with jasp('molecules/h2o-bader') as calc:
 TODO: figure out these charges
 
 ** Geometry optimization
+   :PROPERTIES:
+   :ID:       af5957a7-116e-42f0-b617-0bf2059fd1e5
+   :END:
 *** Manual determination of a bond length
 The equilibrium bond length of a CO molecule is approximately the bond length that minimizes the total energy. We can find that by computing the total energy as a function of bond length, and noting where the minimum is. Here is an example in VASP. There are a few features to point out here. We want to compute 5 bond lengths, and each calculation is independent of all the others. mod:jasp is set up to automatically handle jobs for you by submitting them to the queue. It raises a variety of exceptions to let you know what has happened, and you must handle these to control the workflow. We will illustrate this by the following examples.
 
@@ -2126,6 +2108,9 @@ with jasp('molecules/h2o_relax',
 :  [ 0.     0.     0.   ]]
 
 ** Vibrational frequencies
+   :PROPERTIES:
+   :ID:       a9c1ebd4-65cd-4818-8ee0-923f3b800e22
+   :END:
 index:vibrations
 *** Manual calculation of vibrational frequency
 
@@ -2724,6 +2709,9 @@ print '-T*S = {0:1.3f} eV'.format(-T*S/1000/96.4853)
 This is reasonable agreement for the entropy.
 
 ** Molecular reaction energies
+   :PROPERTIES:
+   :ID:       5aa65ee8-f47e-4f65-b52a-de9920505350
+   :END:
 *** O_{2} dissociation
 The first reaction we consider is a simple dissociation of oxygen molecule into two oxygen atoms: O_{2} \rightarrow 2O. The dissociation energy is pretty straightforward to define: it is the energy of the products minus the energy of the reactant. $D = 2*E_O - E_{O_2}$. It would appear that we simply calculate the energy of an oxygen atom, and the energy of an oxygen molecule and evaluate the formula. Let us do that.
 
@@ -4097,6 +4085,9 @@ os.system('png2swf -o images/nh3-neb.swf images/00*-nh3.png ')
 [[./images/nh3-neb.swf]]
 
 * Bulk systems
+  :PROPERTIES:
+  :ID:       5bdc53ba-774c-4c7a-acd1-1cddf7d15a95
+  :END:
 
 See http://arxiv.org/pdf/1204.2733.pdf for a very informative comparison of DFT codes for computing different bulk properties.
 
@@ -4705,6 +4696,9 @@ You are, of course, free to use any formula you want to set the number of bands.
 3. etc...
 
 ** Determining bulk structures
+   :PROPERTIES:
+   :ID:       82305f4d-66ec-4971-9504-fd44ff75bb6e
+   :END:
 What we typically mean by determining bulk structures includes the following:
 
 - What is the most stable crystal structure for a material?
@@ -5558,7 +5552,205 @@ Again, the value in Kittel cite:kittel is 5.75 eV which is very close to this va
 
 ** TODO Elastic properties
 See this reference cite:PhysRevB.65.104104.
-** Bulk thermodynamics
+
+We seek the elastic constant tensor that relates stress (\sigma) and strain (\epsilon) via \(\sigma = c \epsilon \). The stress and strain are six component vectors, so $c$ will be a 6 \times 6 symmetric matrix. 
+
+*** Al elastic properties
+#+BEGIN_SRC python
+from jasp import *
+from ase.lattice.cubic import FaceCenteredCubic
+
+atoms = FaceCenteredCubic(symbol='Al')
+
+with jasp('bulk/Al-bulk',
+          xc='PBE',
+          kpts=(12,12,12),
+          encut=350,   
+          prec='High',       
+          isif=3,
+          nsw=30,
+          ibrion=1,
+          atoms=atoms) as calc:
+    print atoms.get_potential_energy()
+    print atoms.get_stress()
+#+END_SRC
+
+#+RESULTS:
+: -14.96989
+: [-0.127 -0.127 -0.127  0.     0.     0.   ]
+
+Ok, now with a relaxed geometry at hand, we proceed with the elastic constants. This is accomplished with IBRION=6 and ISIF \ge 3 in VASP. See this reference (from the VASP [[http://cms.mpi.univie.ac.at/vasp/vasp/IBRION_5_IBRION_6.html][page]]).
+
+
+Y. Le Page and P. Saxe, Phys. Rev. B 65, 104104 (2002). 
+
+
+#+BEGIN_SRC python
+from jasp import *
+from jasp.elastic_moduli import *
+
+with jasp('bulk/Al-bulk') as calc:
+    calc.clone('bulk/Al-elastic')
+
+with jasp('bulk/Al-elastic',
+          ibrion=6,    #
+          isif=3,      # gets elastic constants
+          potim=0.015,  # displacements
+          nsw=1,
+          nfree=2) as calc:
+    atoms = calc.get_atoms()
+    print atoms.get_potential_energy() 
+    EM = calc.get_elastic_moduli()
+    print EM
+
+c11 = EM[0,0]
+c12 = EM[0,1]
+B = (c11 + 2 * c12) / 3.0
+print B
+#+END_SRC
+
+#+RESULTS:
+: -14.969509
+: [[ 98.944  66.153  66.153   0.      0.      0.   ]
+:  [ 66.153  98.944  66.153   0.      0.      0.   ]
+:  [ 66.153  66.153  98.944   0.      0.      0.   ]
+:  [  0.      0.      0.      1.687   0.      0.   ]
+:  [  0.      0.      0.      0.      1.687   0.   ]
+:  [  0.      0.      0.      0.      0.      1.687]]
+: 77.08309
+
+This example shows the basic mechanics of getting the elastic constants. The C_{44} constant above is too low, and probably we need to check these constants for convergence with respect to kpoints, planewave cutoff, and maybe the value of POTIM.
+
+*** Fe elastic properties
+
+#+BEGIN_SRC python
+from jasp import *
+from ase.lattice.cubic import BodyCenteredCubic
+
+atoms = BodyCenteredCubic(symbol='Fe')
+for atom in atoms:
+    atom.magmom = 3.0
+
+with jasp('bulk/Fe-bulk',
+          xc='PBE',
+          kpts=(6,6,6),
+          encut=350,
+          ispin=2,
+          isif=3,
+          nsw=30,
+          ibrion=1,
+          atoms=atoms) as calc:
+    print atoms.get_potential_energy()
+    print atoms.get_stress()
+
+#+END_SRC
+
+#+RESULTS:
+
+
+Ok, now with a relaxed geometry at hand, we proceed with the elastic constants. This is accomplished with IBRION=6 and ISIF \ge 3 in VASP. See this reference (from the VASP [[http://cms.mpi.univie.ac.at/vasp/vasp/IBRION_5_IBRION_6.html][page]]).
+
+
+Y. Le Page and P. Saxe, Phys. Rev. B 65, 104104 (2002). 
+
+
+#+BEGIN_SRC python
+from jasp import *
+
+with jasp('bulk/Fe-bulk') as calc:
+    calc.clone('bulk/Fe-elastic')
+
+with jasp('bulk/Fe-elastic',
+          ibrion=6,    #
+          isif=3,      # gets elastic constants
+          potim=0.05,  # displacements
+          nsw=1,
+          nfree=2) as calc:
+    atoms = calc.get_atoms()
+    print atoms.get_potential_energy() 
+#+END_SRC
+
+#+RESULTS:
+: -16.592189
+
+Now, the results are written out to the OUTCAR file. Actually, three sets of moduli are written out 1) the elastic tensor for rigid ions, 2) the contribution from allowing the atoms to relax, and 3) the total elastic modulus, all in kBar.
+
+#+BEGIN_EXAMPLE
+  SYMMETRIZED ELASTIC MODULI (kBar)
+ Direction    XX          YY          ZZ          XY          YZ          ZX
+ --------------------------------------------------------------------------------
+ XX        2803.5081   1622.6085   1622.6085      0.0000      0.0000      0.0000
+ YY        1622.6085   2803.5081   1622.6085      0.0000      0.0000      0.0000
+ ZZ        1622.6085   1622.6085   2803.5081      0.0000      0.0000      0.0000
+ XY           0.0000      0.0000      0.0000    866.8792      0.0000      0.0000
+ YZ           0.0000      0.0000      0.0000      0.0000    866.8792      0.0000
+ ZX           0.0000      0.0000      0.0000      0.0000      0.0000    866.8792
+ --------------------------------------------------------------------------------
+#+END_EXAMPLE
+
+and
+
+#+BEGIN_EXAMPLE
+ ELASTIC MODULI CONTR FROM IONIC RELAXATION (kBar)
+ Direction    XX          YY          ZZ          XY          YZ          ZX
+ --------------------------------------------------------------------------------
+ XX           0.0000      0.0000      0.0000      0.0000      0.0000      0.0000
+ YY           0.0000      0.0000      0.0000      0.0000      0.0000      0.0000
+ ZZ           0.0000      0.0000      0.0000      0.0000      0.0000      0.0000
+ XY           0.0000      0.0000      0.0000      0.0000      0.0000      0.0000
+ YZ           0.0000      0.0000      0.0000      0.0000      0.0000      0.0000
+ ZX           0.0000      0.0000      0.0000      0.0000      0.0000      0.0000
+ --------------------------------------------------------------------------------
+
+
+ TOTAL ELASTIC MODULI (kBar)
+ Direction    XX          YY          ZZ          XY          YZ          ZX
+ --------------------------------------------------------------------------------
+ XX        2803.5081   1622.6085   1622.6085      0.0000      0.0000      0.0000
+ YY        1622.6085   2803.5081   1622.6085      0.0000      0.0000      0.0000
+ ZZ        1622.6085   1622.6085   2803.5081      0.0000      0.0000      0.0000
+ XY           0.0000      0.0000      0.0000    866.8792      0.0000      0.0000
+ YZ           0.0000      0.0000      0.0000      0.0000    866.8792      0.0000
+ ZX           0.0000      0.0000      0.0000      0.0000      0.0000    866.8792
+ --------------------------------------------------------------------------------
+#+END_EXAMPLE
+
+Let us write a small code here to extract the Total elastic moduli from the OUTCAR file. First we get the line where the total elastic moduli start, then take the six lines that start three lines after that. Finally we parse out the matrix elements and cast them as floats.
+
+#+BEGIN_SRC python
+import numpy as np
+EM = []
+
+with open('bulk/Fe-elastic/OUTCAR') as f:
+    lines = f.readlines()
+    for i, line in enumerate(lines):
+        if line.startswith(' TOTAL ELASTIC MODULI (kBar)'):
+            j = i + 3
+            data = lines[j:j+6]
+            break
+
+for line in data:
+    EM += [[float(x) for x in line.split()[1:]]]
+
+print np.array(EM)    
+#+END_SRC
+
+#+RESULTS:
+: [[ 2803.5081  1622.6085  1622.6085     0.         0.         0.    ]
+:  [ 1622.6085  2803.5081  1622.6085     0.         0.         0.    ]
+:  [ 1622.6085  1622.6085  2803.5081     0.         0.         0.    ]
+:  [    0.         0.         0.       866.8792     0.         0.    ]
+:  [    0.         0.         0.         0.       866.8792     0.    ]
+:  [    0.         0.         0.         0.         0.       866.8792]]
+
+
+TODO: compare to a normal EOS, and maybe literature. Further discussion of symmetry.
+
+Fe is in a BCC crystal structure, which is high in symmetry. Consequently, many of the elements in the matrix are equal to zero.
+
+see www.nist.gov/data/PDFfiles/jpcrd34.pdf‎ for a lot of detail 
+
+** TODO Bulk thermodynamics
 We can predict temperature dependent thermodynamic properties of bulk materials without too much effort. As with the thermochemical properties of ideal gases, we must use some simple models that we parameterize by DFT. Here we follow the example in Reference citealp:Shang20101040 for computing the thermal coefficient of expansion, heat capacity, enthalpy and entropy for Ni as a function of temperature.
 
 We start by computing the equation of state for fcc Ni.
@@ -5847,7 +6039,15 @@ At a pressure of 4.5 GPa, we expect that anatase will start converting into ruti
 #+ATTR_LaTeX: placement=[H]
 [[./images/eos-common-tangent.png]]
 
+*************** TODO add literature discussion
+there is some controversy about the most stable phase. add discussion here.
+*************** END
+
+
 ** Bulk reaction energies
+   :PROPERTIES:
+   :ID:       15961dbc-5a10-42b6-8a3c-ca1d73b390f9
+   :END:
 *** Alloy formation energies
 In this section we will consider how to calculate the formation energy of an fcc Cu-Pd alloy and how to use that information to discuss relative stabilities. The kinds of questions we can easily answer are:
 
@@ -6368,9 +6568,12 @@ print 'rxn energy = {0:1.1f} eV'.format(-2*H*MW/96.4)  # convert to eV
 This is pretty close to the value in cite:PhysRevB.73.195107 and might need a temperature correction to get agreement at 298K.
 
 ** Bulk density of states
+   :PROPERTIES:
+   :ID:       cdf40b4f-f686-48b4-a458-c885f62b8bbf
+   :END:
 The density of states refers to the number of electronic states in a particular energy range.
 
-The solution to Eq. \eqref{eq:KS} yields a set of Kohn-Sham (K-S) orbitals and an
+The solution to Eq. eqref:eq:KS yields a set of Kohn-Sham (K-S) orbitals and an
 associated set of eigenvalues that correspond to the energies of these
 orbitals, neither of which have any known directly observable meaning
 cite:RevModPhys.71.1253.  The sum of the squared K-S orbitals,
@@ -7020,6 +7223,9 @@ for i,a in enumerate([4.7, 5.38936, 6.0]):
 [[./images/Si-bs-2.png]]
 
 ** Magnetism
+   :PROPERTIES:
+   :ID:       9aba409a-1d3b-4bbb-96df-6cd58a787991
+   :END:
 *** Determining if a magnetic solution is energetically favorable
 We can force a total magnetic moment onto a unit cell and compute the total energy as function of the total magnetic moment. If there is a minimum in the energy, then we know there is a lower energy magnetic solution than a non-magnetic solution. We use incar:NUPDOWN to enforce the magnetic moment in the cell. Note that NUPDOWN can only be an integer. You cannot set it to be an arbitrary float.
 
@@ -7144,6 +7350,9 @@ cite:RevModPhys.73.515
 cite:Caspersen10052005 Carter paper
 cite:sheppard:074103 recent Henkelman paper
 * Surfaces
+  :PROPERTIES:
+  :ID:       af4a3f54-6572-49ac-b938-e62401bc35b9
+  :END:
 ** Surface structures
 As with molecules and bulk systems mod:ase provides several convenience functions for making surfaces.
 *** Simple surfaces
@@ -7227,6 +7436,9 @@ p.show()
 [[./images/Al-slab-bandstructure.png]]
 
 ** Surface relaxation
+   :PROPERTIES:
+   :ID:       10d1486b-97d1-48a4-83dd-d71097668d18
+   :END:
 When a surface is created, the bulk symmetry is broken and consequently there will be forces on the surface atoms. We will examine some consequences of this with a simple Al slab. First, we show there are forces on the slab atoms.
 
 #+BEGIN_SRC python :results output :exports both
@@ -7741,6 +7953,9 @@ print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
 It is questionable whether we should consider this evidence of a missing row reconstruction because the number is small. That does not mean the reconstruction will not happen, but it could mean it is very easy to lift.
 
 ** Work function
+   :PROPERTIES:
+   :ID:       6fb2a790-5fc8-47f7-b379-bf6eb65bd3f5
+   :END:
 [[index:work function]]
 To get the work function, we need to have the local potential. This is not written by default in VASP, and we have to tell it to do that with the [[incar:LVTOT][LVTOT]] and [[incar:LVHAR][LVHAR]] keywords.
 
@@ -7874,6 +8089,7 @@ plt.savefig('images/Cu-unrelaxed-surface-energy.png')
 #+caption: Surface energy of a Cu(111) slab as a function of thickness.
 #+ATTR_LaTeX: placement=[H]
 [[./images/Cu-unrelaxed-surface-energy.png]]
+
 One reason for the oscillations may be quantum size effects cite:Fiolhais2003209. In citealp:PhysRevB.75.115131 the surface energy of Cu(111) is reported as 0.48 eV/atom, or 1.36 J/m$^2$. Here is an example showing a conversion between these two units. We use ase to compute the area of the unit cell from the norm of the cross-product of the vectors defining the surface unit cell.
 
 #+BEGIN_SRC python :results output :exports both
@@ -8073,6 +8289,9 @@ The key points to notice in this figure are:
 5. The difference in energy with and without the dipole correction here is small.
 
 ** Adsorption energies
+   :PROPERTIES:
+   :ID:       2113e4b1-2c98-48a6-90c8-ab1471b0eb7c
+   :END:
 [[index:adsorption energy]]
 *** Simple estimate of the adsorption energy
 Calculating an adsorption energy amounts to computing the energy of the following kind of reaction:
@@ -8085,7 +8304,7 @@ slab + gas-phase molecule $\rightarrow$ slab_adsorbate + products
 
 There are many variations of this idea. The slab may already have some adsorbates on it, the slab may reconstruct on adsorption, the gas-phase molecule may or may not dissociate, and the products may or may not stick to the surface. We have to decide where to put the adsorbates, i.e. what site to put them on, and some sites will be more stable than others. We will consider the dissociative adsorption of O$_2$ on three sites of a Pt(111) slab. We will assume the oxygen molecule has split in half, and that the atoms have moved far apart. We will model the oxygen coverage at 0.25 ML, which means we need to use a $2 \times 2$ surface unit cell. For computational speed, we will freeze the slab, but allow the adsorbate to relax.
 
-$\Delta H_{ads} (eV/O) = E_{slab+O} - E_{slab} - 0.5*E_{O_2}$
+\( \Delta H_{ads} (eV/O) = E_{slab+O} - E_{slab} - 0.5*E_{O_2} \)
 **** Calculations
 ***** clean slab calculation
 #+BEGIN_SRC python :results output
@@ -8103,7 +8322,10 @@ with jasp('surfaces/Pt-slab',
           encut=350,
           atoms=atoms) as calc:
     slab_e = atoms.get_potential_energy()
+    print slab_e
 #+END_SRC
+
+#+RESULTS:
 
 ***** fcc site
 #+BEGIN_SRC python :results output
@@ -8128,10 +8350,11 @@ with jasp('surfaces/Pt-slab-O-fcc',
           nsw=25,
           atoms=atoms) as calc:
 
-    calc.calculate()
+    print atoms.get_potential_energy()
 #+END_SRC
 
 #+RESULTS:
+: -73.663924
 
 ***** O atom on the bridge site
 #+BEGIN_SRC python :results output
@@ -8452,7 +8675,7 @@ Some final notes about the equations above:
 - We were not careful about stoichiometry. As written, it is assumed there are the same number of atoms (not including the adsorbates) in the slabs and bulk, and the same number of adsorbate atoms in the slab and $E_{ads}$. Appropriate normalization factors must be included if that is not true.
 
 - It is not necessary to perform a symmetric slab calculation to determine the effect of adsorption on the surface energy! You can examine $\gamma - \gamma_{clean}$ with knowledge of only the adsorption energies!
-
+  
 ** Adsorbate vibrations
 
 Adsorbates also have vibrational modes. Unlike a free molecule, the translational and rotational modes of an adsorbate may actually have real frequencies. Sometimes they are called frustrated translations or rotations. For metal surfaces with adsorbates, it is common to only compute vibrational modes of the adsorbate on a frozen metal slab. The rationale is that the metal atoms are so much heavier than the adsorbate that there will be little coupling between the surface and adsorbates. You can limit the number of modes calculated with constraints (func:ase.constraints.FixAtoms or func:ase.constraints.FixScaled) if you use [[incar:IBRION][IBRION]]=5. The other IBRION settings (6, 7, 8) do not respect the selective dynamics constraints. Below we consider the vibrational modes of an oxygen atom in an fcc site on Pt(111).
@@ -8738,6 +8961,9 @@ These energies are crazy different, and the forces on the atoms with the field o
 ** TODO Simulating STM images
 http://cst-www.nrl.navy.mil/users/sullivan/stm_backup/stm2.html
 * Atomistic thermodynamics
+  :PROPERTIES:
+  :ID:       b0b88efb-138d-4a22-bbc9-4b763b69b264
+  :END:
 [[index:atomistic thermodynamics]]
 Let us consider how much the Gibbs free energy of an O_{2} molecule changes as a function of temperature, at 1 atm. We use the Shomate polynomials to approximate the temperature dependent entropy and enthalpy, and use the parameters from the [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447&Units=SI&Mask=1#Thermo-Gas][NIST Webbook]] for O_{2}.
 #+BEGIN_SRC python :results output
@@ -9008,6 +9234,9 @@ This graph shows graphically the $\Delta \mu_{O_2}$ required to make the metal m
 About 500K at 1$\times 10^{-10}$ atm, 600K at 1$\times 10^{-5}$ atm, 900K at 1atm, etc...
 
 ** Effect on adsorption
+   :PROPERTIES:
+   :ID:       6b509064-8e9d-44a0-ad86-f1302988c875
+   :END:
 We now consider the question: Given a pressure and temperature, what coverage would you expect on a surface? We saw earlier that adsorption energies depend on the site and coverage. We lso know the coverage depends on the pressure and temperature. Above some temperature, desorption occurs, and below some pressure adsorption will not be favorable. We seek to develop a quantitative method to determine those conditions.
 
 We redefine the adsorption energy as:
@@ -9090,7 +9319,13 @@ Thus, the chemical potentials of all these three adsorbed species depend on the 
 $\mu_{gas}(T,p) = E_{gas}(0K) + \delta \mu + kT\ln\left (p/p^0\right )$, as we have defined before, so that only simple DFT calculations are needed to estimate them.
 
 * Advanced electronic structure methods
+  :PROPERTIES:
+  :ID:       b003ab44-e1f3-4ccb-9ecc-baa8a67c62d5
+  :END:
 ** DFT+U
+   :PROPERTIES:
+   :ID:       d4b89c02-f7a3-4233-bf70-1fd35169d01d
+   :END:
 index:DFT+U
 
 [[http://cms.mpi.univie.ac.at/vasp/vasp/On_site_Coulomb_interaction_L_S_DA_U.html][VASP manual on DFT+U]]
@@ -13005,3 +13240,12 @@ provided the MMC is eligible for relicensing.
 
 * Index
 [[printindex:pind][Print index]]
+
+
+
+
+
+* Tasks :noexport:
+** TODO replace all % formating with .format
+** make func and mod links un-hyphenatable.
+** Create flashcard exercises for ase commands
