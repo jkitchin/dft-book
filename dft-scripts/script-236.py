@@ -1,0 +1,1 @@
+export VASP_PP_PATH=$HOME/vasp/my_vasp_potentials

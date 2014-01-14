@@ -1,0 +1,1 @@
+cat ACF.dat

@@ -1,0 +1,1 @@
+head -n 20 bulk/Si-bandstructure/EIGENVAL
