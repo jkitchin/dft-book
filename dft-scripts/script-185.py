@@ -26,15 +26,23 @@ def DeltaMu(T,P):
     P in atm
     '''
     return enthalpy(T) - T*entropy(T) + kB*T*np.log(P/atm)
-P = np.logspace(-11,1,10)*atm
-T = []
-for p in P:
-    def func(T):
-        return -0.99 - 0.5*DeltaMu(T,p)
-    T.append(fsolve(func, 450)[0])
-plt.semilogy(T,P/atm)
+T = np.linspace(100,1000)
+P = 1e-10*atm
+def func(T):
+    'Cu2O'
+    return -1.95 - 0.5*DeltaMu(T,P)
+print 'Cu2O decomposition temperature is {0:1.0f} K'.format(fsolve(func, 900)[0])
+def func(T):
+    'Ag2O'
+    return -0.99 - 0.5*DeltaMu(T,P)
+print 'Ag2O decomposition temperature is {0:1.0f} K'.format(fsolve(func, 470)[0])
+# you have use \\times to escape the first \ in pyplot
+plt.plot(T, DeltaMu(T,1e10*atm),label='1$\\times 10^{10}$ atm')
+plt.plot(T, DeltaMu(T,1e5*atm),label='1$\\times 10^5$ atm')
+plt.plot(T, DeltaMu(T,1*atm),label='1 atm')
+plt.plot(T, DeltaMu(T,1e-5*atm),label='1$\\times 10^{-5}$ atm')
+plt.plot(T, DeltaMu(T,1e-10*atm),label='1$\\times 10^{-10}$ atm')
 plt.xlabel('Temperature (K)')
-plt.ylabel('Pressure (atm)')
-plt.text(800,1e-7,'Ag')
-plt.text(600,1e-3,'Ag$_2$O')
-plt.savefig('images/Ag2O-decomposition.png')
+plt.ylabel('$\Delta \mu_{O_2}(T,p)$ (eV)')
+plt.legend(loc='best')
+plt.savefig('images/O2-mu.png')

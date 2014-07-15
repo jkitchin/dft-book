@@ -1,27 +1,32 @@
 from jasp import *
-from ase.lattice.cubic import BodyCenteredCubic
-atoms = BodyCenteredCubic(directions=[[1,0,0],
-                                      [0,1,0],
-                                      [0,0,1]],
-                                      size=(1,1,1),
-                                      symbol='Fe')
-NUPDOWNS = [0.0, 2.0, 4.0, 5.0, 6.0, 8.0]
-energies = []
-for B in NUPDOWNS:
-    with jasp('bulk/Fe-bcc-fixedmagmom-{0:1.2f}'.format(B),
-          xc='PBE',
-          encut=300,
-          kpts=(4,4,4),
-          ispin=2,
-          nupdown=B,
-          atoms=atoms) as calc:
+from jasp.jasp_bandstructure import *
+from ase import Atom, Atoms
+JASPRC['mode']='run'
+ready = True
+for i,a in enumerate([4.7, 5.38936, 6.0]):
+    atoms = Atoms([Atom('Si',[0,0,0]),
+                   Atom('Si',[0.25, 0.25, 0.25])])
+    atoms.set_cell([[a/2., a/2., 0.0],
+                    [0.0,  a/2., a/2.],
+                    [a/2., 0.0, a/2.]],scale_atoms=True)
+    with jasp('bulk/Si-bs-{0}'.format(i),
+              xc='PBE',
+              prec='Medium',
+              istart=0,
+              icharg=2,
+              ediff=0.1e-03,
+              kpts=(4,4,4),
+              atoms=atoms) as calc:
         try:
-            e = atoms.get_potential_energy()
-            energies.append(e)
+            n,bands,p  = calc.get_bandstructure(kpts_path=[('L', [0.5,0.5,0.0]),
+                                                       ('$\Gamma$', [0,0,0]),
+                                                       ('$\Gamma$', [0,0,0]),
+                                                       ('X', [0.5,0.5,0.5])],
+                                            kpts_nintersections=10)
         except (VaspSubmitted, VaspQueued):
-            pass
-import matplotlib.pyplot as plt
-plt.plot(NUPDOWNS, energies)
-plt.xlabel('Total Magnetic Moment')
-plt.ylabel('Energy (eV)')
-plt.savefig('images/Fe-fixedmagmom.png')
+            print 'not ready {0}'.format(i)
+            ready = False
+    if not ready:
+        import sys; sys.exit()
+    p.savefig('images/Si-bs-{0}.png'.format(i))
+    p.show()

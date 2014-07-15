@@ -1,28 +1,33 @@
-from ase.lattice.hexagonal import HexagonalClosedPacked
 from jasp import *
+# bcc energies and volumes
+bcc_LC = [2.75, 2.8, 2.85, 2.9, 2.95, 3.0]
+bcc_volumes = []
+bcc_energies = []
+for a in bcc_LC:
+    with jasp('bulk/Cu-bcc-{0}'.format(a)) as calc:
+        atoms = calc.get_atoms()
+        bcc_volumes.append(atoms.get_volume())
+        bcc_energies.append(atoms.get_potential_energy())
+# fcc energies and volumes
+fcc_LC = [3.5, 3.55, 3.6, 3.65, 3.7, 3.75]
+fcc_volumes = []
+fcc_energies =[]
+for a in fcc_LC:
+    with jasp('bulk/Cu-{0}'.format(a)) as calc:
+        atoms = calc.get_atoms()
+        fcc_volumes.append(atoms.get_volume())
+        fcc_energies.append(atoms.get_potential_energy())
 import matplotlib.pyplot as plt
-atoms = HexagonalClosedPacked(symbol='Ru',
-                              latticeconstant={'a':2.7, 'c/a':1.584})
-a_list = [2.5, 2.6, 2.7, 2.8, 2.9]
-covera_list = [1.4, 1.5, 1.6, 1.7, 1.8]
-for a in a_list:
-    energies = []
-    for covera in covera_list:
-        atoms = HexagonalClosedPacked(symbol='Ru',
-                              latticeconstant={'a':a, 'c/a':covera})
-        wd = 'bulk/Ru/{0:1.2f}-{1:1.2f}'.format(a,covera)
-        with jasp(wd,
-                  xc='PBE',
-                  kpts=(6, 6, 4), # the c-axis is longer than the a-axis, so we use fewer kpoints.
-                  encut=350,
-                  atoms=atoms) as calc:
-            try:
-                energies.append(atoms.get_potential_energy())
-            except (VaspSubmitted, VaspQueued):
-                pass
-    plt.plot(covera_list, energies, label='a={0}'.format(a))
-plt.xlabel('$c/a$ ($\AA$)')
-plt.ylabel('Energy (eV)')
+plt.plot(fcc_volumes, fcc_energies, label='fcc')
+plt.plot(bcc_volumes, bcc_energies, label='bcc')
+plt.xlabel('Atomic volume ($\AA^3$/atom)')
+plt.ylabel('Total energy (eV)')
 plt.legend()
-plt.savefig('images/Ru-covera-scan.png')
-plt.show()
+plt.savefig('images/Cu-bcc-fcc.png')
+# print table of data
+print '#+tblname: bcc-data'
+print '#+caption: Total energy vs. lattice constant for BCC Cu.'
+print '| Lattice constant (\AA$^3$) | Total energy (eV) |'
+print '|-'
+for lc, e in zip(bcc_LC, bcc_energies):
+    print '| {0} | {1} |'.format(lc, e)

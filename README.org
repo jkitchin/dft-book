@@ -10,3 +10,8 @@ You are welcome to contribute examples of how to run calculations.
 Bug/typo/error reports should be sent to:
 
 John Kitchin (jkitchin@andrew.cmu.edu) or reported as an [[https://github.com/jkitchin/dft-book/issues][issue]].
+
+* TODO get this article for dft course
+
+
+http://pubs.rsc.org/en/Content/ArticleLanding/2014/GC/C3GC41368C#!divAbstract

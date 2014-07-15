@@ -1,22 +1,9 @@
-from ase.lattice.surface import fcc111
+from ase.lattice.surface import surface
 from ase.io import write
-from jasp import *
-from jasp.jasp_bandstructure import *
-JASPRC['mode']='run'
-slab = fcc111('Al', size=(1,1,4), vacuum=10.0)
-with jasp('surface/Al-bandstructure',
-          xc='PBE',
-          encut=300,
-          kpts=(6,6,6),
-          atoms=slab) as calc:
-    n,bands,p  = calc.get_bandstructure(kpts_path=[('$\Gamma$', [0,0,0]),
-                                                   ('$K1$', [0.5, 0.0, 0.0]),
-                                                   ('$K1$', [0.5,0.0,0.0]),
-                                                   ('$K2$', [0.5,0.5,0.0]),
-                                                   ('$K2$', [0.5,0.5,0.0]),
-                                                   ('$\Gamma$', [0,0,0]),
-                                                   ('$\Gamma$', [0,0,0]),
-                                                   ('$K3$', [0.0, 0.0, 1.0])],
-                                                   kpts_nintersections=10)
-p.savefig('images/Al-slab-bandstructure.png')
-p.show()
+# Au(211) with 9 layers
+s1 = surface('Au', (2, 1, 1), 9)
+s1.center(vacuum=10, axis=2)
+write('images/Au-211.png',
+      s1.repeat((3,3,1)),
+      rotation='-30z,90x', # change the orientation for viewing
+      show_unit_cell=2)

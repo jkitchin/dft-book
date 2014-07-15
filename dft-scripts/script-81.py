@@ -1,5 +1,5 @@
 from ase.lattice.spacegroup import crystal
-a = 4.6
-c = 2.95
-rutile =crystal(['Ti', 'O'], basis=[(0, 0, 0), (0.3, 0.3, 0.0)],
-                spacegroup=136, cellpar=[a, a, c, 90, 90, 90])
+# FCC aluminum
+a = 4.05
+al = crystal('Al', [(0,0,0)], spacegroup=225, cellpar=[a, a, a, 90, 90, 90])
+print al

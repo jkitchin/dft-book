@@ -1,11 +1,6 @@
 from jasp import *
-from ase.dft.dos import DOS
-import matplotlib.pyplot as plt
-with jasp('molecules/simple-co') as calc: # we already ran this!
-    dos = DOS(calc)
-    plt.plot(dos.get_energies(), dos.get_dos())
-    plt.xlabel('Energy - $E_f$ (eV)')
-    plt.ylabel('DOS')
-# make sure you save the figure outside the with statement, or provide
-# the correct relative or absolute path to where you want it.
-plt.savefig('images/co-dos.png')
+from ase.units import Debye
+with jasp('molecules/co-centered') as calc:
+    dipole_vector = calc.get_dipole_moment()
+    dipole_moment = ((dipole_vector**2).sum())**0.5/Debye
+    print 'The dipole moment is {0:1.2f} Debye'.format(dipole_moment)

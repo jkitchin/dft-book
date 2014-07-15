@@ -1,28 +1,14 @@
 from jasp import *
-import matplotlib.pyplot as plt
-with jasp('surfaces/Al-slab-relaxed') as calc:
-    atoms = calc.get_atoms()
-with jasp('surfaces/Al-slab-locpot',
-          xc='PBE',
-          kpts=(6,6,1),
-          encut=350,
-          lvtot=True, # write out local potential
-          lvhar=True, # write out only electrostatic potential, not xc pot
-          atoms=atoms) as calc:
-    calc.calculate()
-    ef = calc.get_fermi_level()
-    atoms = calc.get_atoms()
-    x,y,z,lp = calc.get_local_potential()
-nx, ny, nz = lp.shape
-axy = np.array([np.average(lp[:,:,z]) for z in range(nz)])
-# setup the x-axis in realspace
-uc = atoms.get_cell()
-xaxis = np.linspace(0, uc[2][2], nz)
-plt.plot(xaxis, axy)
-plt.plot([min(xaxis), max(xaxis)], [ef, ef],'k:')
-plt.xlabel('Position along z-axis')
-plt.ylabel('x-y averaged electrostatic potential')
-plt.savefig('images/Al-wf.png')
-ind = (xaxis > 0) & (xaxis < 5)
-wf = np.average(axy[ind]) - ef
-print ' The workfunction is {0:1.2f} eV'.format(wf)
+with jasp('surfaces/Ag-110') as calc:
+    slab = calc.get_atoms()
+    eslab = slab.get_potential_energy()
+with jasp('surfaces/Ag-110-missing-row') as calc:
+    missingrow = calc.get_atoms()
+    emissingrow = missingrow.get_potential_energy()
+with jasp('bulk/Ag-fcc') as calc:
+    bulk = calc.get_atoms()
+    ebulk = bulk.get_potential_energy()
+print 'natoms slab        = {0}'.format(len(slab))
+print 'natoms missing row = {0}'.format(len(missingrow))
+print 'natoms bulk        = {0}'.format(len(bulk))
+print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)

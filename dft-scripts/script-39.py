@@ -1,17 +1,21 @@
-from ase import Atoms, Atom
+from ase import Atom, Atoms
 from jasp import *
-atoms = Atoms([Atom('H', [0.5960812,  -0.7677068,   0.0000000]),
-               Atom('O', [0.0000000,   0.0000000,   0.0000000]),
-               Atom('H', [0.5960812,   0.7677068,   0.0000000])],
-               cell=(8, 8, 8))
-with jasp('molecules/h2o_relax',
+import numpy as np
+co = Atoms([Atom('C',[0,0,0]),
+            Atom('O',[1.2,0,0])],
+            cell=(6,6,6))
+with jasp('molecules/co-cg',
           xc='PBE',
-          encut=400,
-          ismear=0,# Gaussian smearing
-          ibrion=2,
-          ediff=1e-8,
-          nsw=10,
-          atoms=atoms) as calc:
-    print "forces"
+          nbands=6,
+          encut=350,
+          ismear=1,
+          sigma=0.01, # this is small for a molecule
+          ibrion=2,   # conjugate gradient optimizer
+          nsw=5,      # do at least 5 steps to relax
+          atoms=co) as calc:
+    print 'Forces'
     print '======='
-    print atoms.get_forces()
+    print  co.get_forces()
+    pos = co.get_positions()
+    d = ((pos[0] - pos[1])**2).sum()**0.5
+    print 'Bondlength = {0:1.2f} angstroms'.format(d)

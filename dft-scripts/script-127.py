@@ -1,23 +1,16 @@
-# run CuO calculation
+# run Cu2O calculation
 from jasp import *
 from ase import Atom, Atoms
-# CuO
-# http://cst-www.nrl.navy.mil/lattice/struk/b26.html
-# http://www.springermaterials.com/docs/info/10681727_51.html
-a = 4.6837
-b = 3.4226
-c = 5.1288
-beta = 99.54/180*np.pi
-y = 0.5819
-a1 = np.array([0.5*a, -0.5*b, 0.0])
-a2 = np.array([0.5*a, 0.5*b, 0.0])
-a3 = np.array([c*np.cos(beta), 0.0, c*np.sin(beta)])
-atoms = Atoms([Atom('Cu', 0.5*a2),
-               Atom('Cu', 0.5*a1 + 0.5*a3),
-               Atom('O', -y*a1 + y*a2 + 0.25*a3),
-               Atom('O',  y*a1 - y*a2 - 0.25*a3)],
-               cell=(a1, a2, a3))
-with jasp('bulk/CuO',
+#http://phycomp.technion.ac.il/~ira/types.html#Cu2O
+a = 4.27
+atoms = Atoms([Atom('Cu',[0,0,0]),
+               Atom('Cu',[0.5, 0.5, 0.0]),
+               Atom('Cu',[0.5, 0.0, 0.5]),
+               Atom('Cu',[0.0, 0.5, 0.5]),
+               Atom('O',[0.25, 0.25, 0.25]),
+               Atom('O',[0.75, 0.75, 0.75])])
+atoms.set_cell((a,a,a), scale_atoms=True)
+with jasp('bulk/Cu2O',
           encut=400,
           kpts=(8,8,8),
           ibrion=2,

@@ -1,17 +1,17 @@
-from ase import Atoms, Atom
 from jasp import *
-atoms = Atoms([Atom('H', [0.5960812,  -0.7677068,   0.0000000]),
-               Atom('O', [0.0000000,   0.0000000,   0.0000000]),
-               Atom('H', [0.5960812,   0.7677068,   0.0000000])],
-               cell=(8, 8, 8))
-with jasp('molecules/h2o_relax',
-          xc='PBE',
-          encut=400,
-          ismear=0,# Gaussian smearing
-          ibrion=2,
-          ediff=1e-8,
-          nsw=10,
-          atoms=atoms) as calc:
-    print 'Forces'
-    print '==========================='
-    print atoms.get_forces()
+import numpy as np
+c = 3e10 # speed of light cm/s
+h = 4.135667516e-15 # eV/s
+# first, get the frequencies.
+with jasp('molecules/h2o_vib') as calc:
+    freq = calc.get_vibrational_frequencies()
+ZPE = 0.0
+for f in freq:
+    if not isinstance(f,float):
+        continue #skip complex numbers
+    nu = f*c # convert to frequency
+    ZPE += 0.5*h*nu
+print 'The ZPE of water is {0:1.3f} eV'.format(ZPE)
+# one liner
+ZPE = np.sum([0.5*h*f*c for f in freq if isinstance(f, float)])
+print 'The ZPE of water is {0:1.3f} eV'.format(ZPE)

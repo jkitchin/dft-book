@@ -1,1 +1,1 @@
-export VASP_PP_PATH=$HOME/vasp/my_vasp_potentials
+export VASP_SCRIPT=$HOME/kitchinpython/jasp/bin/run_vasp.py

@@ -1,6 +1,3 @@
-from jasp import *
-with jasp('bulk/Ru2O4',
-          xc='PBE',
-          setups={'Ru':'_pv'}) as calc:
-    calc.calculate()
-    print calc
+from ase.io import read, write
+atoms = read('bulk/Ru2O4_1.cif')
+write('images/Ru2O4.png', atoms, show_unit_cell=2)

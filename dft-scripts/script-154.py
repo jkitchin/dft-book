@@ -1,14 +1,18 @@
 from jasp import *
-from ase.visualize import view
-from ase.lattice.cubic import FaceCenteredCubic
-atoms = FaceCenteredCubic(directions=[[0,1,1],
-                                      [1,0,1],
-                                      [1,1,0]],
-                                      size=(1,1,1),
-                                      symbol='Au')
-with jasp('bulk/Au-fcc',
+from ase.lattice.surface import fcc110
+from ase.io import write
+from ase.constraints import FixAtoms
+atoms = fcc110('Au', size=(2,1,6), vacuum=10.0)
+del atoms[11] # delete surface row
+constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms.set_constraint(constraint)
+write('images/Au-110-missing-row.png', atoms.repeat((2,2,1)), rotation='-90x', show_unit_cell=2)
+with jasp('surfaces/Au-110-missing-row',
           xc='PBE',
+          kpts=(6,6,1),
           encut=350,
-          kpts=(12,12,12),
+          ibrion=2,
+          isif=2,
+          nsw=10,
           atoms=atoms) as calc:
     calc.calculate()

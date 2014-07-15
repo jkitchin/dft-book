@@ -1,3 +1,3 @@
 from jasp import *
 with jasp('bulk/alloy/cu') as calc:
-    print calc.xml
+    print calc.pretty_json

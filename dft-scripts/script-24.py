@@ -1,27 +1,14 @@
-from ase import Atoms,Atom
-from jasp import *
+from ase.units import kB, Pascal
 import numpy as np
-np.set_printoptions(precision=3, suppress=True)
-atoms = Atoms([Atom('C',[0,   0, 0]),
-               Atom('O',[1.2, 0, 0])],
-               cell=(6,6,6))
-atoms.center()
-ENCUTS = [250, 300, 350, 400, 450, 500]
-energies = []
-ready = True
-for en in ENCUTS:
-    with jasp('molecules/co-en-{0}'.format(en),
-              encut=en,
-              xc='PBE',
-              atoms=atoms) as calc:
-        try:
-            energies.append(atoms.get_potential_energy())
-        except (VaspSubmitted, VaspQueued):
-            ready = False
-if not ready:
-   import sys; sys.exit()
 import matplotlib.pyplot as plt
-plt.plot(ENCUTS, energies, 'bo-')
-plt.xlabel('ENCUT (eV)')
-plt.ylabel('Total energy (eV)')
-plt.savefig('images/co-encut-v.png')
+atm = 101325 * Pascal
+L = np.linspace(4, 10)
+V = L**3
+n = 1 # one atom per unit cell
+for T in [298, 600, 1000]:
+    P = n/V*kB*T / atm # convert to atmospheres
+    plt.plot(V, P, label='{0}K'.format(T))
+plt.xlabel('Unit cell volume ($\AA^3$)')
+plt.ylabel('Pressure (atm)')
+plt.legend(loc='best')
+plt.savefig('images/ideal-gas-pressure.png')

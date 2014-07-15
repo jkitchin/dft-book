@@ -1,4 +1,5 @@
-nPd = 4.  # this is a float
+nPd = 4
 nCu = 5
-x_Cu = nCu/(nPd + nCu)
+# now cast as floats
+x_Cu = float(nCu)/(nPd + nCu)
 print 'x_cu = {0}'.format(x_Cu)

@@ -1,12 +1,11 @@
-import numpy as np
-EM = []
-with open('bulk/Fe-elastic/OUTCAR') as f:
-    lines = f.readlines()
-    for i, line in enumerate(lines):
-        if line.startswith(' TOTAL ELASTIC MODULI (kBar)'):
-            j = i + 3
-            data = lines[j:j+6]
-            break
-for line in data:
-    EM += [[float(x) for x in line.split()[1:]]]
-print np.array(EM)
+from jasp import *
+with jasp('bulk/Fe-bulk') as calc:
+    calc.clone('bulk/Fe-elastic')
+with jasp('bulk/Fe-elastic',
+          ibrion=6,    #
+          isif=3,      # gets elastic constants
+          potim=0.05,  # displacements
+          nsw=1,
+          nfree=2) as calc:
+    atoms = calc.get_atoms()
+    print atoms.get_potential_energy()

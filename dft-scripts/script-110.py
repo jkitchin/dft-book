@@ -1,18 +1,14 @@
 from jasp import *
-from jasp.elastic_moduli import *
-with jasp('bulk/Al-bulk') as calc:
-    calc.clone('bulk/Al-elastic')
-with jasp('bulk/Al-elastic',
-          ibrion=6,    #
-          isif=3,      # gets elastic constants
-          potim=0.015,  # displacements
-          nsw=1,
-          nfree=2) as calc:
-    atoms = calc.get_atoms()
-    print atoms.get_potential_energy() 
-    EM = calc.get_elastic_moduli()
-    print EM
-c11 = EM[0,0]
-c12 = EM[0,1]
-B = (c11 + 2 * c12) / 3.0
-print B
+from ase.lattice.cubic import FaceCenteredCubic
+atoms = FaceCenteredCubic(symbol='Al')
+with jasp('bulk/Al-bulk',
+          xc='PBE',
+          kpts=(12,12,12),
+          encut=350,
+          prec='High',
+          isif=3,
+          nsw=30,
+          ibrion=1,
+          atoms=atoms) as calc:
+    print atoms.get_potential_energy()
+    print atoms.get_stress()

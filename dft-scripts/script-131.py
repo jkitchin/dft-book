@@ -1,28 +1,29 @@
-from ase import Atoms, Atom
 from jasp import *
-import sys
+npoints = 200
+width = 0.1
+def delta(energies, eik):
+    return energies == eik
+def gaussian(energies, eik):
+    x = ((energies - eik)/width)
+    return np.exp(-x**2)/np.sqrt(np.pi)/width
+with jasp('bulk/pd-dos') as calc:
+    # kpt weights
+    wk = calc.get_k_point_weights()
+    # for each k-point there are a series of eigenvalues
+    # here we get all the eigenvalues for each k-point
+    e_kn = []
+    for i,k in enumerate(wk):
+        print i,k
+        e_kn.append(calc.get_eigenvalues(kpt=i))
+    e_kn = np.array(e_kn) - calc.get_fermi_level()
+    # these are the energies we want to evaluate the dos at
+    energies = np.linspace(e_kn.min(), e_kn.max(), npoints)
+    # this is where we build up the dos
+    dos = np.zeros(npoints)
+    for j in range(npoints):
+        for k in range(len(wk)): # loop over all kpoints
+            for i in range(len(e_kn[k])): # loop over eigenvalues in each k
+                dos[j] += wk[k] * gaussian(energies[j], e_kn[k][i])
 import matplotlib.pyplot as plt
-import numpy as np
-from ase.dft import DOS
-a = 3.9  # approximate lattice constant
-b = a / 2.
-bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
-             cell=[(0, b, b),
-                   (b, 0, b),
-                   (b, b, 0)])
-with jasp('bulk/pd-dos',
-          encut=300,
-          xc='PBE',
-          lreal=False,
-          kpts=(8, 8, 8),  # this is too low for high quality DOS
-          atoms=bulk) as calc:
-    # this runs the calculation
-    bulk.get_potential_energy()
-    dos = DOS(calc, width=0.2)
-    d = dos.get_dos()
-    e = dos.get_energies()
-import pylab as plt
-plt.plot(e,d)
-plt.xlabel('energy (eV)')
-plt.ylabel('DOS')
-plt.savefig('images/pd-dos.png')
+plt.plot(energies, dos)
+plt.show()

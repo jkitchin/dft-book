@@ -1,19 +1,25 @@
 from jasp import *
-from ase import Atom, Atoms
-atoms = Atoms([Atom('Fe',[0.00,  0.00,  0.00], magmom=5),
-               Atom('Fe',[4.3,   4.3,   4.3],  magmom=-5),
-               Atom('O', [2.15,  2.15,  2.15], magmom=0),
-               Atom('O', [6.45,  6.45,  6.45], magmom=0)],
-               cell=[[4.3,    2.15,    2.15],
-                     [2.15,    4.3,     2.15],
-                     [2.15,    2.15,    4.3]])
-with jasp('bulk/afm-feo',
-          encut=350,
-          prec='Normal',
+from ase.lattice.cubic import BodyCenteredCubic
+atoms = BodyCenteredCubic(directions=[[1,0,0],
+                                      [0,1,0],
+                                      [0,0,1]],
+                                      size=(1,1,1),
+                                      symbol='Fe')
+# set magnetic moments on each atom
+for atom in atoms:
+    atom.magmom = 2.5
+with jasp('bulk/Fe-bcc-sp-1',
+          xc='PBE',
+          encut=300,
+          kpts=(4,4,4),
           ispin=2,
-          nupdown=0, # this forces a non-magnetic solution
-          lorbit=11, # to get individual moments
-          lreal=False,
+          lorbit=11, # you need this for individual magnetic moments
           atoms=atoms) as calc:
-    print 'Magnetic moments = ',atoms.get_magnetic_moments()
-    print 'Total magnetic moment = ',atoms.get_magnetic_moment()
+        try:
+            e = atoms.get_potential_energy()
+            B = atoms.get_magnetic_moment()
+            magmoms = atoms.get_magnetic_moments()
+        except (VaspSubmitted, VaspQueued):
+            pass
+print 'Total magnetic moment is {0:1.2f} Bohr-magnetons'.format(B)
+print 'Individual moments are {0} Bohr-magnetons'.format(magmoms)

@@ -1,63 +1,37 @@
-from ase.data.molecules import molecule
 from jasp import *
-# first we define our molecules. These will automatically be at the coordinates from the G2 database.
-CO =  molecule('CO')
-CO.set_cell([8, 8, 8], scale_atoms=False)
-H2O = molecule('H2O')
-H2O.set_cell([8, 8, 8], scale_atoms=False)
-CO2 =  molecule('CO2')
-CO2.set_cell([8, 8, 8], scale_atoms=False)
-H2 = molecule('H2')
-H2.set_cell([8, 8, 8], scale_atoms=False)
-# now the calculators to get the energies
-with jasp('molecules/wgs/CO',
+from ase import Atom, Atoms
+atoms = Atoms([Atom('O', [4, 4.5, 5], magmom=2)],
+              cell=(8, 9, 10))
+with jasp('molecules/O-sp-triplet-lowsym-sv',
           xc='PBE',
-          encut=350,
           ismear=0,
-          ibrion=2,
-          nsw=10,
-          atoms=CO) as calc:
+          ispin=2,
+          sigma=0.01,
+          setups={'O':'_sv'},
+          atoms=atoms) as calc:
     try:
-        eCO = CO.get_potential_energy()
+        E_O = atoms.get_potential_energy()
     except (VaspSubmitted, VaspQueued):
-        eCO = None
-with jasp('molecules/wgs/CO2',
+        E_O = None
+print 'Magnetic moment on O = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
+# now relaxed O2 dimer
+atoms = Atoms([Atom('O', [5,    5, 5], magmom=1),
+               Atom('O', [6.22, 5, 5], magmom=1)],
+              cell=(10, 10, 10))
+with jasp('molecules/O2-sp-triplet-sv',
           xc='PBE',
-          encut=350,
           ismear=0,
-          ibrion=2,
+          sigma=0.01,
+          ispin=2,  # turn spin-polarization on
+          ibrion=2, # make sure we relax the geometry
           nsw=10,
-          atoms=CO2) as calc:
+          setups={'O':'_sv'},
+          atoms=atoms) as calc:
     try:
-        eCO2 = CO2.get_potential_energy()
+        E_O2 = atoms.get_potential_energy()
     except (VaspSubmitted, VaspQueued):
-        eCO2 = None
-with jasp('molecules/wgs/H2',
-          xc='PBE',
-          encut=350,
-          ismear=0,
-          ibrion=2,
-          nsw=10,
-          atoms=H2) as calc:
-    try:
-        eH2 = H2.get_potential_energy()
-    except (VaspSubmitted, VaspQueued):
-        eH2 = None
-with jasp('molecules/wgs/H2O',
-          xc='PBE',
-          encut=350,
-          ismear=0,
-          ibrion=2,
-          nsw=10,
-          atoms=H2O) as calc:
-    try:
-        eH2O = H2O.get_potential_energy()
-    except (VaspSubmitted, VaspQueued):
-        eH2O = None
-if None in (eCO2, eH2, eCO, eH2O):
-    pass
-else:
-    dE = eCO2 + eH2 - eCO - eH2O
-    print 'Delta E = {0:1.3f} eV'.format(dE)
-    print 'Delta E = {0:1.3f} kcal/mol'.format(dE*23.06035)
-    print 'Delta E = {0:1.3f} kJ/mol'.format(dE*96.485)
+        E_O2 = None
+# verify magnetic moment
+print 'Magnetic moment on O2 = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
+if None not in (E_O, E_O2):
+    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2)

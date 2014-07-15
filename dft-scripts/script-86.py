@@ -1,32 +1,27 @@
+from ase.lattice.cubic import FaceCenteredCubic
 from jasp import *
-from ase import Atom, Atoms
-import matplotlib.pyplot as plt
-a = 3.61
-atoms = Atoms([Atom('Cu', (0, 0, 0))],
-              cell=0.5 * a * np.array([[1.0, 1.0, 0.0],
-                                       [0.0, 1.0, 1.0],
-                                       [1.0, 0.0, 1.0]])).repeat((2,2,2))
-SIGMA = [0.001, 0.05, 0.1, 0.2, 0.5]
-for sigma in SIGMA:
-    with jasp('bulk/Cu-sigma-{0}'.format(sigma),
+atoms = FaceCenteredCubic('Ag')
+KPTS = [2, 3, 4, 5, 6, 8, 10]
+TE = []
+ready = True
+for k in KPTS:
+    with jasp('bulk/Ag-kpts-{0}'.format(k),
               xc='PBE',
-              encut=350,
-              kpts=(4, 4, 4),
-              ismear=-1,
-              sigma=sigma,
-              nbands=9 * 8,
+              kpts=(k, k, k), #specifies the Monkhorst-Pack grid
+              encut=300,
               atoms=atoms) as calc:
-        e = atoms.get_potential_energy()
-        nbands = calc.nbands
-        nkpts = len(calc.get_ibz_k_points())
-        occ = np.zeros((nkpts, nbands))
-        for i in range(nkpts):
-            occ[i,:] = calc.get_occupation_numbers(kpt=i)
-        max_occ = np.max(occ,axis=0) #axis 0 is columns
-        plt.plot(range(nbands), max_occ, label='$\sigma = {0}$'.format(sigma))
-plt.xlabel('band number')
-plt.ylabel('maximum occupancy (electrons)')
-plt.ylim([-0.1, 2.1])
-plt.legend(loc='best')
-plt.savefig('images/occ-sigma.png')
+        try:
+            TE.append(atoms.get_potential_energy())
+        except (VaspSubmitted, VaspQueued):
+            ready = False
+if not ready:
+    import sys; sys.exit()
+import matplotlib.pyplot as plt
+# consider the change in energy from lowest energy state
+TE = np.array(TE)
+TE -= TE.min()
+plt.plot(KPTS, TE)
+plt.xlabel('number of k-points in each dimension')
+plt.ylabel('Total Energy (eV)')
+plt.savefig('images/Ag-kpt-convergence.png')
 plt.show()

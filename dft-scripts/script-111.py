@@ -1,16 +1,18 @@
 from jasp import *
-from ase.lattice.cubic import BodyCenteredCubic
-atoms = BodyCenteredCubic(symbol='Fe')
-for atom in atoms:
-    atom.magmom = 3.0
-with jasp('bulk/Fe-bulk',
-          xc='PBE',
-          kpts=(6,6,6),
-          encut=350,
-          ispin=2,
-          isif=3,
-          nsw=30,
-          ibrion=1,
-          atoms=atoms) as calc:
+from jasp.elastic_moduli import *
+with jasp('bulk/Al-bulk') as calc:
+    calc.clone('bulk/Al-elastic')
+with jasp('bulk/Al-elastic',
+          ibrion=6,    #
+          isif=3,      # gets elastic constants
+          potim=0.015,  # displacements
+          nsw=1,
+          nfree=2) as calc:
+    atoms = calc.get_atoms()
     print atoms.get_potential_energy()
-    print atoms.get_stress()
+    EM = calc.get_elastic_moduli()
+    print EM
+c11 = EM[0,0]
+c12 = EM[0,1]
+B = (c11 + 2 * c12) / 3.0
+print B

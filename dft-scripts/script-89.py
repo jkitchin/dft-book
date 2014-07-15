@@ -8,8 +8,9 @@ with jasp('bulk/alloy/cu',
           xc='PBE',
           encut=350,
           kpts=(13,13,13),
+          nbands=9,
           ibrion=2,
           isif=4,
           nsw=10,
           atoms=atoms) as calc:
-    print calc.set_nbands(9)
+    print calc.get_valence_electrons()

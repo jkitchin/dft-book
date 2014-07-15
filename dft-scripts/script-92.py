@@ -1,17 +1,32 @@
 from jasp import *
-from ase.utils.eos import EquationOfState
+from ase import Atom, Atoms
+# fcc
 LC = [3.5, 3.55, 3.6, 3.65, 3.7, 3.75]
-energies = []
-volumes = []
+fcc_energies = []
+ready = True
 for a in LC:
-    with jasp('bulk/Cu-{0}'.format(a)) as calc:
-        atoms = calc.get_atoms()
-        volumes.append(atoms.get_volume())
-        energies.append(atoms.get_potential_energy())
-eos = EquationOfState(volumes,energies)
-v0, e0, B = eos.fit()
-print '''
-v0 = {0} A^3
-E0 = {1} eV
-B  = {2} eV/A^3'''.format(v0, e0, B)
-eos.plot('images/Cu-fcc-eos.png')
+    atoms = Atoms([Atom('Cu',(0, 0, 0))],
+              cell=0.5 * a*np.array([[1.0, 1.0, 0.0],
+                                     [0.0, 1.0, 1.0],
+                                     [1.0, 0.0, 1.0]]))
+    with jasp('bulk/Cu-{0}'.format(a),
+              xc='PBE',
+              encut=350,
+              kpts=(8,8,8),
+              atoms=atoms) as calc:
+        try:
+            e = atoms.get_potential_energy()
+            fcc_energies.append(e)
+        except (VaspSubmitted, VaspQueued):
+            ready = False
+if not ready:
+    import sys; sys.exit()
+import matplotlib.pyplot as plt
+plt.plot(LC, fcc_energies)
+plt.xlabel('Lattice constant ($\AA$)')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/Cu-fcc.png')
+print '#+tblname: cu-fcc-energies'
+print '| lattice constant ($\AA$) | Total Energy (eV) |'
+for lc, e in zip(LC,fcc_energies):
+    print '| {0} | {1} |'.format(lc, e)

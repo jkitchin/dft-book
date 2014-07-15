@@ -1,3 +1,4 @@
+#+DRAWERS: HIDDEN HINT SOLUTION
 #+EMAIL:     jkitchin@cmu.edu
 #+DATE:      2012-07-11 Wed
 #+DESCRIPTION: A book on using density functional theory to model materials.
@@ -15,6 +16,32 @@
 #+STYLE: <link rel="stylesheet" type="text/css" href="dft.css"/>
 
 #+latex_header: \usepackage{dftbook}
+#+LATEX_CLASS_OPTIONS: [colorlinks=true,urlcolor=blue,linkcolor=blue,citecolor=red]
+#+LATEX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usepackage{lmodern}
+#+LATEX_HEADER: \usepackage{makeidx}
+#+LATEX_HEADER: \newcommand{\LaunchBinary}[2]{%
+#+LATEX_HEADER:   % #1: layer name,
+#+LATEX_HEADER:   % #2: link text
+#+LATEX_HEADER:   \leavevmode%
+#+LATEX_HEADER:   \pdfstartlink  attr{/C [0.9 0 0] /Border [0 0 2]} user {
+#+LATEX_HEADER:     /Subtype /Link
+#+LATEX_HEADER:     /A <<
+#+LATEX_HEADER:       /F <<
+#+LATEX_HEADER:          /DOS (#1)
+#+LATEX_HEADER:          /Mac (#1)
+#+LATEX_HEADER:          /Unix (#1)
+#+LATEX_HEADER:       >>
+#+LATEX_HEADER:       /S /Launch
+#+LATEX_HEADER:     >>
+#+LATEX_HEADER:   } #2% 
+#+LATEX_HEADER:   \pdfendlink%
+#+LATEX_HEADER: }
+
+#+LATEX_HEADER: \newcommand{\degC}{$^\circ$C{}}
+#+LATEX_HEADER: \makeindex
+
+
 #+STYLE: <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
 
 #+ATTR_HTML: width="500px"

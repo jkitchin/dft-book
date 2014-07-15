@@ -1,47 +1,35 @@
 from jasp import *
-from ase.lattice.cubic import FaceCenteredCubic
-from ase.dft import DOS
-atoms = FaceCenteredCubic(directions=[[0,1,1],
-                                      [1,0,1],
-                                      [1,1,0]],
-                                      size=(1,1,1),
-                                      symbol='Ni')
-atoms[0].magmom = 1
-with jasp('bulk/Ni-PBE',
-          ismear=-5,
-          kpts=(5,5,5),
-          xc='PBE',
-          ispin=2,lorbit=11,
-          atoms=atoms) as calc:
-    print 'PBE energy:   ',atoms.get_potential_energy()
-    dos = DOS(calc,width=0.2)
-    e_pbe = dos.get_energies()
-    d_pbe = dos.get_dos()
-    calc.clone('bulk/Ni-PBE0')
-    calc.clone('bulk/Ni-HSE06')
-with jasp('bulk/Ni-PBE0') as calc:
-     calc.set(lhfcalc=True,
-              algo='D',
-              time=0.4)
-     atoms = calc.get_atoms()
-     print 'PBE0 energy:  ',atoms.get_potential_energy()
-     dos = DOS(calc,width=0.2)
-     e_pbe0 = dos.get_energies()
-     d_pbe0 = dos.get_dos()
-with jasp('bulk/Ni-HSE06') as calc:
-     calc.set(lhfcalc=True,
-              hfscreen=0.2,
-              algo='D', time=0.4)
-     atoms = calc.get_atoms()
-     print 'HSE06 energy: ', atoms.get_potential_energy()
-     dos = DOS(calc,width=0.2)
-     e_hse06 = dos.get_energies()
-     d_hse06 = dos.get_dos()
-import pylab as plt
-plt.plot(e_pbe, d_pbe, label='PBE')
-plt.plot(e_pbe0, d_pbe0, label='PBE0')
-plt.plot(e_hse06, d_hse06, label='HSE06')
-plt.xlabel('energy [eV]')
-plt.ylabel('DOS')
-plt.legend()
-plt.savefig('images/ni-dos-pbe-pbe0-hse06.png')
+for U in [2.0, 4.0, 6.0]:
+    ## Cu2O ########################################
+    with jasp('bulk/Cu2O') as calc:
+        calc.clone('bulk/Cu2O-U={0}'.format(U))
+    with jasp('bulk/Cu2O-U={0}'.format(U)) as calc:
+        calc.set(ldau=True,   # turn DFT+U on
+                 ldautype=2,  # select simplified rotationally invariant option
+                 ldau_luj={'Cu':{'L':2,  'U':U, 'J':0.0},
+                           'O':{'L':-1, 'U':0.0, 'J':0.0}},
+                ldauprint=1,
+                ibrion=-1,  #do not rerelax
+                nsw=0)
+        atoms = calc.get_atoms()
+        cu2o_energy = atoms.get_potential_energy()/(len(atoms)/3)
+    ## CuO ########################################
+    with jasp('bulk/CuO') as calc:
+        calc.clone('bulk/CuO-U={0}'.format(U))
+    with jasp('bulk/CuO-U={0}'.format(U)) as calc:
+        calc.set(ldau=True,   # turn DFT+U on
+                 ldautype=2,  # select simplified rotationally invariant option
+                 ldau_luj={'Cu':{'L':2,  'U':U, 'J':0.0},
+                           'O':{'L':-1, 'U':0.0, 'J':0.0}},
+                ldauprint=1,
+                ibrion=-1,  #do not rerelax
+                nsw=0)
+        atoms = calc.get_atoms()
+        cuo_energy = atoms.get_potential_energy()/(len(atoms)/2)
+    ## O2 ########################################
+    # make sure to use the same cutoff energy for the O2 molecule!
+    with jasp('molecules/O2-sp-triplet-400') as calc:
+        atoms = calc.get_atoms()
+        o2_energy = atoms.get_potential_energy()
+    rxn_energy = 4.0*cuo_energy - o2_energy - 2.0*cu2o_energy
+    print 'U = {0}  reaction energy = {1}'.format(U,rxn_energy - 1.99)

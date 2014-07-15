@@ -1,10 +1,10 @@
 from jasp import *
-with jasp('bulk/tio2/step3') as calc:
+with jasp('bulk/tio2/step2-1.05') as calc:
+    calc.clone('bulk/tio2/step3')
+with jasp('bulk/tio2/step3',
+          isif=3) as calc:
+    calc.calculate()
     atoms = calc.get_atoms()
-    print 'default ismear: ',atoms.get_potential_energy()
-    calc.clone('bulk/tio2/step4')
-with jasp('bulk/tio2/step4',
-          ismear=-5,
-          nsw=0) as calc:
-    atoms = calc.get_atoms()
-    print 'ismear=-5:      ',atoms.get_potential_energy()
+    print calc
+from pyspglib import spglib
+print '\nThe spacegroup is {0}'.format(spglib.get_spacegroup(atoms))
