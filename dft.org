@@ -641,8 +641,7 @@ Simple properties do not require a DFT calculation. They are typically only func
 If you want the $(x,y,z)$ coordinates of the atoms, use the func:ase.Atoms.get_positions. If you are interested in the fractional coordinates, use func:ase.Atoms.get_scaled_positions.
 
 #+BEGIN_SRC python :results output :exports both
-from ase.data.molecules import molecule
-from ase.io import write
+from ase.structure import molecule
 
 atoms = molecule('C6H6')  # benzene
 
@@ -650,11 +649,11 @@ atoms = molecule('C6H6')  # benzene
 print ' #  sym   p_x     p_y     p_z'
 print '------------------------------'
 for i, atom in enumerate(atoms):
-  print '{0:3d}{1:^4s}{2:-8.2f}{3:-8.2f}{4:-8.2f}'.format(i,
-                                                          atom.symbol,
-                                                          atom.x,
-                                                          atom.y,
-                                                          atom.z)
+   print '{0:3d}{1:^4s}{2:-8.2f}{3:-8.2f}{4:-8.2f}'.format(i,
+                                                           atom.symbol,
+                                                           atom.x,
+                                                           atom.y,
+                                                           atom.z)
 
 # get all properties in arrays
 sym = atoms.get_chemical_symbols()
@@ -667,9 +666,9 @@ print
 print '  # sym    at#    p_x     p_y     p_z'
 print '-------------------------------------'
 for i, s, n, p in zip(atom_indices, sym, num, pos):
-  px, py, pz = p
-  print '{0:3d}{1:>3s}{2:8d}{3:-8.2f}{4:-8.2f}{5:-8.2f}'.format(i, s, n,
-                                                                px, py, pz)
+    px, py, pz = p
+    print '{0:3d}{1:>3s}{2:8d}{3:-8.2f}{4:-8.2f}{5:-8.2f}'.format(i, s, n,
+                                                                  px, py, pz)
 #+END_SRC
 
 #+RESULTS:
@@ -710,13 +709,13 @@ for i, s, n, p in zip(atom_indices, sym, num, pos):
 We can quickly compute the molecular weight of a molecule with this recipe. We use func:ase.Atoms.get_masses to get an array of the atomic masses of each atom in the =Atoms= object, and then just sum them up.
 
 #+BEGIN_SRC python :results output :exports both
-from ase.data.molecules import molecule
+from ase.structure import molecule
 
 atoms = molecule('C6H6')
 masses = atoms.get_masses()
 
 molecular_weight = masses.sum()
-molecular_formula = atoms.get_chemical_symbols(reduce=True)
+molecular_formula = atoms.get_chemical_formula(mode='reduce')
 
 # note use of two lines to keep length of line reasonable
 s = 'The molecular weight of {0} is {1:1.2f} gm/mol'
@@ -726,7 +725,7 @@ print s.format(molecular_formula, molecular_weight)
 #+RESULTS:
 : The molecular weight of C6H6 is 78.11 gm/mol
 
-Note that the argument =reduce=True= for func:ase.Atoms.get_chemical_symbols collects all the symbols to provide a molecular formula.
+Note that the argument =reduce=True= for func:ase.Atoms.get_chemical_formula collects all the symbols to provide a molecular formula.
 
 *** Center of mass
 [[index:center of mass]]
@@ -738,7 +737,6 @@ The center of mass is essentially the average position of the atoms, weighted by
 
 #+BEGIN_SRC python :results output :exports both
 from ase.structure import molecule
-from ase.io import write
 import numpy as np
 
 # ammonia
@@ -751,14 +749,14 @@ pos = atoms.positions
 masses = atoms.get_masses()
 
 COM = np.array([0., 0., 0.])
-for m,p in zip(masses, pos):
+for m, p in zip(masses, pos):
     COM += m*p
 COM /= masses.sum()
 
 print 'COM2 = {0}'.format(COM)
 
 # one-line linear algebra definition of COM
-print 'COM3 = {0}'.format(np.dot(masses, pos)/np.sum(masses))
+print 'COM3 = {0}'.format(np.dot(masses, pos) / np.sum(masses))
 #+END_SRC
 
 #+RESULTS:
@@ -777,30 +775,30 @@ from ase.structure import molecule
 
 print 'linear rotors: I = [0 Ia Ia]'
 atoms = molecule('CO2')
-print '  CO2 moments of inertia: ',atoms.get_moments_of_inertia()
+print '  CO2 moments of inertia: ', atoms.get_moments_of_inertia()
 print
 
 print 'symmetric rotors (Ia = Ib) < Ic'
 atoms = molecule('NH3')
-print '  NH3 moments of inertia: ' ,atoms.get_moments_of_inertia()
+print '  NH3 moments of inertia: ', atoms.get_moments_of_inertia()
 
 atoms = molecule('C6H6')
-print '  C6H6 moments of inertia:' ,atoms.get_moments_of_inertia()
+print '  C6H6 moments of inertia:', atoms.get_moments_of_inertia()
 print
 
 print 'symmetric rotors Ia < (Ib = Ic)'
 atoms = molecule('CH3Cl')
-print 'CH3Cl moments of inertia: ',atoms.get_moments_of_inertia()
+print 'CH3Cl moments of inertia: ', atoms.get_moments_of_inertia()
 print
 
 print 'spherical rotors Ia = Ib = Ic'
 atoms = molecule('CH4')
-print '  CH4 moments of inertia: ' ,atoms.get_moments_of_inertia()
+print '  CH4 moments of inertia: ', atoms.get_moments_of_inertia()
 print
 
 print 'unsymmetric rotors Ia != Ib != Ic'
 atoms = molecule('C3H7Cl')
-print '  C3H7Cl moments of inertia: ' ,atoms.get_moments_of_inertia()
+print '  C3H7Cl moments of inertia: ', atoms.get_moments_of_inertia()
 #+END_SRC
 
 #+RESULTS:
@@ -826,7 +824,6 @@ If you want to know the principle axes of rotation, we simply pass =vectors=True
 
 #+BEGIN_SRC python :results output
 from ase.structure import molecule
-import numpy as np
 
 atoms = molecule('CH3Cl')
 moments, axes = atoms.get_moments_of_inertia(vectors=True)
@@ -847,7 +844,6 @@ A typical question we might ask is, "What is the structure of a molecule?" In ot
 
 #+BEGIN_SRC python :results output :exports both
 from ase.structure import molecule
-from ase.io import write
 
 # ammonia
 atoms = molecule('NH3')
@@ -855,27 +851,26 @@ atoms = molecule('NH3')
 print 'atom symbol'
 print '==========='
 for i, atom in enumerate(atoms):
-  print '{0:2d} {1:3s}' .format(i,atom.symbol)
+    print '{0:2d} {1:3s}' .format(i, atom.symbol)
 
 # N-H bond length
 s = 'The N-H distance is {0:1.3f} angstroms'
-print s.format(atoms.get_distance(0,1))
+print s.format(atoms.get_distance(0, 1))
 #+END_SRC
 
 #+RESULTS:
 : atom symbol
 : ===========
-:  0   N
-:  1   H
-:  2   H
-:  3   H
+:  0 N  
+:  1 H  
+:  2 H  
+:  3 H  
 : The N-H distance is 1.017 angstroms
 
 Bond angles are a little trickier. If we had vectors describing the directions between two atoms, we could use some simple trigonometry to compute the angle between the vectors: $\vec{a} \cdot \vec{b} = |\vec{a}||\vec{b}| \cos(\theta)$.  So we can calculate the angle as $\theta = \arccos\left(\frac{\vec{a} \cdot \vec{b}}{|\vec{a}||\vec{b}|}\right)$, we just have to define our two vectors $\vec{a}$ and $\vec{b}$. We compute these vectors as the difference in positions of two atoms. For example, here we compute the angle H-N-H in an ammonia molecule. This is the angle between N-H$_1$ and N-H$_2$. In the next example, we utilize functions in mod:numpy to perform the calculations, specifically the func:numpy.arccos function, the func:numpy.dot function, and func:numpy.linalg.norm functions.
 
 #+BEGIN_SRC python :results output :exports both
 from ase.structure import molecule
-from ase.io import write
 
 # ammonia
 atoms = molecule('NH3')
@@ -883,7 +878,7 @@ atoms = molecule('NH3')
 print 'atom symbol'
 print '==========='
 for i, atom in enumerate(atoms):
-  print '{0:2d} {1:3s}'.format(i,atom.symbol)
+    print '{0:2d} {1:3s}'.format(i, atom.symbol)
 
 a = atoms.positions[0] - atoms.positions[1]
 b = atoms.positions[0] - atoms.positions[2]
@@ -891,18 +886,18 @@ b = atoms.positions[0] - atoms.positions[2]
 from numpy import arccos, dot, pi
 from numpy.linalg import norm
 
-theta_rad = arccos(dot(a,b)/(norm(a)*norm(b))) # in radians
+theta_rad = arccos(dot(a, b) / (norm(a) * norm(b)))  # in radians
 
-print 'theta = {0:1.1f} degrees'.format(theta_rad*180./pi)
+print 'theta = {0:1.1f} degrees'.format(theta_rad * 180./pi)
 #+END_SRC
 
 #+RESULTS:
 : atom symbol
 : ===========
-:  0   N
-:  1   H
-:  2   H
-:  3   H
+:  0 N  
+:  1 H  
+:  2 H  
+:  3 H  
 : theta = 106.3 degrees
 
 #+caption: Schematic of the vectors defining the H-N-H angle.
@@ -912,12 +907,12 @@ print 'theta = {0:1.1f} degrees'.format(theta_rad*180./pi)
 Alternatively you could use func:ase.Atoms.get_angle. Note we want the angle between atoms with indices [1, 0, 2] to get the H-N-H angle.
 
 #+BEGIN_SRC python :results output :exports both
-from ase.data.molecules import molecule
+from ase.structure import molecule
 from numpy import pi
 # ammonia
 atoms = molecule('NH3')
 
-print 'theta = {0} degrees'.format(atoms.get_angle([1,0,2])*180./pi)
+print 'theta = {0} degrees'.format(atoms.get_angle([1, 0, 2]) * 180. / pi)
 #+END_SRC
 
 #+RESULTS:
@@ -936,9 +931,9 @@ atoms = molecule('C2H6')
 print 'atom symbol'
 print '==========='
 for i, atom in enumerate(atoms):
-  print '{0:2d} {1:3s}'.format(i,atom.symbol)
+  print '{0:2d} {1:3s}'.format(i, atom.symbol)
 
-da = atoms.get_dihedral([5,1,0,4])*180./np.pi
+da = atoms.get_dihedral([5, 1, 0, 4]) * 180. / np.pi
 print 'dihedral angle = {0:1.2f} degrees'.format(da)
 #+END_SRC
 
@@ -946,21 +941,21 @@ print 'dihedral angle = {0:1.2f} degrees'.format(da)
 #+begin_example
 atom symbol
 ===========
- 0   C
- 1   C
- 2   H
- 3   H
- 4   H
- 5   H
- 6   H
- 7   H
+ 0 C  
+ 1 C  
+ 2 H  
+ 3 H  
+ 4 H  
+ 5 H  
+ 6 H  
+ 7 H  
 dihedral angle = 60.00 degrees
 #+end_example
 
 #+caption: Schematic of the calculated ethane dihedral angle. \label{fig:ethane-dihedral}
 #+ATTR_LaTeX: width=86bp,placement: [H]
 [[./images/ethane-dihedral.png]]
-In this section we cover properties that require simple calculations, but not DFT calculations, to compute.
+In this section we covered properties that require simple calculations, but not DFT calculations, to compute.
 
 ** Simple properties that require single computations
    :PROPERTIES:
