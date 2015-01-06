@@ -978,22 +978,23 @@ forces are only along the $x$-axis, which is along the molecular axis. We will s
 This is your first DFT calculation in the book! See [[incar:ISMEAR][ISMEAR]], incar:SIGMA, incar:NBANDS, and incar:ENCUT to learn more about these VASP keywords.
 #+end_note
 
+
 #+BEGIN_SRC python :results output :exports both
 from ase import Atoms, Atom
 from jasp import *
 import numpy as np
 np.set_printoptions(precision=3, suppress=True)
 
-co = Atoms([Atom('C',[0,   0, 0]),
-            Atom('O',[1.2, 0, 0])],
-            cell=(6., 6., 6.))
+co = Atoms([Atom('C', [0, 0, 0]),
+            Atom('O', [1.2, 0, 0])],
+           cell=(6., 6., 6.))
 
-with jasp('molecules/simple-co', #output dir
+with jasp('molecules/simple-co',  # output dir
           xc='PBE',  # the exchange-correlation functional
-          nbands=6,  # number of bands
-          encut=350, # planewave cutoff
-          ismear=1,  # Methfessel-Paxton smearing
-          sigma=0.01,# very small smearing factor for a molecule
+          nbands=6,    # number of bands
+          encut=350,    # planewave cutoff
+          ismear=1,    # Methfessel-Paxton smearing
+          sigma=0.01,  # very small smearing factor for a molecule
           atoms=co) as calc:
     print 'energy = {0} eV'.format(co.get_potential_energy())
     print co.get_forces()
@@ -1009,18 +1010,19 @@ There are a number of parameters that affect the energy and forces including the
 
 #+BEGIN_SRC python
 from jasp import *
-from ase import Atoms,Atom
+from ase import Atoms, Atom
 import numpy as np
 np.set_printoptions(precision=3, suppress=True)
 
-atoms = Atoms([Atom('C',[0,   0, 0]),
-               Atom('O',[1.2, 0, 0])])
+atoms = Atoms([Atom('C', [0, 0, 0]),
+               Atom('O', [1.2, 0, 0])])
 
 L = [4, 5, 6, 8, 10]
 
 volumes, energies = [], []
+ready = True
 for a in L:
-    atoms.set_cell([a,a,a], scale_atoms=False)
+    atoms.set_cell([a, a, a], scale_atoms=False)
     atoms.center()
     with jasp('molecules/co-L-{0}'.format(a),
               encut=350,
@@ -1029,7 +1031,11 @@ for a in L:
         try:
             energies.append(atoms.get_potential_energy())
         except (VaspSubmitted, VaspQueued):
-            pass
+            ready = False
+
+if not ready:
+    import sys; sys.exit()
+
 import matplotlib.pyplot as plt
 plt.plot(L, energies, 'bo-')
 plt.xlabel('Unit cell length ($\AA$)')
@@ -1039,7 +1045,6 @@ plt.show()
 #+END_SRC
 
 #+RESULTS:
-: None
 
 #+caption: Total energy of a CO molecule as a function of the unit cell length.
 #+attr_latex: placement: [H]
@@ -1079,10 +1084,10 @@ atm = 101325 * Pascal
 L = np.linspace(4, 10)
 V = L**3
 
-n = 1 # one atom per unit cell
+n = 1  # one atom per unit cell
 
 for T in [298, 600, 1000]:
-    P = n/V*kB*T / atm # convert to atmospheres
+    P = n / V * kB * T / atm  # convert to atmospheres
 
     plt.plot(V, P, label='{0}K'.format(T))
 
@@ -1093,7 +1098,6 @@ plt.savefig('images/ideal-gas-pressure.png')
 #+END_SRC
 
 #+RESULTS:
-: None
 
 #+caption: Ideal gas pressure dependence on temperature and unit cell volume.
 #+attr_latex: placement: [H]
@@ -1103,14 +1107,14 @@ plt.savefig('images/ideal-gas-pressure.png')
 The total energy and forces also depend on the computational parameters, notably incar:ENCUT.
 
 #+BEGIN_SRC python
-from ase import Atoms,Atom
+from ase import Atoms, Atom
 from jasp import *
 import numpy as np
 np.set_printoptions(precision=3, suppress=True)
 
-atoms = Atoms([Atom('C',[0,   0, 0]),
-               Atom('O',[1.2, 0, 0])],
-               cell=(6,6,6))
+atoms = Atoms([Atom('C', [0, 0, 0]),
+               Atom('O', [1.2, 0, 0])],
+              cell=(6, 6, 6))
 atoms.center()
 
 ENCUTS = [250, 300, 350, 400, 450, 500]
@@ -1128,7 +1132,7 @@ for en in ENCUTS:
             ready = False
 
 if not ready:
-   import sys; sys.exit()
+    import sys; sys.exit()
 
 import matplotlib.pyplot as plt
 plt.plot(ENCUTS, energies, 'bo-')
@@ -1145,17 +1149,19 @@ plt.savefig('images/co-encut-v.png')
 
 You can see in this figure that it takes a cutoff energy of about 400 eV to achieve a convergence level around 10 meV, and that even at 500 meV the energy is still changing slightly. Keep in mind that we are generally interested in differences in total energy, and the differences tend to converge faster than a single total energy. Also it is important to note that it is usually a single element that determines the rate of convergence. The reason we do not just use very high ENCUT all the time is it is expensive.
 
-#+BEGIN_SRC sh :results output raw
+#+BEGIN_SRC sh 
 grep "Elapsed time (sec):" molecules/co-en-*/OUTCAR
 #+END_SRC
 
 #+RESULTS:
-molecules/co-en-250/OUTCAR:                         Elapsed time (sec):        4.954
-molecules/co-en-300/OUTCAR:                         Elapsed time (sec):        7.662
-molecules/co-en-350/OUTCAR:                         Elapsed time (sec):        8.232
-molecules/co-en-400/OUTCAR:                         Elapsed time (sec):       11.148
-molecules/co-en-450/OUTCAR:                         Elapsed time (sec):       12.592
-molecules/co-en-500/OUTCAR:                         Elapsed time (sec):       15.425
+: molecules/co-en-250/OUTCAR:                         Elapsed time (sec):        3.590
+: molecules/co-en-300/OUTCAR:                         Elapsed time (sec):        6.016
+: molecules/co-en-350/OUTCAR:                         Elapsed time (sec):        6.014
+: molecules/co-en-400/OUTCAR:                         Elapsed time (sec):        7.883
+: molecules/co-en-450/OUTCAR:                         Elapsed time (sec):       12.421
+: molecules/co-en-500/OUTCAR:                         Elapsed time (sec):       15.167
+
+
 
 Although here the times do not seem that unreasonable, note we increased the time by a factor of three by simply doubling ENCUT. If the first time was a week, this is a significant increase in time!
 
@@ -1163,9 +1169,10 @@ Although here the times do not seem that unreasonable, note we increased the tim
 
 The electron density is a 3\(d\) quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure ref:fig:cd1) of plotting the charge density, and we consider some issues we have to consider when visualizing volumetric data in unit cells with periodic boundary conditions. We will use the results from a previous calculation.
 
+#TODO does not work in canopy
 #+BEGIN_SRC python
 from jasp import *
-from enthought.mayavi import mlab
+from enthought.mayavi.mlab import *
 from ase.data import vdw_radii
 from ase.data.colors import cpk_colors
 
@@ -1224,6 +1231,7 @@ mlab.show()
 
 If we take care to center the CO molecule in the unit cell, we get a nicer looking result.
 
+TODO broken in canopy
 #+BEGIN_SRC python
 from jasp import *
 from enthought.mayavi import mlab
@@ -1306,6 +1314,7 @@ from jasp import *
 from ase.units import Debye
 
 with jasp('molecules/co-centered') as calc:
+    atoms = calc.get_atoms()
     atoms.get_potential_energy()
 
     vcd = VaspChargeDensity()
@@ -1313,9 +1322,9 @@ with jasp('molecules/co-centered') as calc:
     cd = np.array(vcd.chg[0])
     n0, n1, n2 = cd.shape
 
-    s0 = 1.0/n0
-    s1 = 1.0/n1
-    s2 = 1.0/n2
+    s0 = 1.0 / n0
+    s1 = 1.0 / n1
+    s2 = 1.0 / n2
 
     X, Y, Z = np.mgrid[0.0:1.0:s0,
                        0.0:1.0:s1,
@@ -1329,7 +1338,7 @@ with jasp('molecules/co-centered') as calc:
     uc = atoms.get_cell()
     real = np.dot(C, uc)
 
-    #now convert arrays back to unitcell shape
+    # now convert arrays back to unitcell shape
     x = np.reshape(real[:, 0], (n0, n1, n2))
     y = np.reshape(real[:, 1], (n0, n1, n2))
     z = np.reshape(real[:, 2], (n0, n1, n2))
@@ -1337,7 +1346,6 @@ with jasp('molecules/co-centered') as calc:
     nelements = n0 * n1 * n2
     voxel_volume = atoms.get_volume() / nelements
     total_electron_charge = -cd.sum() * voxel_volume
-
 
     electron_density_center = np.array([(cd * x).sum(),
                                         (cd * y).sum(),
@@ -1405,7 +1413,7 @@ from jasp import *
 from ase.dft.dos import DOS
 import matplotlib.pyplot as plt
 
-with jasp('molecules/simple-co') as calc: # we already ran this!
+with jasp('molecules/simple-co') as calc:  # we already ran this!
     dos = DOS(calc)
     plt.plot(dos.get_energies(), dos.get_dos())
     plt.xlabel('Energy - $E_f$ (eV)')
@@ -1456,15 +1464,15 @@ with jasp('molecules/co-ados',
     ados = VaspDos(efermi=calc.get_fermi_level())
     energies = ados.energy
 
-    plt.plot(energies, ados.dos + 8, label='ADOS') # these are the total DOS
+    plt.plot(energies, ados.dos + 8, label='ADOS')  # these are the total DOS
 
     c_s = ados.site_dos(0, 's')
     c_p = ados.site_dos(0, 'p')
     o_s = ados.site_dos(1, 's')
     o_p = ados.site_dos(1, 'p')
 
-    c_d = ados.site_dos(0,'d')
-    o_d = ados.site_dos(1,'d')
+    c_d = ados.site_dos(0, 'd')
+    o_d = ados.site_dos(1, 'd')
 
     plt.plot(energies, c_s + 6, energies, o_s + 5)
     plt.plot(energies, c_p + 4, energies, o_p + 3)
@@ -1475,12 +1483,11 @@ with jasp('molecules/co-ados',
                 'C$_s$', 'O$_s$',
                 'C$_p$', 'O$_p$',
                 'C$_d$', 'O$_d$'],
-                ncol=2,loc='best')
+                 ncol=2, loc='best')
 plt.savefig('images/co-ados.png')
 #+end_src
 
 #+RESULTS:
-: None
 
 #+caption: Atom-projected DOS for a CO molecule. The total density of states and the \(s\), \(p\) and \(d\) states on the C and O are shown.
 #+ATTR_LaTeX: placement: [H]
@@ -1489,6 +1496,7 @@ plt.savefig('images/co-ados.png')
 *** Electrostatic potential
 This is an example of the so-called \sigma hole in a [[http://pubs.acs.org/cen/science/87/8738sci2.html][halogen bond]]. The coordinates for the CF_{3}Br molecule were found at [[http://cccbdb.nist.gov/exp2.asp?casno=75638]].
 
+TODO mlab does not work
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 from ase import Atom, Atoms
@@ -1587,24 +1595,24 @@ with jasp('molecules/h2o-bader',
 
   GRID BASED BADER ANALYSIS  (Version 0.27e 05/09/11)
 
-  OPEN ... CHG
+  OPEN ... CHG                 
   VASP-STYLE INPUT FILE
  VASP5 format
   FFT-grid:   112 x 128 x 120
-  CLOSE ... CHG
+  CLOSE ... CHG                 
 
-  RUN TIME:    0.77 SECONDS
+  RUN TIME:    0.74 SECONDS
 
   CALCULATING BADER CHARGE DISTRIBUTION
                  0  10  25  50  75  100
-  PERCENT DONE:  **********************
+  PERCENT DONE:  ********************** 
 
   REFINING AUTOMATICALLY
   ITERATION: 1
   EDGE POINTS:       1400048
-  REASSIGNED POINTS:  111249
+  REASSIGNED POINTS:  111247
   ITERATION: 2
-  CHECKED POINTS:     913184
+  CHECKED POINTS:     913174
   REASSIGNED POINTS:    1424
   ITERATION: 3
   CHECKED POINTS:      15784
@@ -1625,13 +1633,13 @@ with jasp('molecules/h2o-bader',
   CHECKED POINTS:         26
   REASSIGNED POINTS:       0
 
-  RUN TIME:      26.28 SECONDS
+  RUN TIME:      26.40 SECONDS
 
   CALCULATING MINIMUM DISTANCES TO ATOMS
                  0  10  25  50  75  100
   PERCENT DONE:  **********************
 
-  RUN TIME:    1.31 SECONDS
+  RUN TIME:    1.29 SECONDS
 
   WRITING BADER ATOMIC CHARGES TO ACF.dat
   WRITING BADER VOLUME CHARGES TO BCF.dat
@@ -1640,26 +1648,26 @@ with jasp('molecules/h2o-bader',
       SIGNIFICANT MAXIMA FOUND:             10
            NUMBER OF ELECTRONS:        7.99999
 
-  WRITING ATOMIC VOLUMES
+  WRITING ATOMIC VOLUMES 
                  0  10  25  50  75  100
   PERCENT DONE:  **********************
 
-  RUN TIME:    3.90 SECONDS
+  RUN TIME:    3.96 SECONDS
 
   WRITING BADER ATOMIC INDEX TO AtIndex.dat
-
+ 
 #+end_example
 
-#+BEGIN_src sh :dir /home/jkitchin/dft-org/molecules/h2o-bader :results output
+#+BEGIN_src sh :dir /home-research/jkitchin/dft-book2/molecules/h2o-bader :results output
 cat ACF.dat
 #+END_SRC
 
 #+RESULTS:
 :     #         X           Y           Z        CHARGE     MIN DIST    ATOMIC VOL
 :  --------------------------------------------------------------------------------
-:     1      6.0000      7.5265      6.0000      0.0007      1.6422    759.8654
-:     2      6.0000      6.0000      6.0000      0.0003      1.6422    640.1559
-:     3      6.0000      6.7632      6.5963      7.9990      2.2193    644.5831
+:     1      6.0000      6.7632      6.5963      7.9990      2.2193    644.5831
+:     2      6.0000      7.5265      6.0000      0.0007      1.6422    759.8654
+:     3      6.0000      6.0000      6.0000      0.0003      1.6422    640.1559
 :  --------------------------------------------------------------------------------
 :     VACUUM CHARGE:               0.0000
 :     VACUUM VOLUME:               0.0000
@@ -1668,8 +1676,9 @@ cat ACF.dat
 
 This script should work, but only if displacement is set to None or we
 convert the positions to Bohr. Otherwise, the positions do not match
-because of a Bohr/Angstrom units problem in the code. Note the sorting that has to be done, because the order of atoms in the Atoms
-object is not the same as in the POSCAR file.
+because of a Bohr/Angstrom units problem in the code. Note the sorting
+that has to be done, because the order of atoms in the Atoms object is
+not the same as in the POSCAR file.
 
 #+BEGIN_SRC python :results output org raw
 from jasp import *
@@ -1698,11 +1707,10 @@ with jasp('molecules/h2o-bader') as calc:
 #+caption: Bader charges for a water molecule
 | atom | Bader charge |
 |------+--------------|
+| O    |        0.001 |
 | H    |       0.9993 |
 | H    |       0.9997 |
-| O    |        0.001 |
 
-TODO: figure out these charges
 
 ** Geometry optimization
    :PROPERTIES:
@@ -1824,10 +1832,10 @@ x = np.linspace(1.05, 1.25)
 fit = np.polyval(pp, x)
 
 plt.plot(bond_lengths, energies, 'bo ')
-plt.plot(x,fit, 'r-')
+plt.plot(x, fit, 'r-')
 plt.plot(minV, minE, 'm* ')
 plt.legend(['DFT', 'fit', 'minimum'], numpoints=1)
-plt.xlabel('Bond length ($\AA$)')
+plt.xlabel(r'Bond length ($\AA$)')
 plt.ylabel('Total energy (eV)')
 plt.savefig('images/co-bondlengths.png')
 plt.show()
@@ -1858,7 +1866,6 @@ VASP applies a criteria for stopping a geometry optimization. When the change in
 #+BEGIN_SRC python :results output :exports both
 from ase import Atom, Atoms
 from jasp import *
-import numpy as np
 
 co = Atoms([Atom('C',[0, 0, 0]),
             Atom('O',[1.2, 0, 0])],
@@ -1891,15 +1898,15 @@ It is not more complicated to relax more atoms, it just may take longer because 
 from ase import Atoms, Atom
 from jasp import *
 
-atoms = Atoms([Atom('H', [0.5960812,  -0.7677068,   0.0000000]),
-               Atom('O', [0.0000000,   0.0000000,   0.0000000]),
-               Atom('H', [0.5960812,   0.7677068,   0.0000000])],
-               cell=(8, 8, 8))
+atoms = Atoms([Atom('H', [0.5960812, -0.7677068, 0.0000000]),
+               Atom('O', [0.0000000,  0.0000000, 0.0000000]),
+               Atom('H', [0.5960812,  0.7677068, 0.0000000])],
+              cell=(8, 8, 8))
 
 with jasp('molecules/h2o_relax',
           xc='PBE',
           encut=400,
-          ismear=0,# Gaussian smearing
+          ismear=0,  # Gaussian smearing
           ibrion=2,
           ediff=1e-8,
           nsw=10,
@@ -1958,7 +1965,7 @@ ddpars = np.polyder(dpars)
 
 d_min = droots[np.polyval(ddpars, droots) > 0]
 
-#curvature at minimum = force constant in SI units
+# curvature at minimum = force constant in SI units
 k = np.polyval(ddpars, d_min) / (J / m**2)
 
 # mu, reduced mass
@@ -1991,10 +1998,10 @@ We now consider how much energy is in this vibration. This is commonly called ze
 
 #+BEGIN_SRC python :results output :exports both
 
-c = 3e10 # speed of light cm/s
-h = 4.135667516e-15 # eV*s
+c = 3e10  # speed of light cm/s
+h = 4.135667516e-15  # eV*s
 
-nu = 2143.6076625*c # 1/s
+nu = 2143.6076625*c  # 1/s
 
 E_zpe = 0.5*h*nu
 
@@ -2013,7 +2020,7 @@ VASP has built-in capability for performing vibrational calculations. We access 
 
 #+BEGIN_SRC python :results output  :exports both
 # <<water-vib>>
-#adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
+# adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
 from ase import Atoms, Atom
 from jasp import *
 import ase.units
@@ -2027,12 +2034,12 @@ atoms.center()
 with jasp('molecules/h2o_vib',
           xc='PBE',
           encut=400,
-          ismear=0,    # Gaussian smearing
-          ibrion=6,    # finite differences with symmetry
-          nfree=2,     # central differences (default)
-          potim=0.015, # default as well
-          ediff=1e-8,  # for vibrations you need precise energies
-          nsw=1,       # Set to 1 for vibrational calculation
+          ismear=0,     # Gaussian smearing
+          ibrion=6,     # finite differences with symmetry
+          nfree=2,      # central differences (default)
+          potim=0.015,  # default as well
+          ediff=1e-8,   # for vibrations you need precise energies
+          nsw=1,        # Set to 1 for vibrational calculation
           atoms=atoms) as calc:
 
     print 'Forces'
@@ -2066,6 +2073,8 @@ energies
 07: (0.012959493+0j) eV
 08: (0.015883929+0j) eV
 #+end_example
+
+
 
 Note we get 9 frequencies here. Water has 3 atoms, with three degrees of freedom each, leading to 9 possible combinations of collective motions. Three of those collective motions are translations, i.e. where all atoms move in the same direction (either $x$, $y$ or $z$) and there is no change in the total energy of the molecule. Another three of those motions are rotations, which also do not change the total energy of the molecule. That leaves 3N-6 = 3 degrees of vibrational freedom where some or all of the bonds are stretched, resulting in a change in the total energy. The modes of water vibration are (with our calculated values in parentheses):
 
@@ -2112,8 +2121,8 @@ Here is an example for water. Note we do not sum over the imaginary modes. We sh
 #+BEGIN_SRC python :results output
 from jasp import *
 import numpy as np
-c = 3e10 # speed of light cm/s
-h = 4.135667516e-15 # eV/s
+c = 3e10  # speed of light cm/s
+h = 4.135667516e-15  # eV/s
 
 # first, get the frequencies.
 with jasp('molecules/h2o_vib') as calc:
@@ -2121,20 +2130,21 @@ with jasp('molecules/h2o_vib') as calc:
 
 ZPE = 0.0
 for f in freq:
-    if not isinstance(f,float):
-        continue #skip complex numbers
-    nu = f*c # convert to frequency
-    ZPE += 0.5*h*nu
+    if not isinstance(f, float):
+        continue  # skip complex numbers
+    nu = f * c  # convert to frequency
+    ZPE += 0.5 * h * nu
 
 print 'The ZPE of water is {0:1.3f} eV'.format(ZPE)
 
 # one liner
-ZPE = np.sum([0.5*h*f*c for f in freq if isinstance(f, float)])
+ZPE = np.sum([0.5 * h * f * c for f in freq if isinstance(f, float)])
 print 'The ZPE of water is {0:1.3f} eV'.format(ZPE)
 #+END_SRC
 
 #+RESULTS:
-: The ZPE of water is 0.571 eV
+: The ZPE of water is 0.572 eV
+
 
 Note the zero-point energy of water is also fairly high (more than 0.5 eV). That is because of the high frequency O-H stretches.
 
@@ -2149,12 +2159,12 @@ from jasp import *
 atoms = Atoms([Atom('H', [0.5960812,  -0.7677068,   0.0000000]),
                Atom('O', [0.0000000,   0.0000000,   0.0000000]),
                Atom('H', [0.5960812,   0.7677068,   0.0000000])],
-               cell=(8, 8, 8))
+              cell=(8, 8, 8))
 
 with jasp('molecules/h2o_relax',
           xc='PBE',
           encut=400,
-          ismear=0,# Gaussian smearing
+          ismear=0,  # Gaussian smearing
           ibrion=2,
           ediff=1e-8,
           nsw=10,
@@ -2175,10 +2185,9 @@ Next, we instruct VASP to compute the vibrational modes using [[http://cmt.dur.a
 
 # <<vib-ir>>
 #+BEGIN_SRC python
-from ase import Atoms, Atom
 from jasp import *
 
-#read in relaxed geometry
+# read in relaxed geometry
 with jasp('molecules/h2o_relax') as calc:
     atoms = calc.get_atoms()
 
@@ -2186,17 +2195,17 @@ with jasp('molecules/h2o_relax') as calc:
 with jasp('molecules/h2o_vib_dfpt',
           xc='PBE',
           encut=400,
-          ismear=0, # Gaussian smearing
-          ibrion=7, # switches on the DFPT vibrational analysis (with
-                    # no symmetry constraints)
+          ismear=0,  # Gaussian smearing
+          ibrion=7,  # switches on the DFPT vibrational analysis (with
+                     # no symmetry constraints)
           nfree=2,
           potim=0.015,
-          lepsilon=True, # enables to calculate and to print the BEC
-                         # tensors
+          lepsilon=True,  # enables to calculate and to print the BEC
+                          # tensors
           lreal=False,
           nsw=1,
-          nwrite=3, # affects OUTCAR verbosity: explicitly forces
-                    # SQRT(mass)-divided eigenvectors to be printed
+          nwrite=3,  # affects OUTCAR verbosity: explicitly forces
+                     # SQRT(mass)-divided eigenvectors to be printed
           atoms=atoms) as calc:
     calc.calculate(atoms)
 #+END_SRC
@@ -2500,6 +2509,8 @@ Free energy components at T = 298.15 K and P = 101325.0 Pa:
 =======================
 #+end_example
 
+
+
 Let us compare this to what is in the [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C7727379&Units=SI&Mask=1#Thermo-Gas][Nist webbook]] via the Shomate equations.
 #+BEGIN_SRC python :results output
 import numpy as np
@@ -2520,7 +2531,6 @@ print '-T*S = {0:1.3f} eV'.format(-T*S/1000/96.4853)
 #+END_SRC
 
 #+RESULTS:
-: 0.00028578754105
 : -T*S = -0.592 eV
 
 This is reasonable agreement for the entropy. You will get different results if you use different exchange correlation functionals.
@@ -2537,8 +2547,8 @@ The first reaction we consider is a simple dissociation of oxygen molecule into 
 from jasp import *
 from ase import Atom, Atoms
 
-atoms = Atoms([Atom('O',[5,5,5])],
-              cell=(10,10,10))
+atoms = Atoms([Atom('O', [5, 5, 5])],
+              cell=(10, 10, 10))
 
 with jasp('molecules/O',
           xc='PBE',
@@ -2551,9 +2561,9 @@ with jasp('molecules/O',
         E_O = None
 
 # now relaxed O2 dimer
-atoms = Atoms([Atom('O',[5, 5, 5]),
-               Atom('O',[6.22, 5,5])],
-              cell=(10,10,10))
+atoms = Atoms([Atom('O', [5, 5, 5]),
+               Atom('O', [6.22, 5, 5])],
+              cell=(10, 10, 10))
 
 with jasp('molecules/O2',
           xc='PBE',
@@ -2568,7 +2578,7 @@ with jasp('molecules/O2',
         E_O2 = None
 
 if None not in (E_O, E_O2):
-    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2)
+    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2 * E_O - E_O2)
 #+END_SRC
 
 #+RESULTS:
@@ -2603,14 +2613,14 @@ print 'Magnetic moment on O = {0} Bohr magnetons'.format(atoms.get_magnetic_mome
 # now relaxed O2 dimer
 atoms = Atoms([Atom('O', [5,    5, 5], magmom=1),
                Atom('O', [6.22, 5, 5], magmom=1)],
-              cell=(10,10,10))
+              cell=(10, 10, 10))
 
 with jasp('molecules/O2-sp-triplet',
           xc='PBE',
           encut=400,
           ismear=0,
-          ispin=2,  # turn spin-polarization on
-          ibrion=2, # make sure we relax the geometry
+          ispin=2,   # turn spin-polarization on
+          ibrion=2,  # make sure we relax the geometry
           nsw=10,
           atoms=atoms) as calc:
     try:
@@ -2622,12 +2632,12 @@ with jasp('molecules/O2-sp-triplet',
 print 'Magnetic moment on O2 = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
 
 if None not in (E_O, E_O2):
-    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2)
+    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2 * E_O - E_O2)
 #+END_SRC
 
 #+RESULTS:
 : Magnetic moment on O = 2.0000072 Bohr magnetons
-: Magnetic moment on O2 = 2.0000083 Bohr magnetons
+: Magnetic moment on O2 = 2.0000084 Bohr magnetons
 : O2 -> 2O  D = 6.668 eV
 
 This is much closer to accepted literature values for the DFT-GGA O$_2$ dissociation energy. It is still more than 1 eV above an experimental value, but most of that error is due to the GGA exchange correlation functional. Some additional parameters that might need to be checked for convergence are the SIGMA value (it is probably too high for a molecule), as well as the cutoff energy. Oxygen is a "hard" atom that requires a high cutoff energy to achieve high levels of convergence.
@@ -2662,8 +2672,8 @@ plt.savefig('images/O2-sp-dos.png')
 #+END_SRC
 
 #+RESULTS:
-: number of up states = 7.00000343617
-: number of down states = 5.00001715094
+: number of up states = 5.95489738902
+: number of down states = 5.00001754136
 
 #+caption: Spin-polarized DOS for the O_{2} molecule. \label{fig:o2-sp-dos}
 #+ATTR_LaTeX: placement: [H]
@@ -2681,7 +2691,7 @@ encuts = [250, 300, 350, 400, 450, 500, 550]
 D = []
 for encut in encuts:
     atoms = Atoms([Atom('O', [5, 5, 5], magmom=2)],
-                   cell=(10,10,10))
+                  cell=(10, 10, 10))
 
     with jasp('molecules/O-sp-triplet-{0}'.format(encut),
               xc='PBE',
@@ -2697,14 +2707,14 @@ for encut in encuts:
     # now relaxed O2 dimer
     atoms = Atoms([Atom('O', [5,    5, 5], magmom=1),
                    Atom('O', [6.22, 5, 5], magmom=1)],
-              cell=(10,10,10))
+                  cell=(10, 10, 10))
 
     with jasp('molecules/O2-sp-triplet-{0}'.format(encut),
               xc='PBE',
               encut=encut,
               ismear=0,
-              ispin=2,  # turn spin-polarization on
-              ibrion=2, # this turns relaxation on
+              ispin=2,   # turn spin-polarization on
+              ibrion=2,  # this turns relaxation on
               nsw=10,
               atoms=atoms) as calc:
         try:
@@ -2755,19 +2765,21 @@ for encut in encuts:
 
 #+RESULTS:
 #+begin_example
-250:                   Total CPU time used (sec):       67.926
+encut (eV)            Total CPU time
+--------------------------------------------------------
+250 eV:                   Total CPU time used (sec):       67.926
 
-300:                   Total CPU time used (sec):      121.296
+300 eV:                   Total CPU time used (sec):      121.296
 
-350:                   Total CPU time used (sec):      150.808
+350 eV:                   Total CPU time used (sec):      150.808
 
-400:                   Total CPU time used (sec):      166.956
+400 eV:                   Total CPU time used (sec):      307.465
 
-450:                   Total CPU time used (sec):      199.381
+450 eV:                   Total CPU time used (sec):      199.381
 
-500:                   Total CPU time used (sec):      240.705
+500 eV:                   Total CPU time used (sec):      240.705
 
-550:                   Total CPU time used (sec):      266.318
+550 eV:                   Total CPU time used (sec):      266.318
 
 #+end_example
 
@@ -2798,7 +2810,7 @@ sigmas = [0.2, 0.1, 0.05, 0.02, 0.01, 0.001]
 D = []
 for sigma in sigmas:
     atoms = Atoms([Atom('O',[5, 5, 5], magmom=2)],
-                   cell=(10,10,10))
+                  cell=(10, 10, 10))
 
     with jasp('molecules/O-sp-triplet-sigma-{0}'.format(sigma),
               xc='PBE',
@@ -2815,15 +2827,15 @@ for sigma in sigmas:
     # now relaxed O2 dimer
     atoms = Atoms([Atom('O',[5,    5, 5],magmom=1),
                    Atom('O',[6.22, 5, 5],magmom=1)],
-              cell=(10,10,10))
+                  cell=(10, 10, 10))
 
     with jasp('molecules/O2-sp-triplet-sigma-{0}'.format(sigma),
               xc='PBE',
               encut=400,
               ismear=0,
               sigma=sigma,
-              ispin=2,  # turn spin-polarization on
-              ibrion=2, # make sure we relax the geometry
+              ispin=2,   # turn spin-polarization on
+              ibrion=2,  # make sure we relax the geometry
               nsw=10,
               atoms=atoms) as calc:
         try:
@@ -2832,7 +2844,7 @@ for sigma in sigmas:
             E_O2 = None
 
     if None not in (E_O, E_O2):
-        d = 2*E_O - E_O2
+        d = 2 * E_O - E_O2
         D.append(d)
         print 'O2 -> 2O sigma = {0}  D = {1:1.3f} eV'.format(sigma, d)
 
@@ -2844,12 +2856,6 @@ plt.savefig('images/O2-dissociation-sigma-convergence.png')
 #+END_SRC
 
 #+RESULTS:
-: O2 -> 2O sigma = 0.2  D = 6.668 eV
-: O2 -> 2O sigma = 0.1  D = 6.746 eV
-: O2 -> 2O sigma = 0.05  D = 6.784 eV
-: O2 -> 2O sigma = 0.02  D = 6.807 eV
-: O2 -> 2O sigma = 0.01  D = 6.815 eV
-: O2 -> 2O sigma = 0.001  D = 6.822 eV
 
 #+caption: Effect of SIGMA on the oxygen dissociation energy. \label{fig:sigma-o2-diss}
 #+ATTR_LaTeX: placement: [H]
@@ -2880,8 +2886,8 @@ with jasp('molecules/O-sp-singlet',
 print 'Magnetic moment on O = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
 
 # now relaxed O2 dimer
-atoms = Atoms([Atom('O', [5,   5, 5], magmom=1),
-               Atom('O',[6.22, 5, 5], magmom=-1)],
+atoms = Atoms([Atom('O', [5, 5, 5], magmom=1),
+               Atom('O', [6.22, 5, 5], magmom=-1)],
               cell=(10, 10, 10))
 
 with jasp('molecules/O2-sp-singlet',
@@ -2898,7 +2904,7 @@ with jasp('molecules/O2-sp-singlet',
         E_O2 = None
 
 # verify magnetic moment
-print 'O2 molecule magnetic moment = ',atoms.get_magnetic_moment()
+print 'O2 molecule magnetic moment = ', atoms.get_magnetic_moment()
 
 if None not in (E_O, E_O2):
     print 'O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2)
@@ -2922,8 +2928,8 @@ with jasp('molecules/O2-sp-triplet') as calc:
 #+END_SRC
 
 #+RESULTS:
-: singlet:  -8.830101
-: triplet:  -9.848238
+: singlet: -8.830101 eV
+: triplet: -9.848238 eV
 
 You can see here the triplet state has an energy that is 1 eV more stable than the singlet state.
 
@@ -2935,7 +2941,7 @@ from jasp import *
 from ase import Atom, Atoms
 
 # square box origin
-atoms = Atoms([Atom('O',[0, 0, 0], magmom=2)],
+atoms = Atoms([Atom('O', [0, 0, 0], magmom=2)],
               cell=(10, 10, 10))
 
 with jasp('molecules/O-square-box-origin',
@@ -3012,8 +3018,8 @@ with jasp('molecules/O-orthorhombic-box-origin',
         pass
 
 # orthrhombic box center
-atoms = Atoms([Atom('O',[4, 4.5, 5],magmom=2)],
-              cell=(8,9,10))
+atoms = Atoms([Atom('O', [4, 4.5, 5], magmom=2)],
+              cell=(8, 9, 10))
 
 with jasp('molecules/O-orthorhombic-box-center',
           xc='PBE',
@@ -3028,7 +3034,7 @@ with jasp('molecules/O-orthorhombic-box-center',
         pass
 
 # orthorhombic box random
-atoms = Atoms([Atom('O',[2.13, 7.32, 1.11], magmom=2)],
+atoms = Atoms([Atom('O', [2.13, 7.32, 1.11], magmom=2)],
               cell=(8, 9, 10))
 
 with jasp('molecules/O-orthorhombic-box-random',
@@ -3042,7 +3048,6 @@ with jasp('molecules/O-orthorhombic-box-random',
         print 'Orthorhombic box (random): E = {0} eV'.format(atoms.get_potential_energy())
     except (VaspSubmitted, VaspQueued):
         pass
-
 #+END_SRC
 
 #+RESULTS:
@@ -3056,7 +3061,7 @@ This is a surprisingly large difference in energy! Nearly 0.4 eV. This is precis
 from jasp import *
 from ase import Atom, Atoms
 
-atoms = Atoms([Atom('O',[5.1, 4.2, 6.1], magmom=2)],
+atoms = Atoms([Atom('O', [5.1, 4.2, 6.1], magmom=2)],
               cell=(8, 9, 10))
 
 with jasp('molecules/O-sp-triplet-lowsym',
@@ -3082,8 +3087,8 @@ with jasp('molecules/O2-sp-triplet',
           encut=400,
           ismear=0,
           sigma=0.01,
-          ispin=2,  # turn spin-polarization on
-          ibrion=2, # make sure we relax the geometry
+          ispin=2,   # turn spin-polarization on
+          ibrion=2,  # make sure we relax the geometry
           nsw=10,
           atoms=atoms) as calc:
     try:
@@ -3095,13 +3100,13 @@ with jasp('molecules/O2-sp-triplet',
         E_O2 = None
 
 if None not in (E_O, E_O2):
-    print 'E_O: ',E_O
-    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2)
+    print 'E_O: ', E_O
+    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2 * E_O - E_O2)
 #+END_SRC
 
 #+RESULTS:
 : Magnetic moment on O = 2.0000016 Bohr  magnetons
-: Magnetic moment on O2 = 2.0000083 Bohr magnetons
+: Magnetic moment on O2 = 2.0000084 Bohr magnetons
 : E_O:  -1.893571
 : O2 -> 2O  D = 6.061 eV
 
@@ -3112,7 +3117,6 @@ It is one thing to see the total magnetic moment of a singlet state, and another
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
-from ase import Atom, Atoms
 
 with jasp('molecules/O2-sp-singlet') as calc:
     calc.clone('molecules/O2-sp-singlet-magmoms')
@@ -3123,7 +3127,7 @@ with jasp('molecules/O2-sp-singlet-magmoms') as calc:
     magmoms = atoms.get_magnetic_moments()
 
     print 'singlet ground state'
-    for i,atom in enumerate(atoms):
+    for i, atom in enumerate(atoms):
         print 'atom {0}: magmom = {1}'.format(i, magmoms[i])
     print atoms.get_magnetic_moment()
 
@@ -3136,21 +3140,12 @@ with jasp('molecules/O2-sp-triplet-magmoms') as calc:
     magmoms = atoms.get_magnetic_moments()
     print
     print 'triplet ground state'
-    for i,atom in enumerate(atoms):
+    for i, atom in enumerate(atoms):
         print 'atom {0}: magmom = {1}'.format(i, magmoms[i])
     print atoms.get_magnetic_moment()
 #+END_SRC
 
 #+RESULTS:
-: singlet ground state
-: atom 0: magmom = 0.0
-: atom 1: magmom = 0.0
-: 0.0
-:
-: triplet ground state
-: atom 0: magmom = 0.815
-: atom 1: magmom = 0.815
-: 2.0000084
 
 Note the atomic magnetic moments do not add up to the total magnetic moment. The atomic magnetic moments are not really true observable properties. The moments are determined by a projection method that probably involves a spherical orbital, so the moments may be over or underestimated.
 
@@ -3162,7 +3157,7 @@ grep ENMIN $VASP_PP_PATH/potpaw_PBE/O_sv/POTCAR
 #+END_SRC
 
 #+RESULTS:
-: ENMAX  = 1421.493; ENMIN  = 1066.119 eV
+:    ENMAX  = 1421.493; ENMIN  = 1066.119 eV
 
 In the following calculation, we let VASP select an appropriate ENCUT value.
 #+BEGIN_SRC python :results output :exports both
@@ -3177,7 +3172,7 @@ with jasp('molecules/O-sp-triplet-lowsym-sv',
           ismear=0,
           ispin=2,
           sigma=0.01,
-          setups={'O':'_sv'},
+          setups={'O': '_sv'},
           atoms=atoms) as calc:
     try:
         E_O = atoms.get_potential_energy()
@@ -3195,10 +3190,10 @@ with jasp('molecules/O2-sp-triplet-sv',
           xc='PBE',
           ismear=0,
           sigma=0.01,
-          ispin=2,  # turn spin-polarization on
-          ibrion=2, # make sure we relax the geometry
+          ispin=2,   # turn spin-polarization on
+          ibrion=2,  # make sure we relax the geometry
           nsw=10,
-          setups={'O':'_sv'},
+          setups={'O': '_sv'},
           atoms=atoms) as calc:
     try:
         E_O2 = atoms.get_potential_energy()
@@ -3231,18 +3226,18 @@ $\Delta E = E_{CO_2} + E_{H_2} - E_{CO} - E_{H_2O}$
 For now, we compute this energy simply as the difference in DFT energies. In the next section we will add zero-point energies and compute the energy difference as a function of temperature. For now, we simply need to compute the total energy of each molecule in its equilibrium geometry.
 
 #+BEGIN_SRC python :results output :exports both
-from ase.data.molecules import molecule
+from ase.structure import molecule
 from jasp import *
 
 # first we define our molecules. These will automatically be at the coordinates from the G2 database.
 
-CO =  molecule('CO')
+CO = molecule('CO')
 CO.set_cell([8, 8, 8], scale_atoms=False)
 
 H2O = molecule('H2O')
 H2O.set_cell([8, 8, 8], scale_atoms=False)
 
-CO2 =  molecule('CO2')
+CO2 = molecule('CO2')
 CO2.set_cell([8, 8, 8], scale_atoms=False)
 
 H2 = molecule('H2')
@@ -3307,9 +3302,6 @@ else:
 #+END_SRC
 
 #+RESULTS:
-: \Delta E = -0.720 eV
-: \Delta E = -16.614 kcal/mol
-: \Delta E = -69.514 kJ/mol
 
 We [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-nist-webbook/#7][estimated]] the enthalpy of this reaction at standard conditions to be -41 kJ/mol using data from the NIST webbook, which is a fair bit lower than we calculated here. In the next section we will examine whether additional corrections are needed, such as zero-point and temperature corrections.
 
@@ -3349,7 +3341,7 @@ with jasp('molecules/wgs/H2O') as calc:
 ***** CO
 #+begin_example
 : -----------------------------
-  VASP calculation from /home/jkitchin/dft-org/molecules/wgs/CO
+  VASP calculation from /home-research/jkitchin/dft-book2/molecules/wgs/CO
   converged: True
   Energy = -14.789536 eV
 
@@ -3358,13 +3350,13 @@ with jasp('molecules/wgs/H2O') as calc:
   a0 [ 8.000  0.000  0.000] 8.000
   a1 [ 0.000  8.000  0.000] 8.000
   a2 [ 0.000  0.000  8.000] 8.000
-  a,b,c,alpha,beta,gamma (deg): 8.000 8.000 8.000 90.0 90.0 90.0
+  a,b,c,alpha,beta,gamma (deg):8.000 8.000 8.000 90.0 90.0 90.0
   Unit cell volume = 512.000 Ang^3
   Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
-             0.005  0.005  0.005 -0.000 -0.000 -0.000
- Atom#  sym       position [x,y,z]         tag  rmsForce constraints
-   0    O   [0.000      0.000      0.490]   0   0.01      T T T
-   1    C   [0.000      0.000      7.346]   0   0.01      T T T
+             0.005  0.005  0.005-0.000 -0.000 -0.000
+ Atom#  sym       position [x,y,z]tag  rmsForce constraints
+   0    O   [0.000      0.000      0.490]  0   0.01      T T T
+   1    C   [0.000      0.000      7.346]  0   0.01      T T T
 --------------------------------------------------
 
 INCAR Parameters:
@@ -3374,8 +3366,9 @@ INCAR Parameters:
            nsw: 10
         ibrion: 2
          encut: 350.0
+        magmom: None
           prec: Normal
-          kpts: [1 1 1]
+          kpts: [1, 1, 1]
     reciprocal: False
             xc: PBE
            txt: -
@@ -3386,10 +3379,10 @@ Pseudopotentials used:
 C: potpaw_PBE/C/POTCAR (git-hash: 2272d6745da89a3d872983542cef1d18750fc952)
 O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
 #+end_example
-***** CO_{2}
+***** CO2
 #+begin_example
 : -----------------------------
-  VASP calculation from /home/jkitchin/dft-org/molecules/wgs/CO2
+  VASP calculation from /home-research/jkitchin/dft-book2/molecules/wgs/CO2
   converged: True
   Energy = -22.959572 eV
 
@@ -3398,14 +3391,14 @@ O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
   a0 [ 8.000  0.000  0.000] 8.000
   a1 [ 0.000  8.000  0.000] 8.000
   a2 [ 0.000  0.000  8.000] 8.000
-  a,b,c,alpha,beta,gamma (deg): 8.000 8.000 8.000 90.0 90.0 90.0
+  a,b,c,alpha,beta,gamma (deg):8.000 8.000 8.000 90.0 90.0 90.0
   Unit cell volume = 512.000 Ang^3
   Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
-             0.009  0.009  0.008 -0.000 -0.000 -0.000
- Atom#  sym       position [x,y,z]         tag  rmsForce constraints
-   0    C   [0.000      0.000      0.000]   0   0.00      T T T
-   1    O   [0.000      0.000      1.177]   0   0.01      T T T
-   2    O   [0.000      0.000      6.823]   0   0.01      T T T
+             0.009  0.009  0.008-0.000 -0.000 -0.000
+ Atom#  sym       position [x,y,z]tag  rmsForce constraints
+   0    C   [0.000      0.000      0.000]  0   0.00      T T T
+   1    O   [0.000      0.000      1.177]  0   0.01      T T T
+   2    O   [0.000      0.000      6.823]  0   0.01      T T T
 --------------------------------------------------
 
 INCAR Parameters:
@@ -3415,8 +3408,9 @@ INCAR Parameters:
            nsw: 10
         ibrion: 2
          encut: 350.0
+        magmom: None
           prec: Normal
-          kpts: [1 1 1]
+          kpts: [1, 1, 1]
     reciprocal: False
             xc: PBE
            txt: -
@@ -3427,10 +3421,10 @@ Pseudopotentials used:
 C: potpaw_PBE/C/POTCAR (git-hash: 2272d6745da89a3d872983542cef1d18750fc952)
 O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
 #+end_example
-***** H_{2}
+***** H2
 #+begin_example
 : -----------------------------
-  VASP calculation from /home/jkitchin/dft-org/molecules/wgs/H2
+  VASP calculation from /home-research/jkitchin/dft-book2/molecules/wgs/H2
   converged: True
   Energy = -6.744001 eV
 
@@ -3439,13 +3433,13 @@ O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
   a0 [ 8.000  0.000  0.000] 8.000
   a1 [ 0.000  8.000  0.000] 8.000
   a2 [ 0.000  0.000  8.000] 8.000
-  a,b,c,alpha,beta,gamma (deg): 8.000 8.000 8.000 90.0 90.0 90.0
+  a,b,c,alpha,beta,gamma (deg):8.000 8.000 8.000 90.0 90.0 90.0
   Unit cell volume = 512.000 Ang^3
   Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
-             0.000  0.000  0.000 -0.000 -0.000 -0.000
- Atom#  sym       position [x,y,z]         tag  rmsForce constraints
-   0    H   [0.000      0.000      0.376]   0   0.00      T T T
-   1    H   [0.000      0.000      7.624]   0   0.00      T T T
+             0.000  0.000  0.000-0.000 -0.000 -0.000
+ Atom#  sym       position [x,y,z]tag  rmsForce constraints
+   0    H   [0.000      0.000      0.376]  0   0.00      T T T
+   1    H   [0.000      0.000      7.624]  0   0.00      T T T
 --------------------------------------------------
 
 INCAR Parameters:
@@ -3455,8 +3449,9 @@ INCAR Parameters:
            nsw: 10
         ibrion: 2
          encut: 350.0
+        magmom: None
           prec: Normal
-          kpts: [1 1 1]
+          kpts: [1, 1, 1]
     reciprocal: False
             xc: PBE
            txt: -
@@ -3466,10 +3461,10 @@ Pseudopotentials used:
 ----------------------
 H: potpaw_PBE/H/POTCAR (git-hash: fbc0773b08b32f553234b0b50cc6ad6f5085c816)
 #+end_example
-***** H_{2}O
+***** H2O
 #+begin_example
 : -----------------------------
-  VASP calculation from /home/jkitchin/dft-org/molecules/wgs/H2O
+  VASP calculation from /home-research/jkitchin/dft-book2/molecules/wgs/H2O
   converged: True
   Energy = -14.193569 eV
 
@@ -3478,14 +3473,14 @@ H: potpaw_PBE/H/POTCAR (git-hash: fbc0773b08b32f553234b0b50cc6ad6f5085c816)
   a0 [ 8.000  0.000  0.000] 8.000
   a1 [ 0.000  8.000  0.000] 8.000
   a2 [ 0.000  0.000  8.000] 8.000
-  a,b,c,alpha,beta,gamma (deg): 8.000 8.000 8.000 90.0 90.0 90.0
+  a,b,c,alpha,beta,gamma (deg):8.000 8.000 8.000 90.0 90.0 90.0
   Unit cell volume = 512.000 Ang^3
   Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
-             0.005  0.004  0.005 -0.000 -0.000 -0.000
- Atom#  sym       position [x,y,z]         tag  rmsForce constraints
-   0    O   [0.000      0.000      0.122]   0   0.06      T T T
-   1    H   [0.000      0.766      7.522]   0   0.04      T T T
-   2    H   [0.000      7.234      7.522]   0   0.04      T T T
+             0.005  0.004  0.005-0.000 -0.000 -0.000
+ Atom#  sym       position [x,y,z]tag  rmsForce constraints
+   0    O   [0.000      0.000      0.122]  0   0.06      T T T
+   1    H   [0.000      0.766      7.522]  0   0.04      T T T
+   2    H   [0.000      7.234      7.522]  0   0.04      T T T
 --------------------------------------------------
 
 INCAR Parameters:
@@ -3495,8 +3490,9 @@ INCAR Parameters:
            nsw: 10
         ibrion: 2
          encut: 350.0
+        magmom: None
           prec: Normal
-          kpts: [1 1 1]
+          kpts: [1, 1, 1]
     reciprocal: False
             xc: PBE
            txt: -
