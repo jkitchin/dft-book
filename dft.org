@@ -5,48 +5,10 @@
 #+DATE:      2012-07-11 Wed
 #+DESCRIPTION: A book on using density functional theory to model materials.
 #+KEYWORDS: Density functional theory, materials, VASP
-#+LANGUAGE:  en
-#+OPTIONS:   H:10 num:t toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t d:HIDDEN
-#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
-#+OPTIONS:   LaTeX:dvipng
-#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
-#+EXPORT_SELECT_TAGS: export
-#+EXPORT_EXCLUDE_TAGS: noexport
-#+LINK_UP:
-#+LINK_HOME:
-#+XSLT:
-#+STYLE: <link rel="stylesheet" type="text/css" href="dft.css"/>
-
-#+latex_header: \usepackage{dftbook}
-#+LATEX_CLASS_OPTIONS: [colorlinks=true,urlcolor=blue,linkcolor=blue,citecolor=red]
-#+LATEX_HEADER: \usepackage{minted}
-#+LATEX_HEADER: \usepackage{lmodern}
-#+LATEX_HEADER: \usepackage{makeidx}
-#+LATEX_HEADER: \newcommand{\LaunchBinary}[2]{%
-#+LATEX_HEADER:   % #1: layer name,
-#+LATEX_HEADER:   % #2: link text
-#+LATEX_HEADER:   \leavevmode%
-#+LATEX_HEADER:   \pdfstartlink  attr{/C [0.9 0 0] /Border [0 0 2]} user {
-#+LATEX_HEADER:     /Subtype /Link
-#+LATEX_HEADER:     /A <<
-#+LATEX_HEADER:       /F <<
-#+LATEX_HEADER:          /DOS (#1)
-#+LATEX_HEADER:          /Mac (#1)
-#+LATEX_HEADER:          /Unix (#1)
-#+LATEX_HEADER:       >>
-#+LATEX_HEADER:       /S /Launch
-#+LATEX_HEADER:     >>
-#+LATEX_HEADER:   } #2%
-#+LATEX_HEADER:   \pdfendlink%
-#+LATEX_HEADER: }
-
-#+LATEX_HEADER: \newcommand{\degC}{$^\circ$C{}}
-#+LATEX_HEADER: \makeindex
 
 
-#+STYLE: <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
-
-#+ATTR_HTML: width="500px"
+#+ATTR_HTML: :width 200
+#+ATTR_ORG: :width 200
 [[./images/cover-page.png]]
 
     Copyright \copyright 2012--\the\year\ John Kitchin\par
@@ -123,6 +85,7 @@ Review all the hyperlinks in this chapter.
 
 A comprehensive overview of DFT is beyond the scope of this book, as excellent reviews on these subjects are readily found in the literature, and are suggested reading in the following paragraph.  Instead, this chapter is intended to provide a useful starting point for a non-expert to begin learning about and using DFT in the manner used in this book. Much of the information presented here is standard knowledge among experts, but a consequence of this is that it is rarely discussed in current papers in the literature. A secondary goal of this chapter is to provide new users with a path through the extensive literature available and to point out potential difficulties and pitfalls in these calculations.
 
+
 A modern and practical introduction to density functional theory can be found in Sholl and Steckel cite:sholl-2009-densit-funct-theor. A fairly standard textbook on DFT is the one written by Parr and Yang cite:parr-yang.  The Chemist's Guide to DFT cite:koch2001 is more readable and contains more practical information for running calculations, but both of these books focus on molecular systems.  The standard texts in solid state physics are by Kittel cite:kittel and Ashcroft and Mermin cite:ashcroft-mermin. Both have their fine points, the former being more mathematically rigorous and the latter more readable.  However, neither of these books is particularly easy to relate to chemistry.  For this, one should consult the exceptionally clear writings of Roald Hoffman cite:hoffmann1987,RevModPhys.60.601, and follow these with the work of N\o rskov and coworkers cite:hammer2000:adv-cat,greeley2002:elect.
 
 In this chapter, only the elements of DFT that are relevant to this work will be discussed.  An excellent review on other implementations of DFT can be found in Reference citealp:freeman1995:densit, and details on the various algorithms used in DFT codes can be found in Refs.  citealp:payne1992:iterat,Kresse199615.
@@ -171,7 +134,7 @@ The two main types of exchange/correlation functionals used in DFT are the local
 
 The generalized gradient approximation includes corrections for gradients in the electron density, and is often implemented as a corrective function of the LDA.  The form of this corrective function, or "exchange enhancement" function determines which functional it is, e.g. PBE, RPBE, revPBE, etc. cite:hammer1999:improv-pbe. In this book the PBE GGA functional is used the most. N{\o}rskov and coworkers have found that the RPBE functional gives superior chemisorption energies for atomic and molecular bonding to surfaces, but that it gives worse bulk properties, such as lattice constants compared to experimental data cite:hammer1999:improv-pbe.
 
- Finally, there are increasingly new types of functionals in the literature. The so-called hybrid functionals, such as B3LYP, are more popular with gaussian basis sets (e.g. in Gaussian), but they are presently inefficient with planewave basis sets. None of these other types of functionals were used in this work. For more details see Chapter 6 in Ref. citealp:koch2001 and Thomas Bligaard's thesis on exchange and correlation functionals cite:bligaard2000:exchan-correl-funct.
+Finally, there are increasingly new types of functionals in the literature. The so-called hybrid functionals, such as B3LYP, are more popular with gaussian basis sets (e.g. in Gaussian), but they are presently inefficient with planewave basis sets. None of these other types of functionals were used in this work. For more details see Chapter 6 in Ref. citealp:koch2001 and Thomas Bligaard's thesis on exchange and correlation functionals cite:bligaard2000:exchan-correl-funct.
 
 ** Basis sets
 Briefly, VASP utilizes planewaves as the basis set to expand the
@@ -258,9 +221,9 @@ from ase import Atoms, Atom
 from ase.io import write
 
 # define an Atoms object
-atoms = Atoms([Atom('C',[0., 0.,0.]),
-               Atom('O',[1.1,0.,0.])],
-               cell=(10,10,10))
+atoms = Atoms([Atom('C', [0., 0., 0.]),
+               Atom('O', [1.1, 0., 0.])],
+              cell=(10, 10, 10))
 
 print 'V = {0:1.0f} Angstrom^3'.format(atoms.get_volume())
 
@@ -287,14 +250,15 @@ from ase import Atoms, Atom
 from ase.io import write
 
 b = 7.1
-atoms = Atoms([Atom('C',[0., 0.,0.]),
-               Atom('O',[1.1,0.,0.])],
-               cell=[[b, b, 0.],
-                     [b, 0., b],
-                     [0., b, b]])
-print 'V = {0:1.0f} Ang^3'.format(atoms.get_volume())
+atoms = Atoms([Atom('C', [0., 0., 0.]),
+               Atom('O', [1.1, 0., 0.])],
+              cell=[[b, b, 0.],
+                    [b, 0., b],
+                    [0., b, b]])
 
-atoms.center() #translate atoms to center of unit cell
+print('V = {0:1.0f} Ang^3'.format(atoms.get_volume()))
+
+atoms.center()  # translate atoms to center of unit cell
 write('images/fcc-cell.png', atoms, show_unit_cell=2)
 #+END_SRC
 
@@ -312,8 +276,8 @@ from ase import Atoms, Atom
 import numpy as np
 
 b = 7.1
-atoms = Atoms([Atom('C',[0., 0.,0.]),
-              Atom('O',[1.1,0.,0.])],
+atoms = Atoms([Atom('C', [0., 0., 0.]),
+               Atom('O', [1.1, 0., 0.])],
               cell=[[b, b, 0.],
                     [b, 0., b],
                     [0., b, b]])
@@ -329,8 +293,6 @@ print '|a3| = {0:1.2f} Ang'.format(np.sum(a3**2)**0.5)
 : |a1| = 10.04 Ang
 : |a2| = 10.04 Ang
 : |a3| = 10.04 Ang
-
-[[elisp:(progn (setq org-drill-scope '("study-guides/molecules-drill.org")) (org-drill))][Help me study!]] (you can try this, but it is very experimental).
 
 *** Reading other data formats into a calculation
 
@@ -397,7 +359,7 @@ provide it. In this example, we center the atoms in a box with vacuum
 on all sides (Figure ref:fig:isobutane).
 
 #+BEGIN_SRC python
-from ase.io import read,write
+from ase.io import read, write
 
 atoms = read('molecules/isobutane.xyz')
 atoms.center(vacuum=5)
@@ -427,9 +389,67 @@ mod:ase.data.g2. You may be interested in reading about some of the other databa
 from ase.data import g2
 keys = g2.data.keys()
 # print in 3 columns
-for i in range(len(keys)/3):
-    print '{0:25s}{1:25s}{2:25s}'.format(*tuple(keys[i*3:i*3+3]))
+for i in range(len(keys) / 3):
+    print '{0:25s}{1:25s}{2:25s}'.format(*tuple(keys[i * 3: i * 3 + 3]))
 #+END_SRC
+
+#+RESULTS:
+#+begin_example
+isobutene                CH3CH2OH                 CH3COOH                  
+COF2                     CH3NO2                   CF3CN                    
+CH3OH                    CCH                      CH3CH2NH2                
+PH3                      Si2H6                    O3                       
+O2                       BCl3                     CH2_s1A1d                
+Be                       H2CCl2                   C3H9C                    
+C3H9N                    CH3CH2OCH3               BF3                      
+CH3                      CH4                      S2                       
+C2H6CHOH                 SiH2_s1A1d               H3CNH2                   
+CH3O                     H                        BeH                      
+P                        C3H4_C3v                 C2F4                     
+OH                       methylenecyclopropane    F2O                      
+SiCl4                    HCF3                     HCCl3                    
+C3H7                     CH3CH2O                  AlF3                     
+CH2NHCH2                 SiH2_s3B1d               H2CF2                    
+SiF4                     H2CCO                    PH2                      
+OCS                      HF                       NO2                      
+SH2                      C3H4_C2v                 H2O2                     
+CH3CH2Cl                 isobutane                CH3COF                   
+HCOOH                    CH3ONO                   C5H8                     
+2-butyne                 SH                       NF3                      
+HOCl                     CS2                      P2                       
+C                        CH3S                     O                        
+C4H4S                    S                        C3H7Cl                   
+H2CCHCl                  C2H6                     CH3CHO                   
+C2H4                     HCN                      C2H2                     
+C2Cl4                    bicyclobutane            H2                       
+C6H6                     N2H4                     C4H4NH                   
+H2CCHCN                  H2CCHF                   cyclobutane              
+HCl                      CH3OCH3                  Li2                      
+Na                       CH3SiH3                  NaCl                     
+CH3CH2SH                 OCHCHO                   SiH4                     
+C2H5                     SiH3                     NH                       
+ClO                      AlCl3                    CCl4                     
+NO                       C2H3                     ClF                      
+HCO                      CH3CONH2                 CH2SCH2                  
+CH3COCH3                 C3H4_D2d                 CH                       
+CO                       CN                       F                        
+CH3COCl                  N                        CH3Cl                    
+Si                       C3H8                     CS                       
+N2                       Cl2                      NCCN                     
+F2                       CO2                      Cl                       
+CH2OCH2                  H2O                      CH3CO                    
+SO                       HCOOCH3                  butadiene                
+ClF3                     Li                       PF3                      
+B                        CH3SH                    CF4                      
+C3H6_Cs                  C2H6NH                   N2O                      
+LiF                      H2COH                    cyclobutene              
+LiH                      SiO                      Si2                      
+C2H6SO                   C5H5N                    trans-butane             
+Na2                      C4H4O                    SO2                      
+NH3                      NH2                      CH2_s3B1d                
+ClNO                     C3H6_D3h                 Al                       
+CH3SCH3                  H2CO                     CH3CN                    
+#+end_example
 
 <<g2-database>>
 #+RESULTS:
@@ -495,7 +515,7 @@ Some other databases include the mod:ase.data.s22 for weakly interacting dimers 
 Here is an example of getting the geometry of an acetonitrile molecule and writing an image to a file. Note that the default unit cell is a $1 \mathrm{\AA} \times 1 \mathrm{\AA} \times 1 \mathrm{\AA}$ cubic cell. That is too small to use if your calculator uses periodic boundary conditions. We center the atoms in the unit cell and add vacuum on each side. We will add 6 \AA of vacuum on each side. In the write command we use the option =show_unit_cell= =2 to draw the unit cell boundaries. See Figure ref:fig:ch3cn.
 
 #+BEGIN_SRC python :results output :exports both
-from ase.data.molecules import molecule
+from ase.structure import molecule
 from ase.io import write
 
 atoms = molecule('CH3CN')
@@ -522,8 +542,9 @@ write('images/ch3cn.png', atoms, show_unit_cell=2)
 
 It is possible to rotate the atoms with func:ase.io.write if you wanted to see pictures from another angle. In the next example we rotate 45 degrees about the $x$-axis, then 45 degrees about the $y$-axis. Note that this only affects the image, not the actual coordinates. See Figure ref:fig:ch3cn-rot.
 
+
 #+BEGIN_SRC python :results output
-from ase.data.molecules import molecule
+from ase.structure import molecule
 from ase.io import write
 
 atoms = molecule('CH3CN')
@@ -534,7 +555,7 @@ print '---------'
 print atoms.get_cell()
 
 write('images/ch3cn-rotated.png', atoms,
-      show_unit_cell=2,rotation='45x,45y,0z')
+      show_unit_cell=2, rotation='45x,45y,0z')
 #+END_SRC
 
 #+RESULTS:
@@ -551,7 +572,7 @@ write('images/ch3cn-rotated.png', atoms,
 If you actually want to rotate the coordinates, there is a nice way to do that too, with the func:ase.Atoms.rotate method. Actually there are some subtleties in rotation. One rotates the molecule an angle (in radians) around a vector, but you have to choose whether the center of mass should be fixed or not. You also must decide whether or not the unit cell should be rotated. In the next example you can see the coordinates have changed due to the rotations. Note that the write function uses the rotation angle in degrees, while the rotate function uses radians.
 
 #+BEGIN_SRC python :results output
-from ase.data.molecules import molecule
+from ase.structure import molecule
 from ase.io import write
 from numpy import pi
 
@@ -594,7 +615,7 @@ Note in this last case the unit cell is oriented differently than the previous e
 It is frequently useful to combine two =Atoms= objects, e.g. for computing reaction barriers, or other types of interactions. In =ase=, we simply add two =Atoms= objects together. Here is an example of getting an ammonia and oxygen molecule in the same unit cell. See Figure ref:fig:combined-atoms. We set the =Atoms= about three \AA apart using the func:ase.Atoms.translate function.
 
 #+BEGIN_SRC python :results output
-from ase.data.molecules import molecule
+from ase.structure import molecule
 from ase.io import write
 
 atoms1 = molecule('NH3')
@@ -1698,19 +1719,18 @@ The equilibrium bond length of a CO molecule is approximately the bond length th
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 from ase import Atom, Atoms
-import numpy as np
-np.set_printoptions(precision=3,suppress=True)
+
 
 bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
 energies = []
 
-for d in bond_lengths: #possible bond lengths
+for d in bond_lengths:  # possible bond lengths
 
     co = Atoms([Atom('C', [0, 0, 0]),
                 Atom('O', [d, 0, 0])],
-                cell=(6, 6, 6))
+               cell=(6, 6, 6))
 
-    with jasp('molecules/co-{0}'.format(d), #output dir
+    with jasp('molecules/co-{0}'.format(d),  # output dir
               xc='PBE',
               nbands=6,
               encut=350,
@@ -1723,15 +1743,15 @@ for d in bond_lengths: #possible bond lengths
             print 'd = {0:1.2f} ang'.format(d)
             print 'energy = {0:1.3f} eV'.format(e)
             print 'forces = (eV/ang)\n {0}'.format(co.get_forces())
-            print '' #blank line
+            print ''  # blank line
         except (VaspSubmitted, VaspQueued):
             energies.append(None)
             pass
 
-if not None in energies:
+if None not in energies:
     import matplotlib.pyplot as plt
     plt.plot(bond_lengths, energies, 'bo-')
-    plt.xlabel('Bond length ($\AA$)')
+    plt.xlabel(r'Bond length ($\AA$)')
     plt.ylabel('Total energy (eV)')
     plt.savefig('images/co-bondlengths.png')
 #+END_SRC
@@ -1739,33 +1759,33 @@ if not None in energies:
 #+RESULTS:
 #+begin_example
 d = 1.05 ang
-energy = -14.215189 eV
+energy = -14.215 eV
 forces = (eV/ang)
-[[-14.903   0.      0.   ]
+ [[-14.903   0.      0.   ]
  [ 14.903   0.      0.   ]]
 
 d = 1.10 ang
-energy = -14.719882 eV
+energy = -14.720 eV
 forces = (eV/ang)
-[[-5.8  0.   0. ]
+ [[-5.8  0.   0. ]
  [ 5.8  0.   0. ]]
 
 d = 1.15 ang
-energy = -14.838448 eV
+energy = -14.838 eV
 forces = (eV/ang)
-[[ 0.645  0.     0.   ]
+ [[ 0.645  0.     0.   ]
  [-0.645  0.     0.   ]]
 
 d = 1.20 ang
-energy = -14.687906 eV
+energy = -14.688 eV
 forces = (eV/ang)
-[[ 5.095  0.     0.   ]
+ [[ 5.095  0.     0.   ]
  [-5.095  0.     0.   ]]
 
 d = 1.25 ang
-energy = -14.351675 eV
+energy = -14.352 eV
 forces = (eV/ang)
-[[ 8.141  0.     0.   ]
+ [[ 8.141  0.     0.   ]
  [-8.141  0.     0.   ]]
 
 #+end_example
@@ -1776,12 +1796,12 @@ To find the minimum we could run more calculations, but a simpler and faster way
 from jasp import *
 import numpy as np
 import matplotlib.pyplot as plt
-np.set_printoptions(precision=3,suppress=True)
+np.set_printoptions(precision=3, suppress=True)
 
 bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
 energies = []
 
-for d in bond_lengths: #possible bond lengths
+for d in bond_lengths:  # possible bond lengths
 
     with jasp('molecules/co-{0}'.format(d)) as calc:
         atoms = calc.get_atoms()
@@ -1796,13 +1816,13 @@ dp = np.polyder(pp)  # first derivative - quadratic
 roots = np.roots(dp)
 
 # The minimum is where the second derivative is positive.
-dpp = np.polyder(dp) # second derivative - line
+dpp = np.polyder(dp)  # second derivative - line
 secd = np.polyval(dpp, roots)
 
 minV = roots[secd > 0]
 minE = np.polyval(pp, minV)
 
-print 'The minimum energy is {0} eV at V = {1} Ang^3'.format(minE,minV)
+print 'The minimum energy is {0} eV at V = {1} Ang^3'.format(minE, minV)
 
 # plot the fit
 x = np.linspace(1.05, 1.25)
@@ -1811,7 +1831,7 @@ fit = np.polyval(pp, x)
 plt.plot(bond_lengths, energies, 'bo ')
 plt.plot(x,fit, 'r-')
 plt.plot(minV, minE, 'm* ')
-plt.legend(['DFT','fit','minimum'], numpoints=1)
+plt.legend(['DFT', 'fit', 'minimum'], numpoints=1)
 plt.xlabel('Bond length ($\AA$)')
 plt.ylabel('Total energy (eV)')
 plt.savefig('images/co-bondlengths.png')
@@ -1845,9 +1865,9 @@ from ase import Atom, Atoms
 from jasp import *
 import numpy as np
 
-co = Atoms([Atom('C',[0,0,0]),
-            Atom('O',[1.2,0,0])],
-            cell=(6,6,6))
+co = Atoms([Atom('C',[0, 0, 0]),
+            Atom('O',[1.2, 0, 0])],
+            cell=(6, 6, 6))
 
 with jasp('molecules/co-cg',
           xc='PBE',
@@ -1869,11 +1889,6 @@ with jasp('molecules/co-cg',
 #+END_SRC
 
 #+RESULTS:
-: Forces
-: =======
-: [[ 0.003  0.     0.   ]
-:  [-0.003  0.     0.   ]]
-: Bondlength = 1.14 angstroms
 
 *** Relaxation of a water molecule
 It is not more complicated to relax more atoms, it just may take longer because there are more electrons and degrees of freedom. Here we relax a water molecule which has three atoms.
@@ -12696,7 +12711,7 @@ print 'x_cu = {0}'.format(x_Cu)
 : x_cu = 0.555555555556
 
 * References
-\bibliographystyle{unsrtnat}
+bibliographystyle:unsrtnat
 bibliography:dft.bib
 
 * GNU Free Documentation License
@@ -13135,6 +13150,48 @@ provided the MMC is eligible for relicensing.
 ** make func and mod links un-hyphenatable.
 ** Create flashcard exercises for ase commands
 * build                                                            :noexport:
+
+#+LANGUAGE:  en
+#+OPTIONS:   H:10 num:t toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t d:HIDDEN
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+OPTIONS:   LaTeX:dvipng
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:
+#+LINK_HOME:
+#+XSLT:
+#+STYLE: <link rel="stylesheet" type="text/css" href="dft.css"/>
+
+#+latex_header: \usepackage{dftbook}
+#+LATEX_CLASS_OPTIONS: [colorlinks=true,urlcolor=blue,linkcolor=blue,citecolor=red]
+#+LATEX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usepackage{lmodern}
+#+LATEX_HEADER: \usepackage{makeidx}
+#+LATEX_HEADER: \newcommand{\LaunchBinary}[2]{%
+#+LATEX_HEADER:   % #1: layer name,
+#+LATEX_HEADER:   % #2: link text
+#+LATEX_HEADER:   \leavevmode%
+#+LATEX_HEADER:   \pdfstartlink  attr{/C [0.9 0 0] /Border [0 0 2]} user {
+#+LATEX_HEADER:     /Subtype /Link
+#+LATEX_HEADER:     /A <<
+#+LATEX_HEADER:       /F <<
+#+LATEX_HEADER:          /DOS (#1)
+#+LATEX_HEADER:          /Mac (#1)
+#+LATEX_HEADER:          /Unix (#1)
+#+LATEX_HEADER:       >>
+#+LATEX_HEADER:       /S /Launch
+#+LATEX_HEADER:     >>
+#+LATEX_HEADER:   } #2%
+#+LATEX_HEADER:   \pdfendlink%
+#+LATEX_HEADER: }
+
+#+LATEX_HEADER: \newcommand{\degC}{$^\circ$C{}}
+#+LATEX_HEADER: \makeindex
+
+
+#+STYLE: <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
+
 #+BEGIN_SRC emacs-lisp
 (let (
       ;; these packages are loaded in the latex file
