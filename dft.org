@@ -5583,78 +5583,14 @@ print 'The cohesive energy is {0:1.3f} eV'.format(cohesive_energy)
 
 Again, the value in Kittel cite:kittel is 5.75 eV which is very close to this value. Finally, it is also possible there is a lower energy non-spherical atom energy; we did not check that at all (see [[*Estimating%20triplet%20oxygen%20dissociation%20energy%20with%20low%20symmetry][Estimating triplet oxygen dissociation energy with low symmetry]]).
 
-** TODO Elastic properties
+** Elastic properties
 See this reference cite:PhysRevB.65.104104.
 
 We seek the elastic constant tensor that relates stress (\sigma) and strain (\epsilon) via \(\sigma = c \epsilon \). The stress and strain are six component vectors, so $c$ will be a 6 \times 6 symmetric matrix.
 
-*** Al elastic properties
-#+BEGIN_SRC python
-from jasp import *
-from ase.lattice.cubic import FaceCenteredCubic
-
-atoms = FaceCenteredCubic(symbol='Al')
-
-with jasp('bulk/Al-bulk',
-          xc='PBE',
-          kpts=(12, 12, 12),
-          encut=350,
-          prec='High',
-          isif=3,
-          nsw=30,
-          ibrion=1,
-          atoms=atoms) as calc:
-    print atoms.get_potential_energy()
-    print atoms.get_stress()
-#+END_SRC
-
-#+RESULTS:
-: -14.96989
-: [-0.127 -0.127 -0.127  0.     0.     0.   ]
-
-Ok, now with a relaxed geometry at hand, we proceed with the elastic constants. This is accomplished with IBRION=6 and ISIF \ge 3 in VASP. See this reference (from the VASP [[http://cms.mpi.univie.ac.at/vasp/vasp/IBRION_5_IBRION_6.html][page]]).
-
-
-Y. Le Page and P. Saxe, Phys. Rev. B 65, 104104 (2002).
-
-
-#+BEGIN_SRC python
-from jasp import *
-from jasp.elastic_moduli import *
-
-with jasp('bulk/Al-bulk') as calc:
-    calc.clone('bulk/Al-elastic')
-
-with jasp('bulk/Al-elastic',
-          ibrion=6,    #
-          isif=3,      # gets elastic constants
-          potim=0.015,  # displacements
-          nsw=1,
-          nfree=2) as calc:
-    atoms = calc.get_atoms()
-    print atoms.get_potential_energy()
-    EM = calc.get_elastic_moduli()
-    print EM
-
-c11 = EM[0,0]
-c12 = EM[0,1]
-B = (c11 + 2 * c12) / 3.0
-print B
-#+END_SRC
-
-#+RESULTS:
-: -14.969509
-: [[ 98.944  66.153  66.153   0.      0.      0.   ]
-:  [ 66.153  98.944  66.153   0.      0.      0.   ]
-:  [ 66.153  66.153  98.944   0.      0.      0.   ]
-:  [  0.      0.      0.      1.687   0.      0.   ]
-:  [  0.      0.      0.      0.      1.687   0.   ]
-:  [  0.      0.      0.      0.      0.      1.687]]
-: 77.08309
-
-This example shows the basic mechanics of getting the elastic constants. The C_{44} constant above is too low, and probably we need to check these constants for convergence with respect to kpoints, planewave cutoff, and maybe the value of POTIM.
-
 *** Fe elastic properties
+
+As with molecular vibrations, we need a groundstate geometry. Let us get one for BCC Fe.
 
 #+BEGIN_SRC python
 from jasp import *
@@ -5682,10 +5618,7 @@ with jasp('bulk/Fe-bulk',
 : [-0.001 -0.001 -0.001 -0.    -0.    -0.   ]
 
 
-Ok, now with a relaxed geometry at hand, we proceed with the elastic constants. This is accomplished with IBRION=6 and ISIF \ge 3 in VASP. See this reference (from the VASP [[http://cms.mpi.univie.ac.at/vasp/vasp/IBRION_5_IBRION_6.html][page]]).
-
-
-Y. Le Page and P. Saxe, Phys. Rev. B 65, 104104 (2002).
+Ok, now with a relaxed geometry at hand, we proceed with the elastic constants. This is accomplished with IBRION=6 and ISIF \ge 3 in VASP. See this reference (from the VASP [[http://cms.mpi.univie.ac.at/vasp/vasp/IBRION_5_IBRION_6.html][page]]) Y. Le Page and P. Saxe, Phys. Rev. B 65, 104104 (2002) doi:10.1103/PhysRevB.65.104104 for more details.
 
 
 #+BEGIN_SRC python
@@ -5778,11 +5711,72 @@ print np.array(EM)
 :  [    0.         0.         0.         0.         0.       866.8792]]
 
 
-TODO: compare to a normal EOS, and maybe literature. Further discussion of symmetry.
-
 Fe is in a BCC crystal structure, which is high in symmetry. Consequently, many of the elements in the matrix are equal to zero.
 
-see http://www.nist.gov/data/PDFfiles/jpcrd34.pdf‎ for a lot of detail
+see http://www.nist.gov/data/PDFfiles/jpcrd34.pdf‎ for a lot of detail about Fe-Ni alloys and general theory about elastic constants. In the next section, we show how the code above is integrated into mod:jasp.
+
+*** Al elastic properties
+First, the relaxed geometry.
+#+BEGIN_SRC python
+from jasp import *
+from ase.lattice.cubic import FaceCenteredCubic
+
+atoms = FaceCenteredCubic(symbol='Al')
+
+with jasp('bulk/Al-bulk',
+          xc='PBE',
+          kpts=(12, 12, 12),
+          encut=350,
+          prec='High',
+          isif=3,
+          nsw=30,
+          ibrion=1,
+          atoms=atoms) as calc:
+    print atoms.get_potential_energy()
+    print atoms.get_stress()
+#+END_SRC
+
+#+RESULTS:
+: -14.96989
+: [-0.127 -0.127 -0.127  0.     0.     0.   ]
+
+Ok, now with a relaxed geometry at hand, we proceed with the elastic constants. This is accomplished with IBRION=6 and ISIF \ge 3 in VASP.
+
+#+BEGIN_SRC python
+from jasp import *
+from jasp.elastic_moduli import *
+
+with jasp('bulk/Al-bulk') as calc:
+    calc.clone('bulk/Al-elastic')
+
+with jasp('bulk/Al-elastic',
+          ibrion=6,    #
+          isif=3,      # gets elastic constants
+          potim=0.015,  # displacements
+          nsw=1,
+          nfree=2) as calc:
+    atoms = calc.get_atoms()
+    print atoms.get_potential_energy()
+    EM = calc.get_elastic_moduli()
+    print EM
+
+c11 = EM[0,0]
+c12 = EM[0,1]
+B = (c11 + 2 * c12) / 3.0
+print B
+#+END_SRC
+
+#+RESULTS:
+: -14.969509
+: [[ 98.944  66.153  66.153   0.      0.      0.   ]
+:  [ 66.153  98.944  66.153   0.      0.      0.   ]
+:  [ 66.153  66.153  98.944   0.      0.      0.   ]
+:  [  0.      0.      0.      1.687   0.      0.   ]
+:  [  0.      0.      0.      0.      1.687   0.   ]
+:  [  0.      0.      0.      0.      0.      1.687]]
+: 77.08309
+
+This example shows the basic mechanics of getting the elastic constants. The C_{44} constant above is too low, and probably we need to check these constants for convergence with respect to kpoints, planewave cutoff, and maybe the value of POTIM.
 
 ** Bulk thermodynamics
 We can predict temperature dependent thermodynamic properties of bulk materials without too much effort. As with the thermochemical properties of ideal gases, we must use some simple models that we parameterize by DFT. Here we follow the example in Reference citealp:Shang20101040 for computing the thermal coefficient of expansion, heat capacity, enthalpy and entropy for Ni as a function of temperature.
