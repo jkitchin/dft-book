@@ -8968,34 +8968,38 @@ print 1 * eV / (kJ / mol)
 import numpy as np
 import matplotlib.pyplot as plt
 from ase.units import *
-K = 1. # Kelvin not defined in ase.units!
+K = 1.  # Kelvin not defined in ase.units!
 
 # Shomate parameters
 A = 31.32234; B = -20.23531; C = 57.86644
 D = -36.50624; E = -0.007374; F = -8.903471
 G = 246.7945; H = 0.0
 
+
 def entropy(T):
     '''entropy returned as eV/K
     T in K
     '''
     t = T / 1000.
-    s = A * np.log(t) + B * t + C * (t**2) / 2. + D * (t**3) / 3. - E / (2. * t**2) + G
+    s = (A * np.log(t) + B * t + C * (t**2) / 2.
+         + D * (t**3) / 3. - E / (2. * t**2) + G)
     return s * J / mol / K
+
 
 def enthalpy(T):
     ''' H - H(298.15) returned as eV/molecule'''
     t = T / 1000.
-    h = A * t + B * (t**2) / 2. + C * (t**3) / 3. + D * (t**4) / 4. - E / t + F - H
+    h = (A * t + B * (t**2) / 2. + C * (t**3) / 3.
+         + D * (t**4) / 4. - E / t + F - H)
     return h * kJ / mol
 
 T = np.linspace(10, 700)
 
 G = enthalpy(T) - T * entropy(T)
 
-plt.plot(T,G)
+plt.plot(T, G)
 plt.xlabel('Temperature (K)')
-plt.ylabel('$\Delta G^\circ$ (eV)')
+plt.ylabel(r'$\Delta G^\circ$ (eV)')
 plt.savefig('images/O2-mu.png')
 #+END_SRC
 
@@ -9024,7 +9028,7 @@ P = np.logspace(-10, 10) * atm
 plt.semilogx(P / atm, kB * (300 * K) * np.log(P / (1 * atm)), label='300K')
 plt.semilogx(P / atm, kB * (600 * K) * np.log(P / (1 * atm)), label='600K')
 plt.xlabel('Pressure (atm)')
-plt.ylabel('$\Delta G$ (eV)')
+plt.ylabel(r'$\Delta G$ (eV)')
 plt.legend(loc='best')
 plt.savefig('images/O2-g-p.png')
 #+END_SRC
@@ -9092,19 +9096,24 @@ A = 31.32234; B = -20.23531; C = 57.86644
 D = -36.50624; E = -0.007374; F = -8.903471
 G = 246.7945; H = 0.0
 
+
 def entropy(T):
     '''entropy returned as eV/K
     T in K
     '''
     t = T/1000.
-    s = A * np.log(t) + B * t + C * (t**2) / 2. + D * (t**3) / 3. - E / (2. * t**2) + G
+    s = (A * np.log(t) + B * t + C * (t**2) / 2.
+         + D * (t**3) / 3. - E / (2. * t**2) + G)
     return s * J / mol / K
+
 
 def enthalpy(T):
     ''' H - H(298.15) returned as eV/molecule'''
     t = T / 1000.
-    h = A * t + B * (t**2) / 2. + C * (t**3) / 3. + D * (t**4) / 4. - E / t + F - H
+    h = (A * t + B * (t**2) / 2. + C * (t**3) / 3.
+         + D * (t**4) / 4. - E / t + F - H)
     return h * kJ / mol
+
 
 def DeltaMu(T, P):
     '''
@@ -9116,30 +9125,33 @@ def DeltaMu(T, P):
 
 P = 1e-10*atm
 
+
 def func(T):
     'Cu2O'
     return -1.95 - 0.5*DeltaMu(T, P)
 
-print 'Cu2O decomposition temperature is {0:1.0f} K'.format(fsolve(func, 900)[0])
+print 'Cu2O decomposition temperature is {0:1.0f} K'.format(fsolve(func,
+                                                                   900)[0])
 
 def func(T):
     'Ag2O'
     return -0.99 - 0.5 * DeltaMu(T, P)
 
-print 'Ag2O decomposition temperature is {0:1.0f} K'.format(fsolve(func, 470)[0])
+print 'Ag2O decomposition temperature is {0:1.0f} K'.format(fsolve(func,
+                                                                   470)[0])
 
 
 T = np.linspace(100, 1000)
 # Here we plot delta mu as a function of temperature at different pressures
 # you have use \\times to escape the first \ in pyplot
-plt.plot(T, DeltaMu(T, 1e10*atm), label='1$\\times 10^{10}$ atm')
-plt.plot(T, DeltaMu(T, 1e5*atm), label='1$\\times 10^5$ atm')
+plt.plot(T, DeltaMu(T, 1e10*atm), label=r'1$\times 10^{10}$ atm')
+plt.plot(T, DeltaMu(T, 1e5*atm), label=r'1$\times 10^5$ atm')
 plt.plot(T, DeltaMu(T, 1*atm), label='1 atm')
-plt.plot(T, DeltaMu(T, 1e-5*atm), label='1$\\times 10^{-5}$ atm')
-plt.plot(T, DeltaMu(T, 1e-10*atm), label='1$\\times 10^{-10}$ atm')
+plt.plot(T, DeltaMu(T, 1e-5*atm), label=r'1$\times 10^{-5}$ atm')
+plt.plot(T, DeltaMu(T, 1e-10*atm), label=r'1$\times 10^{-10}$ atm')
 
 plt.xlabel('Temperature (K)')
-plt.ylabel('$\Delta \mu_{O_2}(T,p)$ (eV)')
+plt.ylabel(r'$\Delta \mu_{O_2}(T,p)$ (eV)')
 plt.legend(loc='best')
 plt.savefig('images/O2-mu-diff-p.png')
 #+END_SRC
@@ -9169,40 +9181,45 @@ A = 31.32234; B = -20.23531; C = 57.86644
 D = -36.50624; E = -0.007374; F = -8.903471
 G = 246.7945; H = 0.0
 
+
 def entropy(T):
     '''entropy returned as eV/K
     T in K
     '''
     t = T/1000.
-    s = A*np.log(t) + B*t + C*(t**2)/2. + D*(t**3)/3. - E/(2.*t**2) + G
+    s = (A*np.log(t) + B*t + C*(t**2)/2.
+         + D*(t**3)/3. - E/(2.*t**2) + G)
     return s*J/mol/K
+
 
 def enthalpy(T):
     ''' H - H(298.15) returned as eV/molecule'''
     t = T/1000.
-    h = A*t + B*(t**2)/2. + C*(t**3)/3. + D*(t**4)/4. - E/t + F - H
+    h = (A*t + B*(t**2)/2. + C*(t**3)/3.
+         + D*(t**4)/4. - E/t + F - H)
     return h*kJ/mol
 
-def DeltaMu(T,P):
+
+def DeltaMu(T, P):
     '''
     T in K
     P in atm
     '''
-    return enthalpy(T) - T*entropy(T) + kB*T*np.log(P/atm)
+    return enthalpy(T) - T * entropy(T) + kB * T * np.log(P / atm)
 
-P = np.logspace(-11,1,10)*atm
+P = np.logspace(-11, 1, 10) * atm
 T = []
 for p in P:
 
     def func(T):
-        return -0.99 - 0.5*DeltaMu(T,p)
+        return -0.99 - 0.5 * DeltaMu(T, p)
     T.append(fsolve(func, 450)[0])
 
-plt.semilogy(T,P/atm)
+plt.semilogy(T, P / atm)
 plt.xlabel('Temperature (K)')
 plt.ylabel('Pressure (atm)')
-plt.text(800,1e-7,'Ag')
-plt.text(600,1e-3,'Ag$_2$O')
+plt.text(800, 1e-7, 'Ag')
+plt.text(600, 1e-3, 'Ag$_2$O')
 plt.savefig('images/Ag2O-decomposition.png')
 #+END_SRC
 
@@ -9219,19 +9236,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 from ase.units import *
 
-K = 1. #not defined in ase.units!
+K = 1.  # not defined in ase.units!
 atm = 101325*Pascal
 Hf = -0.99
 
-P = 1*atm
+P = 1 * atm
 
-Dmu = np.linspace(-4,0)
+Dmu = np.linspace(-4, 0)
 
 Hf = -0.99 - 0.5*Dmu
 
 plt.plot(Dmu, Hf, label='Ag$_2$O')
 plt.plot(Dmu, np.zeros(Hf.shape), label='Ag')
-plt.xlabel('$\Delta \mu_{O_2}$ (eV)')
+plt.xlabel(r'$\Delta \mu_{O_2}$ (eV)')
 plt.ylabel('$H_f$ (eV)')
 plt.savefig('images/atomistic-thermo-hf-mu.png')
 #+END_SRC
@@ -9285,7 +9302,7 @@ hcp25 = -0.60
 bridge25 = -0.49
 fcc1 = -0.10
 
-Dmu = np.linspace(-4,2)
+Dmu = np.linspace(-4, 2)
 
 plt.plot(Dmu, np.zeros(Dmu.shape), label='Pt(111)')
 plt.plot(Dmu, 0.25 * (fcc25 - 0.5*Dmu), label='fcc - 0.25 ML')
@@ -9293,8 +9310,8 @@ plt.plot(Dmu, 0.25 * (hcp25 - 0.5*Dmu), label='hcp - 0.25 ML')
 plt.plot(Dmu, 0.25 * (bridge25 - 0.5*Dmu), label='bridge - 0.25 ML')
 plt.plot(Dmu, 1.0 * (fcc1 - 0.5*Dmu), label='fcc - 1.0 ML')
 
-plt.xlabel('$\Delta \mu O_2$ (eV)')
-plt.ylabel('$\Delta G_{ads}$ (eV/O)')
+plt.xlabel(r'$\Delta \mu O_2$ (eV)')
+plt.ylabel(r'$\Delta G_{ads}$ (eV/O)')
 plt.legend(loc='best')
 plt.savefig('images/atomistic-thermo-adsorption.png')
 plt.show()
@@ -9305,6 +9322,7 @@ plt.show()
 #+caption: Effect of oxygen chemical potential on the adsorption energy.
 #+ATTR_LaTeX: placement: [H]
 [[./images/atomistic-thermo-adsorption.png]]
+
 ** Atomistic therodynamics and multiple reactions
 
 In cite:Inoglu2009188 we considered multiple reactions in an atomistic thermodynamic framework. Let us consider these three reactions of dissociative adsorption of hydrogen and hydrogen disulfide, and consider how to compute the reaction energy for the third reaction.
@@ -9344,6 +9362,7 @@ index:DFT+U
 [[http://cms.mpi.univie.ac.at/vasp/vasp/On_site_Coulomb_interaction_L_S_DA_U.html][VASP manual on DFT+U]]
 
 It can be difficult to find the lowest energy solutions with DFT+U. Some strategies for improving this are discussed in cite:PhysRevB.82.195128.
+
 *** Metal oxide oxidation energies with DFT+U
 We will reconsider here the reaction (see [[Metal oxide oxidation energies][Metal oxide oxidation energies]]) 2 Cu_{2}O + O_{2} $\rightleftharpoons$ 4 CuO. We need to compute the energy of each species, now with DFT+U. In cite:PhysRevB.73.195107 they use a U parameter of 4 eV for Cu which gave the best agreement with the experimental value. We will also try that.
 
@@ -9862,7 +9881,7 @@ Need better intro here.
 #+BEGIN_SRC python
 # compute ELF for CF4
 from jasp import *
-from ase.data.molecules import molecule
+from ase.structure import molecule
 from enthought.mayavi import mlab
 
 atoms = molecule('CF4')
@@ -9878,17 +9897,19 @@ with jasp('molecules/cf4-elf',
           atoms=atoms) as calc:
     calc.calculate()
 
-    x,y,z,elf = calc.get_elf()
-    mlab.contour3d(x,y,z,elf,contours=[0.3])
+    x, y, z, elf = calc.get_elf()
+    mlab.contour3d(x, y, z, elf,contours=[0.3])
     mlab.savefig('../../images/cf4-elf-3.png')
 
     mlab.figure()
-    mlab.contour3d(x,y,z,elf,contours=[0.75])
+    mlab.contour3d(x, y, z, elf,contours=[0.75])
     mlab.savefig('../../images/cf4-elf-75.png')
 #+END_SRC
 
 #+RESULTS:
 : None
+
+[[./images/mlab-test.png]]
 
 
 #+caption: ELF for an isosurface of 0.3 for CF$_4$. \label{fig:elf1}
@@ -9919,14 +9940,14 @@ Sometimes it is convenient to create an Atoms object by deleting atoms from an e
 
 #+BEGIN_SRC python :results output :exports both
 import textwrap
-from ase.data.molecules import molecule
+from ase.structure import molecule
 
 atoms = molecule('CH3CH2OH')
 print atoms
 
-#delete all the hydrogens
-ind2del = [atom.index for atom in atoms if atom.symbol=='H']
-print 'Indices to delete: ',ind2del
+# delete all the hydrogens
+ind2del = [atom.index for atom in atoms if atom.symbol == 'H']
+print 'Indices to delete: ', ind2del
 
 del atoms[ind2del]
 
@@ -9966,10 +9987,10 @@ from ase.constraints import FixAtoms
 # the bcc111 function automatically tags atoms
 slab = bcc111('W',
               a=3.92,       # W lattice constant
-              size=(2,2,6), # 6-layer slab in 2x2 configuration
+              size=(2, 2, 6),  # 6-layer slab in 2x2 configuration
               vacuum=10.0)
 
-#reset tags to be powers of two so we can use binary math
+# reset tags to be powers of two so we can use binary math
 slab.set_tags([2**a.get_tag() for a in slab])
 
 # we had 6 layers, so we create new tags starting at 7
@@ -9981,49 +10002,50 @@ NEARADSORBATE = 2**9
 
 # let us tag LAYER1 atoms to be FREE too. we can address it by LAYER1 or FREE
 tags = slab.get_tags()
-for i,tag in enumerate(tags):
+for i, tag in enumerate(tags):
     if tag == LAYER1:
         tags[i] += FREE
 slab.set_tags(tags)
 
-#create a CO molecule
-co= Atoms([Atom('C',[0., 0., 0. ], tag=ADSORBATE),
-           Atom('O',[0., 0., 1.1], tag=ADSORBATE+FREE)]) #we will relax only O
+# create a CO molecule
+co=Atoms([Atom('C', [0., 0., 0.], tag=ADSORBATE),
+          # we will relax only O
+          Atom('O', [0., 0., 1.1], tag=ADSORBATE + FREE)])
 
-add_adsorbate(slab,co,height=1.2,position='hollow')
+add_adsorbate(slab, co, height=1.2, position='hollow')
 
-#the adsorbate is centered between atoms 20, 21 and 22 (use
-#view(slab)) and over atom12 let us label those atoms, so it is easy to
-#do electronic structure analysis on them later.
-tags = slab.get_tags() # len(tags) changed, so we reget them.
-tags[12]+=NEARADSORBATE
-tags[20]+=NEARADSORBATE
-tags[21]+=NEARADSORBATE
-tags[22]+=NEARADSORBATE
+# the adsorbate is centered between atoms 20, 21 and 22 (use
+# view(slab)) and over atom12 let us label those atoms, so it is easy to
+# do electronic structure analysis on them later.
+tags = slab.get_tags()  # len(tags) changed, so we reget them.
+tags[12] += NEARADSORBATE
+tags[20] += NEARADSORBATE
+tags[21] += NEARADSORBATE
+tags[22] += NEARADSORBATE
 slab.set_tags(tags)
-#update the tags
+# update the tags
 slab.set_tags(tags)
 
-#extract pieces of the slab based on tags
-#atoms in the adsorbate
+# extract pieces of the slab based on tags
+# atoms in the adsorbate
 ads = slab[(slab.get_tags() & ADSORBATE) == ADSORBATE]
 
-#atoms in LAYER1
+# atoms in LAYER1
 layer1 = slab[(slab.get_tags() & LAYER1) == LAYER1]
 
-#atoms defined as near the adsorbate
+# atoms defined as near the adsorbate
 nearads = slab[(slab.get_tags() & NEARADSORBATE) == NEARADSORBATE]
 
-#atoms that are free
+# atoms that are free
 free = slab[(slab.get_tags() & FREE) == FREE]
 
-#atoms that are FREE and part of the ADSORBATE
+# atoms that are FREE and part of the ADSORBATE
 freeads = slab[(slab.get_tags() & FREE+ADSORBATE) == FREE+ADSORBATE]
 
-#atoms that are NOT FREE
+# atoms that are NOT FREE
 notfree = slab[(slab.get_tags() & FREE) != FREE]
 
-constraint = FixAtoms(mask = (slab.get_tags() & FREE) != FREE)
+constraint = FixAtoms(mask=(slab.get_tags() & FREE) != FREE)
 slab.set_constraint(constraint)
 write('images/tagged-bcc111.png', slab, rotation='-90x', show_unit_cell=2)
 from ase.visualize import view; view(slab)
@@ -10045,33 +10067,33 @@ It is not that hard to define your own derived units though. Note these  are onl
 #+BEGIN_SRC python :results output
 from ase.units import *
 
-d = 1*Angstrom
-print ' d = {0} nm'.format(d/nm)
+d = 1 * Angstrom
+print ' d = {0} nm'.format(d / nm)
 
-print '1 eV = {0} Hartrees'.format(eV/Hartree)
-print '1 eV = {0} Rydbergs'.format(eV/Rydberg)
-print '1 eV = {0} kJ/mol'.format(eV/(kJ/mol))
-print '1 eV = {0} kcal/mol'.format(eV/(kcal/mol))
+print '1 eV = {0} Hartrees'.format(eV / Hartree)
+print '1 eV = {0} Rydbergs'.format(eV / Rydberg)
+print '1 eV = {0} kJ/mol'.format(eV / (kJ / mol))
+print '1 eV = {0} kcal/mol'.format(eV / (kcal / mol))
 
-print '1 Hartree = {0} kcal/mol'.format(1*Hartree/(kcal/mol))
-print '1 Rydberg = {0} eV'.format(1*Rydberg/eV)
+print '1 Hartree = {0} kcal/mol'.format(1 * Hartree / (kcal / mol))
+print '1 Rydberg = {0} eV'.format(1 * Rydberg / eV)
 
 # derived units
-minute = 60*s
-hour = 60*minute
+minute = 60 * s
+hour = 60 * minute
 
-#convert 10 hours to minutes
-print '10 hours = {0} minutes'.format(10*hour/minute)
+# convert 10 hours to minutes
+print '10 hours = {0} minutes'.format(10 * hour / minute)
 #+END_SRC
 
 #+RESULTS:
 :  d = 0.1 nm
-: 1 eV = 0.036749 Hartrees
-: 1 eV = 0.073499 Rydbergs
-: 1 eV = 96.485309 kJ/mol
-: 1 eV = 23.060542 kcal/mol
-: 1 Hartree = 627.509541 kcal/mol
-: 1 Rydberg = 13.605698 eV
+: 1 eV = 0.036749309468 Hartrees
+: 1 eV = 0.0734986189359 Rydbergs
+: 1 eV = 96.485308989 kJ/mol
+: 1 eV = 23.0605423014 kcal/mol
+: 1 Hartree = 627.509540594 kcal/mol
+: 1 Rydberg = 13.6056978278 eV
 : 10 hours = 600.0 minutes
 
 *** Extracting parts of an array
@@ -10086,21 +10108,21 @@ In this example we show how to extract the data in an interval. We have $x$ data
 #+BEGIN_SRC python :exports both
 import numpy as np
 import matplotlib as mpl
-#http://matplotlib.sourceforge.net/users/customizing.html
-mpl.rcParams['legend.numpoints'] = 1 #default is 2
+# http://matplotlib.sourceforge.net/users/customizing.html
+mpl.rcParams['legend.numpoints'] = 1  # default is 2
 import matplotlib.pyplot as plt
 
-x = np.linspace(0,6,100)
+x = np.linspace(0, 6, 100)
 y = np.cos(x)
 
-plt.plot(x,y,label='full')
+plt.plot(x, y, label='full')
 
-ind = (x>2) & (x<4)
+ind = (x > 2) & (x < 4)
 
 subx = x[ind]
 suby = y[ind]
 
-plt.plot(subx,suby,'bo',label='sliced')
+plt.plot(subx, suby, 'bo', label='sliced')
 xlabel('x')
 ylabel('cos(x)')
 plt.legend(loc='lower right')
@@ -10122,16 +10144,16 @@ mod:scipy has a statistical package available for getting statistical distributi
 import numpy as np
 from scipy.stats.distributions import  t
 
-n = 10 #number of measurements
-dof = n - 1 #degrees of freedom
-avg_x = 16.1 #average measurement
-std_x = 0.01 #standard deviation of measurements
+n = 10  # number of measurements
+dof = n - 1  # degrees of freedom
+avg_x = 16.1  # average measurement
+std_x = 0.01  # standard deviation of measurements
 
-#Find 95% prediction interval for next measurement
+# Find 95% prediction interval for next measurement
 
 alpha = 1.0 - 0.95
 
-pred_interval = t.ppf(1-alpha/2., dof) * std_x * np.sqrt(1.+1./n)
+pred_interval = t.ppf(1 - alpha / 2., dof) * std_x * np.sqrt(1. + 1. / n)
 
 s = ['We are 95% confident the next measurement',
        ' will be between {0:1.3f} and {1:1.3f}']
@@ -10144,24 +10166,24 @@ print ''.join(s).format(avg_x - pred_interval, avg_x + pred_interval)
 *** Curve fitting
 **** Linear fitting
 #+BEGIN_SRC python :results output
-#examples of linear curve fitting using least squares
+# examples of linear curve fitting using least squares
 import numpy as np
 
-xdata = np.array([0.,1.,2.,3.,4.,5.,6.])
+xdata = np.array([0., 1., 2., 3., 4., 5., 6.])
 ydata = np.array([0.1, 0.81, 4.03, 9.1, 15.99, 24.2, 37.2])
 
-#fit a third order polynomial
+# fit a third order polynomial
 from pylab import polyfit, plot, xlabel, ylabel, show, legend, savefig
-pars = polyfit(xdata,ydata,3)
+pars = polyfit(xdata, ydata, 3)
 print 'pars from polyfit: {0}'.format(pars)
 
-## numpy method returns more data
+# numpy method returns more data
 A = np.column_stack([xdata**3,
                      xdata**2,
                      xdata,
-                     np.ones(len(xdata),np.float)])
+                     np.ones(len(xdata), np.float)])
 
-pars_np,resids,rank,s = np.linalg.lstsq(A, ydata)
+pars_np, resids, rank,s = np.linalg.lstsq(A, ydata)
 print 'pars from np.linalg.lstsq: {0}'.format(pars_np)
 
 '''
@@ -10173,13 +10195,13 @@ A^TAx = A^Tb
 x = (A^TA)^-1 A^T b
 '''
 # not as pretty but equivalent!
-pars_man= np.dot(np.linalg.inv(np.dot(A.T,A)), np.dot(A.T,ydata))
+pars_man = np.dot(np.linalg.inv(np.dot(A.T, A)), np.dot(A.T, ydata))
 print 'pars from linear algebra: {0}'.format(pars_man)
 
-#but, it is easy to fit an exponential function to it!
+# but, it is easy to fit an exponential function to it!
 # y = a*exp(x)+b
 Aexp = np.column_stack([np.exp(xdata), np.ones(len(xdata), np.float)])
-pars_exp=np.dot(np.linalg.inv(np.dot(Aexp.T, Aexp)), np.dot(Aexp.T, ydata))
+pars_exp = np.dot(np.linalg.inv(np.dot(Aexp.T, Aexp)), np.dot(Aexp.T, ydata))
 
 plot(xdata, ydata, 'ro')
 fity = np.dot(A, pars)
@@ -10206,37 +10228,40 @@ import numpy as np
 
 vols = np.array([13.71, 14.82, 16.0, 17.23, 18.52])
 
-energies = np.array([-56.29, -56.41, -56.46, -56.463,-56.41])
+energies = np.array([-56.29, -56.41, -56.46, -56.463, -56.41])
 
-def Murnaghan(parameters,vol):
+
+def Murnaghan(parameters, vol):
     'From Phys. Rev. B 28, 5480 (1983)'
     E0 = parameters[0]
     B0 = parameters[1]
     BP = parameters[2]
     V0 = parameters[3]
 
-    E = E0 + B0*vol/BP*(((V0/vol)**BP)/(BP-1)+1) - V0*B0/(BP-1.)
+    E = (E0 + B0*vol / BP*(((V0 / vol)**BP) / (BP - 1) + 1)
+         - V0 * B0 / (BP - 1.))
 
     return E
 
-def objective(pars,y,x):
-    #we will minimize this function
-    err =  y - Murnaghan(pars,x)
+
+def objective(pars, y, x):
+    # we will minimize this function
+    err = y - Murnaghan(pars, x)
     return err
 
-x0 = [ -56., 0.54, 2., 16.5] #initial guess of parameters
+x0 = [-56., 0.54, 2., 16.5]  # initial guess of parameters
 
-plsq = leastsq(objective, x0, args=(energies,vols))
+plsq = leastsq(objective, x0, args=(energies, vols))
 
 print 'Fitted parameters = {0}'.format(plsq[0])
 
 import matplotlib.pyplot as plt
-plt.plot(vols,energies,'ro')
+plt.plot(vols, energies, 'ro')
 
-#plot the fitted curve on top
-x = np.linspace(min(vols),max(vols),50)
-y = Murnaghan(plsq[0],x)
-plt.plot(x,y,'k-')
+# plot the fitted curve on top
+x = np.linspace(min(vols), max(vols), 50)
+y = Murnaghan(plsq[0], x)
+plt.plot(x, y, 'k-')
 plt.xlabel('Volume')
 plt.ylabel('energy')
 plt.savefig('images/nonlinear-curve-fitting.png')
@@ -10257,9 +10282,10 @@ import numpy as np
 
 volumes = np.array([13.71, 14.82, 16.0, 17.23, 18.52])
 
-energies = np.array([-56.29, -56.41, -56.46, -56.463,-56.41])
+energies = np.array([-56.29, -56.41, -56.46, -56.463, -56.41])
 
-def Murnaghan(parameters,vol):
+
+def Murnaghan(parameters, vol):
     'From PRB 28,5480 (1983'
     E0 = parameters[0]
     B0 = parameters[1]
@@ -10270,25 +10296,26 @@ def Murnaghan(parameters,vol):
 
     return E
 
-def objective(pars,vol):
-    #we will minimize this function
-    err =  energies - Murnaghan(pars,vol)
-    return np.sum(err**2) #we return the summed squared error directly
 
-x0 = [ -56., 0.54, 2., 16.5] #initial guess of parameters
+def objective(pars, vol):
+    # we will minimize this function
+    err = energies - Murnaghan(pars, vol)
+    return np.sum(err**2)  # we return the summed squared error directly
 
-plsq = fmin(objective,x0,args=(volumes,)) #note args is a tuple
+x0 = [-56., 0.54, 2., 16.5]  # initial guess of parameters
+
+plsq = fmin(objective, x0, args=(volumes,))  # note args is a tuple
 
 print 'parameters = {0}'.format(plsq)
 
 import matplotlib.pyplot as plt
-plt.plot(volumes,energies,'ro')
+plt.plot(volumes, energies, 'ro')
 
-#plot the fitted curve on top
-x = np.linspace(min(volumes),max(volumes),50)
-y = Murnaghan(plsq,x)
-plt.plot(x,y,'k-')
-plt.xlabel('Volume ($\AA^3$)')
+# plot the fitted curve on top
+x = np.linspace(min(volumes), max(volumes), 50)
+y = Murnaghan(plsq, x)
+plt.plot(x, y, 'k-')
+plt.xlabel(r'Volume ($\AA^3$)')
 plt.ylabel('Total energy (eV)')
 plt.savefig('images/nonlinear-fitting-lsq.png')
 #+END_SRC
@@ -12777,6 +12804,20 @@ for symbol in chemical_symbols:
 =easy_install= is a python command-line utility that automatically installs python packages. Usually you need root access to install a python package, but you can also tell =easy_install= where to install a package. This usually works if the directory is on your PYTHONPATH
 
 easy_install -d ~/lib/python2.6/site-packages/ pymatgen
+
+** pip as a user
+pip is even better than easy_install these days.
+
+#+BEGIN_SRC sh
+pip install --user some-package
+#+END_SRC
+
+For me this installs here:
+
+~/.local/lib/python2.7/site-packages
+
+That may or may not be on your Python path.
+
 ** Integer division math gotchas
 It pays to be careful when dividing by integers because you can get unexpected results if you do not know the integer division rules. In python 2.6, if you divide two integers, you get an integer! This is usually not a problem if there is no emainder in the division, e.g. 6/3=2. But, if there is a remainder, and that remainder is important, you will lose it. Here is an example of calculating the mole fraction of a species from integer numbers of atoms in the unit cell. If you are not careful, you get the wrong answer! You can convert (also called casting) a number to a float using the float command.
 
@@ -13258,9 +13299,10 @@ provided the MMC is eligible for relicensing.
 
 * Tasks :noexport:
 ** TODO replace all % formating with .format
-** make func and mod links un-hyphenatable.
 ** Create flashcard exercises for ase commands
 * build                                                            :noexport:
+
+This is org-header stuff.
 
 #+LANGUAGE:  en
 #+OPTIONS:   H:10 num:t toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t d:HIDDEN
@@ -13303,25 +13345,10 @@ provided the MMC is eligible for relicensing.
 
 #+STYLE: <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
 
+
+Here we create the tex file. This extracts the scripts out to the dft-scripts folder.
 #+BEGIN_SRC emacs-lisp
-(let (
-      ;; these packages are loaded in the latex file
-;      (org-latex-default-packages-alist
-;       '(("utf8" "inputenc" nil);
-;	 ("T1" "fontenc" nil)
-;	 ("" "fixltx2e" nil)
-;	 ("" "natbib" t)
-;	 ("" "url" t)
-;	 ("" "graphicx" t)
- ;        ("" "textcomp" t)
-  ;       ("" "underscore" t)
-;	 ("" "amsmath" t)
- ;        ("version=3" "mhchem" t)
-  ;       ("tight,pdftex" "web" nil)
-         ;("" "exerquiz" nil)
-         ;("ImplMulti" "dljslib" nil)
- ;       ))
-      (async nil)
+(let ((async nil)
       (subtreep nil)
       (visible-only nil)
       (body-only nil))
@@ -13359,7 +13386,7 @@ provided the MMC is eligible for relicensing.
 #+RESULTS:
 : ./dft.tex
 
-
+Now, we build the pdf, and clean up afterwards.
 
 #+BEGIN_SRC emacs-lisp
 (shell-command "pdflatex -shell-escape -interaction=batchmode dft")
@@ -13387,8 +13414,9 @@ provided the MMC is eligible for relicensing.
 #+RESULTS:
 : dft is built
 
+[[./dft.pdf]]
 
-** build the html
+** build the html						    :archive:
 
 #+BEGIN_SRC emacs-lisp
 (load-file "dft.el")
@@ -13424,7 +13452,7 @@ provided the MMC is eligible for relicensing.
 #+RESULTS:
 | dft-book-static | :base-directory | /home-research/jkitchin/dft/course/dft-book/ | :base-extension | css\ | js\ | png\ | jpg\ | gif\ | pdf\ | mp3\ | ogg\ | swf\ | svg | :publishing-directory | /home-research/jkitchin/dft/course/dft-book/gh-pages/ | :exclude | gh-pages\ | test/\ | archive/\ | molecules/\ | surfaces/\ | bulk/\ | study-guides/ | :recursive | t | :publishing-function | org-publish-attachment |
 
-** html 2
+** html 2							    :archive:
 I used to publish this, but now this only works for the static components
 
 #+BEGIN_SRC emacs-lisp
@@ -13450,6 +13478,7 @@ I used to publish this, but now this only works for the static components
 (copy-file "dft.html" "gh-pages/dft.html" t)
 #+END_SRC
 
+** html 3
 
 #+BEGIN_SRC emacs-lisp
 (find-file "index.org")
@@ -13458,3 +13487,11 @@ I used to publish this, but now this only works for the static components
 #+END_SRC
 
 #+RESULTS:
+
+** upload html
+#+BEGIN_SRC sh
+cd gh-pages
+git add *
+git commit -am "rebuild"
+git push
+#+END_SRC
