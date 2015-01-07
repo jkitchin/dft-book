@@ -3297,11 +3297,14 @@ if None in (eCO2, eH2, eCO, eH2O):
 else:
     dE = eCO2 + eH2 - eCO - eH2O
     print 'Delta E = {0:1.3f} eV'.format(dE)
-    print 'Delta E = {0:1.3f} kcal/mol'.format(dE*23.06035)
-    print 'Delta E = {0:1.3f} kJ/mol'.format(dE*96.485)
+    print 'Delta E = {0:1.3f} kcal/mol'.format(dE * 23.06035)
+    print 'Delta E = {0:1.3f} kJ/mol'.format(dE * 96.485)
 #+END_SRC
 
 #+RESULTS:
+: Delta E = -0.720 eV
+: Delta E = -16.614 kcal/mol
+: Delta E = -69.514 kJ/mol
 
 We [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-nist-webbook/#7][estimated]] the enthalpy of this reaction at standard conditions to be -41 kJ/mol using data from the NIST webbook, which is a fair bit lower than we calculated here. In the next section we will examine whether additional corrections are needed, such as zero-point and temperature corrections.
 
@@ -3527,7 +3530,7 @@ with jasp('molecules/wgs/CO-vib',
           atoms=CO) as calc:
     calc.calculate()
     vib_freq = calc.get_vibrational_frequencies()
-    for i,f in enumerate(vib_freq):
+    for i, f in enumerate(vib_freq):
         print '{0:02d}: {1} cm^(-1)'.format(i,f)
 #+END_SRC
 
@@ -3561,8 +3564,8 @@ with jasp('molecules/wgs/CO2-vib',
           atoms=CO2) as calc:
     calc.calculate()
     vib_freq = calc.get_vibrational_frequencies()
-    for i,f in enumerate(vib_freq):
-        print '{0:02d}: {1} cm^(-1)'.format(i,f)
+    for i, f in enumerate(vib_freq):
+        print '{0:02d}: {1} cm^(-1)'.format(i, f)
 #+END_SRC
 
 #+RESULTS:
@@ -3598,8 +3601,8 @@ with jasp('molecules/wgs/H2-vib',
           atoms=H2) as calc:
     calc.calculate()
     vib_freq = calc.get_vibrational_frequencies()
-    for i,f in enumerate(vib_freq):
-        print '{0:02d}: {1} cm^(-1)'.format(i,f)
+    for i, f in enumerate(vib_freq):
+        print '{0:02d}: {1} cm^(-1)'.format(i, f)
 #+END_SRC
 
 #+RESULTS:
@@ -3632,8 +3635,8 @@ with jasp('molecules/wgs/H2O-vib',
           atoms=H2O) as calc:
     calc.calculate()
     vib_freq = calc.get_vibrational_frequencies()
-    for i,f in enumerate(vib_freq):
-        print '{0:02d}: {1} cm^(-1)'.format(i,f)
+    for i, f in enumerate(vib_freq):
+        print '{0:02d}: {1} cm^(-1)'.format(i, f)
 #+END_SRC
 
 #+RESULTS:
@@ -3649,10 +3652,10 @@ with jasp('molecules/wgs/H2O-vib',
 
 Water has 3N-6 = 3 vibrational modes.
 
-**** TODO Thermochemistry
+**** Thermochemistry
 Now we are ready. We have the electronic energies and vibrational frequencies of each species in the reaction.
 
-#+BEGIN_SRC python
+#+BEGIN_SRC python :results silent
 from ase.thermochemistry import IdealGasThermo
 from jasp import *
 import numpy as np
@@ -3676,24 +3679,24 @@ with jasp('molecules/wgs/H2O') as calc:
     E_H2O = H2O.get_potential_energy()
 
 # now we get the vibrational energies
-h = 4.1356675e-15 # eV*s
-c = 3.0e10 #cm/s
+h = 4.1356675e-15  # eV * s
+c = 3.0e10  # cm / s
 
 with jasp('molecules/wgs/CO-vib') as calc:
     vib_freq = calc.get_vibrational_frequencies()
-    CO_vib_energies = [h*c*nu for nu in vib_freq]
+    CO_vib_energies = [h * c * nu for nu in vib_freq]
 
 with jasp('molecules/wgs/CO2-vib') as calc:
     vib_freq = calc.get_vibrational_frequencies()
-    CO2_vib_energies = [h*c*nu for nu in vib_freq]
+    CO2_vib_energies = [h * c * nu for nu in vib_freq]
 
 with jasp('molecules/wgs/H2-vib') as calc:
     vib_freq = calc.get_vibrational_frequencies()
-    H2_vib_energies = [h*c*nu for nu in vib_freq]
+    H2_vib_energies = [h * c * nu for nu in vib_freq]
 
 with jasp('molecules/wgs/H2O-vib') as calc:
     vib_freq = calc.get_vibrational_frequencies()
-    H2O_vib_energies = [h*c*nu for nu in vib_freq]
+    H2O_vib_energies = [h * c * nu for nu in vib_freq]
 
 # now we make a thermo object for each molecule
 CO_t = IdealGasThermo(vib_energies=CO_vib_energies[0:0],
@@ -3717,27 +3720,28 @@ H2O_t = IdealGasThermo(vib_energies=H2O_vib_energies[0:3],
                       spin=0)
 
 # now we can compute G_rxn for a range of temperatures from 298 to 1000 K
-Trange = np.linspace(298,1000,20) #K
+Trange = np.linspace(298, 1000, 20)  # K
 P = 101325. # Pa
 Grxn = np.array([(CO2_t.get_free_energy(temperature=T, pressure=P)
                   + H2_t.get_free_energy(temperature=T, pressure=P)
                   - H2O_t.get_free_energy(temperature=T, pressure=P)
-                  - CO_t.get_free_energy(temperature=T, pressure=P))*96.485 for T in Trange])
+                  - CO_t.get_free_energy(temperature=T, pressure=P)) * 96.485 for T in Trange])
 
 Hrxn = np.array([(CO2_t.get_enthalpy(temperature=T)
                   + H2_t.get_enthalpy(temperature=T)
                   - H2O_t.get_enthalpy(temperature=T)
-                  - CO_t.get_enthalpy(temperature=T))*96.485 for T in Trange])
+                  - CO_t.get_enthalpy(temperature=T)) * 96.485
+                 for T in Trange])
 
-plt.plot(Trange, Grxn, 'bo-',label='$\Delta G_{rxn}$')
-plt.plot(Trange, Hrxn, 'ro:',label='$\Delta H_{rxn}$')
+plt.plot(Trange, Grxn, 'bo-', label='$\Delta G_{rxn}$')
+plt.plot(Trange, Hrxn, 'ro:', label='$\Delta H_{rxn}$')
 plt.xlabel('Temperature (K)')
-plt.ylabel('$\Delta G_{rxn}$ (kJ/mol)')
+plt.ylabel(r'$\Delta G_{rxn}$ (kJ/mol)')
 plt.legend(loc='best')
 plt.savefig('images/wgs-dG-T.png')
 
 plt.figure()
-R = 8.314e-3 # gas constant in kJ/mol/K
+R = 8.314e-3  # gas constant in kJ/mol/K
 
 Keq = np.exp(-Grxn/R/Trange)
 plt.plot(Trange, Keq)
@@ -3748,8 +3752,7 @@ plt.savefig('images/wgs-Keq.png')
 plt.show()
 #+END_SRC
 
-#+RESULTS:
-: None
+
 
 #+caption: Thermodynamic energies of the water gas shift reaction as a function of temperature.
 #+ATTR_LaTeX: placement: [H]
@@ -3820,7 +3823,6 @@ with jasp('molecules/nh3-final',
 #+END_SRC
 
 #+RESULTS:
-: None
 
 *** Run band calculation
 Now we do the band calculation. [[index:nudged elastic band]]
@@ -3847,17 +3849,17 @@ with jasp('molecules/nh3-neb',
           xc='PBE',
           ibrion=1,
           nsw=90,
-          spring=-5,
+          spring=-5, debug=logging.DEBUG,
           atoms=images) as calc:
-    images,energies = calc.get_neb()
+    images, energies = calc.get_neb()
 
     calc.plot_neb(show=False)
 import matplotlib.pyplot as plt
 plt.savefig('images/nh3-neb.png')
+plt.show()
 #+END_SRC
 
 #+RESULTS:
-: None
 
 #+caption: Nudged elastic band results for ammonia flipping.
 [[./images/nh3-neb.png]]
