@@ -1,5 +1,8 @@
-import xlrd
-wbk = xlrd.open_workbook('images/test-write.xls')
-sheet1 = wbk.sheet_by_name('sheet 1')
-print sheet1.col_values(0)
-print sheet1.col_values(1)
+import csv
+reader = csv.reader(open("some.csv",'r'),delimiter=',')
+x,y = [],[]
+for row in reader:
+#csv returns strings that must be cast as floats
+    a,b = [float(z) for z in row]
+    x.append(a)
+    y.append(b)

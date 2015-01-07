@@ -15,9 +15,10 @@ with jasp('molecules/nh3-neb',
           xc='PBE',
           ibrion=1,
           nsw=90,
-          spring=-5,
+          spring=-5, debug=logging.DEBUG,
           atoms=images) as calc:
-    images,energies = calc.get_neb()
+    images, energies = calc.get_neb()
     calc.plot_neb(show=False)
 import matplotlib.pyplot as plt
 plt.savefig('images/nh3-neb.png')
+plt.show()

@@ -1,1 +1,1 @@
-head molecules/O_sv-4nodes/OUTCAR
+head -n 1 molecules/O_sv/POTCAR

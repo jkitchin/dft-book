@@ -19,7 +19,7 @@ atoms = Atoms([Atom('Cu', 0.5*a2),
                cell=(a1, a2, a3))
 with jasp('bulk/CuO',
           encut=400,
-          kpts=(8,8,8),
+          kpts=(8, 8, 8),
           ibrion=2,
           isif=3,
           nsw=30,

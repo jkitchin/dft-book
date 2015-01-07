@@ -14,5 +14,5 @@ with jasp('molecules/wgs/CO2-vib',
           atoms=CO2) as calc:
     calc.calculate()
     vib_freq = calc.get_vibrational_frequencies()
-    for i,f in enumerate(vib_freq):
-        print '{0:02d}: {1} cm^(-1)'.format(i,f)
+    for i, f in enumerate(vib_freq):
+        print '{0:02d}: {1} cm^(-1)'.format(i, f)

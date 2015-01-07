@@ -7,7 +7,7 @@ with jasp('molecules/O-sp-triplet-lowsym-sv',
           ismear=0,
           ispin=2,
           sigma=0.01,
-          setups={'O':'_sv'},
+          setups={'O': '_sv'},
           atoms=atoms) as calc:
     try:
         E_O = atoms.get_potential_energy()
@@ -22,10 +22,10 @@ with jasp('molecules/O2-sp-triplet-sv',
           xc='PBE',
           ismear=0,
           sigma=0.01,
-          ispin=2,  # turn spin-polarization on
-          ibrion=2, # make sure we relax the geometry
+          ispin=2,   # turn spin-polarization on
+          ibrion=2,  # make sure we relax the geometry
           nsw=10,
-          setups={'O':'_sv'},
+          setups={'O': '_sv'},
           atoms=atoms) as calc:
     try:
         E_O2 = atoms.get_potential_energy()

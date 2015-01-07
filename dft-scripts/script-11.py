@@ -1,4 +1,4 @@
-from ase.data.molecules import molecule
+from ase.structure import molecule
 from ase.io import write
 atoms1 = molecule('NH3')
 atoms2 = molecule('O2')

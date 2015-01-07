@@ -1,7 +1,7 @@
 from jasp import *
 from ase import Atom, Atoms
 # square box origin
-atoms = Atoms([Atom('O',[0, 0, 0], magmom=2)],
+atoms = Atoms([Atom('O', [0, 0, 0], magmom=2)],
               cell=(10, 10, 10))
 with jasp('molecules/O-square-box-origin',
           xc='PBE',

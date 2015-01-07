@@ -1,5 +1,5 @@
 from jasp import *
-from enthought.mayavi import mlab
+from enthought.mayavi.mlab import *
 from ase.data import vdw_radii
 from ase.data.colors import cpk_colors
 with jasp('molecules/simple-co') as calc:

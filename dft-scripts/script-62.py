@@ -16,8 +16,8 @@ with jasp('molecules/O-orthorhombic-box-origin',
     except (VaspSubmitted, VaspQueued):
         pass
 # orthrhombic box center
-atoms = Atoms([Atom('O',[4, 4.5, 5],magmom=2)],
-              cell=(8,9,10))
+atoms = Atoms([Atom('O', [4, 4.5, 5], magmom=2)],
+              cell=(8, 9, 10))
 with jasp('molecules/O-orthorhombic-box-center',
           xc='PBE',
           encut=400,
@@ -30,7 +30,7 @@ with jasp('molecules/O-orthorhombic-box-center',
     except (VaspSubmitted, VaspQueued):
         pass
 # orthorhombic box random
-atoms = Atoms([Atom('O',[2.13, 7.32, 1.11], magmom=2)],
+atoms = Atoms([Atom('O', [2.13, 7.32, 1.11], magmom=2)],
               cell=(8, 9, 10))
 with jasp('molecules/O-orthorhombic-box-random',
           xc='PBE',

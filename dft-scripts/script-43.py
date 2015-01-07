@@ -1,5 +1,5 @@
 # <<water-vib>>
-#adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
+# adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
 from ase import Atoms, Atom
 from jasp import *
 import ase.units
@@ -11,12 +11,12 @@ atoms.center()
 with jasp('molecules/h2o_vib',
           xc='PBE',
           encut=400,
-          ismear=0,    # Gaussian smearing
-          ibrion=6,    # finite differences with symmetry
-          nfree=2,     # central differences (default)
-          potim=0.015, # default as well
-          ediff=1e-8,  # for vibrations you need precise energies
-          nsw=1,       # Set to 1 for vibrational calculation
+          ismear=0,     # Gaussian smearing
+          ibrion=6,     # finite differences with symmetry
+          nfree=2,      # central differences (default)
+          potim=0.015,  # default as well
+          ediff=1e-8,   # for vibrations you need precise energies
+          nsw=1,        # Set to 1 for vibrational calculation
           atoms=atoms) as calc:
     print 'Forces'
     print '======'

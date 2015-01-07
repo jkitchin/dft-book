@@ -2,20 +2,20 @@ from jasp import *
 from ase import Atom, Atoms
 from ase.utils.eos import EquationOfState
 LC = [3.75, 3.80, 3.85, 3.90, 3.95, 4.0, 4.05, 4.1]
-GGA = {'AM':'AM05',
-       'PE':'PBE',
-       'PS':'PBEsol',
-       'RP':'RPBE'}
+GGA = {'AM': 'AM05',
+       'PE': 'PBE',
+       'PS': 'PBEsol',
+       'RP': 'RPBE'}
 for key in GGA:
-    volumes, energies = [],[]
+    volumes, energies = [], []
     for a in LC:
         atoms = Atoms([Atom('Pd', (0, 0, 0))],
-                      cell=0.5 * a*np.array([[1.0, 1.0, 0.0],
-                                             [0.0, 1.0, 1.0],
-                                             [1.0, 0.0, 1.0]]))
-        with jasp('bulk/Pd-GGA-{1}-{0}'.format(a,key),
+                      cell=0.5 * a * np.array([[1.0, 1.0, 0.0],
+                                               [0.0, 1.0, 1.0],
+                                               [1.0, 0.0, 1.0]]))
+        with jasp('bulk/Pd-GGA-{1}-{0}'.format(a, key),
                   encut=350,
-                  kpts=(12,12,12),
+                  kpts=(12, 12, 12),
                   xc='LDA',
                   gga=key,
                   atoms=atoms):

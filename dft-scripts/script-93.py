@@ -8,7 +8,7 @@ for a in LC:
         atoms = calc.get_atoms()
         volumes.append(atoms.get_volume())
         energies.append(atoms.get_potential_energy())
-eos = EquationOfState(volumes,energies)
+eos = EquationOfState(volumes, energies)
 v0, e0, B = eos.fit()
 print '''
 v0 = {0} A^3

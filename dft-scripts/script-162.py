@@ -1,29 +1,28 @@
 from jasp import *
-from ase.lattice.surface import fcc111
 import matplotlib.pyplot as plt
-Nlayers = [3, 4, 5, 6, 7, 8, 9, 10, 11]
-energies = []
-sigmas = []
-for n in Nlayers:
-    slab = fcc111('Cu', size=(1,1,n), vacuum=10.0)
-    slab.center()
-    with jasp('bulk/Cu-layers/{0}'.format(n),
-              xc='PBE',
-              encut=350,
-              kpts=(8,8,1),
-              atoms=slab) as calc:
-        calc.set_nbands(f=2) # the default nbands in VASP is too low for Al
-        try:
-            energies.append(slab.get_potential_energy())
-        except (VaspSubmitted, VaspQueued):
-            pass
-for i in range(len(Nlayers)-1):
-    N = Nlayers[i]
-    DeltaE_N = energies[i+1] - energies[i]
-    sigma = 0.5*(-N*energies[i+1] + (N+1)*energies[i])
-    sigmas.append(sigma)
-    print 'nlayers = {1:2d} sigma = {0:1.3f} eV/atom'.format(sigma, N)
-plt.plot(Nlayers[0:-1], sigmas,'bo-')
-plt.xlabel('Number of layers')
-plt.ylabel('Surface energy (eV/atom)')
-plt.savefig('images/Cu-unrelaxed-surface-energy.png')
+with jasp('surfaces/Al-slab-relaxed') as calc:
+    atoms = calc.get_atoms()
+with jasp('surfaces/Al-slab-locpot',
+          xc='PBE',
+          kpts=(6,6,1),
+          encut=350,
+          lvtot=True, # write out local potential
+          lvhar=True, # write out only electrostatic potential, not xc pot
+          atoms=atoms) as calc:
+    calc.calculate()
+    ef = calc.get_fermi_level()
+    atoms = calc.get_atoms()
+    x,y,z,lp = calc.get_local_potential()
+nx, ny, nz = lp.shape
+axy = np.array([np.average(lp[:,:,z]) for z in range(nz)])
+# setup the x-axis in realspace
+uc = atoms.get_cell()
+xaxis = np.linspace(0, uc[2][2], nz)
+plt.plot(xaxis, axy)
+plt.plot([min(xaxis), max(xaxis)], [ef, ef],'k:')
+plt.xlabel('Position along z-axis')
+plt.ylabel('x-y averaged electrostatic potential')
+plt.savefig('images/Al-wf.png')
+ind = (xaxis > 0) & (xaxis < 5)
+wf = np.average(axy[ind]) - ef
+print ' The workfunction is {0:1.2f} eV'.format(wf)

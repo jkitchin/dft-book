@@ -14,8 +14,8 @@ with jasp('molecules/O-sp-singlet',
         E_O = None
 print 'Magnetic moment on O = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
 # now relaxed O2 dimer
-atoms = Atoms([Atom('O', [5,   5, 5], magmom=1),
-               Atom('O',[6.22, 5, 5], magmom=-1)],
+atoms = Atoms([Atom('O', [5, 5, 5], magmom=1),
+               Atom('O', [6.22, 5, 5], magmom=-1)],
               cell=(10, 10, 10))
 with jasp('molecules/O2-sp-singlet',
           xc='PBE',
@@ -30,6 +30,6 @@ with jasp('molecules/O2-sp-singlet',
     except (VaspSubmitted, VaspQueued):
         E_O2 = None
 # verify magnetic moment
-print 'O2 molecule magnetic moment = ',atoms.get_magnetic_moment()
+print 'O2 molecule magnetic moment = ', atoms.get_magnetic_moment()
 if None not in (E_O, E_O2):
     print 'O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2)

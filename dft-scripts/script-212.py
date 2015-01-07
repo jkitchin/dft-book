@@ -1,67 +1,42 @@
-from jasp import jasp
+# Nonlinear curve fit with confidence interval
 import numpy as np
-with jasp('molecules/co-centered') as calc:
-    atoms = calc.get_atoms()
-    x, y, z, cd = calc.get_charge_density()
-def interp3d(x,y,z,cd,xi,yi,zi):
-    '''
-    interpolate a cubic 3D grid defined by x,y,z,cd at the point
-    (xi,yi,zi)
-    '''
-    def get_index(value,vector):
-        '''
-        assumes vector ordered decreasing to increasing. A bisection
-        search would be faster.
-        '''
-        for i,val in enumerate(vector):
-            if val > value:
-                return i-1
-        return None
-    xv = x[:,0,0]
-    yv = y[0,:,0]
-    zv = z[0,0,:]
-    a,b,c = xi, yi, zi
-    i = get_index(a,xv)
-    j = get_index(b,yv)
-    k = get_index(c,zv)
-    x1 = x[i,j,k]
-    x2 = x[i+1,j,k]
-    y1 = y[i,j,k]
-    y2 = y[i,j+1,k]
-    z1 = z[i,j,k]
-    z2 = z[i,j,k+1]
-    u1 = cd[i, j, k]
-    u2 = cd[i+1, j, k]
-    u3 = cd[i, j+1, k]
-    u4 = cd[i+1, j+1, k]
-    u5 = cd[i, j, k+1]
-    u6 = cd[i+1, j, k+1]
-    u7 = cd[i, j+1, k+1]
-    u8 = cd[i+1, j+1, k+1]
-    w1 = u2 + (u2-u1)/(x2-x1)*(a-x2)
-    w2 = u4 + (u4-u3)/(x2-x1)*(a-x2)
-    w3 = w2 + (w2-w1)/(y2-y1)*(b-y2)
-    w4 = u5 + (u6-u5)/(x2-x1)*(a-x1)
-    w5 = u7 + (u8-u7)/(x2-x1)*(a-x1)
-    w6 = w4 + (w5-w4)/(y2-y1)*(b-y1)
-    w7 = w3 + (w6-w3)/(z2-z1)*(c-z1)
-    u = w7
-    return u
-pos = atoms.get_positions()
-P1 = np.array([0.0, 5.0, 5.0])
-P2 = np.array([9.0, 5.0, 5.0])
-npoints = 60
-points = [P1 + n*(P2-P1)/npoints for n in range(npoints)]
-R = [np.linalg.norm(p-P1) for p in points]
-# interpolated line
-icd = [interp3d(x,y,z,cd,p[0],p[1],p[2]) for p in points]
+from scipy.optimize import curve_fit
+from scipy.stats.distributions import  t
+'''
+fit this equation to data
+y = c1 exp(-x) + c2*x
+this is actually a linear regression problem, but it is convenient to
+use the nonlinear fitting routine because it makes it easy to get
+confidence intervals. The downside is you need an initial guess.
+from Matlab
+b =
+    4.9671
+    2.1100
+bint =
+    4.6267    5.3075
+    1.7671    2.4528
+'''
+x = np.array([ 0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9,  1. ])
+y = np.array([ 4.70192769,  4.46826356,  4.57021389,  4.29240134,  3.88155125,
+            3.78382253,  3.65454727,  3.86379487,  4.16428541,  4.06079909])
+# this is the function we want to fit to our data
+def func(x,c0, c1):
+    return c0 * np.exp(-x) + c1*x
+pars, pcov = curve_fit(func, x, y, p0=[4.96, 2.11])
+alpha = 0.05 # 95% confidence interval
+n = len(y)    # number of data points
+p = len(pars) # number of parameters
+dof = max(0, n-p) # number of degrees of freedom
+tval = t.ppf(1.0-alpha/2., dof) # student-t value for the dof and confidence level
+for i, p,var in zip(range(n), pars, np.diag(pcov)):
+    sigma = var**0.5
+    print 'c{0}: {1} [{2}  {3}]'.format(i, p,
+                                  p - sigma*tval,
+                                  p + sigma*tval)
 import matplotlib.pyplot as plt
-plt.plot(R, icd)
-cR = np.linalg.norm(pos[0] - P1)
-oR = np.linalg.norm(pos[1] - P1)
-plt.plot([cR, cR], [0, 2], 'r-') #markers for where the nuclei are
-plt.plot([oR, oR], [0, 8], 'r-')
-plt.xlabel('|R| ($\AA$)')
-plt.ylabel('Charge density (e/$\AA^3$)')
-plt.savefig('images/CO-charge-density.png')
-plt.show()
+plt.plot(x,y,'bo ')
+xfit = np.linspace(0,1)
+yfit = func(xfit, pars[0], pars[1])
+plt.plot(xfit,yfit,'b-')
+plt.legend(['data','fit'],loc='best')
+plt.savefig('images/nonlin-fit-ci.png')

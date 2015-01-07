@@ -1,23 +1,28 @@
-# use splines to fit and interpolate data
-from scipy.interpolate import interp1d
 from scipy.optimize import fmin
 import numpy as np
+volumes = np.array([13.71, 14.82, 16.0, 17.23, 18.52])
+energies = np.array([-56.29, -56.41, -56.46, -56.463,-56.41])
+def Murnaghan(parameters,vol):
+    'From PRB 28,5480 (1983'
+    E0 = parameters[0]
+    B0 = parameters[1]
+    BP = parameters[2]
+    V0 = parameters[3]
+    E = E0 + B0*vol/BP*(((V0/vol)**BP)/(BP-1)+1) - V0*B0/(BP-1.)
+    return E
+def objective(pars,vol):
+    #we will minimize this function
+    err =  energies - Murnaghan(pars,vol)
+    return np.sum(err**2) #we return the summed squared error directly
+x0 = [ -56., 0.54, 2., 16.5] #initial guess of parameters
+plsq = fmin(objective,x0,args=(volumes,)) #note args is a tuple
+print 'parameters = {0}'.format(plsq)
 import matplotlib.pyplot as plt
-x = np.array([ 0,      1,      2,      3,      4    ])
-y = np.array([ 0.,     0.308,  0.55,   0.546,  0.44 ])
-# create the interpolating function
-f = interp1d(x, y, kind='cubic', bounds_error=False)
-# to find the maximum, we minimize the negative of the function. We
-# cannot just multiply f by -1, so we create a new function here.
-f2 = interp1d(x, -y, kind='cubic')
-xmax = fmin(f2, 2.5)
-xfit = np.linspace(0,4)
-plt.plot(x,y,'bo')
-plt.plot(xfit, f(xfit),'r-')
-plt.plot(xmax, f(xmax),'g*')
-plt.legend(['data','fit','max'], loc='best', numpoints=1)
-plt.xlabel('x data')
-plt.ylabel('y data')
-plt.title('Max point = ({0:1.2f}, {1:1.2f})'.format(float(xmax),
-                                                    float(f(xmax))))
-plt.savefig('images/splinefit.png')
+plt.plot(volumes,energies,'ro')
+#plot the fitted curve on top
+x = np.linspace(min(volumes),max(volumes),50)
+y = Murnaghan(plsq,x)
+plt.plot(x,y,'k-')
+plt.xlabel('Volume ($\AA^3$)')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/nonlinear-fitting-lsq.png')

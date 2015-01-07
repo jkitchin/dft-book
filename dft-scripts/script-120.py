@@ -1,4 +1,4 @@
-# get bulk Cu and Pd energies.
+# get bulk Cu and Pd energies. <<pure-metal-components>>
 from jasp import *
 from ase import Atom, Atoms
 atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000])],
@@ -8,7 +8,7 @@ atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000])],
 with jasp('bulk/alloy/cu',
           xc='PBE',
           encut=350,
-          kpts=(13,13,13),
+          kpts=(13, 13, 13),
           nbands=9,
           ibrion=2,
           isif=3,
@@ -22,7 +22,7 @@ atoms = Atoms([Atom('Pd',  [0.000,      0.000,      0.000])],
 with jasp('bulk/alloy/pd',
           xc='PBE',
           encut=350,
-          kpts=(13,13,13),
+          kpts=(13, 13, 13),
           nbands=9,
           ibrion=2,
           isif=3,

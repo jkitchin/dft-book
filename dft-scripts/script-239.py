@@ -1,1 +1,1 @@
-head -n 1 molecules/O_sv/POTCAR
+export VASP_PP_PATH=$HOME/vasp/my_vasp_potentials

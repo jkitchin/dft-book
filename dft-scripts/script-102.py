@@ -1,7 +1,7 @@
 from jasp import *
-factors = [0.9, 0.95, 1.0, 1.05, 1.1] #to change volume by
-energies1, volumes1 = [], [] # from step 1
-energies, volumes = [], [] # for step 2
+factors = [0.9, 0.95, 1.0, 1.05, 1.1]  # to change volume by
+energies1, volumes1 = [], []  # from step 1
+energies, volumes = [], []  # for step 2
 ready = True
 for f in factors:
     with jasp('bulk/tio2/step1-{0:1.2f}'.format(f)) as calc:

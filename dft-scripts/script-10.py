@@ -1,4 +1,4 @@
-from ase.data.molecules import molecule
+from ase.structure import molecule
 from ase.io import write
 from numpy import pi
 atoms = molecule('CH3CN')

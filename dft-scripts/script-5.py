@@ -1,8 +1,8 @@
 from ase import Atoms, Atom
 import numpy as np
 b = 7.1
-atoms = Atoms([Atom('C',[0., 0.,0.]),
-              Atom('O',[1.1,0.,0.])],
+atoms = Atoms([Atom('C', [0., 0., 0.]),
+               Atom('O', [1.1, 0., 0.])],
               cell=[[b, b, 0.],
                     [b, 0., b],
                     [0., b, b]])

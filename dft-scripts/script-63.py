@@ -1,6 +1,6 @@
 from jasp import *
 from ase import Atom, Atoms
-atoms = Atoms([Atom('O',[5.1, 4.2, 6.1], magmom=2)],
+atoms = Atoms([Atom('O', [5.1, 4.2, 6.1], magmom=2)],
               cell=(8, 9, 10))
 with jasp('molecules/O-sp-triplet-lowsym',
           xc='PBE',
@@ -23,8 +23,8 @@ with jasp('molecules/O2-sp-triplet',
           encut=400,
           ismear=0,
           sigma=0.01,
-          ispin=2,  # turn spin-polarization on
-          ibrion=2, # make sure we relax the geometry
+          ispin=2,   # turn spin-polarization on
+          ibrion=2,  # make sure we relax the geometry
           nsw=10,
           atoms=atoms) as calc:
     try:
@@ -34,5 +34,5 @@ with jasp('molecules/O2-sp-triplet',
     except (VaspSubmitted, VaspQueued):
         E_O2 = None
 if None not in (E_O, E_O2):
-    print 'E_O: ',E_O
-    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2)
+    print 'E_O: ', E_O
+    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2 * E_O - E_O2)

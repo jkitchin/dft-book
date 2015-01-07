@@ -5,7 +5,7 @@ a = 3.61
 atoms = Atoms([Atom('Cu', (0, 0, 0))],
               cell=0.5 * a * np.array([[1.0, 1.0, 0.0],
                                        [0.0, 1.0, 1.0],
-                                       [1.0, 0.0, 1.0]])).repeat((2,2,2))
+                                       [1.0, 0.0, 1.0]])).repeat((2, 2, 2))
 SIGMA = [0.001, 0.05, 0.1, 0.2, 0.5]
 for sigma in SIGMA:
     with jasp('bulk/Cu-sigma-{0}'.format(sigma),

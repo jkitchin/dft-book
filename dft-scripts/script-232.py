@@ -1,10 +1,18 @@
+from ase.lattice.cubic import BodyCenteredCubic
 import numpy as np
-a1 = [2, 0, 0]
-a2 = [1, 1, 0]
-a3 = [0, 0, 10]
-uc = np.array([a1, a2, a3])
-print 'V = {0} ang^3 from dot/cross'.format(np.dot(np.cross(a1,a2),a3))
-print 'V = {0} ang^3 from det'.format(np.linalg.det(uc))
-from ase import Atoms
-atoms = Atoms([],cell=uc) #empty list of atoms
-print 'V = {0} ang^3 from get_volume'.format(atoms.get_volume())
+bulk = BodyCenteredCubic(directions=[[1,0,0],
+                                     [0,1,0],
+                                     [0,0,1]],
+                         size=(2,2,2),
+                         latticeconstant=2.87,
+                         symbol='Fe')
+newbasis = 2.87*np.array([[-0.5, 0.5, 0.5],
+                          [0.5, -0.5, 0.5],
+                          [0.5, 0.5, -0.5]])
+pos = bulk.get_positions()
+s = np.dot(np.linalg.inv(newbasis.T),pos.T).T
+print 'atom positions in primitive basis'
+print s
+#let us see the unit cell in terms of the primitive basis too
+print 'unit cell in terms of the primitive basis'
+print np.dot(np.linalg.inv(newbasis.T),bulk.get_cell().T).T

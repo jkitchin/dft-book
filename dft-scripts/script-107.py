@@ -2,15 +2,15 @@ from jasp import *
 from ase.lattice.cubic import FaceCenteredCubic
 from ase import Atoms, Atom
 # bulk system
-atoms = FaceCenteredCubic(directions=[[0,1,1],
-                                      [1,0,1],
-                                      [1,1,0]],
-                                      size=(1,1,1),
+atoms = FaceCenteredCubic(directions=[[0, 1, 1],
+                                      [1, 0, 1],
+                                      [1, 1, 0]],
+                                      size=(1, 1, 1),
                                       symbol='Rh')
 with jasp('bulk/bulk-rh',
           xc='PBE',
           encut=350,
-          kpts=(4,4,4),
+          kpts=(4, 4, 4),
           isif=3,
           ibrion=2,
           nsw=10,

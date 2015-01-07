@@ -1,9 +1,8 @@
 from ase import Atom, Atoms
 from jasp import *
-import numpy as np
-co = Atoms([Atom('C',[0,0,0]),
-            Atom('O',[1.2,0,0])],
-            cell=(6,6,6))
+co = Atoms([Atom('C',[0, 0, 0]),
+            Atom('O',[1.2, 0, 0])],
+            cell=(6, 6, 6))
 with jasp('molecules/co-cg',
           xc='PBE',
           nbands=6,

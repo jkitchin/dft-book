@@ -15,13 +15,13 @@ with jasp('molecules/co-ados',
     plt.plot(dos.get_energies(), dos.get_dos() + 10)
     ados = VaspDos(efermi=calc.get_fermi_level())
     energies = ados.energy
-    plt.plot(energies, ados.dos + 8, label='ADOS') # these are the total DOS
+    plt.plot(energies, ados.dos + 8, label='ADOS')  # these are the total DOS
     c_s = ados.site_dos(0, 's')
     c_p = ados.site_dos(0, 'p')
     o_s = ados.site_dos(1, 's')
     o_p = ados.site_dos(1, 'p')
-    c_d = ados.site_dos(0,'d')
-    o_d = ados.site_dos(1,'d')
+    c_d = ados.site_dos(0, 'd')
+    o_d = ados.site_dos(1, 'd')
     plt.plot(energies, c_s + 6, energies, o_s + 5)
     plt.plot(energies, c_p + 4, energies, o_p + 3)
     plt.plot(energies, c_d, energies, o_d + 2)
@@ -31,5 +31,5 @@ with jasp('molecules/co-ados',
                 'C$_s$', 'O$_s$',
                 'C$_p$', 'O$_p$',
                 'C$_d$', 'O$_d$'],
-                ncol=2,loc='best')
+                 ncol=2, loc='best')
 plt.savefig('images/co-ados.png')

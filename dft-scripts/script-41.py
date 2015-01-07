@@ -18,7 +18,7 @@ droots = np.roots(dpars)
 # second derivative
 ddpars = np.polyder(dpars)
 d_min = droots[np.polyval(ddpars, droots) > 0]
-#curvature at minimum = force constant in SI units
+# curvature at minimum = force constant in SI units
 k = np.polyval(ddpars, d_min) / (J / m**2)
 # mu, reduced mass
 from ase.data import atomic_masses

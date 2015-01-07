@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 create a TiO2 structure from the lattice vectors at
 http://cst-www.nrl.navy.mil/lattice/struk/c4.html
 '''
-a = 4.59 # experimental degrees of freedom.
+a = 4.59  # experimental degrees of freedom.
 c = 2.96
-u = 0.3 #internal degree of freedom!
+u = 0.3  # internal degree of freedom!
 #primitive vectors
-a1 = a*np.array([1.0, 0.0, 0.0])
-a2 = a*np.array([0.0, 1.0, 0.0])
-a3 = c*np.array([0.0, 0.0, 1.0])
+a1 = a * np.array([1.0, 0.0, 0.0])
+a2 = a * np.array([0.0, 1.0, 0.0])
+a3 = c * np.array([0.0, 0.0, 1.0])
 atoms = Atoms([Atom('Ti', [0., 0., 0.]),
                Atom('Ti', 0.5 * a1 + 0.5 * a2 + 0.5 * a3),
                Atom('O', u * a1 + u * a2),
@@ -27,7 +27,7 @@ factors = [0.9, 0.95, 1.0, 1.05, 1.1] #to change volume by
 energies, volumes = [], []
 ready = True
 for f in factors:
-    v1 = f*v0
+    v1 = f * v0
     cell_factor = (v1 / v0)**(1. / 3.)
     atoms.set_cell(cell0 * cell_factor, scale_atoms=True)
     with jasp('bulk/tio2/step1-{0:1.2f}'.format(f),

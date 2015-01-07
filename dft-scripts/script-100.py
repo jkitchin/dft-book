@@ -6,14 +6,15 @@ import matplotlib.pyplot as plt
 '''
 create a TiO2 structure from the lattice vectors at
 http://cst-www.nrl.navy.mil/lattice/struk/c4.html
+This site does not exist anymore.
 '''
-a = 4.59 # experimental degrees of freedom.
+a = 4.59  # experimental degrees of freedom.
 c = 2.96
-u = 0.3 #internal degree of freedom!
+u = 0.3  # internal degree of freedom!
 #primitive vectors
-a1 = a*np.array([1.0, 0.0, 0.0])
-a2 = a*np.array([0.0, 1.0, 0.0])
-a3 = c*np.array([0.0, 0.0, 1.0])
+a1 = a * np.array([1.0, 0.0, 0.0])
+a2 = a * np.array([0.0, 1.0, 0.0])
+a3 = c * np.array([0.0, 0.0, 1.0])
 atoms = Atoms([Atom('Ti', [0., 0., 0.]),
                Atom('Ti', 0.5 * a1 + 0.5 * a2 + 0.5 * a3),
                Atom('O', u * a1 + u * a2),

@@ -2,7 +2,6 @@ from ase.lattice.surface import fcc111
 from ase.io import write
 from jasp import *
 from jasp.jasp_bandstructure import *
-JASPRC['mode']='run'
 slab = fcc111('Al', size=(1,1,4), vacuum=10.0)
 with jasp('surface/Al-bandstructure',
           xc='PBE',

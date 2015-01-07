@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 atm = 101325 * Pascal
 L = np.linspace(4, 10)
 V = L**3
-n = 1 # one atom per unit cell
+n = 1  # one atom per unit cell
 for T in [298, 600, 1000]:
-    P = n/V*kB*T / atm # convert to atmospheres
+    P = n / V * kB * T / atm  # convert to atmospheres
     plt.plot(V, P, label='{0}K'.format(T))
 plt.xlabel('Unit cell volume ($\AA^3$)')
 plt.ylabel('Pressure (atm)')

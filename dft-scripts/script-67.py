@@ -1,11 +1,11 @@
-from ase.data.molecules import molecule
+from ase.structure import molecule
 from jasp import *
 # first we define our molecules. These will automatically be at the coordinates from the G2 database.
-CO =  molecule('CO')
+CO = molecule('CO')
 CO.set_cell([8, 8, 8], scale_atoms=False)
 H2O = molecule('H2O')
 H2O.set_cell([8, 8, 8], scale_atoms=False)
-CO2 =  molecule('CO2')
+CO2 = molecule('CO2')
 CO2.set_cell([8, 8, 8], scale_atoms=False)
 H2 = molecule('H2')
 H2.set_cell([8, 8, 8], scale_atoms=False)
@@ -59,5 +59,5 @@ if None in (eCO2, eH2, eCO, eH2O):
 else:
     dE = eCO2 + eH2 - eCO - eH2O
     print 'Delta E = {0:1.3f} eV'.format(dE)
-    print 'Delta E = {0:1.3f} kcal/mol'.format(dE*23.06035)
-    print 'Delta E = {0:1.3f} kJ/mol'.format(dE*96.485)
+    print 'Delta E = {0:1.3f} kcal/mol'.format(dE * 23.06035)
+    print 'Delta E = {0:1.3f} kJ/mol'.format(dE * 96.485)

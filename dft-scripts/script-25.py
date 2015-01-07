@@ -1,10 +1,10 @@
-from ase import Atoms,Atom
+from ase import Atoms, Atom
 from jasp import *
 import numpy as np
 np.set_printoptions(precision=3, suppress=True)
-atoms = Atoms([Atom('C',[0,   0, 0]),
-               Atom('O',[1.2, 0, 0])],
-               cell=(6,6,6))
+atoms = Atoms([Atom('C', [0, 0, 0]),
+               Atom('O', [1.2, 0, 0])],
+              cell=(6, 6, 6))
 atoms.center()
 ENCUTS = [250, 300, 350, 400, 450, 500]
 energies = []
@@ -19,7 +19,7 @@ for en in ENCUTS:
         except (VaspSubmitted, VaspQueued):
             ready = False
 if not ready:
-   import sys; sys.exit()
+    import sys; sys.exit()
 import matplotlib.pyplot as plt
 plt.plot(ENCUTS, energies, 'bo-')
 plt.xlabel('ENCUT (eV)')

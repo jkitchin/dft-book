@@ -7,7 +7,7 @@ ready = True
 for k in KPTS:
     with jasp('bulk/Ag-kpts-{0}'.format(k),
               xc='PBE',
-              kpts=(k, k, k), #specifies the Monkhorst-Pack grid
+              kpts=(k, k, k),  # specifies the Monkhorst-Pack grid
               encut=300,
               atoms=atoms) as calc:
         try:

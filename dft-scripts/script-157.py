@@ -1,16 +1,14 @@
 from jasp import *
-from ase.lattice.surface import fcc110
-from ase.io import write
-from ase.constraints import FixAtoms
-atoms = fcc110('Ag', size=(2,1,6), vacuum=10.0)
-constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
-atoms.set_constraint(constraint)
-with jasp('surfaces/Ag-110',
-          xc='PBE',
-          kpts=(6,6,1),
-          encut=350,
-          ibrion=2,
-          isif=2,
-          nsw=10,
-          atoms=atoms) as calc:
-    calc.calculate()
+with jasp('surfaces/Au-110') as calc:
+    slab = calc.get_atoms()
+    eslab = slab.get_potential_energy()
+with jasp('surfaces/Au-110-missing-row') as calc:
+    missingrow = calc.get_atoms()
+    emissingrow = missingrow.get_potential_energy()
+with jasp('bulk/Au-fcc') as calc:
+    bulk = calc.get_atoms()
+    ebulk = bulk.get_potential_energy()
+print 'natoms slab        = {0}'.format(len(slab))
+print 'natoms missing row = {0}'.format(len(missingrow))
+print 'natoms bulk        = {0}'.format(len(bulk))
+print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
