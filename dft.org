@@ -5299,6 +5299,160 @@ for key in GGA:
 
 These results compare very favorably to those in cite:mattsson-084714. It is typical that LDA functionals underestimate the lattice constants, and that GGAs tend to overestimate the lattice constants. PBEsol and AM05 were designed specifically for solids, and for Pd, these functionals do an exceptional job of reproducing the lattice constants. RPBE is particularly bad at the lattice constant, but it has been reported to be a superior functional for reactivity cite:hammer1999:improv-pbe.
 
+** Using built-in ase optimization with jasp
+
+ASE has some nice optimization tools built into it. We can use them in jasp too. This example is adapted from this test: https://trac.fysik.dtu.dk/projects/ase/browser/trunk/ase/test/vasp/vasp_Al_volrelax.py
+
+First the VASP way.
+
+#+BEGIN_SRC python :results output
+from jasp import *
+from ase.lattice import bulk
+
+Al = bulk('Al', 'fcc', a=4.5, cubic=True)
+with jasp('bulk/Al-lda-vasp',
+          xc='LDA', isif=7, nsw=5,
+          ibrion=1, ediffg=-1e-3,
+          lwave=False, lcharg=False,
+          atoms=Al) as calc:
+    calc.calculate(Al)
+    print calc
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+: -----------------------------
+  VASP calculation from /home-research/jkitchin/dft-book2/bulk/Al-lda-vasp
+  converged: True
+  Energy = -10.128461 eV
+
+  Unit cell vectors (angstroms)
+        x       y     z      length
+  a0 [ 4.186  0.000  0.000] 4.186
+  a1 [ 0.000  4.186  0.000] 4.186
+  a2 [ 0.000  0.000  4.186] 4.186
+  a,b,c,alpha,beta,gamma (deg):4.186 4.186 4.186 90.0 90.0 90.0
+  Unit cell volume = 73.351 Ang^3
+  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
+             0.000  0.000  0.000-0.000 -0.000 -0.000
+ Atom#  sym       position [x,y,z]tag  rmsForce constraints
+   0    Al  [0.000      0.000      0.000]  0   0.00      T T T
+   1    Al  [0.000      2.093      2.093]  0   0.00      T T T
+   2    Al  [2.093      0.000      2.093]  0   0.00      T T T
+   3    Al  [2.093      2.093      0.000]  0   0.00      T T T
+--------------------------------------------------
+
+INCAR Parameters:
+-----------------
+        nbands: 10
+           nsw: 5
+        ibrion: 1
+          isif: 7
+        ediffg: -0.001
+        lcharg: False
+         lwave: False
+        magmom: None
+          kpts: [1, 1, 1]
+    reciprocal: False
+            xc: LDA
+           txt: -
+         gamma: False
+
+Pseudopotentials used:
+----------------------
+Al: potpaw/Al/POTCAR (git-hash: 654467a983b98bde034bc5918ee7817209863fe4)
+#+end_example
+
+
+
+
+#+BEGIN_SRC python
+from jasp import *
+from ase.lattice import bulk
+from ase.optimize import BFGS as QuasiNewton
+
+Al = bulk('Al', 'fcc', a=4.5, cubic=True)
+
+with jasp('bulk/Al-lda-ase',
+          xc='LDA',
+          atoms=Al) as calc:
+
+    from ase.constraints import StrainFilter
+    sf = StrainFilter(Al)
+    qn = QuasiNewton(sf, logfile='relaxation.log')
+    qn.run(fmax=0.1, steps=5)
+    print 'Stress:\n', calc.read_stress()
+    print 'Al post ASE volume relaxation\n', calc.get_atoms().get_cell()
+    print calc
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Stress:
+[ 0.  0.  0. -0. -0. -0.]
+Al post ASE volume relaxation
+[[ 4.187  0.     0.   ]
+ [ 0.     4.187  0.   ]
+ [ 0.     0.     4.187]]
+: -----------------------------
+  VASP calculation from /home-research/jkitchin/dft-book2/bulk/Al-lda-ase
+  converged: True
+  Energy = -10.111043 eV
+
+  Unit cell vectors (angstroms)
+        x       y     z      length
+  a0 [ 4.187  0.000  0.000] 4.187
+  a1 [ 0.000  4.187  0.000] 4.187
+  a2 [ 0.000  0.000  4.187] 4.187
+  a,b,c,alpha,beta,gamma (deg):4.187 4.187 4.187 90.0 90.0 90.0
+  Unit cell volume = 73.417 Ang^3
+  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
+             0.000  0.000  0.000-0.000 -0.000 -0.000
+ Atom#  sym       position [x,y,z]tag  rmsForce constraints
+   0    Al  [0.000      0.000      0.000]  0   0.00      T T T
+   1    Al  [0.000      2.094      2.094]  0   0.00      T T T
+   2    Al  [2.094      0.000      2.094]  0   0.00      T T T
+   3    Al  [2.094      2.094      0.000]  0   0.00      T T T
+--------------------------------------------------
+
+INCAR Parameters:
+-----------------
+        nbands: 10
+        magmom: None
+          kpts: [1, 1, 1]
+    reciprocal: False
+            xc: LDA
+           txt: -
+         gamma: False
+
+Pseudopotentials used:
+----------------------
+Al: potpaw/Al/POTCAR (git-hash: 654467a983b98bde034bc5918ee7817209863fe4)
+#+end_example
+
+Now for a detailed comparison:
+#+BEGIN_SRC python
+from jasp import *
+
+with jasp('bulk/Al-lda-vasp') as calc:
+    atoms = calc.get_atoms()
+
+with jasp('bulk/Al-lda-ase') as calc:
+    atoms2 = calc.get_atoms()
+
+import numpy as np
+
+cellA = atoms.get_cell()
+cellB = atoms2.get_cell()
+
+print (np.abs(cellA - cellB) < 0.01).all()
+#+END_SRC
+
+#+RESULTS:
+: True
+
+This could be handy if you want to use any of the optimizers in mod:ase.optimize in conjunction with mod:ase.constraints, which are more advanced than what is in VASP.
+
 ** Cohesive energy
 [[index:cohesive energy]]
 The cohesive energy is defined as the energy to separate neutral atoms in their ground electronic state from the solid at 0K at 1 atm. We will compute this for rhodium. Rh is normally an fcc metal, so we will use that structure and let VASP find the equilibrium volume for us.
