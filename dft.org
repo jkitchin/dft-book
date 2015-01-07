@@ -606,7 +606,7 @@ for i, d in enumerate(diff):
 : 5 [-0.8340703   1.33495444  1.2092413 ]
 
 #+caption: Rotated CH_{3}CN molecule
-#+ATTR_LaTeX: width=71bp,placement: [H]
+#+ATTR_LaTeX: :width 71bp :placement [H]
 [[./images/ch3cn-rotated-2.png]]
 
 Note in this last case the unit cell is oriented differently than the previous example, since we chose not to rotate the unit cell.
@@ -901,7 +901,7 @@ print 'theta = {0:1.1f} degrees'.format(theta_rad * 180./pi)
 : theta = 106.3 degrees
 
 #+caption: Schematic of the vectors defining the H-N-H angle.
-#+ATTR_LaTeX: width=270bp,placement: [H]
+#+ATTR_LaTeX: :width 270bp :placement [H]
 [[./images/NH3-vectors.png]]
 
 Alternatively you could use func:ase.Atoms.get_angle. Note we want the angle between atoms with indices [1, 0, 2] to get the H-N-H angle.
@@ -953,7 +953,7 @@ dihedral angle = 60.00 degrees
 #+end_example
 
 #+caption: Schematic of the calculated ethane dihedral angle. \label{fig:ethane-dihedral}
-#+ATTR_LaTeX: width=86bp,placement: [H]
+#+ATTR_LaTeX: :width 86bp :placement [H]
 [[./images/ethane-dihedral.png]]
 In this section we covered properties that require simple calculations, but not DFT calculations, to compute.
 
@@ -3986,11 +3986,11 @@ write('images/AgPd-bulk.png', atoms, show_unit_cell=2)
 #+RESULTS:
 
 #+caption: A simple fcc Ag bulk structure in the traditional unit cell.
-#+ATTR_LaTeX: width=114bp,placement: [H]
+#+ATTR_LaTeX: :width 114bp :placement [H]
 [[./images/Ag-bulk.png]]
 
 #+caption: A simple Ag_{3}Pd bulk structure.
-#+ATTR_LaTeX: width=114bp,placement: [H]
+#+ATTR_LaTeX: :width 114bp :placement [H]
 [[./images/AgPd-bulk.png]]
 
 To create a graphite structure we use the following code. Note that we have to specify the lattice constants (taken from http://www.phy.ohiou.edu/~asmith/NewATOMS/HOPG.pdf) because mod:ase has C in the diamond structure by default. We show two views, because the top view does not show the spacing between the layers.
@@ -4140,7 +4140,7 @@ write('images/Ru2O4.png', atoms, show_unit_cell=2)
 #+RESULTS:
 
 #+caption: An RuO_{2} unit cell prepared from a cif file.
-#+ATTR_LaTeX: width=96bp,placement: [H]
+#+ATTR_LaTeX: :width 96bp :placement [H]
 [[./images/Ru2O4.png]]
 
 You can also download the VASP files. I have copied these files (INCAR, POSCAR, KPOINTS) to a directory (bulk/Ru2O4), and now we can run a calculation like this:
@@ -7223,7 +7223,7 @@ write('images/Al-slab.png', slab, rotation='90x',show_unit_cell=2)
 : None
 
 #+caption: An Al(111) slab with three layers and 20 \AA of vacuum.
-#+ATTR_LaTeX: width=205bp,placement: [H]
+#+ATTR_LaTeX: :width 205bp :placement [H]
 [[./images/Al-slab.png]]
 
 *** Vicinal surfaces
@@ -7248,7 +7248,7 @@ write('images/Au-211.png',
 : None
 
 #+caption: An Au(211) surface constructed with =ase=.
-#+ATTR_LaTeX: width=500bp,placement: [H]
+#+ATTR_LaTeX: :width 500bp :placement [H]
 [[./images/Au-211.png]]
 
 ** Surface calculation parameters
@@ -8293,7 +8293,7 @@ with jasp('surfaces/Pt-slab-O-bridge',
 : -73.663615
 
 #+caption: Initial geometry of the bridge site. It is definitely on the bridge.
-#+ATTR_LaTeX: width=203bp,placement: [H]
+#+ATTR_LaTeX: :width 203bp :placement [H]
 [[./images/Pt-o-brige-ori.png]]
 
 ***** hcp site
@@ -8373,18 +8373,18 @@ print 'Hads (bridge) = {0} eV/O'.format(Hads_bridge)
 You can see the hcp site is not as energetically favorable as the fcc site. Interestingly, the bridge site seems to be as favorable as the fcc site. This is not correct, and to see why, we have to look at the final geometries of each calculation. First the fcc (Figure ref:fig:fcc and hcp (Figure ref:fig:hcp sites, which look like we expect.
 
 #+caption: Final geometry of the fcc site. \label{fig:fcc}
-#+ATTR_LaTeX: width=203bp,placement: [H]
+#+ATTR_LaTeX: :width 203bp :placement [H]
 [[./images/pt-slab-fcc-o.png]]
 
 
 #+caption: Final geometry of the hcp site. \label{fig:hcp}
-#+ATTR_LaTeX: width=203bp,placement: [H]
+#+ATTR_LaTeX: :width 203bp :placement [H]
 [[./images/pt-slab-hcp-o.png]]
 
 The bridge site (Figure ref:fig:bridge, however, is clearly not at a bridge site!
 
 #+caption: Final geometry of the bridge site. You can see that the oxygen atom ended up in the fcc site. \label{fig:bridge}
-#+ATTR_LaTeX: width=203bp,placement: [H]
+#+ATTR_LaTeX: :width 203bp :placement [H]
 [[./images/pt-slab-bridge-o.png]]
 
 Let us see what the original geometry and final geometry for the bridge site were. The POSCAR contains the initial geometry (as long as you haven't copied CONTCAR to POSCAR), and the CONTCAR contains the final geometry.
@@ -8403,11 +8403,11 @@ write('images/Pt-o-brige-final.png', atoms, show_unit_cell=2)
 : None
 
 #+caption: Initial geometry of the bridge site. It is definitely on the bridge.
-#+ATTR_LaTeX: width=203bp,placement: [H]
+#+ATTR_LaTeX: :width 203bp :placement [H]
 [[./images/Pt-o-brige-ori.png]]
 
 #+caption: Final geometry of the bridge site. It has fallen into the fcc site.
-#+ATTR_LaTeX: width=203bp,placement: [H]
+#+ATTR_LaTeX: :width 203bp :placement [H]
 [[./images/Pt-o-brige-final.png]]
 
 You can see the problem. We should not call the adsorption energy from this calculation a bridge site adsorption energy because the O atom is actually in an fcc site! This kind of result can happen with relaxation, and you should always check that the result you get makes sense. Next, we consider how to get a bridge site adsorption energy by using constraints.
@@ -8477,11 +8477,11 @@ print 'Hads (bridge) = {0:1.3f} eV/O'.format(Hads_bridge)
 You can see that only the \(z\)-position of the O atom changed. Also, the adsorption energy of O on the bridge site is *much* less favorable than on the fcc or hcp sites.
 
 #+caption: Initial state of the O atom on the bridge site.
-#+ATTR_LaTeX: width=203bp,placement: [H]
+#+ATTR_LaTeX: :width 203bp :placement [H]
 [[./images/Pt-O-bridge-constrained-initial.png]]
 
 #+caption: Final state of the constrained O atom, still on the bridge site.
-#+ATTR_LaTeX: width=203bp,placement: [H]
+#+ATTR_LaTeX: :width 203bp :placement [H]
 [[./images/Pt-O-bridge-constrained-final.png]]
 
 *** Coverage dependence
@@ -9567,7 +9567,7 @@ with jasp('bulk/Ni-PBE',
           ispin=2,lorbit=11,
           atoms=atoms) as calc:
     print 'PBE energy:   ',atoms.get_potential_energy()
-    dos = DOS(calc,width=0.2)
+    dos = DOS(calc, width=0.2)
     e_pbe = dos.get_energies()
     d_pbe = dos.get_dos()
 
@@ -9580,7 +9580,7 @@ with jasp('bulk/Ni-PBE0') as calc:
               time=0.4)
      atoms = calc.get_atoms()
      print 'PBE0 energy:  ',atoms.get_potential_energy()
-     dos = DOS(calc,width=0.2)
+     dos = DOS(calc, width=0.2)
      e_pbe0 = dos.get_energies()
      d_pbe0 = dos.get_dos()
 
@@ -9590,7 +9590,7 @@ with jasp('bulk/Ni-HSE06') as calc:
               algo='D', time=0.4)
      atoms = calc.get_atoms()
      print 'HSE06 energy: ', atoms.get_potential_energy()
-     dos = DOS(calc,width=0.2)
+     dos = DOS(calc, width=0.2)
      e_hse06 = dos.get_energies()
      d_hse06 = dos.get_dos()
 
@@ -9984,7 +9984,7 @@ from ase.visualize import view; view(slab)
 #+RESULTS:
 
 #+caption: The tagged bcc(111) structure created above. Unfortunately, the frozen atoms do not show up in the figure.
-#+ATTR_LATEX: width=383bp,placement: [H]
+#+ATTR_LATEX: :width 383bp :placement [H]
 [[./images/tagged-bcc111.png]]
 *** Using units in ase
 mod:ase uses a base set of atomic units.These are eV for energy, $\AA$ for distance, seconds for time, and amu for mass. Other units are defined in terms of those units, and you can easily convert to alternative units by dividing your quantity in atomic units by the units you want.
@@ -10379,7 +10379,7 @@ Solution: Find the cube that contains the point, and is defined by points
 # convert images/trilinear-interpolation.svg images/trilinear-interpolation.png
 # inkscape images/trilinear-interpolation.svg
 #+caption: Trilinear interpolation scheme. \label{fig:trilinearpinterp}
-#+ATTR+LaTeX: width=270bp,placement: [H]
+#+ATTR+LaTeX: :width 270bp :placement [H]
 [[./images/trilinear-interpolation.png]]
 
 We use 1D interpolation formulas to compute the value of the scalar field at points I1 by interpolating between P1 and P2, and the value of the scalar field at I2 by interpolating between P3 and P4. In these points the only variable changing is x, so it is a simple 1D interpolation. We can then compute the value of the scalar field at I5 by interpolating between I1 and I2. We repeat the process on the top of the cube, to obtain points I3, I4 and I5. Finally, we compute the value of the scalar field at point P by interpolating between points I5 and I6. Note that the point I5 has coordinates (a,b,z1) and I6 is at (a,b,z2), so the final interpolation is again a 1D interpolation along z evaluated at z=c to get the final value of the scalar field at P=(a,b,c).
