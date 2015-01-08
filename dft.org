@@ -3860,12 +3860,14 @@ plt.show()
 #+END_SRC
 
 #+RESULTS:
+: Optimization terminated successfully.
+:          Current function value: -0.223051
+:          Iterations: 15
+:          Function evaluations: 30
 
 #+caption: Nudged elastic band results for ammonia flipping.
 [[./images/nh3-neb.png]]
-*** TODO Make a movie of the animation :noexport:
-
-something was wrong with the script
+*** Make a movie of the animation
 
 index:animation
 It is helpful sometimes to animate the Nudged elastic band path. Here is a script to do that. I have not figured out how to embed the movie in this document
@@ -9041,10 +9043,13 @@ plt.show()
 #+END_SRC
 
 #+RESULTS:
+: Optimization terminated successfully.
+:          Current function value: -46.519590
+:          Iterations: 12
+:          Function evaluations: 24
 
 [[figure:./images/pt-o-cineb.svg][Climbing image NEB.]]
-TODO
-This did not do exactly what I expected. I thought there would be an image that had climbed to the top. Maybe this is an artifact of the spline fitting, or the top is within the tolerance of the top two points. More band points would probably clarify that.
+
 
 *** Using vibrations to confirm a transition state
 A transition state should have exactly one imaginary degree of freedom which corresponds to the mode that takes reactants to products. See [[*Vibrations%20of%20the%20bridge%20site][Vibrations of the bridge site]] for an example.
@@ -10077,6 +10082,57 @@ These images (Figure ref:fig:elf1 and ref:fig:elf2) are basically consistent wit
 cite:doi.10.1021/jp202489s
 
 ** TODO Modeling Core level shifts
+#+BEGIN_SRC python
+from ase.db import connect
+
+db = connect('bulk/cls-data.json')
+
+# Select a specific entry in the database
+example = db.get_atoms(id=26)
+print example
+#+END_SRC
+
+#+RESULTS:
+: Atoms(symbols='Cu24', positions=..., tags=..., cell=[[7.270080075032791, 0.0342724757326248, 7.352322015868145], [5.4454905066753225, 5.393756468439129, 0.0330520765170733], [0.0055807399153828, 3.612082596204374, 3.68787360996877]], pbc=[True, True, True], calculator=SinglePointCalculator(...))
+
+
+#+BEGIN_SRC python
+from jasp import *
+
+# This code demonstrates a standard DFT calculation using JASP
+with jasp('bulk/CuPd/0cl',
+          xc='PBE',            # Specify INCAR parameters
+          encut=400,      
+          kpts=(8, 8, 8),
+          ibrion=-1,
+          ediff=1e-6,
+          atoms=atoms) as calc:
+    try:
+        calc.calculate()
+    except(VaspQueued, VaspSubmitted):
+        pass
+
+# This code shows the modifications to a standard JASP
+# calculation to excite a core electron
+with jasp('bulk/CuPd/1cl',
+          xc='PBE',            # Specify INCAR parameters
+          encut=400,      
+          kpts=(8, 8, 8),
+          ibrion=-1,
+          ediff=1e-6,
+          setups={'0': 'Cu'},  # Create sperate entry in POTCAR for atom index 0
+          icorelevel=2,        # Perform core level shift calculation
+          clnt=0,              # Excite atom index 0
+          cln=2,               # 2p3/2 electorn for Cu core level shift
+          cll=1,
+          clz=1,
+          atoms=atoms) as calc:
+    try:
+        calc.calculate()
+    except(VaspQueued, VaspSubmitted):
+        pass
+#+END_SRC
+
 * Acknowledgments
 I would like to thank Zhongnan Xu for sending me some examples on magnetism. Alan McGaughey and Lars Grabow for sending me some NEB examples. Matt Curnan for examples of phonons.
 
