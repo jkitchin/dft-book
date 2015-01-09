@@ -1,1 +1,1 @@
-head molecules/O_sv-4nodes/OUTCAR
+export VASP_PP_PATH=$HOME/vasp/my_vasp_potentials

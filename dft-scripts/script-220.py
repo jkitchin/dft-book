@@ -1,1 +1,1 @@
-Nstates = np.trapz(rho,E)
+pylab.save('pdat.dat',(x,y))

@@ -1,13 +1,12 @@
 import numpy as np
-from Scientific.Geometry import Vector
-A = Vector([1,1,1])   #Scientfic
-a = np.array([1,1,1]) #numpy
-B = Vector([0.0,1.0,0.0])
-print '|A| = ',A.length()        #Scientific Python way
-print '|a| = ',np.sum(a**2)**0.5 #numpy way
-print '|a| = ',np.linalg.norm(a) #numpy way 2
-print 'ScientificPython angle = ',A.angle(B) #in radians
-print 'numpy angle =            ',np.arccos(np.dot(a/np.linalg.norm(a),B/np.linalg.norm(B)))
-#cross products
-print 'Scientific A .cross. B = ',A.cross(B)
-print 'numpy A .cross. B      = ',np.cross(A,B) #you can use Vectors in numpy
+import xlwt
+wbk = xlwt.Workbook()
+sheet = wbk.add_sheet('sheet 1')
+volumes = np.array([13.72, 14.83, 16.0, 17.23, 18.52])
+energies = np.array([-56.29, -56.41, -56.46, -56.46, -56.42])
+for i, pair in enumerate(zip(volumes, energies)):
+    vol = pair[0]
+    energy = pair[1]
+    sheet.write(i,0,vol)
+    sheet.write(i,1,energy)
+wbk.save('images/test-write.xls')

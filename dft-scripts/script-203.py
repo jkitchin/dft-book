@@ -1,21 +1,28 @@
-# compute ELF for CF4
+# Benzene on the slab
 from jasp import *
+from ase.lattice.surface import fcc111, add_adsorbate
 from ase.data.molecules import molecule
-from enthought.mayavi import mlab
-atoms = molecule('CF4')
-atoms.center(vacuum=5)
-with jasp('molecules/cf4-elf',
-          encut=350,
-          prec='high',
-          ismear=0,
-          sigma=0.01,
+from ase.constraints import FixAtoms
+atoms = fcc111('Au', size=(3,3,3), vacuum=10)
+benzene = molecule('C6H6')
+benzene.translate(-benzene.get_center_of_mass())
+# I want the benzene centered on the position in the middle of atoms
+# 20, 22, 23 and 25
+p = (atoms.positions[20] +
+     atoms.positions[22] +
+     atoms.positions[23] +
+     atoms.positions[25])/4.0 + [0.0, 0.0, 3.05]
+benzene.translate(p)
+atoms += benzene
+# now we constrain the slab
+c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
+atoms.set_constraint(c)
+#from ase.visualize import view; view(atoms)
+with jasp('surfaces/Au-benzene-pbe',
           xc='PBE',
-          lelf=True,
+          encut=350,
+          kpts=(4,4,1),
+          ibrion=1,
+          nsw=100,
           atoms=atoms) as calc:
-    calc.calculate()
-    x,y,z,elf = calc.get_elf()
-    mlab.contour3d(x,y,z,elf,contours=[0.3])
-    mlab.savefig('../../images/cf4-elf-3.png')
-    mlab.figure()
-    mlab.contour3d(x,y,z,elf,contours=[0.75])
-    mlab.savefig('../../images/cf4-elf-75.png')
+    print atoms.get_potential_energy()

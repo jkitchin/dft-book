@@ -1,17 +1,14 @@
-# compute local potential of slab with no dipole
-from ase.lattice.surface import fcc111, add_adsorbate
 from jasp import *
-import matplotlib.pyplot as plt
-from ase.io import write
-slab = fcc111('Al', size=(2,2,2), vacuum=10.0)
-add_adsorbate(slab, 'Na', height=1.2, position='fcc')
-slab.center()
-write('images/Na-Al-slab.png', slab, rotation='-90x', show_unit_cell=2)
-with jasp('surfaces/Al-Na-nodip',
-          xc='PBE',
-          encut=340,
-          kpts=(2, 2, 1),
-          lvtot=True, # write out local potential
-          lvhar=True, # write out only electrostatic potential, not xc pot
-          atoms=slab) as calc:
-    calc.calculate()
+with jasp('surfaces/Cu-110') as calc:
+    slab = calc.get_atoms()
+    eslab = slab.get_potential_energy()
+with jasp('surfaces/Cu-110-missing-row') as calc:
+    missingrow = calc.get_atoms()
+    emissingrow = missingrow.get_potential_energy()
+with jasp('bulk/Cu-fcc') as calc:
+    bulk = calc.get_atoms()
+    ebulk = bulk.get_potential_energy()
+print 'natoms slab        = {0}'.format(len(slab))
+print 'natoms missing row = {0}'.format(len(missingrow))
+print 'natoms bulk        = {0}'.format(len(bulk))
+print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)

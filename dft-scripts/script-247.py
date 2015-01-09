@@ -1,3 +1,1 @@
-from jasp import *
-with jasp('bulk/alloy/cu') as calc:
-    print calc.pretty_json
+head molecules/O_sv-4nodes/OUTCAR

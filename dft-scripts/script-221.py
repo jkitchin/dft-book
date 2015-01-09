@@ -1,1 +1,1 @@
-e_avg = np.trapz(rho*E,E)/np.trapz(rho,E)
+x,y = pylab.load('pdat.dat')

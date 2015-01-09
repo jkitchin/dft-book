@@ -1,10 +1,13 @@
-import textwrap
+from jasp import *
 from ase.data.molecules import molecule
-atoms = molecule('CH3CH2OH')
-print atoms
-#delete all the hydrogens
-ind2del = [atom.index for atom in atoms if atom.symbol=='H']
-print 'Indices to delete: ',ind2del
-del atoms[ind2del]
-# now print what is left
-print atoms
+benzene = molecule('C6H6')
+benzene.center(vacuum=5)
+with jasp('molecules/benzene-pbe-d2',
+          xc='PBE',
+          encut=350,
+          kpts=(1,1,1),
+          ibrion=1,
+          nsw=100,
+          lvdw=True,
+          atoms=benzene) as calc:
+    print benzene.get_potential_energy()

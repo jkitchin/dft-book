@@ -4,6 +4,6 @@ from ase.io import write
 s1 = surface('Au', (2, 1, 1), 9)
 s1.center(vacuum=10, axis=2)
 write('images/Au-211.png',
-      s1.repeat((3,3,1)),
-      rotation='-30z,90x', # change the orientation for viewing
+      s1.repeat((3, 3, 1)),
+      rotation='-30z,90x',  # change the orientation for viewing
       show_unit_cell=2)

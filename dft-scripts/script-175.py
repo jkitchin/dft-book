@@ -1,14 +1,18 @@
 from jasp import *
-from ase.lattice.surface import fcc111
+from ase.lattice.surface import fcc111, add_adsorbate
 from ase.constraints import FixAtoms
-atoms = fcc111('Pt', size=(1, 1, 3), vacuum=10.0)
-constraint = FixAtoms(mask=[True for atom in atoms])
+atoms = fcc111('Pt', size=(2, 2, 3), vacuum=10.0)
+# note this function only works when atoms are created by the surface module.
+add_adsorbate(atoms, 'O', height=1.2, position='hcp')
+constraint = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
 atoms.set_constraint(constraint)
-write('images/Pt-fcc-1ML.png', atoms, show_unit_cell=2)
-with jasp('surfaces/Pt-slab-1x1',
+from ase.io import write
+write('images/Pt-hcp-o-site.png', atoms, show_unit_cell=2)
+with jasp('surfaces/Pt-slab-O-hcp',
           xc='PBE',
-          kpts=(8, 8, 1),
+          kpts=(4, 4, 1),
           encut=350,
+          ibrion=2,
+          nsw=25,
           atoms=atoms) as calc:
-    slab_e = atoms.get_potential_energy()
-    print slab_e
+    calc.calculate()

@@ -1,14 +1,29 @@
-from ase.units import *
-d = 1*Angstrom
-print ' d = {0} nm'.format(d/nm)
-print '1 eV = {0} Hartrees'.format(eV/Hartree)
-print '1 eV = {0} Rydbergs'.format(eV/Rydberg)
-print '1 eV = {0} kJ/mol'.format(eV/(kJ/mol))
-print '1 eV = {0} kcal/mol'.format(eV/(kcal/mol))
-print '1 Hartree = {0} kcal/mol'.format(1*Hartree/(kcal/mol))
-print '1 Rydberg = {0} eV'.format(1*Rydberg/eV)
-# derived units
-minute = 60*s
-hour = 60*minute
-#convert 10 hours to minutes
-print '10 hours = {0} minutes'.format(10*hour/minute)
+# Benzene on the slab
+from jasp import *
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.data.molecules import molecule
+from ase.constraints import FixAtoms
+atoms = fcc111('Au', size=(3,3,3), vacuum=10)
+benzene = molecule('C6H6')
+benzene.translate(-benzene.get_center_of_mass())
+# I want the benzene centered on the position in the middle of atoms
+# 20, 22, 23 and 25
+p = (atoms.positions[20] +
+     atoms.positions[22] +
+     atoms.positions[23] +
+     atoms.positions[25])/4.0 + [0.0, 0.0, 3.05]
+benzene.translate(p)
+atoms += benzene
+# now we constrain the slab
+c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
+atoms.set_constraint(c)
+#from ase.visualize import view; view(atoms)
+with jasp('surfaces/Au-benzene-pbe-d2',
+          xc='PBE',
+          encut=350,
+          kpts=(4,4,1),
+          ibrion=1,
+          nsw=100,
+          lvdw=True,
+          atoms=atoms) as calc:
+    print atoms.get_potential_energy()

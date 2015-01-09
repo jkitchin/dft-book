@@ -1,36 +1,28 @@
-# compute local potential with dipole calculation on
-from ase.lattice.surface import fcc111, add_adsorbate
 from jasp import *
-slab = fcc111('Al', size=(2, 2, 2), vacuum=10.0)
-add_adsorbate(slab, 'Na', height=1.2, position='fcc')
-slab.center()
-with jasp('surfaces/Al-Na-dip',
+import matplotlib.pyplot as plt
+with jasp('surfaces/Al-slab-relaxed') as calc:
+    atoms = calc.get_atoms()
+with jasp('surfaces/Al-slab-locpot',
           xc='PBE',
-          encut=340,
-          kpts=(2, 2, 1),
-          idipol=3,   # only along z-axis
-          lvtot=True, # write out local potential
-          lvhar=True, # write out only electrostatic potential, not xc pot
-          atoms=slab) as calc:
+          kpts=(6, 6, 1),
+          encut=350,
+          lvtot=True,  # write out local potential
+          lvhar=True,  # write out only electrostatic potential, not xc pot
+          atoms=atoms) as calc:
     calc.calculate()
-    x, y, z, cd = calc.get_charge_density()
-    n0, n1, n2 = cd.shape
-    nelements = n0 * n1 * n2
-    voxel_volume = slab.get_volume() / nelements
-    total_electron_charge = cd.sum() * voxel_volume
-    electron_density_center = np.array([(cd * x).sum(),
-                                        (cd * y).sum(),
-                                        (cd * z).sum()])
-    electron_density_center *= voxel_volume
-    electron_density_center /= total_electron_charge
-    print 'electron-density center = {0}'.format(electron_density_center)
-    uc = slab.get_cell()
-    # get scaled electron charge density center
-    sedc = np.dot(np.linalg.inv(uc.T), electron_density_center.T).T
-    # we only write 4 decimal places out to the INCAR file, so we round here.
-    sedc = np.round(sedc,4)
-    calc.clone('surfaces/Al-Na-dip-step2')
-# now run step 2 with dipole set at scaled electron charge density center
-with jasp('surfaces/Al-Na-dip-step2',
-           ldipol=True, dipol=sedc) as calc:
-    calc.calculate()
+    ef = calc.get_fermi_level()
+    atoms = calc.get_atoms()
+    x, y, z, lp = calc.get_local_potential()
+nx, ny, nz = lp.shape
+axy = np.array([np.average(lp[:, :, z]) for z in range(nz)])
+# setup the x-axis in realspace
+uc = atoms.get_cell()
+xaxis = np.linspace(0, uc[2][2], nz)
+plt.plot(xaxis, axy)
+plt.plot([min(xaxis), max(xaxis)], [ef, ef], 'k:')
+plt.xlabel('Position along z-axis')
+plt.ylabel('x-y averaged electrostatic potential')
+plt.savefig('images/Al-wf.png')
+ind = (xaxis > 0) & (xaxis < 5)
+wf = np.average(axy[ind]) - ef
+print ' The workfunction is {0:1.2f} eV'.format(wf)

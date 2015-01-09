@@ -1,29 +1,29 @@
 from jasp import *
+from ase.lattice.surface import fcc111
 import matplotlib.pyplot as plt
-with jasp('surfaces/Al-Na-nodip') as calc:
-    atoms = calc.get_atoms()
-    x, y, z, lp = calc.get_local_potential()
-    nx, ny, nz = lp.shape
-    axy_1 = [np.average(lp[:, :, z]) for z in range(nz)]
-    # setup the x-axis in realspace
-    uc = atoms.get_cell()
-    xaxis_1 = np.linspace(0,uc[2][2],nz)
-    e1 = atoms.get_potential_energy()
-with jasp('surfaces/Al-Na-dip-step2') as calc:
-    atoms = calc.get_atoms()
-    x, y, z, lp = calc.get_local_potential()
-    nx, ny, nz = lp.shape
-    axy_2 = [np.average(lp[:, :, z]) for z in range(nz)]
-    # setup the x-axis in realspace
-    uc = atoms.get_cell()
-    xaxis_2 = np.linspace(0, uc[2][2], nz)
-    ef2 = calc.get_fermi_level()
-    e2 = atoms.get_potential_energy()
-print 'The difference in energy is {0} eV.'.format(e2-e1)
-plt.plot(xaxis_1, axy_1, label='no dipole correction')
-plt.plot(xaxis_2, axy_2, label='dipole correction')
-plt.plot([min(xaxis_2), max(xaxis_2)],[ef2,ef2], 'k:', label='Fermi level')
-plt.xlabel('z ($\AA$)')
-plt.ylabel('xy-averaged electrostatic potential')
-plt.legend(loc='best')
-plt.savefig('images/dip-vs-nodip-esp.png')
+Nlayers = [3, 4, 5, 6, 7, 8, 9, 10, 11]
+energies = []
+sigmas = []
+for n in Nlayers:
+    slab = fcc111('Cu', size=(1, 1, n), vacuum=10.0)
+    slab.center()
+    with jasp('bulk/Cu-layers/{0}'.format(n),
+              xc='PBE',
+              encut=350,
+              kpts=(8, 8, 1),
+              atoms=slab) as calc:
+        calc.set_nbands(f=2)  # the default nbands in VASP is too low for Al
+        try:
+            energies.append(slab.get_potential_energy())
+        except (VaspSubmitted, VaspQueued):
+            pass
+for i in range(len(Nlayers) - 1):
+    N = Nlayers[i]
+    DeltaE_N = energies[i + 1] - energies[i]
+    sigma = 0.5 * (-N * energies[i + 1] + (N + 1) * energies[i])
+    sigmas.append(sigma)
+    print 'nlayers = {1:2d} sigma = {0:1.3f} eV/atom'.format(sigma, N)
+plt.plot(Nlayers[0:-1], sigmas, 'bo-')
+plt.xlabel('Number of layers')
+plt.ylabel('Surface energy (eV/atom)')
+plt.savefig('images/Cu-unrelaxed-surface-energy.png')

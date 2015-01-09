@@ -1,37 +1,58 @@
-#examples of linear curve fitting using least squares
-import numpy as np
-xdata = np.array([0.,1.,2.,3.,4.,5.,6.])
-ydata = np.array([0.1, 0.81, 4.03, 9.1, 15.99, 24.2, 37.2])
-#fit a third order polynomial
-from pylab import polyfit, plot, xlabel, ylabel, show, legend, savefig
-pars = polyfit(xdata,ydata,3)
-print 'pars from polyfit: {0}'.format(pars)
-## numpy method returns more data
-A = np.column_stack([xdata**3,
-                     xdata**2,
-                     xdata,
-                     np.ones(len(xdata),np.float)])
-pars_np,resids,rank,s = np.linalg.lstsq(A, ydata)
-print 'pars from np.linalg.lstsq: {0}'.format(pars_np)
 '''
-we are trying to solve Ax = b for x in the least squares sense. There
-are more rows in A than elements in x so, we can left multiply each
-side by A^T, and then solve for x with an inverse.
-A^TAx = A^Tb
-x = (A^TA)^-1 A^T b
+adapted from https://listserv.fysik.dtu.dk/pipermail/campos/2004-September/001155.html
 '''
-# not as pretty but equivalent!
-pars_man= np.dot(np.linalg.inv(np.dot(A.T,A)), np.dot(A.T,ydata))
-print 'pars from linear algebra: {0}'.format(pars_man)
-#but, it is easy to fit an exponential function to it!
-# y = a*exp(x)+b
-Aexp = np.column_stack([np.exp(xdata), np.ones(len(xdata), np.float)])
-pars_exp=np.dot(np.linalg.inv(np.dot(Aexp.T, Aexp)), np.dot(Aexp.T, ydata))
-plot(xdata, ydata, 'ro')
-fity = np.dot(A, pars)
-plot(xdata, fity, 'k-', label='poly fit')
-plot(xdata, np.dot(Aexp, pars_exp), 'b-', label='exp fit')
-xlabel('x')
-ylabel('y')
-legend()
-savefig('images/curve-fit-1.png')
+from ase import *
+from ase.io import write
+from ase.lattice.surface import bcc111, add_adsorbate
+from ase.constraints import FixAtoms
+# the bcc111 function automatically tags atoms
+slab = bcc111('W',
+              a=3.92,       # W lattice constant
+              size=(2,2,6), # 6-layer slab in 2x2 configuration
+              vacuum=10.0)
+#reset tags to be powers of two so we can use binary math
+slab.set_tags([2**a.get_tag() for a in slab])
+# we had 6 layers, so we create new tags starting at 7
+# Note you must use powers of two for all the tags!
+LAYER1 = 2
+ADSORBATE = 2**7
+FREE = 2**8
+NEARADSORBATE = 2**9
+# let us tag LAYER1 atoms to be FREE too. we can address it by LAYER1 or FREE
+tags = slab.get_tags()
+for i,tag in enumerate(tags):
+    if tag == LAYER1:
+        tags[i] += FREE
+slab.set_tags(tags)
+#create a CO molecule
+co= Atoms([Atom('C',[0., 0., 0. ], tag=ADSORBATE),
+           Atom('O',[0., 0., 1.1], tag=ADSORBATE+FREE)]) #we will relax only O
+add_adsorbate(slab,co,height=1.2,position='hollow')
+#the adsorbate is centered between atoms 20, 21 and 22 (use
+#view(slab)) and over atom12 let us label those atoms, so it is easy to
+#do electronic structure analysis on them later.
+tags = slab.get_tags() # len(tags) changed, so we reget them.
+tags[12]+=NEARADSORBATE
+tags[20]+=NEARADSORBATE
+tags[21]+=NEARADSORBATE
+tags[22]+=NEARADSORBATE
+slab.set_tags(tags)
+#update the tags
+slab.set_tags(tags)
+#extract pieces of the slab based on tags
+#atoms in the adsorbate
+ads = slab[(slab.get_tags() & ADSORBATE) == ADSORBATE]
+#atoms in LAYER1
+layer1 = slab[(slab.get_tags() & LAYER1) == LAYER1]
+#atoms defined as near the adsorbate
+nearads = slab[(slab.get_tags() & NEARADSORBATE) == NEARADSORBATE]
+#atoms that are free
+free = slab[(slab.get_tags() & FREE) == FREE]
+#atoms that are FREE and part of the ADSORBATE
+freeads = slab[(slab.get_tags() & FREE+ADSORBATE) == FREE+ADSORBATE]
+#atoms that are NOT FREE
+notfree = slab[(slab.get_tags() & FREE) != FREE]
+constraint = FixAtoms(mask = (slab.get_tags() & FREE) != FREE)
+slab.set_constraint(constraint)
+write('images/tagged-bcc111.png', slab, rotation='-90x', show_unit_cell=2)
+from ase.visualize import view; view(slab)

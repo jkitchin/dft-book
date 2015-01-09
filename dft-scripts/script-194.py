@@ -1,17 +1,17 @@
-from jasp import *
-# don't forget to normalize your total energy to a formula unit. Cu2O
-# has 3 atoms, so the number of formula units in an atoms is
-# len(atoms)/3.
-with jasp('bulk/Cu2O-U=4.0') as calc:
-    atoms = calc.get_atoms()
-    cu2o_energy = atoms.get_potential_energy()/(len(atoms)/3)
-with jasp('bulk/CuO-U=4.0') as calc:
-    atoms = calc.get_atoms()
-    cuo_energy = atoms.get_potential_energy()/(len(atoms)/2)
-# make sure to use the same cutoff energy for the O2 molecule!
-with jasp('molecules/O2-sp-triplet-400') as calc:
-    atoms = calc.get_atoms()
-    o2_energy = atoms.get_potential_energy()
-rxn_energy = 4.0*cuo_energy - o2_energy - 2.0*cu2o_energy
-print 'Reaction energy  = {0} eV'.format(rxn_energy)
-print 'Corrected energy = {0} eV'.format(rxn_energy - 1.36)
+import numpy as np
+import matplotlib.pyplot as plt
+fcc25 = -1.04
+hcp25 = -0.60
+bridge25 = -0.49
+fcc1 = -0.10
+Dmu = np.linspace(-4, 2)
+plt.plot(Dmu, np.zeros(Dmu.shape), label='Pt(111)')
+plt.plot(Dmu, 0.25 * (fcc25 - 0.5*Dmu), label='fcc - 0.25 ML')
+plt.plot(Dmu, 0.25 * (hcp25 - 0.5*Dmu), label='hcp - 0.25 ML')
+plt.plot(Dmu, 0.25 * (bridge25 - 0.5*Dmu), label='bridge - 0.25 ML')
+plt.plot(Dmu, 1.0 * (fcc1 - 0.5*Dmu), label='fcc - 1.0 ML')
+plt.xlabel(r'$\Delta \mu O_2$ (eV)')
+plt.ylabel(r'$\Delta G_{ads}$ (eV/O)')
+plt.legend(loc='best')
+plt.savefig('images/atomistic-thermo-adsorption.png')
+plt.show()

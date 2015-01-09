@@ -1,18 +1,17 @@
-from jasp import *
+# compute local potential of slab with no dipole
 from ase.lattice.surface import fcc111, add_adsorbate
-from ase.constraints import FixAtoms
-atoms = fcc111('Pt', size=(2, 2, 3), vacuum=10.0)
-# note this function only works when atoms are created by the surface module.
-add_adsorbate(atoms, 'O', height=1.2, position='fcc')
-constraint = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
-atoms.set_constraint(constraint)
+from jasp import *
+import matplotlib.pyplot as plt
 from ase.io import write
-write('images/Pt-fcc-site.png', atoms, show_unit_cell=2)
-with jasp('surfaces/Pt-slab-O-fcc',
+slab = fcc111('Al', size=(2, 2, 2), vacuum=10.0)
+add_adsorbate(slab, 'Na', height=1.2, position='fcc')
+slab.center()
+write('images/Na-Al-slab.png', slab, rotation='-90x', show_unit_cell=2)
+with jasp('surfaces/Al-Na-nodip',
           xc='PBE',
-          kpts=[4, 4, 1],
-          encut=350,
-          ibrion=2,
-          nsw=25,
-          atoms=atoms) as calc:
-    print atoms.get_potential_energy()
+          encut=340,
+          kpts=(2, 2, 1),
+          lvtot=True,  # write out local potential
+          lvhar=True,  # write out only electrostatic potential, not xc pot
+          atoms=slab) as calc:
+    calc.calculate()
