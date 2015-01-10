@@ -225,7 +225,7 @@ atoms = Atoms([Atom('C', [0., 0., 0.]),
                Atom('O', [1.1, 0., 0.])],
               cell=(10, 10, 10))
 
-print 'V = {0:1.0f} Angstrom^3'.format(atoms.get_volume())
+print('V = {0:1.0f} Angstrom^3'.format(atoms.get_volume()))
 
 write('images/simple-cubic-cell.png', atoms, show_unit_cell=2)
 #+END_SRC
@@ -284,9 +284,9 @@ atoms = Atoms([Atom('C', [0., 0., 0.]),
 
 # get unit cell vectors and their lengths
 (a1, a2, a3) = atoms.get_cell()
-print '|a1| = {0:1.2f} Ang'.format(np.sum(a1**2)**0.5)
-print '|a2| = {0:1.2f} Ang'.format(np.linalg.norm(a2))
-print '|a3| = {0:1.2f} Ang'.format(np.sum(a3**2)**0.5)
+print('|a1| = {0:1.2f} Ang'.format(np.sum(a1**2)**0.5))
+print('|a2| = {0:1.2f} Ang'.format(np.linalg.norm(a2)))
+print('|a3| = {0:1.2f} Ang'.format(np.sum(a3**2)**0.5))
 #+END_SRC
 
 #+RESULTS:
@@ -390,7 +390,7 @@ from ase.data import g2
 keys = g2.data.keys()
 # print in 3 columns
 for i in range(len(keys) / 3):
-    print '{0:25s}{1:25s}{2:25s}'.format(*tuple(keys[i * 3: i * 3 + 3]))
+    print('{0:25s}{1:25s}{2:25s}'.format(*tuple(keys[i * 3: i * 3 + 3])))
 #+END_SRC
 
 #+RESULTS:
@@ -521,9 +521,9 @@ from ase.io import write
 atoms = molecule('CH3CN')
 
 atoms.center(vacuum=6)
-print 'unit cell'
-print '---------'
-print atoms.get_cell()
+print('unit cell')
+print('---------')
+print(atoms.get_cell())
 
 write('images/ch3cn.png', atoms, show_unit_cell=2)
 #+END_SRC
@@ -550,9 +550,9 @@ from ase.io import write
 atoms = molecule('CH3CN')
 
 atoms.center(vacuum=6)
-print 'unit cell'
-print '---------'
-print atoms.get_cell()
+print('unit cell')
+print('---------')
+print(atoms.get_cell())
 
 write('images/ch3cn-rotated.png', atoms,
       show_unit_cell=2, rotation='45x,45y,0z')
@@ -584,14 +584,14 @@ atoms.rotate('x', pi/4, center='COM', rotate_cell=False)
 atoms.rotate('y', pi/4, center='COM', rotate_cell=False)
 
 write('images/ch3cn-rotated-2.png', atoms, show_unit_cell=2)
-print 'difference in positions after rotating'
-print 'atom    difference vector'
-print '--------------------------------------'
+print('difference in positions after rotating')
+print('atom    difference vector')
+print('--------------------------------------')
 p2 = atoms.get_positions()
 
 diff = p2 - p1
 for i, d in enumerate(diff):
-    print '{0} {1}'.format(i, d)
+    print('{0} {1}'.format(i, d))
 #+END_SRC
 
 #+RESULTS:
@@ -646,14 +646,14 @@ from ase.structure import molecule
 atoms = molecule('C6H6')  # benzene
 
 # access properties on each atom
-print ' #  sym   p_x     p_y     p_z'
-print '------------------------------'
+print(' #  sym   p_x     p_y     p_z')
+print('------------------------------')
 for i, atom in enumerate(atoms):
-   print '{0:3d}{1:^4s}{2:-8.2f}{3:-8.2f}{4:-8.2f}'.format(i,
+   print('{0:3d}{1:^4s}{2:-8.2f}{3:-8.2f}{4:-8.2f}'.format(i,
                                                            atom.symbol,
                                                            atom.x,
                                                            atom.y,
-                                                           atom.z)
+                                                           atom.z))
 
 # get all properties in arrays
 sym = atoms.get_chemical_symbols()
@@ -663,12 +663,12 @@ num = atoms.get_atomic_numbers()
 atom_indices = range(len(atoms))
 
 print
-print '  # sym    at#    p_x     p_y     p_z'
-print '-------------------------------------'
+print('  # sym    at#    p_x     p_y     p_z')
+print('-------------------------------------')
 for i, s, n, p in zip(atom_indices, sym, num, pos):
     px, py, pz = p
-    print '{0:3d}{1:>3s}{2:8d}{3:-8.2f}{4:-8.2f}{5:-8.2f}'.format(i, s, n,
-                                                                  px, py, pz)
+    print('{0:3d}{1:>3s}{2:8d}{3:-8.2f}{4:-8.2f}{5:-8.2f}'.format(i, s, n,
+                                                                  px, py, pz))
 #+END_SRC
 
 #+RESULTS:
@@ -719,7 +719,7 @@ molecular_formula = atoms.get_chemical_formula(mode='reduce')
 
 # note use of two lines to keep length of line reasonable
 s = 'The molecular weight of {0} is {1:1.2f} gm/mol'
-print s.format(molecular_formula, molecular_weight)
+print(s.format(molecular_formula, molecular_weight))
 #+END_SRC
 
 #+RESULTS:
@@ -742,7 +742,8 @@ import numpy as np
 # ammonia
 atoms = molecule('NH3')
 
-print 'COM1 = {0}'.format(atoms.get_center_of_mass())  # cartesian coordinates
+  # cartesian coordinates
+print('COM1 = {0}'.format(atoms.get_center_of_mass()))
 
 # compute the center of mass by hand
 pos = atoms.positions
@@ -753,10 +754,10 @@ for m, p in zip(masses, pos):
     COM += m*p
 COM /= masses.sum()
 
-print 'COM2 = {0}'.format(COM)
+print('COM2 = {0}'.format(COM))
 
 # one-line linear algebra definition of COM
-print 'COM3 = {0}'.format(np.dot(masses, pos) / np.sum(masses))
+print('COM3 = {0}'.format(np.dot(masses, pos) / np.sum(masses)))
 #+END_SRC
 
 #+RESULTS:
@@ -773,32 +774,32 @@ The [[http://en.wikipedia.org/wiki/Moment_of_inertia][moment of inertia]] is a m
 #+BEGIN_SRC python :results output :exports both
 from ase.structure import molecule
 
-print 'linear rotors: I = [0 Ia Ia]'
+print('linear rotors: I = [0 Ia Ia]')
 atoms = molecule('CO2')
-print '  CO2 moments of inertia: ', atoms.get_moments_of_inertia()
-print
+print('  CO2 moments of inertia: ', atoms.get_moments_of_inertia())
+print()
 
-print 'symmetric rotors (Ia = Ib) < Ic'
+print('symmetric rotors (Ia = Ib) < Ic')
 atoms = molecule('NH3')
-print '  NH3 moments of inertia: ', atoms.get_moments_of_inertia()
+print('  NH3 moments of inertia: ', atoms.get_moments_of_inertia())
 
 atoms = molecule('C6H6')
-print '  C6H6 moments of inertia:', atoms.get_moments_of_inertia()
-print
+print('  C6H6 moments of inertia:', atoms.get_moments_of_inertia())
+print()
 
-print 'symmetric rotors Ia < (Ib = Ic)'
+print('symmetric rotors Ia < (Ib = Ic)')
 atoms = molecule('CH3Cl')
-print 'CH3Cl moments of inertia: ', atoms.get_moments_of_inertia()
-print
+print('CH3Cl moments of inertia: ', atoms.get_moments_of_inertia())
+print()
 
-print 'spherical rotors Ia = Ib = Ic'
+print('spherical rotors Ia = Ib = Ic')
 atoms = molecule('CH4')
-print '  CH4 moments of inertia: ', atoms.get_moments_of_inertia()
-print
+print('  CH4 moments of inertia: ', atoms.get_moments_of_inertia())
+print()
 
-print 'unsymmetric rotors Ia != Ib != Ic'
+print('unsymmetric rotors Ia != Ib != Ic')
 atoms = molecule('C3H7Cl')
-print '  C3H7Cl moments of inertia: ', atoms.get_moments_of_inertia()
+print('  C3H7Cl moments of inertia: ', atoms.get_moments_of_inertia())
 #+END_SRC
 
 #+RESULTS:
@@ -827,8 +828,8 @@ from ase.structure import molecule
 
 atoms = molecule('CH3Cl')
 moments, axes = atoms.get_moments_of_inertia(vectors=True)
-print 'Moments = {0}'.format(moments)
-print 'axes = {0}'.format(axes)
+print('Moments = {0}'.format(moments))
+print('axes = {0}'.format(axes))
 #+END_SRC
 
 #+RESULTS:
@@ -848,14 +849,14 @@ from ase.structure import molecule
 # ammonia
 atoms = molecule('NH3')
 
-print 'atom symbol'
-print '==========='
+print('atom symbol')
+print('===========')
 for i, atom in enumerate(atoms):
-    print '{0:2d} {1:3s}' .format(i, atom.symbol)
+    print('{0:2d} {1:3s}' .format(i, atom.symbol))
 
 # N-H bond length
 s = 'The N-H distance is {0:1.3f} angstroms'
-print s.format(atoms.get_distance(0, 1))
+print(s.format(atoms.get_distance(0, 1)))
 #+END_SRC
 
 #+RESULTS:
@@ -875,10 +876,10 @@ from ase.structure import molecule
 # ammonia
 atoms = molecule('NH3')
 
-print 'atom symbol'
-print '==========='
+print('atom symbol')
+print('===========')
 for i, atom in enumerate(atoms):
-    print '{0:2d} {1:3s}'.format(i, atom.symbol)
+    print('{0:2d} {1:3s}'.format(i, atom.symbol))
 
 a = atoms.positions[0] - atoms.positions[1]
 b = atoms.positions[0] - atoms.positions[2]
@@ -888,7 +889,7 @@ from numpy.linalg import norm
 
 theta_rad = arccos(dot(a, b) / (norm(a) * norm(b)))  # in radians
 
-print 'theta = {0:1.1f} degrees'.format(theta_rad * 180./pi)
+print('theta = {0:1.1f} degrees'.format(theta_rad * 180./pi))
 #+END_SRC
 
 #+RESULTS:
@@ -912,7 +913,7 @@ from numpy import pi
 # ammonia
 atoms = molecule('NH3')
 
-print 'theta = {0} degrees'.format(atoms.get_angle([1, 0, 2]) * 180. / pi)
+print('theta = {0} degrees'.format(atoms.get_angle([1, 0, 2]) * 180. / pi))
 #+END_SRC
 
 #+RESULTS:
@@ -928,13 +929,13 @@ import numpy as np
 
 atoms = molecule('C2H6')
 
-print 'atom symbol'
-print '==========='
+print('atom symbol')
+print('===========')
 for i, atom in enumerate(atoms):
-  print '{0:2d} {1:3s}'.format(i, atom.symbol)
+  print('{0:2d} {1:3s}'.format(i, atom.symbol))
 
 da = atoms.get_dihedral([5, 1, 0, 4]) * 180. / np.pi
-print 'dihedral angle = {0:1.2f} degrees'.format(da)
+print('dihedral angle = {0:1.2f} degrees'.format(da))
 #+END_SRC
 
 #+RESULTS:
@@ -996,8 +997,8 @@ with jasp('molecules/simple-co',  # output dir
           ismear=1,    # Methfessel-Paxton smearing
           sigma=0.01,  # very small smearing factor for a molecule
           atoms=co) as calc:
-    print 'energy = {0} eV'.format(co.get_potential_energy())
-    print co.get_forces()
+    print('energy = {0} eV'.format(co.get_potential_energy()))
+    print(co.get_forces())
 #+END_SRC
 
 #+RESULTS:
@@ -1061,7 +1062,7 @@ L = [4, 5, 6, 8, 10]
 
 for a in L:
     with jasp('molecules/co-L-{0}'.format(a)) as calc:
-        print '{0} {1} seconds'.format(a, calc.get_elapsed_time())
+        print('{0} {1} seconds'.format(a, calc.get_elapsed_time()))
 #+END_SRC
 
 #+RESULTS:
@@ -1381,7 +1382,7 @@ with jasp('molecules/co-centered') as calc:
 
     dipole_moment = ((dipole_vector**2).sum())**0.5 / Debye
 
-    print 'The dipole moment is {0:1.2f} Debye'.format(dipole_moment)
+    print('The dipole moment is {0:1.2f} Debye'.format(dipole_moment))
 #+END_SRC
 
 #+RESULTS:
@@ -1395,7 +1396,7 @@ from ase.units import Debye
 with jasp('molecules/co-centered') as calc:
     dipole_vector = calc.get_dipole_moment()
     dipole_moment = ((dipole_vector**2).sum())**0.5/Debye
-    print 'The dipole moment is {0:1.2f} Debye'.format(dipole_moment)
+    print('The dipole moment is {0:1.2f} Debye'.format(dipole_moment))
 #+END_SRC
 
 #+RESULTS:
@@ -1694,12 +1695,12 @@ with jasp('molecules/h2o-bader') as calc:
 
     attach_charges(newatoms, 'ACF.dat')
 
-    print '#+tblname: bader'
-    print '#+caption: Bader charges for a water molecule'
-    print '| atom | Bader charge|'
-    print '|-'
+    print('#+tblname: bader')
+    print('#+caption: Bader charges for a water molecule')
+    print('| atom | Bader charge|')
+    print('|-')
     for atom in newatoms:
-        print '|{0} | {1} |'.format(atom.symbol, atom.charge)
+        print('|{0} | {1} |'.format(atom.symbol, atom.charge))
 #+END_SRC
 
 #+RESULTS:
@@ -1743,10 +1744,10 @@ for d in bond_lengths:  # possible bond lengths
         try:
             e = co.get_potential_energy()
             energies.append(e)
-            print 'd = {0:1.2f} ang'.format(d)
-            print 'energy = {0:1.3f} eV'.format(e)
-            print 'forces = (eV/ang)\n {0}'.format(co.get_forces())
-            print ''  # blank line
+            print('d = {0:1.2f} ang'.format(d))
+            print('energy = {0:1.3f} eV'.format(e))
+            print('forces = (eV/ang)\n {0}'.format(co.get_forces()))
+            print('')  # blank line
         except (VaspSubmitted, VaspQueued):
             energies.append(None)
             pass
@@ -1825,7 +1826,7 @@ secd = np.polyval(dpp, roots)
 minV = roots[secd > 0]
 minE = np.polyval(pp, minV)
 
-print 'The minimum energy is {0} eV at V = {1} Ang^3'.format(minE, minV)
+print('The minimum energy is {0} eV at V = {1} Ang^3'.format(minE, minV))
 
 # plot the fit
 x = np.linspace(1.05, 1.25)
@@ -1881,16 +1882,21 @@ with jasp('molecules/co-cg',
           nsw=5,      # do at least 5 steps to relax
           atoms=co) as calc:
 
-    print 'Forces'
-    print '======='
-    print  co.get_forces()
+    print('Forces')
+    print('=======')
+    print(co.get_forces())
 
     pos = co.get_positions()
     d = ((pos[0] - pos[1])**2).sum()**0.5
-    print 'Bondlength = {0:1.2f} angstroms'.format(d)
+    print('Bondlength = {0:1.2f} angstroms'.format(d))
 #+END_SRC
 
 #+RESULTS:
+: Forces
+: =======
+: [[ 0.013  0.     0.   ]
+:  [-0.013  0.     0.   ]]
+: Bondlength = 1.14 angstroms
 
 *** Relaxation of a water molecule
 It is not more complicated to relax more atoms, it just may take longer because there are more electrons and degrees of freedom. Here we relax a water molecule which has three atoms.
@@ -1912,9 +1918,9 @@ with jasp('molecules/h2o_relax',
           nsw=10,
           atoms=atoms) as calc:
 
-    print "forces"
-    print '======='
-    print atoms.get_forces()
+    print("forces")
+    print('=======')
+    print(atoms.get_forces())
 #+END_SRC
 
 #+RESULTS:
@@ -1976,8 +1982,8 @@ O_mass = atomic_masses[8] / kg
 mu = 1.0 / (1.0 / C_mass + 1.0 / O_mass)
 
 frequency = 1. / (2. * np.pi) * np.sqrt(k / mu)
-print 'The CO vibrational frequency is {0} Hz'.format(*frequency)
-print 'The CO vibrational frequency is {0} cm^{{-1}}'.format(frequency/3e10)
+print('The CO vibrational frequency is {0} Hz'.format(*frequency))
+print('The CO vibrational frequency is {0} cm^{{-1}}'.format(frequency / 3e10))
 
 import matplotlib.pyplot as plt
 plt.plot(bond_lengths, energies, 'bo ')
@@ -2005,7 +2011,7 @@ nu = 2143.6076625*c  # 1/s
 
 E_zpe = 0.5*h*nu
 
-print 'E_ZPE = {0:1.3f} eV'.format(E_zpe)
+print('E_ZPE = {0:1.3f} eV'.format(E_zpe))
 #+END_SRC
 
 #+RESULTS:
@@ -2042,15 +2048,15 @@ with jasp('molecules/h2o_vib',
           nsw=1,        # Set to 1 for vibrational calculation
           atoms=atoms) as calc:
 
-    print 'Forces'
-    print '======'
-    print atoms.get_forces()
-    print
+    print('Forces')
+    print('======')
+    print(atoms.get_forces())
+    print()
     # vibrational energies are in eV
     energies, modes = calc.get_vibrational_modes()
-    print 'energies\n========'
+    print('energies\n========')
     for i, e in enumerate(energies):
-        print '{0:02d}: {1} eV'.format(i, e)
+        print('{0:02d}: {1} eV'.format(i, e))
 #+END_SRC
 
 #+RESULTS:
@@ -2060,7 +2066,7 @@ Forces
 [[ 0.018 -0.032 -0.001]
  [-0.035  0.     0.003]
  [ 0.018  0.032 -0.001]]
-
+()
 energies
 ========
 00: 0.475824705 eV
@@ -2135,11 +2141,11 @@ for f in freq:
     nu = f * c  # convert to frequency
     ZPE += 0.5 * h * nu
 
-print 'The ZPE of water is {0:1.3f} eV'.format(ZPE)
+print('The ZPE of water is {0:1.3f} eV'.format(ZPE))
 
 # one liner
 ZPE = np.sum([0.5 * h * f * c for f in freq if isinstance(f, float)])
-print 'The ZPE of water is {0:1.3f} eV'.format(ZPE)
+print('The ZPE of water is {0:1.3f} eV'.format(ZPE))
 #+END_SRC
 
 #+RESULTS:
@@ -2169,9 +2175,9 @@ with jasp('molecules/h2o_relax',
           ediff=1e-8,
           nsw=10,
           atoms=atoms) as calc:
-    print 'Forces'
-    print '==========================='
-    print atoms.get_forces()
+    print('Forces')
+    print('===========================')
+    print(atoms.get_forces())
 #+END_SRC
 
 #+RESULTS:
@@ -3861,7 +3867,7 @@ plt.show()
 
 #+RESULTS:
 : Optimization terminated successfully.
-:          Current function value: -0.223051
+:          Current function value: -0.223946
 :          Iterations: 15
 :          Function evaluations: 30
 
@@ -10132,6 +10138,118 @@ with jasp('bulk/CuPd/1cl',
     except(VaspQueued, VaspSubmitted):
         pass
 #+END_SRC
+
+** The BEEF functional in Vasp
+In Vasp 5.3.5 it is possible to use the BEEF functional cite:wellendorff-2012-densit.
+
+In jasp, we just specify incar:gga='BF', and jasp takes care of the rest. This includes setting some addtional variables to setup van der Waals and to get the BEEF ensemble energies. Let us consider the dissociation energy of H_{2}.
+
+#+Begin_SRC python
+import sys
+sys.path.insert(0, '/home-research/jkitchin/kitchin-python/jasp2')
+import jasp 
+print jasp.__file__
+
+from jasp import *
+from ase.structure import molecule
+import matplotlib.pyplot as plt
+
+H2 = molecule('H2')
+H2.set_cell([8, 8, 8], scale_atoms=False)
+
+with jasp('molecules/H2-beef',
+          xc='PBE', gga='BF',
+          encut=350,
+          ismear=0,
+          ibrion=2,
+          nsw=10,
+          atoms=H2) as calc:
+    try:
+        eH2 = H2.get_potential_energy()
+        print eH2
+    except (VaspSubmitted, VaspQueued):
+        eH2 = None
+#+END_SRC
+
+#+RESULTS:
+: /home-research/jkitchin/kitchin-python/jasp2/jasp/__init__.pyc
+: -7.13332059
+
+Next, we get an H atom.
+#+BEGIN_SRC python
+from jasp import *
+from ase.structure import molecule
+
+H = molecule('H')
+H.set_cell([8, 8, 8], scale_atoms=False)
+
+with jasp('molecules/H-beef',
+          xc='PBE', gga='BF',
+          encut=350,
+          ismear=0,
+          atoms=H) as calc:
+    try:
+        eH = H.get_potential_energy()
+        print eH
+    except (VaspSubmitted, VaspQueued):
+        print('running or queued')
+        eH = None
+#+END_SRC
+#+RESULTS:
+: -1.15994056
+
+Now, the dissociation energy.
+
+#+BEGIN_SRC python
+from jasp import *
+
+with jasp('molecules/H-beef') as calc:
+    H = calc.get_atoms()
+    eH = H.get_potential_energy()
+
+with jasp('molecules/H2-beef') as calc:
+    H2 = calc.get_atoms()
+    eH2 = H2.get_potential_energy()
+
+print('D = {} eV'.format(2 * eH - eH2))
+#+END_SRC
+
+#+RESULTS:
+: -1.15994056 -7.13332059
+: D = 4.81343947 eV
+
+It doesn't look like we have done much so far. How certain are we of the dissociation energy? Let us consider the ensemble of energies. In the calculation, an ensemble of functionals is used, and each one produces a different energy. We can look at the distribution of these energies to estimate the uncertainty in energy differences. We use the func:jasp.jasp_extensions.get_beefens to get the ensemble. We calculate the uncertainty in our reaction energy by calculating the standard deviation of the appropriately weighted difference of ensembles.
+
+Note that this ensemble represents the contribution just from the functionals, and not all the other contributions. So, the differences in the ensembles only represents that part of the uncertainty
+
+#+BEGIN_SRC python
+from jasp import *
+
+with jasp('molecules/H-beef') as calc:
+    ensH = calc.get_beefens()
+
+with jasp('molecules/H2-beef') as calc:
+    ensH2 = calc.get_beefens()
+
+ensD = 2 * ensH - ensH2
+
+print('mean = {} eV'.format(ensD.mean()))
+print('std = {} eV'.format(ensD.std()))
+
+import matplotlib.pyplot as plt
+plt.hist(ensD, 20)
+plt.xlabel('Deviation')
+plt.ylabel('frequency')
+plt.savefig('images/beef-ens.png')      
+#+END_SRC
+
+#+RESULTS:
+: mean = 0.000755737994073 eV
+: std = 0.183590801736 eV
+
+You can see the mean is nearly zero, suggesting the deviations are symmetrically distributed. The std error is 0.184 eV, which represents about a 68% confidence interval.
+
+[[./images/beef-ens.png]]
 
 * Acknowledgments
 I would like to thank Zhongnan Xu for sending me some examples on magnetism. Alan McGaughey and Lars Grabow for sending me some NEB examples. Matt Curnan for examples of phonons.
