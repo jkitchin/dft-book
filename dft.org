@@ -9892,7 +9892,7 @@ Van der Waal forces can play a considerable role in binding of aromatic molecule
 **** gas-phase benzene
 #+BEGIN_SRC python :results output
 from jasp import *
-from ase.data.molecules import molecule
+from ase.structure import molecule
 
 benzene = molecule('C6H6')
 benzene.center(vacuum=5)
@@ -9943,7 +9943,7 @@ with jasp('surfaces/Au-pbe',
 # Benzene on the slab
 from jasp import *
 from ase.lattice.surface import fcc111, add_adsorbate
-from ase.data.molecules import molecule
+from ase.structure import molecule
 from ase.constraints import FixAtoms
 
 atoms = fcc111('Au', size=(3,3,3), vacuum=10)
@@ -9977,13 +9977,14 @@ with jasp('surfaces/Au-benzene-pbe',
 #+END_SRC
 
 #+RESULTS:
+: -158.360082
 
 *** DFT-D2
 To turn on the van der Waals corrections cite:JCC-JCC20495 we set incar:LVDW to =True=.
 **** gas-phase benzene
 #+BEGIN_SRC python
 from jasp import *
-from ase.data.molecules import molecule
+from ase.structure import molecule
 
 benzene = molecule('C6H6')
 benzene.center(vacuum=5)
@@ -9996,10 +9997,11 @@ with jasp('molecules/benzene-pbe-d2',
           nsw=100,
           lvdw=True,
           atoms=benzene) as calc:
-    print benzene.get_potential_energy()
+    print(benzene.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
+: -76.157947
 
 **** clean slab
 #+BEGIN_SRC python
@@ -10008,23 +10010,21 @@ from jasp import *
 from ase.lattice.surface import fcc111, add_adsorbate
 from ase.constraints import FixAtoms
 
-atoms = fcc111('Au', size=(3,3,3), vacuum=10)
+atoms = fcc111('Au', size=(3, 3, 3), vacuum=10)
 
 # now we constrain the slab
 c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
 atoms.set_constraint(c)
 
-#from ase.visualize import view; view(atoms)
-
 with jasp('surfaces/Au-pbe-d2',
           xc='PBE',
           encut=350,
-          kpts=(4,4,1),
+          kpts=(4, 4, 1),
           ibrion=1,
           nsw=100,
           lvdw=True,
           atoms=atoms) as calc:
-    print atoms.get_potential_energy()
+    print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
@@ -10034,7 +10034,7 @@ with jasp('surfaces/Au-pbe-d2',
 # Benzene on the slab
 from jasp import *
 from ase.lattice.surface import fcc111, add_adsorbate
-from ase.data.molecules import molecule
+from ase.structure import molecule
 from ase.constraints import FixAtoms
 
 atoms = fcc111('Au', size=(3,3,3), vacuum=10)
@@ -10060,12 +10060,12 @@ atoms.set_constraint(c)
 with jasp('surfaces/Au-benzene-pbe-d2',
           xc='PBE',
           encut=350,
-          kpts=(4,4,1),
+          kpts=(4, 4, 1),
           ibrion=1,
           nsw=100,
           lvdw=True,
           atoms=atoms) as calc:
-    print atoms.get_potential_energy()
+    print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
@@ -10173,7 +10173,6 @@ atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
                       [-3.303,  0.000,  0.000]])
 
 atoms = atoms.repeat((2, 2, 2))
-print atoms[0]
 
 with jasp('bulk/CuPd-cls-0',
           xc='PBE',
@@ -10187,6 +10186,8 @@ with jasp('bulk/CuPd-cls-0',
 #+END_SRC
 
 #+RESULTS:
+: Atom('Cu', [0.0, 0.0, 0.0], index=0)
+: -73.53338426
 
 Next, we have to do the excitation in each structure. For these, we do not relax the structure. We clone the previous results and modify them.
 
@@ -10195,7 +10196,7 @@ TODO
 #+BEGIN_SRC python
 from jasp import *
 
-with jasp('bulk/Cu -cls-0') as calc:
+with jasp('bulk/Cu-cls-0') as calc:
     calc.clone('bulk/Cu-cls-1')
 
 with jasp('bulk/Cu-cls-1') as calc:
@@ -10205,11 +10206,14 @@ with jasp('bulk/Cu-cls-1') as calc:
              setups={'0': 'Cu'},  # Create separate entry in POTCAR for atom index 0
              icorelevel=2,        # Perform core level shift calculation
              clnt=0,              # Excite atom index 0
-             cln=2,               # 2p3/2 electorn for Cu core level shift
+             cln=2,               # 2p3/2 electron for Cu core level shift
              cll=1,
              clz=1)
-    calc.calculate()
+    print(calc.get_atoms().get_potential_energy())
 #+END_SRC
+
+#+RESULTS:
+: -345.05440951
 
 
 #+BEGIN_SRC python
@@ -10225,12 +10229,40 @@ with jasp('bulk/CuPd-cls-1') as calc:
              setups={'0': 'Cu'},  # Create separate entry in POTCAR for atom index 0
              icorelevel=2,        # Perform core level shift calculation
              clnt=0,              # Excite atom index 0
-             cln=2,               # 2p3/2 electorn for Cu core level shift
+             cln=2,               # 2p3/2 electron for Cu core level shift
              cll=1,
              clz=1)
-    calc.calculate()
+    print(calc.get_atoms().get_potential_energy())
 #+END_SRC
 
+#+RESULTS:
+: -359.87250408
+
+
+Finally we calculate the CLS:
+
+#+BEGIN_SRC python
+from jasp import *
+
+with jasp('bulk/CuPd-cls-0') as calc:
+    alloy_0 = calc.get_atoms().get_potential_energy()
+
+with jasp('bulk/CuPd-cls-1') as calc:
+    alloy_1 = calc.get_atoms().get_potential_energy()
+
+with jasp('bulk/Cu-cls-0') as calc:
+    ref_0 = calc.get_atoms().get_potential_energy()
+
+with jasp('bulk/Cu-cls-1') as calc:
+    ref_1 = calc.get_atoms().get_potential_energy()
+
+CLS = (alloy_1 - alloy_0) - (ref_1 - ref_0)
+
+print('CLS = {} eV'.format(CLS))
+#+END_SRC
+
+#+RESULTS:
+: CLS = -1.2378242 eV
 
 
 ** The BEEF functional in Vasp
