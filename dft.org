@@ -1713,6 +1713,8 @@ with jasp('molecules/h2o-bader') as calc:
 | H    |       0.9993 |
 | H    |       0.9997 |
 
+It looks like not much has been transferred. This may be an artifact of using the valence electron density, or a lack of convergence. See https://wiki.fysik.dtu.dk/ase/ase/dft/bader.html#example-the-water-molecule for a comparison.
+
 
 ** Geometry optimization
    :PROPERTIES:
@@ -1930,7 +1932,7 @@ with jasp('molecules/h2o_relax',
 : [[ 0.    -0.     0.   ]
 :  [-0.001  0.     0.   ]
 :  [ 0.     0.     0.   ]]
-
+ 
 ** Vibrational frequencies
    :PROPERTIES:
    :ID:       a9c1ebd4-65cd-4818-8ee0-923f3b800e22
@@ -7442,6 +7444,10 @@ cite:RevModPhys.73.515
 ** TODO solid state NEB
 cite:Caspersen10052005 Carter paper
 cite:sheppard:074103 recent Henkelman paper
+
+http://scitation.aip.org/content/aip/journal/jcp/137/10/10.1063/1.4752249
+
+
 * Surfaces
   :PROPERTIES:
   :ID:       af4a3f54-6572-49ac-b938-e62401bc35b9
@@ -9101,7 +9107,38 @@ for field in [-0.5, 0.0, 0.5]:
 These energies are crazy different, and the forces on the atoms with the field on are insanely high. This section is on hold until I figure that out.
 
 ** TODO Simulating STM images
-http://cst-www.nrl.navy.mil/users/sullivan/stm_backup/stm2.html
+this link seems to be nonexistent now: http://cst-www.nrl.navy.mil/users/sullivan/stm_backup/stm2.html
+
+see http://vaspnotes.blogspot.com/2013/09/simulated-stm.html
+
+adapted from https://wiki.fysik.dtu.dk/gpaw/tutorials/stm/stm.html
+
+jasp needs this function for STM to work: get_pseudo_wave_function
+
+#+BEGIN_SRC python
+from jasp import *
+from ase.dft.stm import STM
+import matplotlib.pyplot as plt
+
+
+with jasp('surfaces/Al-slab-relaxed') as calc:
+    atoms = calc.get_atoms()
+
+    stm = STM(atoms)
+    z = 8.0
+    bias = 1.0
+    c = stm.get_averaged_current(bias, z)
+    x, y, h = stm.scan(bias, c, repeat=(3, 5))
+
+
+    plt.gca(aspect='equal')
+    plt.contourf(x, y, h, 40)
+    plt.hot()
+    plt.colorbar()
+    plt.show()
+#+END_SRC
+
+#+RESULTS:
 
 * Atomistic thermodynamics
   :PROPERTIES:
@@ -10107,7 +10144,7 @@ atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
                       [0.000,  2.039,  2.039],
                       [-3.303,  0.000,  0.000]])
 
-atoms = atoms.repeat((3, 3, 3))
+atoms = atoms.repeat((2, 2, 2))
 print atoms[0]
 
 with jasp('bulk/Cu-cls-0',
@@ -10124,7 +10161,6 @@ with jasp('bulk/Cu-cls-0',
 #+RESULTS:
 
 
-
 Here, we setup the alloy calculation.
 #+BEGIN_SRC python
 from jasp import *
@@ -10136,7 +10172,7 @@ atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
                       [0.000,  2.039,  2.039],
                       [-3.303,  0.000,  0.000]])
 
-atoms = atoms.repeat((3, 3, 3))
+atoms = atoms.repeat((2, 2, 2))
 print atoms[0]
 
 with jasp('bulk/CuPd-cls-0',
@@ -10203,11 +10239,6 @@ In Vasp 5.3.5 it is possible to use the BEEF functional cite:wellendorff-2012-de
 In jasp, we just specify incar:gga='BF', and jasp takes care of the rest. This includes setting some addtional variables to setup van der Waals and to get the BEEF ensemble energies. Let us consider the dissociation energy of H_{2}.
 
 #+Begin_SRC python
-import sys
-sys.path.insert(0, '/home-research/jkitchin/kitchin-python/jasp2')
-import jasp 
-print jasp.__file__
-
 from jasp import *
 from ase.structure import molecule
 import matplotlib.pyplot as plt
@@ -10224,7 +10255,7 @@ with jasp('molecules/H2-beef',
           atoms=H2) as calc:
     try:
         eH2 = H2.get_potential_energy()
-        print eH2
+        print(eH2)
     except (VaspSubmitted, VaspQueued):
         eH2 = None
 #+END_SRC
@@ -10248,7 +10279,7 @@ with jasp('molecules/H-beef',
           atoms=H) as calc:
     try:
         eH = H.get_potential_energy()
-        print eH
+        print(eH)
     except (VaspSubmitted, VaspQueued):
         print('running or queued')
         eH = None
@@ -10352,16 +10383,16 @@ import textwrap
 from ase.structure import molecule
 
 atoms = molecule('CH3CH2OH')
-print atoms
+print(atoms)
 
 # delete all the hydrogens
 ind2del = [atom.index for atom in atoms if atom.symbol == 'H']
-print 'Indices to delete: ', ind2del
+print('Indices to delete: ', ind2del)
 
 del atoms[ind2del]
 
 # now print what is left
-print atoms
+print(atoms)
 #+END_SRC
 
 #+RESULTS:
@@ -10477,22 +10508,22 @@ It is not that hard to define your own derived units though. Note these  are onl
 from ase.units import *
 
 d = 1 * Angstrom
-print ' d = {0} nm'.format(d / nm)
+print(' d = {0} nm'.format(d / nm))
 
-print '1 eV = {0} Hartrees'.format(eV / Hartree)
-print '1 eV = {0} Rydbergs'.format(eV / Rydberg)
-print '1 eV = {0} kJ/mol'.format(eV / (kJ / mol))
-print '1 eV = {0} kcal/mol'.format(eV / (kcal / mol))
+print('1 eV = {0} Hartrees'.format(eV / Hartree))
+print('1 eV = {0} Rydbergs'.format(eV / Rydberg))
+print('1 eV = {0} kJ/mol'.format(eV / (kJ / mol)))
+print('1 eV = {0} kcal/mol'.format(eV / (kcal / mol)))
 
-print '1 Hartree = {0} kcal/mol'.format(1 * Hartree / (kcal / mol))
-print '1 Rydberg = {0} eV'.format(1 * Rydberg / eV)
+print('1 Hartree = {0} kcal/mol'.format(1 * Hartree / (kcal / mol)))
+print('1 Rydberg = {0} eV'.format(1 * Rydberg / eV))
 
 # derived units
 minute = 60 * s
 hour = 60 * minute
 
 # convert 10 hours to minutes
-print '10 hours = {0} minutes'.format(10 * hour / minute)
+print('10 hours = {0} minutes'.format(10 * hour / minute))
 #+END_SRC
 
 #+RESULTS:
@@ -10566,7 +10597,7 @@ pred_interval = t.ppf(1 - alpha / 2., dof) * std_x * np.sqrt(1. + 1. / n)
 
 s = ['We are 95% confident the next measurement',
        ' will be between {0:1.3f} and {1:1.3f}']
-print ''.join(s).format(avg_x - pred_interval, avg_x + pred_interval)
+print(''.join(s).format(avg_x - pred_interval, avg_x + pred_interval))
 #+END_SRC
 
 #+RESULTS:
@@ -10584,7 +10615,7 @@ ydata = np.array([0.1, 0.81, 4.03, 9.1, 15.99, 24.2, 37.2])
 # fit a third order polynomial
 from pylab import polyfit, plot, xlabel, ylabel, show, legend, savefig
 pars = polyfit(xdata, ydata, 3)
-print 'pars from polyfit: {0}'.format(pars)
+print('pars from polyfit: {0}'.format(pars))
 
 # numpy method returns more data
 A = np.column_stack([xdata**3,
@@ -10593,7 +10624,7 @@ A = np.column_stack([xdata**3,
                      np.ones(len(xdata), np.float)])
 
 pars_np, resids, rank,s = np.linalg.lstsq(A, ydata)
-print 'pars from np.linalg.lstsq: {0}'.format(pars_np)
+print('pars from np.linalg.lstsq: {0}'.format(pars_np))
 
 '''
 we are trying to solve Ax = b for x in the least squares sense. There
@@ -10605,7 +10636,7 @@ x = (A^TA)^-1 A^T b
 '''
 # not as pretty but equivalent!
 pars_man = np.dot(np.linalg.inv(np.dot(A.T, A)), np.dot(A.T, ydata))
-print 'pars from linear algebra: {0}'.format(pars_man)
+print('pars from linear algebra: {0}'.format(pars_man))
 
 # but, it is easy to fit an exponential function to it!
 # y = a*exp(x)+b
@@ -10662,7 +10693,7 @@ x0 = [-56., 0.54, 2., 16.5]  # initial guess of parameters
 
 plsq = leastsq(objective, x0, args=(energies, vols))
 
-print 'Fitted parameters = {0}'.format(plsq[0])
+print('Fitted parameters = {0}'.format(plsq[0]))
 
 import matplotlib.pyplot as plt
 plt.plot(vols, energies, 'ro')
@@ -10715,7 +10746,7 @@ x0 = [-56., 0.54, 2., 16.5]  # initial guess of parameters
 
 plsq = fmin(objective, x0, args=(volumes,))  # note args is a tuple
 
-print 'parameters = {0}'.format(plsq)
+print('parameters = {0}'.format(plsq))
 
 import matplotlib.pyplot as plt
 plt.plot(volumes, energies, 'ro')
@@ -10788,9 +10819,9 @@ tval = t.ppf(1.0-alpha/2., dof) # student-t value for the dof and confidence lev
 
 for i, p,var in zip(range(n), pars, np.diag(pcov)):
     sigma = var**0.5
-    print 'c{0}: {1} [{2}  {3}]'.format(i, p,
+    print('c{0}: {1} [{2}  {3}]'.format(i, p,
                                   p - sigma*tval,
-                                  p + sigma*tval)
+                                  p + sigma*tval))
 
 import matplotlib.pyplot as plt
 plt.plot(x,y,'bo ')
@@ -11214,22 +11245,22 @@ tf1 = time.time()
 dyf = [0.0]*len(x)
 for i in range(len(y)-1):
     dyf[i] = (y[i+1] - y[i])/(x[i+1]-x[i])
-#set last element by backwards difference
+# set last element by backwards difference
 dyf[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
 
-print ' Forward difference took {0:1.1f} seconds'.format(time.time() - tf1)
+print(' Forward difference took {0:1.1f} seconds'.format(time.time() - tf1))
 
-'''and now a backwards difference'''
+# and now a backwards difference
 tb1 = time.time()
 dyb = [0.0]*len(x)
-#set first element by forward difference
+# set first element by forward difference
 dyb[0] = (y[0] - y[1])/(x[0] - x[1])
 for i in range(1,len(y)):
     dyb[i] = (y[i] - y[i-1])/(x[i]-x[i-1])
 
-print ' Backward difference took {0:1.1f} seconds'.format(time.time() - tb1)
+print(' Backward difference took {0:1.1f} seconds'.format(time.time() - tb1))
 
-'''and now, a centered formula'''
+# and now, a centered formula
 tc1 = time.time()
 dyc = [0.0]*len(x)
 dyc[0] = (y[0] - y[1])/(x[0] - x[1])
@@ -11237,16 +11268,15 @@ for i in range(1,len(y)-1):
     dyc[i] = (y[i+1] - y[i-1])/(x[i+1]-x[i-1])
 dyc[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
 
-print ' Centered difference took {0:1.1f} seconds'.format(time.time() - tc1)
+print(' Centered difference took {0:1.1f} seconds'.format(time.time() - tc1))
 
-'''
-the centered formula is the most accurate formula here
-'''
+# the centered formula is the most accurate formula here
 
-plt.plot(x,dy_analytical,label='analytical derivative')
-plt.plot(x,dyf,'--',label='forward')
-plt.plot(x,dyb,'--',label='backward')
-plt.plot(x,dyc,'--',label='centered')
+
+plt.plot(x,dy_analytical, label='analytical derivative')
+plt.plot(x,dyf,'--', label='forward')
+plt.plot(x,dyb,'--', label='backward')
+plt.plot(x,dyc,'--', label='centered')
 
 plt.legend(loc='lower left')
 plt.savefig('images/simple-diffs.png')
@@ -11490,8 +11520,8 @@ We can also read Excel files (even on Linux!) with mod:xlrd. Let us read in the 
 import xlrd
 wbk = xlrd.open_workbook('images/test-write.xls')
 sheet1 = wbk.sheet_by_name('sheet 1')
-print sheet1.col_values(0)
-print sheet1.col_values(1)
+print(sheet1.col_values(0))
+print(sheet1.col_values(1))
 #+END_SRC
 
 #+RESULTS:
@@ -11577,10 +11607,10 @@ pos = slab.get_positions() #these positions use x,y,z vectors as a basis
 newbasis = slab.get_cell()
 
 s = np.dot(np.linalg.inv(newbasis.T),pos.T).T
-print 'Coordinates in new basis are: \n',s
+print('Coordinates in new basis are: \n',s)
 
 # what we just did is equivalent to the following atoms method
-print 'Scaled coordinates from ase are: \n',slab.get_scaled_positions()
+print('Scaled coordinates from ase are: \n',slab.get_scaled_positions())
 #+END_SRC
 
 #+RESULTS:
@@ -11640,13 +11670,13 @@ newbasis = 2.87*np.array([[-0.5, 0.5, 0.5],
 
 pos = bulk.get_positions()
 
-s = np.dot(np.linalg.inv(newbasis.T),pos.T).T
-print 'atom positions in primitive basis'
-print s
+s = np.dot(np.linalg.inv(newbasis.T), pos.T).T
+print('atom positions in primitive basis')
+print(s)
 
-#let us see the unit cell in terms of the primitive basis too
-print 'unit cell in terms of the primitive basis'
-print np.dot(np.linalg.inv(newbasis.T),bulk.get_cell().T).T
+# let us see the unit cell in terms of the primitive basis too
+print('unit cell in terms of the primitive basis')
+print(np.dot(np.linalg.inv(newbasis.T), bulk.get_cell().T).T)
 #+END_SRC
 
 #+RESULTS:
@@ -11682,24 +11712,36 @@ performing vector algebra including computing lengths and angles.
 import numpy as np
 from Scientific.Geometry import Vector
 
-A = Vector([1,1,1])   #Scientfic
-a = np.array([1,1,1]) #numpy
+A = Vector([1, 1, 1])   # Scientfic
+a = np.array([1, 1, 1])  # numpy
 
-B = Vector([0.0,1.0,0.0])
+B = Vector([0.0, 1.0, 0.0])
 
-print '|A| = ',A.length()        #Scientific Python way
-print '|a| = ',np.sum(a**2)**0.5 #numpy way
-print '|a| = ',np.linalg.norm(a) #numpy way 2
+print('|A| = ', A.length())        # Scientific Python way
+print('|a| = ', np.sum(a**2)**0.5)  # numpy way
+print('|a| = ', np.linalg.norm(a))  # numpy way 2
 
-print 'ScientificPython angle = ',A.angle(B) #in radians
-print 'numpy angle =            ',np.arccos(np.dot(a/np.linalg.norm(a),B/np.linalg.norm(B)))
+print('ScientificPython angle = ', A.angle(B))  # in radians
+print ('numpy angle = {}',
+       np.arccos(np.dot(a / np.linalg.norm(a),
+                        B / np.linalg.norm(B))))
 
-#cross products
-print 'Scientific A .cross. B = ',A.cross(B)
-print 'numpy A .cross. B      = ',np.cross(A,B) #you can use Vectors in numpy
+# cross products
+print('Scientific A .cross. B = ', A.cross(B))
+
+# you can use Vectors in numpy
+print('numpy A .cross. B      = ', np.cross(A,B))  
 #+END_SRC
 
 #+RESULTS:
+: ('|A| = ', 1.7320508075688772)
+: ('|a| = ', 1.7320508075688772)
+: ('|a| = ', 1.7320508075688772)
+: ('ScientificPython angle = ', 0.9553166181245092)
+: ('numpy angle = {}', 0.95531661812450919)
+: ('Scientific A .cross. B = ', Vector(-1.000000,0.000000,1.000000))
+: ('numpy A .cross. B      = ', array([-1.,  0.,  1.]))
+: 
 
 *** Unit cell properties
 The volume of a unit cell can be calculated from $V = (a_1 \times a_2)
@@ -11729,13 +11771,13 @@ a3 = [0, 0, 10]
 
 uc = np.array([a1, a2, a3])
 
-print 'V = {0} ang^3 from dot/cross'.format(np.dot(np.cross(a1,a2),a3))
-print 'V = {0} ang^3 from det'.format(np.linalg.det(uc))
+print('V = {0} ang^3 from dot/cross'.format(np.dot(np.cross(a1,a2),a3)))
+print('V = {0} ang^3 from det'.format(np.linalg.det(uc)))
 
 from ase import Atoms
 
 atoms = Atoms([],cell=uc) #empty list of atoms
-print 'V = {0} ang^3 from get_volume'.format(atoms.get_volume())
+print('V = {0} ang^3 from get_volume'.format(atoms.get_volume()))
 #+END_SRC
 
 #+RESULTS:
@@ -11748,33 +11790,34 @@ If you like to set up the vacuum in your slab calculations in terms of
 equivalent layers of atoms, you need to calculate the d-spacing (which
 is the spacing between parallel planes of atoms) for the hkl plane you
 are using. The script below shows several ways to accomplish that.
+
 #+BEGIN_SRC python :results output
 import numpy as np
 from ase.lattice.cubic import FaceCenteredCubic
 
-ag = FaceCenteredCubic(directions=[[1,0,0],
-                                   [0,1,0],
-                                   [0,0,1]],
-                       size=(1,1,1),
+ag = FaceCenteredCubic(directions=[[1, 0, 0],
+                                   [0, 1, 0],
+                                   [0, 0, 1]],
+                       size=(1, 1, 1),
                        symbol='Ag',
                        latticeconstant=4.0)
 
 # these are the reciprocal lattice vectors
-b1,b2,b3 = np.linalg.inv(ag.get_cell())
+b1, b2, b3 = np.linalg.inv(ag.get_cell())
 
 '''
 g(111) = 1*b1 + 1*b2 + 1*b3
 
 and |g(111)| = 1/d_111
 '''
-h,k,l = (1,1,1)
+h,k,l = (1, 1, 1)
 d = 1./np.linalg.norm(h*b1 + k*b2 + l*b3)
 
-print 'd_111 spacing (method 1) = {0:1.3f} Angstroms'.format(d)
+print('d_111 spacing (method 1) = {0:1.3f} Angstroms'.format(d))
 
-#method #2
-hkl = np.array([h,k,l])
-G = np.array([b1,b2,b3]) #reciprocal unit cell
+# method #2
+hkl = np.array([h, k, l])
+G = np.array([b1, b2, b3])  # reciprocal unit cell
 
 '''
 Gstar is usually defined as this matrix of dot products:
@@ -11789,11 +11832,11 @@ Gstar = G .dot. transpose(G)
 then, 1/d_hkl^2 = hkl .dot. Gstar .dot. hkl
 '''
 
-Gstar = np.dot(G,G.T)
+Gstar = np.dot(G, G.T)
 
-id2 = np.dot(hkl,np.dot(Gstar,hkl))
+id2 = np.dot(hkl, np.dot(Gstar, hkl))
 
-print 'd_111 spacing (method 2) =',np.sqrt(1/id2)
+print('d_111 spacing (method 2) =',np.sqrt(1 / id2))
 
 # http://books.google.com/books?id=nJHSqEseuIUC&lpg=PA118&ots=YA9TBldoVH
 # &dq=reciprocal%20metric%20tensor&pg=PA119#v=onepage
@@ -11822,36 +11865,37 @@ alpha = B.angle(C)
 beta = A.angle(C)
 gamma = A.angle(B)
 
-print
-print 'a   b   c   alpha beta gamma'
-print '{0:1.3f} {1:1.3f} {2:1.3f} {3:1.3f} {4:1.3f} {5:1.3f}\n'.format(a,b,c,
-                                                                alpha,beta,gamma)
+print('')
+print('a   b   c   alpha beta gamma')
+print('{0:1.3f} {1:1.3f} {2:1.3f} {3:1.3f} {4:1.3f} {5:1.3f}\n'.format(a,b,c,                                                                alpha,beta,gamma))
 
-h,k,l = (1,1,1)
+h, k, l = (1, 1, 1)
 
 from math import sin, cos
 
-id2 = ((h**2/a**2*sin(alpha)**2
-       + k**2/b**2*sin(beta)**2
-       + l**2/c**2*sin(gamma)**2
-       +2*k*l/b/c*(cos(beta)*cos(gamma)-cos(alpha))
-       +2*h*l/a/c*(cos(alpha)*cos(gamma)-cos(beta))
-       +2*h*k/a/b*(cos(alpha)*cos(beta)-cos(gamma)))
-       /(1-cos(alpha)**2-cos(beta)**2 - cos(gamma)**2
-         +2*cos(alpha)*cos(beta)*cos(gamma)))
+id2 = ((h**2 / a**2 * sin(alpha)**2
+       + k**2 / b**2 * sin(beta)**2
+       + l**2 / c**2 * sin(gamma)**2
+       + 2 * k * l / b / c * (cos(beta) * cos(gamma) - cos(alpha))
+       + 2 * h * l / a / c * (cos(alpha) * cos(gamma) - cos(beta))
+       + 2 * h * k / a / b * (cos(alpha) * cos(beta) - cos(gamma)))
+       / (1 - cos(alpha)**2 - cos(beta)**2 - cos(gamma)**2
+         + 2 * cos(alpha) * cos(beta) * cos(gamma)))
 
-d = 1/math.sqrt(id2)
+d = 1 / math.sqrt(id2)
 
-print 'd_111 spacing (method 3) = {0}'.format(d)
-
+print('d_111 spacing (method 3) = {0}'.format(d))
 #+END_SRC
 
 #+RESULTS:
-:
+: d_111 spacing (method 1) = 2.309 Angstroms
+: ('d_111 spacing (method 2) =', 2.3094010767585029)
+: 
 : a   b   c   alpha beta gamma
 : 4.000 4.000 4.000 1.571 1.571 1.571
-:
+: 
 : d_111 spacing (method 3) = 2.30940107676
+: 
 
 ** Equations of State
 
@@ -12019,8 +12063,8 @@ plt.text(0.4, 0.4, 'Bulk modulus = {0:1.2f} eV/$\AA^3$ = {1:1.2f} GPa'.format(mu
 plt.savefig('images/a-eos.png')
 
 np.set_printoptions(precision=3)
-print 'initial guesses  : ', np.array(x0) #array for easy printing
-print 'fitted parameters: ', murnpars
+print('initial guesses  : ', np.array(x0))  # array for easy printing
+print('fitted parameters: ', murnpars)
 
 #+END_SRC
 
@@ -12042,52 +12086,6 @@ guesses you will probably find the =scipy.optimize.leastsq= function
 does not converge.
 
 ** Miscellaneous \texttt{jasp}/VASP tips
-*** Installing jasp
-
-You need to create an executable script named =runvasp.py= on your executable path. Here is an example script that works for both serial and parallel versions of VASP. This script is located in =jasp/bin=.
-#+BEGIN_SRC python
-#!/usr/bin/env python
-import os
-
-serial_vasp = '/home/jkitchin/src/vasp/bin/vasp_serial_intel_mkl'
-parallel_vasp = '/home/jkitchin/src/vasp/bin/vasp_openmpi_intel_mkl'
-
-if 'PBS_NODEFILE' in os.environ:
-    NPROCS = len(open(os.environ['PBS_NODEFILE']).readlines())
-
-    if NPROCS == 1:
-        print 'NPROCS = ',NPROCS
-        exitcode = os.system(serial_vasp)
-    else:
-        print 'NPROCS = ',NPROCS
-        parcmd = 'mpirun -np %i %s' % (NPROCS,parallel_vasp)
-        exitcode = os.system(parcmd)
-else:
-    exitcode = os.system(serial_vasp)
-#end
-#+END_SRC
-
-Then create an environment variable that points to this script. For example in =.bashrc=:
-#+BEGIN_SRC sh
-export VASP_SCRIPT=$HOME/kitchinpython/jasp/bin/run_vasp.py
-#+END_SRC
-
-=jasp= expects to find the POTCAR potentials in specific directories. You have two options:
-1. Install the potentials in a directory and name the potential directories like this:
-#+begin_example
-my_vasp_potentials
-    potpaw
-    potpaw_GGA
-    potpaw_PBE
-#+end_example
-The =potpaw= directory contains the LDA potentials, =potpaw_GGA= contains PW91 potentials, and =potpaw_PBE= contains the PBE potentials. Then, in your .bashrc file set an environment variable that points to this directory. For example:
-
-#+BEGIN_SRC sh
-export VASP_PP_PATH=$HOME/vasp/my_vasp_potentials
-#+END_SRC
-
-If you already have potential directories setup with different names, you can always make symlinks with the names above that point to your directories.
-
 *** Using a special setup
 VASP provides [[http://cms.mpi.univie.ac.at/vasp/vasp/PAW_potentials.html][special setups]] for some elements. The following guidelines tell you what is in a potential:
 
@@ -12127,7 +12125,7 @@ with jasp('molecules/O_sv',
           setups={'O':'_sv'}, # specifies O_sv potential
           atoms=atoms) as calc:
 
-    print 'Total energy = {0} eV'.format(atoms.get_potential_energy())
+    print('Total energy = {0} eV'.format(atoms.get_potential_energy()))
 #+END_SRC
 
 #+RESULTS:
@@ -12150,40 +12148,39 @@ jasp is smart. If you ask for more than one node, it will automatically try to r
 from jasp import *
 JASPRC['queue.nodes']=4
 from ase import Atom, Atoms
-atoms = Atoms([Atom('O',[5,5,5],magmom=1)],
-             cell=(6,6,6))
+atoms = Atoms([Atom('O',[5, 5, 5], magmom=1)],
+             cell=(6, 6, 6))
 
-with jasp('molecules/O_sv-4nodes',
+with jasp('molecules/O_s-4nodes',
           encut=300,
           xc='PBE',
           ispin=2,
           ismear=0,
           sigma=0.001,
-          setups={'O':'_sv'}, # specifies O_sv potential
+          setups={'O':'_s'},  # specifies O_s potential
           atoms=atoms) as calc:
 
-    print calc.calculate()
+    calc.calculate()
 #+END_SRC
 
 #+RESULTS:
-: None
 
 How do you know it ran on four nodes?
 #+BEGIN_SRC sh :results output :exports both
-head molecules/O_sv-4nodes/OUTCAR
+head molecules/O_s-4nodes/OUTCAR
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
- vasp.5.2.12 11Nov11 complex
-
- executed on             LinuxIFC date 2012.08.31  09:10:10
- running on    4 nodes
- distr:  one band on    1 nodes,    4 groups
+ vasp.5.3.5 31Mar14 (build Jan 09 2015 15:20:38) complex                        
+  
+ executed on             LinuxIFC date 2015.01.11  10:18:14
+ running on    4 total cores
+ distrk:  each k-point on    4 cores,    1 groups
+ distr:  one band on NCORES_PER_BAND=   1 cores,    4 groups
 
 
 --------------------------------------------------------------------------------------------------------
-
 
 #+end_example
 
@@ -12256,7 +12253,7 @@ if __name__ == '__main__':
 
     eos = EquationOfState(V, E)
     v1, e1, B = eos.fit()
-    print 'step1: v1 = {v1}'.format(**locals())
+    print('step1: v1 = {v1}'.format(**locals()))
 
     ### ################################################################
     ## STEP 2, eos around the minimum
@@ -12300,7 +12297,7 @@ if __name__ == '__main__':
 
     eos = EquationOfState(V[ind], E[ind])
     v2, e2, B = eos.fit()
-    print 'step2: v2 = {v2}'.format(**locals())
+    print('step2: v2 = {v2}'.format(**locals()))
     eos.plot('images/cu-mp-eos.png')
 
 
@@ -12397,7 +12394,7 @@ if __name__ == '__main__':
 
     eos = EquationOfState(V, E)
     v1, e1, B = eos.fit()
-    print 'step1: v1 = {v1}'.format(**locals())
+    print('step1: v1 = {v1}'.format(**locals()))
 
     ### ################################################################
     ## STEP 2, eos around the minimum
@@ -12442,7 +12439,7 @@ if __name__ == '__main__':
 
     eos = EquationOfState(V[ind], E[ind])
     v2, e2, B = eos.fit()
-    print 'step2: v2 = {v2}'.format(**locals())
+    print('step2: v2 = {v2}'.format(**locals()))
     eos.plot('images/cu-mp2-eos.png',show=True)
 #+END_SRC
 
@@ -12463,7 +12460,7 @@ This is code that should reconstruct the python code needed to run a particular 
 from jasp import *
 
 with jasp('bulk/alloy/cu') as calc:
-    print calc.python
+    print(calc.python)
 #+END_SRC
 
 #+RESULTS:
@@ -12500,7 +12497,7 @@ with jasp('bulk/alloy/cu',
 from jasp import *
 
 with jasp('bulk/alloy/cu') as calc:
-    print calc.pretty_json
+    print(calc.pretty_json)
 #+END_SRC
 
 #+RESULTS:
@@ -12713,13 +12710,13 @@ with jasp('bulk/alloy/cu') as calc:
 }
 #+end_example
 
-**** xml
-This relies on the pyxser module.
+**** xml							    :archive:
+     This relies on the pyxser module. I cannot get this to install anymore due to some unicode error. 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 
 with jasp('bulk/alloy/cu') as calc:
-    print calc.xml
+    print(calc.xml)
 #+END_SRC
 
 #+RESULTS:
@@ -12793,418 +12790,467 @@ from jasp.POTCAR import *
 from ase.data import chemical_symbols
 import glob, os
 
-print '#+tblname: POTCAR'
-print '#+caption: Parameters for POTPAW_PBE POTCAR files.'
-print '#+ATTR_LaTeX: longtable'
-print '| POTCAR | ENMIN | ENMAX | prec=high (eV) | # val. elect. |'
-print '|-'
+print('#+tblname: POTCAR')
+print('#+caption: Parameters for POTPAW_PBE POTCAR files.')
+print('#+ATTR_LaTeX: longtable')
+print('| POTCAR | ENMIN | ENMAX | prec=high (eV) | # val. elect. |')
+print('|-')
 
 chemical_symbols.sort()
 for symbol in chemical_symbols:
 
-    potcars = glob.glob('{0}/POTPAW_PBE/{1}*/POTCAR'.format(os.environ['VASP_PP_PATH'],
+    potcars = glob.glob('{0}/potpaw_PBE/{1}*/POTCAR'.format(os.environ['VASP_PP_PATH'],
                                                      symbol))
 
     for potcar in potcars:
 
         POTCAR = os.path.relpath(potcar,
-                                 os.environ['VASP_PP_PATH']+'/POTPAW_PBE')[:-7]
+                                 os.environ['VASP_PP_PATH']+'/potpaw_PBE')[:-7]
         ENMIN = get_ENMIN(potcar)
         ENMAX = get_ENMAX(potcar)
         HIGH  = 1.3*ENMAX
         ZVAL  = get_ZVAL(potcar)
-
-        print '|{POTCAR:30s}|{ENMIN}|{ENMAX}|{HIGH:1.3f}|{ZVAL}|'.format(**locals())
+        print('|{POTCAR:30s}|{ENMIN}|{ENMAX}|{HIGH:1.3f}|{ZVAL}|'.format(**locals()))
 #+END_SRC
 
 #+RESULTS:
 #+tblname: POTCAR
 #+caption: Parameters for POTPAW_PBE POTCAR files.
 #+ATTR_LaTeX: longtable
-| POTCAR      |    ENMIN |    ENMAX | prec=high (eV) | # val. elect. |
-|-------------+----------+----------+----------------+---------------|
-| Ac          |  129.178 |  172.237 |        223.908 |          11.0 |
-| Ag_new      |  187.383 |  249.844 |        324.797 |          11.0 |
-| Ag          |  187.385 |  249.846 |        324.800 |          11.0 |
-| Ag_pv       |  223.399 |  297.865 |        387.225 |          17.0 |
-| Al          |  180.225 |    240.3 |        312.390 |           3.0 |
-| Am          |  191.906 |  255.875 |        332.637 |          17.0 |
-| Ar          |  199.795 |  266.393 |        346.311 |           8.0 |
-| As_d_GW     |  259.629 |  346.172 |        450.024 |          15.0 |
-| As_d        |  216.488 |  288.651 |        375.246 |          15.0 |
-| As_GW       |  156.526 |  208.702 |        271.313 |           5.0 |
-| As          |   156.51 |   208.68 |        271.284 |           5.0 |
-| At_d        |  199.688 |  266.251 |        346.126 |          17.0 |
-| At          |  121.073 |   161.43 |        209.859 |           7.0 |
-| Au_new      |  172.457 |  229.943 |        298.926 |          11.0 |
-| Au          |  172.461 |  229.948 |        298.932 |          11.0 |
-| Ba_sv       |  140.408 |   187.21 |        243.373 |          10.0 |
-| Be          |  185.658 |  247.544 |        321.807 |           2.0 |
-| Be_sv       |  231.563 |   308.75 |        401.375 |           4.0 |
-| B_h         |    500.0 |    700.0 |        910.000 |           3.0 |
-| Bi_d        |  182.138 |  242.851 |        315.706 |          15.0 |
-| Bi          |   78.777 |  105.037 |        136.548 |           5.0 |
-| Bi_pv       |   231.89 |  309.187 |        401.943 |          21.0 |
-| B           |  238.954 |  318.606 |        414.188 |           3.0 |
-| Br          |  162.198 |  216.264 |        281.143 |           7.0 |
-| B_s         |  201.934 |  269.245 |        350.019 |           3.0 |
-| Ba_sv       |  140.408 |   187.21 |        243.373 |          10.0 |
-| Be          |  185.658 |  247.544 |        321.807 |           2.0 |
-| Be_sv       |  231.563 |   308.75 |        401.375 |           4.0 |
-| Bi_d        |  182.138 |  242.851 |        315.706 |          15.0 |
-| Bi          |   78.777 |  105.037 |        136.548 |           5.0 |
-| Bi_pv       |   231.89 |  309.187 |        401.943 |          21.0 |
-| Br          |  162.198 |  216.264 |        281.143 |           7.0 |
-| Ca          |   77.067 |  102.755 |        133.582 |           2.0 |
-| Ca_pv       |   89.665 |  119.554 |        155.420 |           8.0 |
-| Ca_sv       |  199.939 |  266.586 |        346.562 |          10.0 |
-| C_d         |  310.494 |  413.992 |        538.190 |           4.0 |
-| Cd          |  205.757 |  274.342 |        356.645 |          12.0 |
-| Ce_3        |  135.964 |  181.286 |        235.672 |          11.0 |
-| Ce_h        |  224.925 |    299.9 |        389.870 |          12.0 |
-| Ce          |  204.781 |  273.042 |        354.955 |          12.0 |
-| C_GW        |  310.494 |  413.992 |        538.190 |           4.0 |
-| C_h_nr      |  556.263 |  741.684 |        964.189 |           4.0 |
-| C_h         |    500.0 |    700.0 |        910.000 |           4.0 |
-| Cl_h        |  306.852 |  409.136 |        531.877 |           7.0 |
-| Cl          |  196.854 |    280.0 |        364.000 |           7.0 |
-| Co_new      |  200.976 |  267.968 |        348.358 |           9.0 |
-| Co          |  200.977 |  267.969 |        348.360 |           9.0 |
-| Co_sv       |  292.771 |  390.362 |        507.471 |          17.0 |
-| C           |    300.0 |    400.0 |        520.000 |           4.0 |
-| Cr          |  170.311 |  227.082 |        295.207 |           6.0 |
-| Cr_pv_new   |  199.261 |  265.681 |        345.385 |          12.0 |
-| Cr_pv       |  199.262 |  265.683 |        345.388 |          12.0 |
-| Cr_sv_new   |  296.603 |  395.471 |        514.112 |          14.0 |
-| Cr_sv       |  296.603 |  395.471 |        514.112 |          14.0 |
-| C_s         |  205.426 |  273.901 |        356.071 |           4.0 |
-| Cs_sv       |  165.238 |  220.318 |        286.413 |           9.0 |
-| Cu_f        |  221.585 |  295.446 |        384.080 |          11.0 |
-| Cu_new      |  221.585 |  295.446 |        384.080 |          11.0 |
-| Cu          |   204.91 |  273.214 |        355.178 |          11.0 |
-| Cu_pvf      |  276.486 |  368.648 |        479.242 |          17.0 |
-| Cu_pv       |  276.454 |  368.605 |        479.187 |          17.0 |
-| Ca          |   77.067 |  102.755 |        133.582 |           2.0 |
-| Ca_pv       |   89.665 |  119.554 |        155.420 |           8.0 |
-| Ca_sv       |  199.939 |  266.586 |        346.562 |          10.0 |
-| Cd          |  205.757 |  274.342 |        356.645 |          12.0 |
-| Ce_3        |  135.964 |  181.286 |        235.672 |          11.0 |
-| Ce_h        |  224.925 |    299.9 |        389.870 |          12.0 |
-| Ce          |  204.781 |  273.042 |        354.955 |          12.0 |
-| Cl_h        |  306.852 |  409.136 |        531.877 |           7.0 |
-| Cl          |  196.854 |    280.0 |        364.000 |           7.0 |
-| Co_new      |  200.976 |  267.968 |        348.358 |           9.0 |
-| Co          |  200.977 |  267.969 |        348.360 |           9.0 |
-| Co_sv       |  292.771 |  390.362 |        507.471 |          17.0 |
-| Cr          |  170.311 |  227.082 |        295.207 |           6.0 |
-| Cr_pv_new   |  199.261 |  265.681 |        345.385 |          12.0 |
-| Cr_pv       |  199.262 |  265.683 |        345.388 |          12.0 |
-| Cr_sv_new   |  296.603 |  395.471 |        514.112 |          14.0 |
-| Cr_sv       |  296.603 |  395.471 |        514.112 |          14.0 |
-| Cs_sv       |  165.238 |  220.318 |        286.413 |           9.0 |
-| Cu_f        |  221.585 |  295.446 |        384.080 |          11.0 |
-| Cu_new      |  221.585 |  295.446 |        384.080 |          11.0 |
-| Cu          |   204.91 |  273.214 |        355.178 |          11.0 |
-| Cu_pvf      |  276.486 |  368.648 |        479.242 |          17.0 |
-| Cu_pv       |  276.454 |  368.605 |        479.187 |          17.0 |
-| Dy_3        |  116.797 |  155.729 |        202.448 |           9.0 |
-| Dy          |  191.601 |  255.467 |        332.107 |          20.0 |
-| Er_2        |   89.813 |   119.75 |        155.675 |           8.0 |
-| Er_3        |   116.29 |  155.053 |        201.569 |           9.0 |
-| Er          |  223.587 |  298.116 |        387.551 |          22.0 |
-| Eu_2        |   74.478 |   99.304 |        129.095 |           8.0 |
-| Eu_3        |   96.793 |  129.057 |        167.774 |           9.0 |
-| Eu_GW       |  452.441 |  603.254 |        784.230 |          17.0 |
-| Eu          |  187.251 |  249.668 |        324.568 |          17.0 |
-| F_d_GW      |  365.773 |  487.698 |        634.007 |           7.0 |
-| Fe          |  200.912 |  267.883 |        348.248 |           8.0 |
-| Fe_pv_new   |  219.928 |  293.238 |        381.209 |          14.0 |
-| Fe_pv       |  219.929 |  293.238 |        381.209 |          14.0 |
-| Fe_sv_h     |  410.523 |  547.365 |        711.575 |          16.0 |
-| Fe_sv       |  292.918 |  390.558 |        507.725 |          16.0 |
-| F_h         |    500.0 |    700.0 |        910.000 |           7.0 |
-| F           |    300.0 |    400.0 |        520.000 |           7.0 |
-| Fr_sv       |  160.905 |   214.54 |        278.902 |           9.0 |
-| F_s         |  217.369 |  289.825 |        376.772 |           7.0 |
-| Fe          |  200.912 |  267.883 |        348.248 |           8.0 |
-| Fe_pv_new   |  219.928 |  293.238 |        381.209 |          14.0 |
-| Fe_pv       |  219.929 |  293.238 |        381.209 |          14.0 |
-| Fe_sv_h     |  410.523 |  547.365 |        711.575 |          16.0 |
-| Fe_sv       |  292.918 |  390.558 |        507.725 |          16.0 |
-| Fr_sv       |  160.905 |   214.54 |        278.902 |           9.0 |
-| Ga_d_GW     |  277.386 |  369.848 |        480.802 |          13.0 |
-| Ga_d        |  212.022 |  282.697 |        367.506 |          13.0 |
-| Ga_h        |  303.451 |  404.601 |        525.981 |          13.0 |
-| Ga          |  101.009 |  134.678 |        175.081 |           3.0 |
-| Ga_s        |   62.877 |   83.836 |        108.987 |           3.0 |
-| Ga_sv_GW    |  377.564 |  503.418 |        654.443 |          21.0 |
-| Gd_3        |  115.761 |  154.348 |        200.652 |           9.0 |
-| Gd          |  192.354 |  256.472 |        333.414 |          18.0 |
-| Ge_d3       |   169.58 |  226.106 |        293.938 |          14.0 |
-| Ge_d_GW2    |  254.348 |   339.13 |        440.869 |          14.0 |
-| Ge_d_GW     |   232.72 |  310.294 |        403.382 |          14.0 |
-| Ge_d_GW_ref |  429.008 |   572.01 |        743.613 |          14.0 |
-| Ge_d        |   232.72 |  310.294 |        403.382 |          14.0 |
-| Ge_h        |  307.818 |  410.425 |        533.553 |          14.0 |
-| Ge          |  130.355 |  173.807 |        225.949 |           4.0 |
-| H1.25       |    200.0 |    250.0 |        325.000 |          1.25 |
-| H1.5        |    200.0 |    250.0 |        325.000 |           1.5 |
-| H.5         |    200.0 |    250.0 |        325.000 |           0.5 |
-| H.75        |    200.0 |    250.0 |        325.000 |          0.75 |
-| He          |  359.172 |  478.896 |        622.565 |           2.0 |
-| Hf          |   165.25 |  220.333 |        286.433 |           4.0 |
-| Hf_pv       |  165.256 |  220.342 |        286.445 |          10.0 |
-| Hf_sv_GW    |  238.045 |  317.394 |        412.612 |          12.0 |
-| Hf_sv       |  178.083 |  237.444 |        308.677 |          12.0 |
-| Hg          |  174.911 |  233.214 |        303.178 |          12.0 |
-| H_h         |    500.0 |    700.0 |        910.000 |           1.0 |
-| Ho_3        |  115.615 |  154.153 |        200.399 |           9.0 |
-| Ho          |  192.876 |  257.168 |        334.318 |          21.0 |
-| H           |    200.0 |    250.0 |        325.000 |           1.0 |
-| He          |  359.172 |  478.896 |        622.565 |           2.0 |
-| Hf          |   165.25 |  220.333 |        286.433 |           4.0 |
-| Hf_pv       |  165.256 |  220.342 |        286.445 |          10.0 |
-| Hf_sv_GW    |  238.045 |  317.394 |        412.612 |          12.0 |
-| Hf_sv       |  178.083 |  237.444 |        308.677 |          12.0 |
-| Hg          |  174.911 |  233.214 |        303.178 |          12.0 |
-| Ho_3        |  115.615 |  154.153 |        200.399 |           9.0 |
-| Ho          |  192.876 |  257.168 |        334.318 |          21.0 |
-| In_d        |  179.413 |  239.218 |        310.983 |          13.0 |
-| In          |   71.951 |   95.934 |        124.714 |           3.0 |
-| I           |  131.735 |  175.647 |        228.341 |           7.0 |
-| Ir          |  158.153 |   210.87 |        274.131 |           9.0 |
-| In_d        |  179.413 |  239.218 |        310.983 |          13.0 |
-| In          |   71.951 |   95.934 |        124.714 |           3.0 |
-| Ir          |  158.153 |   210.87 |        274.131 |           9.0 |
-| K_pv        |   87.548 |  116.731 |        151.750 |           7.0 |
-| Kr          |  138.945 |   185.26 |        240.838 |           8.0 |
-| K_sv        |  194.412 |  259.216 |        336.981 |           9.0 |
-| Kr          |  138.945 |   185.26 |        240.838 |           8.0 |
-| La          |  164.485 |  219.313 |        285.107 |          11.0 |
-| La_s        |  102.414 |  136.552 |        177.518 |           9.0 |
-| Li          |    100.0 |    140.0 |        182.000 |           1.0 |
-| Li_sv2      |   416.33 |  555.106 |        721.638 |           3.0 |
-| Li_sv       |  374.276 |  499.034 |        648.744 |           3.0 |
-| Lu_3        |  116.257 |  155.009 |        201.512 |           9.0 |
-| Lu          |  191.771 |  255.695 |        332.404 |          25.0 |
-| Mg_new      |   94.607 |  126.143 |        163.986 |           2.0 |
-| Mg          |  157.509 |  210.012 |        273.016 |           2.0 |
-| Mg_pv_GW    |  302.947 |  403.929 |        525.108 |           8.0 |
-| Mg_pv.old   |   199.18 |  265.574 |        345.246 |           8.0 |
-| Mg_pv       |  302.947 |  403.929 |        525.108 |           8.0 |
-| Mg_sv       |  371.417 |  495.223 |        643.790 |          10.0 |
-| Mn          |  202.399 |  269.865 |        350.825 |           7.0 |
-| Mn_pv_new   |  202.398 |  269.864 |        350.823 |          13.0 |
-| Mn_pv       |  202.399 |  269.865 |        350.825 |          13.0 |
-| Mn_sv       |   290.39 |  387.187 |        503.343 |          15.0 |
-| Mo          |  168.438 |  224.584 |        291.959 |           6.0 |
-| Mo_pv_new   |  168.438 |  224.584 |        291.959 |          12.0 |
-| Mo_pv       |  168.438 |  224.584 |        291.959 |          12.0 |
-| Mo_sv       |  182.007 |  242.676 |        315.479 |          14.0 |
-| Na          |   76.476 |  101.968 |        132.558 |           1.0 |
-| Na_pv       |  194.671 |  259.561 |        337.429 |           7.0 |
-| Na_sv       |   484.23 |    700.0 |        910.000 |           9.0 |
-| Nb_pv       |  156.456 |  208.608 |        271.190 |          11.0 |
-| Nb_sv_new   |  219.927 |  293.235 |        381.206 |          13.0 |
-| Nb_sv       |  219.927 |  293.235 |        381.206 |          13.0 |
-| Nd_3        |  136.909 |  182.546 |        237.310 |          11.0 |
-| Nd          |  189.892 |  253.189 |        329.146 |          14.0 |
-| Ne          |  257.704 |  343.606 |        446.688 |           8.0 |
-| N_h         |    500.0 |    700.0 |        910.000 |           5.0 |
-| Ni_new      |  202.149 |  269.532 |        350.392 |          10.0 |
-| Ni          |   202.15 |  269.533 |        350.393 |          10.0 |
-| Ni_pv       |  275.959 |  367.945 |        478.329 |          16.0 |
-| N           |    300.0 |    400.0 |        520.000 |           5.0 |
-| Np          |  190.776 |  254.369 |        330.680 |          15.0 |
-| Np_s        |  158.138 |  210.851 |        274.106 |          15.0 |
-| N_s_GW      |  222.371 |  296.495 |        385.444 |           5.0 |
-| N_s         |   209.76 |   279.68 |        363.584 |           5.0 |
-| N_vs        |   209.76 |   279.68 |        363.584 |           5.0 |
-| Na          |   76.476 |  101.968 |        132.558 |           1.0 |
-| Na_pv       |  194.671 |  259.561 |        337.429 |           7.0 |
-| Na_sv       |   484.23 |    700.0 |        910.000 |           9.0 |
-| Nb_pv       |  156.456 |  208.608 |        271.190 |          11.0 |
-| Nb_sv_new   |  219.927 |  293.235 |        381.206 |          13.0 |
-| Nb_sv       |  219.927 |  293.235 |        381.206 |          13.0 |
-| Nd_3        |  136.909 |  182.546 |        237.310 |          11.0 |
-| Nd          |  189.892 |  253.189 |        329.146 |          14.0 |
-| Ne          |  257.704 |  343.606 |        446.688 |           8.0 |
-| Ni_new      |  202.149 |  269.532 |        350.392 |          10.0 |
-| Ni          |   202.15 |  269.533 |        350.393 |          10.0 |
-| Ni_pv       |  275.959 |  367.945 |        478.329 |          16.0 |
-| Np          |  190.776 |  254.369 |        330.680 |          15.0 |
-| Np_s        |  158.138 |  210.851 |        274.106 |          15.0 |
-| O_GW        |  310.976 |  414.635 |        539.025 |           6.0 |
-| O_h         |    500.0 |    700.0 |        910.000 |           6.0 |
-| O           |    300.0 |    400.0 |        520.000 |           6.0 |
-| O_s_GW      |  225.516 |  300.688 |        390.894 |           6.0 |
-| O_s         |  212.131 |  282.841 |        367.693 |           6.0 |
-| Os          |  171.017 |  228.022 |        296.429 |           8.0 |
-| Os_pv       |  171.017 |  228.022 |        296.429 |          14.0 |
-| O_sv        | 1066.119 | 1421.493 |       1847.941 |           8.0 |
-| Os          |  171.017 |  228.022 |        296.429 |           8.0 |
-| Os_pv       |  171.017 |  228.022 |        296.429 |          14.0 |
-| Pa          |  189.237 |  252.316 |        328.011 |          13.0 |
-| Pa_s        |  145.182 |  193.576 |        251.649 |          11.0 |
-| Pb_d        |  178.384 |  237.846 |        309.200 |          14.0 |
-| Pb_d_rel2   |  178.357 |  237.809 |        309.152 |          14.0 |
-| Pb_d_rel    |  178.357 |  237.809 |        309.152 |          14.0 |
-| Pb          |    73.48 |   97.973 |        127.365 |           4.0 |
-| Pd_new      |  188.194 |  250.925 |        326.203 |          10.0 |
-| Pd          |  188.194 |  250.925 |        326.203 |          10.0 |
-| Pd_pv_new   |  188.194 |  250.925 |        326.203 |          16.0 |
-| Pd_pv       |  203.323 |  271.098 |        352.427 |          16.0 |
-| Pd_vnew     |  188.194 |  250.925 |        326.203 |          10.0 |
-| P_h         |  292.651 |  390.202 |        507.263 |           5.0 |
-| Pm_3        |  137.931 |  183.908 |        239.080 |          11.0 |
-| Pm          |   193.97 |  258.627 |        336.215 |          15.0 |
-| Po_d        |  198.424 |  264.565 |        343.935 |          16.0 |
-| Po          |   119.78 |  159.707 |        207.619 |           6.0 |
-| P           |   191.28 |    270.0 |        351.000 |           5.0 |
-| Pr_3        |  136.734 |  182.312 |        237.006 |          11.0 |
-| Pr          |  204.706 |  272.941 |        354.823 |          13.0 |
-| Pt_new      |  172.712 |  230.283 |        299.368 |          10.0 |
-| Pt          |  172.712 |  230.283 |        299.368 |          10.0 |
-| Pt_pv       |  220.955 |  294.607 |        382.989 |          16.0 |
-| Pt_pv_ZORA  |  220.953 |  294.604 |        382.985 |          16.0 |
-| Pt_ZORA     |  172.711 |  230.281 |        299.365 |          10.0 |
-| Pu_h        |  333.587 |  444.783 |        578.218 |          16.0 |
-| Pu          |  190.844 |  254.458 |        330.795 |          16.0 |
-| Pu_s        |  158.508 |  211.344 |        274.747 |          16.0 |
-| Pa          |  189.237 |  252.316 |        328.011 |          13.0 |
-| Pa_s        |  145.182 |  193.576 |        251.649 |          11.0 |
-| Pb_d        |  178.384 |  237.846 |        309.200 |          14.0 |
-| Pb_d_rel2   |  178.357 |  237.809 |        309.152 |          14.0 |
-| Pb_d_rel    |  178.357 |  237.809 |        309.152 |          14.0 |
-| Pb          |    73.48 |   97.973 |        127.365 |           4.0 |
-| Pd_new      |  188.194 |  250.925 |        326.203 |          10.0 |
-| Pd          |  188.194 |  250.925 |        326.203 |          10.0 |
-| Pd_pv_new   |  188.194 |  250.925 |        326.203 |          16.0 |
-| Pd_pv       |  203.323 |  271.098 |        352.427 |          16.0 |
-| Pd_vnew     |  188.194 |  250.925 |        326.203 |          10.0 |
-| Pm_3        |  137.931 |  183.908 |        239.080 |          11.0 |
-| Pm          |   193.97 |  258.627 |        336.215 |          15.0 |
-| Po_d        |  198.424 |  264.565 |        343.935 |          16.0 |
-| Po          |   119.78 |  159.707 |        207.619 |           6.0 |
-| Pr_3        |  136.734 |  182.312 |        237.006 |          11.0 |
-| Pr          |  204.706 |  272.941 |        354.823 |          13.0 |
-| Pt_new      |  172.712 |  230.283 |        299.368 |          10.0 |
-| Pt          |  172.712 |  230.283 |        299.368 |          10.0 |
-| Pt_pv       |  220.955 |  294.607 |        382.989 |          16.0 |
-| Pt_pv_ZORA  |  220.953 |  294.604 |        382.985 |          16.0 |
-| Pt_ZORA     |  172.711 |  230.281 |        299.365 |          10.0 |
-| Pu_h        |  333.587 |  444.783 |        578.218 |          16.0 |
-| Pu          |  190.844 |  254.458 |        330.795 |          16.0 |
-| Pu_s        |  158.508 |  211.344 |        274.747 |          16.0 |
-| Ra_sv       |  178.025 |  237.367 |        308.577 |          10.0 |
-| Rb_pv       |   91.439 |  121.919 |        158.495 |           7.0 |
-| Rb_sv       |  165.017 |  220.022 |        286.029 |           9.0 |
-| Re          |  169.662 |  226.216 |        294.081 |           7.0 |
-| Re_pv       |  169.667 |  226.223 |        294.090 |          13.0 |
-| Rh_new      |  171.747 |  228.996 |        297.695 |           9.0 |
-| Rh          |   171.75 |    229.0 |        297.700 |           9.0 |
-| Rh_pv_new   |  185.556 |  247.408 |        321.630 |          15.0 |
-| Rh_pv       |  203.602 |   271.47 |        352.911 |          15.0 |
-| Rn          |  114.091 |  152.121 |        197.757 |           8.0 |
-| Ru_new      |  159.953 |  213.271 |        277.252 |           8.0 |
-| Ru          |  159.957 |  213.276 |        277.259 |           8.0 |
-| Ru_pv_new   |  180.037 |  240.049 |        312.064 |          14.0 |
-| Ru_pv       |  172.822 |  230.429 |        299.558 |          14.0 |
-| Ru_sv       |  239.141 |  318.855 |        414.512 |          16.0 |
-| Sb          |  129.028 |  172.037 |        223.648 |           5.0 |
-| Sc          |  116.072 |  154.763 |        201.192 |           3.0 |
-| Sc_sv_h     |  285.522 |  380.696 |        494.905 |          11.0 |
-| Sc_sv       |  166.998 |  222.664 |        289.463 |          11.0 |
-| Se_GW       |  158.666 |  211.555 |        275.022 |           6.0 |
-| Se          |  158.651 |  211.534 |        274.994 |           6.0 |
-| S_h         |  301.827 |  402.436 |        523.167 |           6.0 |
-| Si_d_GW_nr  |  184.004 |  245.338 |        318.939 |           4.0 |
-| Si_d_GW     |  184.009 |  245.345 |        318.949 |           4.0 |
-| Si_h_old    |  285.109 |  380.146 |        494.190 |           4.0 |
-| Si_h        |  285.109 |  380.146 |        494.190 |           4.0 |
-| Si_nopc     |  184.009 |  245.345 |        318.949 |           4.0 |
-| Si          |  184.009 |  245.345 |        318.949 |           4.0 |
-| Si_pv_GW    |  356.322 |  475.096 |        617.625 |          10.0 |
-| Si_sv_GW_nr |  356.326 |  475.101 |        617.631 |          12.0 |
-| Si_sv_GW    |  356.322 |  475.096 |        617.625 |          12.0 |
-| Sm_3        |  132.815 |  177.087 |        230.213 |          11.0 |
-| Sm          |  193.136 |  257.515 |        334.769 |          16.0 |
-| Sn_d        |  180.817 |   241.09 |        313.417 |          14.0 |
-| Sn_GW       |   77.427 |  103.236 |        134.207 |           4.0 |
-| Sn          |   77.427 |  103.236 |        134.207 |           4.0 |
-| S           |  194.016 |    280.0 |        364.000 |           6.0 |
-| Sr_sv       |  171.961 |  229.282 |        298.067 |          10.0 |
-| Sr          |  171.961 |  229.282 |        298.067 |          10.0 |
-| Sb          |  129.028 |  172.037 |        223.648 |           5.0 |
-| Sc          |  116.072 |  154.763 |        201.192 |           3.0 |
-| Sc_sv_h     |  285.522 |  380.696 |        494.905 |          11.0 |
-| Sc_sv       |  166.998 |  222.664 |        289.463 |          11.0 |
-| Se_GW       |  158.666 |  211.555 |        275.022 |           6.0 |
-| Se          |  158.651 |  211.534 |        274.994 |           6.0 |
-| Si_d_GW_nr  |  184.004 |  245.338 |        318.939 |           4.0 |
-| Si_d_GW     |  184.009 |  245.345 |        318.949 |           4.0 |
-| Si_h_old    |  285.109 |  380.146 |        494.190 |           4.0 |
-| Si_h        |  285.109 |  380.146 |        494.190 |           4.0 |
-| Si_nopc     |  184.009 |  245.345 |        318.949 |           4.0 |
-| Si          |  184.009 |  245.345 |        318.949 |           4.0 |
-| Si_pv_GW    |  356.322 |  475.096 |        617.625 |          10.0 |
-| Si_sv_GW_nr |  356.326 |  475.101 |        617.631 |          12.0 |
-| Si_sv_GW    |  356.322 |  475.096 |        617.625 |          12.0 |
-| Sm_3        |  132.815 |  177.087 |        230.213 |          11.0 |
-| Sm          |  193.136 |  257.515 |        334.769 |          16.0 |
-| Sn_d        |  180.817 |   241.09 |        313.417 |          14.0 |
-| Sn_GW       |   77.427 |  103.236 |        134.207 |           4.0 |
-| Sn          |   77.427 |  103.236 |        134.207 |           4.0 |
-| Sr_sv       |  171.961 |  229.282 |        298.067 |          10.0 |
-| Sr          |  171.961 |  229.282 |        298.067 |          10.0 |
-| Ta          |   167.75 |  223.667 |        290.767 |           5.0 |
-| Ta_pv       |  167.756 |  223.675 |        290.778 |          11.0 |
-| Tb_3        |  116.721 |  155.628 |        202.316 |           9.0 |
-| Tb          |  198.618 |  264.824 |        344.271 |          19.0 |
-| Tc_new      |  171.521 |  228.694 |        297.302 |           7.0 |
-| Tc          |  171.521 |  228.694 |        297.302 |           7.0 |
-| Tc_pv_new   |  197.642 |  263.523 |        342.580 |          13.0 |
-| Tc_pv       |  171.524 |  228.699 |        297.309 |          13.0 |
-| Te          |  131.236 |  174.982 |        227.477 |           6.0 |
-| Te_rel      |  131.234 |  174.979 |        227.473 |           6.0 |
-| Th          |  185.587 |  247.449 |        321.684 |          12.0 |
-| Th_s        |  127.119 |  169.492 |        220.340 |          10.0 |
-| Ti          |  133.747 |   178.33 |        231.829 |           4.0 |
-| Ti_pv       |  166.753 |  222.338 |        289.039 |          10.0 |
-| Ti_sv_GW    |  234.428 |  312.571 |        406.342 |          12.0 |
-| Ti_sv_h     |  291.524 |  388.698 |        505.307 |          12.0 |
-| Ti_sv_new2  |  205.957 |   274.61 |        356.993 |          12.0 |
-| Ti_sv_new   |  205.957 |   274.61 |        356.993 |          12.0 |
-| Ti_sv       |   205.93 |  274.574 |        356.946 |          12.0 |
-| Tl_d        |  177.797 |  237.063 |        308.182 |          13.0 |
-| Tl          |   67.605 |    90.14 |        117.182 |           3.0 |
-| Tm_3        |  111.916 |  149.221 |        193.987 |           9.0 |
-| Tm          |  193.065 |  257.419 |        334.645 |          23.0 |
-| U           |  189.462 |  252.616 |        328.401 |          14.0 |
-| U_s         |  156.802 |  209.069 |        271.790 |          14.0 |
-| V           |  144.408 |  192.543 |        250.306 |           5.0 |
-| V_pv        |  197.756 |  263.675 |        342.778 |          11.0 |
-| V_sv_h      |  292.998 |  390.664 |        507.863 |          13.0 |
-| V_sv_new    |  197.755 |  263.673 |        342.775 |          13.0 |
-| V_sv        |  197.756 |  263.675 |        342.778 |          13.0 |
-| W           |  167.293 |  223.057 |        289.974 |           6.0 |
-| W_pv_new    |  167.293 |  223.057 |        289.974 |          12.0 |
-| W_pv        |  167.299 |  223.065 |        289.985 |          12.0 |
-| Xe          |  114.823 |  153.098 |        199.027 |           8.0 |
-| Xe          |  114.823 |  153.098 |        199.027 |           8.0 |
-| Yb_2_n      |  108.514 |  144.685 |        188.091 |          10.0 |
-| Yb_2        |   84.407 |  112.543 |        146.306 |           8.0 |
-| Yb          |  189.771 |  253.028 |        328.936 |          24.0 |
-| Y_sv        |  158.731 |  211.641 |        275.133 |          11.0 |
-| Yb_2_n      |  108.514 |  144.685 |        188.091 |          10.0 |
-| Yb_2        |   84.407 |  112.543 |        146.306 |           8.0 |
-| Yb          |  189.771 |  253.028 |        328.936 |          24.0 |
-| Zn          |  207.545 |  276.727 |        359.745 |          12.0 |
-| Zn_pv       |  282.455 |  376.607 |        489.589 |          18.0 |
-| Zr          |  115.974 |  154.632 |        201.022 |           4.0 |
-| Zr_sv_GW    |  230.877 |  307.836 |        400.187 |          12.0 |
-| Zr_sv_new   |  172.424 |  229.898 |        298.867 |          12.0 |
-| Zr_sv       |  172.379 |  229.839 |        298.791 |          12.0 |
+| POTCAR     |   ENMIN |   ENMAX | prec=high (eV) | # val. elect. |
+|------------+---------+---------+----------------+---------------|
+| Ac         | 129.263 | 172.351 |        224.056 |          11.0 |
+| Ag         | 187.383 | 249.844 |        324.797 |          11.0 |
+| Ag_GW      | 187.383 | 249.844 |        324.797 |          11.0 |
+| Ag_pv      | 223.399 | 297.865 |        387.225 |          17.0 |
+| Al_GW      | 180.225 |   240.3 |        312.390 |           3.0 |
+| Al_sv_GW   | 308.331 | 411.109 |        534.442 |          11.0 |
+| Al         | 180.225 |   240.3 |        312.390 |           3.0 |
+| Am         | 191.906 | 255.875 |        332.637 |          17.0 |
+| Ar         | 199.806 | 266.408 |        346.330 |           8.0 |
+| Ar_GW      | 199.806 | 266.408 |        346.330 |           8.0 |
+| As_GW      | 156.526 | 208.702 |        271.313 |           5.0 |
+| As         | 156.526 | 208.702 |        271.313 |           5.0 |
+| As_d       | 216.488 | 288.651 |        375.246 |          15.0 |
+| At_d       | 199.688 | 266.251 |        346.126 |          17.0 |
+| At         | 121.073 |  161.43 |        209.859 |           7.0 |
+| Au_pv_GW   | 186.258 | 248.344 |        322.847 |          17.0 |
+| Au_GW      | 186.258 | 248.344 |        322.847 |          11.0 |
+| Au         | 172.457 | 229.943 |        298.926 |          11.0 |
+| Bi         |  78.777 | 105.037 |        136.548 |           5.0 |
+| Be_GW      | 185.657 | 247.543 |        321.806 |           2.0 |
+| Bi_d_GW    | 182.129 | 242.839 |        315.691 |          15.0 |
+| Be_sv      | 231.576 | 308.768 |        401.398 |           4.0 |
+| Ba_sv_GW   | 178.136 | 237.515 |        308.769 |          10.0 |
+| B_GW       |  238.96 | 318.614 |        414.198 |           3.0 |
+| B_s        | 201.934 | 269.245 |        350.019 |           3.0 |
+| Br_GW      | 162.214 | 216.285 |        281.171 |           7.0 |
+| Br         | 162.214 | 216.285 |        281.171 |           7.0 |
+| Bi_GW      | 109.897 |  146.53 |        190.489 |           5.0 |
+| Bi_d       | 182.129 | 242.839 |        315.691 |          15.0 |
+| B          |  238.96 | 318.614 |        414.198 |           3.0 |
+| Be_sv_GW   |  403.09 | 537.454 |        698.690 |           4.0 |
+| Be         | 185.658 | 247.543 |        321.806 |           2.0 |
+| B_h        |   500.0 |   700.0 |        910.000 |           3.0 |
+| Ba_sv      | 140.386 | 187.181 |        243.335 |          10.0 |
+| Ba_sv_GW   | 178.136 | 237.515 |        308.769 |          10.0 |
+| Ba_sv      | 140.386 | 187.181 |        243.335 |          10.0 |
+| Be_GW      | 185.657 | 247.543 |        321.806 |           2.0 |
+| Be_sv      | 231.576 | 308.768 |        401.398 |           4.0 |
+| Be_sv_GW   |  403.09 | 537.454 |        698.690 |           4.0 |
+| Be         | 185.658 | 247.543 |        321.806 |           2.0 |
+| Bi         |  78.777 | 105.037 |        136.548 |           5.0 |
+| Bi_d_GW    | 182.129 | 242.839 |        315.691 |          15.0 |
+| Bi_GW      | 109.897 |  146.53 |        190.489 |           5.0 |
+| Bi_d       | 182.129 | 242.839 |        315.691 |          15.0 |
+| Br_GW      | 162.214 | 216.285 |        281.171 |           7.0 |
+| Br         | 162.214 | 216.285 |        281.171 |           7.0 |
+| Cm         | 193.465 | 257.953 |        335.339 |          18.0 |
+| Cd_GW      | 190.534 | 254.045 |        330.258 |          12.0 |
+| Cu_pv_GW   | 350.498 | 467.331 |        607.530 |          17.0 |
+| Ce_h       | 224.925 |   299.9 |        389.870 |          12.0 |
+| C_s        | 205.433 | 273.911 |        356.084 |           4.0 |
+| Cd         | 205.752 | 274.336 |        356.637 |          12.0 |
+| Cr_sv_GW   | 246.211 | 328.282 |        426.767 |          14.0 |
+| Co_pv      | 203.281 | 271.042 |        352.355 |          15.0 |
+| Cs_sv_GW   | 148.575 | 198.101 |        257.531 |           9.0 |
+| Ca_sv      | 199.967 | 266.622 |        346.609 |          10.0 |
+| Cl_h       | 306.852 | 409.136 |        531.877 |           7.0 |
+| Ca_sv_GW   | 211.072 |  281.43 |        365.859 |          10.0 |
+| Cd_sv_GW   | 488.441 | 651.254 |        846.630 |          20.0 |
+| Cu         | 221.585 | 295.446 |        384.080 |          11.0 |
+| Cd_pv_GW   | 297.574 | 396.766 |        515.796 |          18.0 |
+| Cr_sv      | 296.603 | 395.471 |        514.112 |          14.0 |
+| C_GW_new   | 310.494 | 413.992 |        538.190 |           4.0 |
+| Cr         |  170.31 |  227.08 |        295.204 |           6.0 |
+| Co         | 200.976 | 267.968 |        348.358 |           9.0 |
+| Co_GW      |  242.55 |   323.4 |        420.420 |           9.0 |
+| C_h        |   500.0 |   700.0 |        910.000 |           4.0 |
+| Cr_pv      | 199.261 | 265.681 |        345.385 |          12.0 |
+| Ce_GW      | 228.468 | 304.625 |        396.012 |          12.0 |
+| Cl_GW      | 196.854 | 262.472 |        341.214 |           7.0 |
+| C          |   300.0 |   400.0 |        520.000 |           4.0 |
+| Cu_pv      | 276.486 | 368.648 |        479.242 |          17.0 |
+| Ce_3       | 132.379 | 176.506 |        229.458 |          11.0 |
+| Cs_sv      | 165.238 | 220.318 |        286.413 |           9.0 |
+| Cl         | 196.854 | 262.472 |        341.214 |           7.0 |
+| Ca_pv      |   89.67 | 119.559 |        155.427 |           8.0 |
+| Co_sv_GW   | 272.827 |  363.77 |        472.901 |          17.0 |
+| Cu_GW      | 312.779 | 417.039 |        542.151 |          11.0 |
+| Co_sv      | 292.771 | 390.362 |        507.471 |          17.0 |
+| C_GW       | 310.494 | 413.992 |        538.190 |           4.0 |
+| Ce         | 204.781 | 273.042 |        354.955 |          12.0 |
+| Ca_sv      | 199.967 | 266.622 |        346.609 |          10.0 |
+| Ca_sv_GW   | 211.072 |  281.43 |        365.859 |          10.0 |
+| Ca_pv      |   89.67 | 119.559 |        155.427 |           8.0 |
+| Cd_GW      | 190.534 | 254.045 |        330.258 |          12.0 |
+| Cd         | 205.752 | 274.336 |        356.637 |          12.0 |
+| Cd_sv_GW   | 488.441 | 651.254 |        846.630 |          20.0 |
+| Cd_pv_GW   | 297.574 | 396.766 |        515.796 |          18.0 |
+| Ce_h       | 224.925 |   299.9 |        389.870 |          12.0 |
+| Ce_GW      | 228.468 | 304.625 |        396.012 |          12.0 |
+| Ce_3       | 132.379 | 176.506 |        229.458 |          11.0 |
+| Ce         | 204.781 | 273.042 |        354.955 |          12.0 |
+| Cl_h       | 306.852 | 409.136 |        531.877 |           7.0 |
+| Cl_GW      | 196.854 | 262.472 |        341.214 |           7.0 |
+| Cl         | 196.854 | 262.472 |        341.214 |           7.0 |
+| Cm         | 193.465 | 257.953 |        335.339 |          18.0 |
+| Co_pv      | 203.281 | 271.042 |        352.355 |          15.0 |
+| Co         | 200.976 | 267.968 |        348.358 |           9.0 |
+| Co_GW      |  242.55 |   323.4 |        420.420 |           9.0 |
+| Co_sv_GW   | 272.827 |  363.77 |        472.901 |          17.0 |
+| Co_sv      | 292.771 | 390.362 |        507.471 |          17.0 |
+| Cr_sv_GW   | 246.211 | 328.282 |        426.767 |          14.0 |
+| Cr_sv      | 296.603 | 395.471 |        514.112 |          14.0 |
+| Cr         |  170.31 |  227.08 |        295.204 |           6.0 |
+| Cr_pv      | 199.261 | 265.681 |        345.385 |          12.0 |
+| Cs_sv_GW   | 148.575 | 198.101 |        257.531 |           9.0 |
+| Cs_sv      | 165.238 | 220.318 |        286.413 |           9.0 |
+| Cu_pv_GW   | 350.498 | 467.331 |        607.530 |          17.0 |
+| Cu         | 221.585 | 295.446 |        384.080 |          11.0 |
+| Cu_pv      | 276.486 | 368.648 |        479.242 |          17.0 |
+| Cu_GW      | 312.779 | 417.039 |        542.151 |          11.0 |
+| Dy         | 191.601 | 255.467 |        332.107 |          20.0 |
+| Dy_3       | 116.785 | 155.713 |        202.427 |           9.0 |
+| Er_2       |  89.813 |  119.75 |        155.675 |           8.0 |
+| Er         | 223.587 | 298.116 |        387.551 |          22.0 |
+| Er_3       | 116.278 | 155.037 |        201.548 |           9.0 |
+| Eu_3       |  96.793 | 129.057 |        167.774 |           9.0 |
+| Eu         | 187.251 | 249.668 |        324.568 |          17.0 |
+| Eu_2       |  74.496 |  99.328 |        129.126 |           8.0 |
+| F_s        | 217.378 | 289.837 |        376.788 |           7.0 |
+| Fr_sv      | 160.905 |  214.54 |        278.902 |           9.0 |
+| F          |   300.0 |   400.0 |        520.000 |           7.0 |
+| Fe_GW      | 240.755 | 321.007 |        417.309 |           8.0 |
+| Fe_sv      | 292.918 | 390.558 |        507.725 |          16.0 |
+| Fe         | 200.911 | 267.882 |        348.247 |           8.0 |
+| F_GW       | 365.773 | 487.698 |        634.007 |           7.0 |
+| F_h        |   500.0 |   700.0 |        910.000 |           7.0 |
+| F_GW_new   | 365.773 | 487.698 |        634.007 |           7.0 |
+| Fe_pv      | 219.928 | 293.238 |        381.209 |          14.0 |
+| Fe_sv_GW   | 273.539 | 364.719 |        474.135 |          16.0 |
+| Fe_GW      | 240.755 | 321.007 |        417.309 |           8.0 |
+| Fe_sv      | 292.918 | 390.558 |        507.725 |          16.0 |
+| Fe         | 200.911 | 267.882 |        348.247 |           8.0 |
+| Fe_pv      | 219.928 | 293.238 |        381.209 |          14.0 |
+| Fe_sv_GW   | 273.539 | 364.719 |        474.135 |          16.0 |
+| Fr_sv      | 160.905 |  214.54 |        278.902 |           9.0 |
+| Ga_sv_GW   | 377.564 | 503.418 |        654.443 |          21.0 |
+| Ga         | 101.009 | 134.678 |        175.081 |           3.0 |
+| Ga_GW      | 101.009 | 134.678 |        175.081 |           3.0 |
+| Ga_pv_GW   | 317.251 | 423.002 |        549.903 |          19.0 |
+| Ga_d_GW    | 303.451 | 404.602 |        525.983 |          13.0 |
+| Ga_h       | 303.451 | 404.601 |        525.981 |          13.0 |
+| Ga_d       | 212.018 | 282.691 |        367.498 |          13.0 |
+| Gd         | 192.354 | 256.472 |        333.414 |          18.0 |
+| Gd_3       | 115.749 | 154.332 |        200.632 |           9.0 |
+| Ge_GW      | 130.355 | 173.807 |        225.949 |           4.0 |
+| Ge         | 130.355 | 173.807 |        225.949 |           4.0 |
+| Ge_sv_GW   | 340.866 | 454.489 |        590.836 |          22.0 |
+| Ge_d       |  232.72 | 310.294 |        403.382 |          14.0 |
+| Ge_h       | 307.818 | 410.425 |        533.553 |          14.0 |
+| Ge_d_GW    |  232.72 | 310.294 |        403.382 |          14.0 |
+| H          |   200.0 |   250.0 |        325.000 |           1.0 |
+| H_h_GW     |   350.0 |   700.0 |        910.000 |           1.0 |
+| H_AE       |   400.0 |  1000.0 |       1300.000 |           1.0 |
+| Ho         | 192.876 | 257.168 |        334.318 |          21.0 |
+| H1.33      |    None |   250.0 |        325.000 |          1.33 |
+| Ho_3       | 115.603 | 154.137 |        200.378 |           9.0 |
+| He_GW      | 304.335 |  405.78 |        527.514 |           2.0 |
+| H1.25      | 343.141 | 457.521 |        594.777 |          1.25 |
+| Hg         | 174.903 | 233.204 |        303.165 |          12.0 |
+| Hf         |  165.25 | 220.334 |        286.434 |           4.0 |
+| He         | 359.172 | 478.896 |        622.565 |           2.0 |
+| H.58       |    None |   250.0 |        325.000 |          0.58 |
+| H.66       |    None |   250.0 |        325.000 |          0.66 |
+| H.42       |    None |   250.0 |        325.000 |          0.42 |
+| Hf_sv_GW   | 212.223 | 282.964 |        367.853 |          12.0 |
+| H1.5       |   200.0 |   250.0 |        325.000 |           1.5 |
+| H_h        |   350.0 |   700.0 |        910.000 |           1.0 |
+| H_GW       |   250.0 |   300.0 |        390.000 |           1.0 |
+| H_s        |   150.0 |   200.0 |        260.000 |           1.0 |
+| H1.66      |    None |   250.0 |        325.000 |          1.66 |
+| H.5        |   200.0 |   250.0 |        325.000 |           0.5 |
+| H.25       |    None |   250.0 |        325.000 |          0.25 |
+| Hf_pv      |  165.25 | 220.334 |        286.434 |          10.0 |
+| H.75       |   200.0 |   250.0 |        325.000 |          0.75 |
+| H.33       |    None |   250.0 |        325.000 |          0.33 |
+| H1.75      |    None |   250.0 |        325.000 |          1.75 |
+| Hf_sv      | 178.083 | 237.444 |        308.677 |          12.0 |
+| He_GW      | 304.335 |  405.78 |        527.514 |           2.0 |
+| He         | 359.172 | 478.896 |        622.565 |           2.0 |
+| Hf         |  165.25 | 220.334 |        286.434 |           4.0 |
+| Hf_sv_GW   | 212.223 | 282.964 |        367.853 |          12.0 |
+| Hf_pv      |  165.25 | 220.334 |        286.434 |          10.0 |
+| Hf_sv      | 178.083 | 237.444 |        308.677 |          12.0 |
+| Hg         | 174.903 | 233.204 |        303.165 |          12.0 |
+| Ho         | 192.876 | 257.168 |        334.318 |          21.0 |
+| Ho_3       | 115.603 | 154.137 |        200.378 |           9.0 |
+| In_d_GW    | 208.968 | 278.624 |        362.211 |          13.0 |
+| In_d       | 179.409 | 239.211 |        310.974 |          13.0 |
+| I_GW       | 131.735 | 175.647 |        228.341 |           7.0 |
+| I          | 131.735 | 175.647 |        228.341 |           7.0 |
+| Ir_sv_GW   | 239.882 | 319.843 |        415.796 |          17.0 |
+| Ir         | 158.148 | 210.864 |        274.123 |           9.0 |
+| In         |  71.951 |  95.934 |        124.714 |           3.0 |
+| In_d_GW    | 208.968 | 278.624 |        362.211 |          13.0 |
+| In_d       | 179.409 | 239.211 |        310.974 |          13.0 |
+| In         |  71.951 |  95.934 |        124.714 |           3.0 |
+| Ir_sv_GW   | 239.882 | 319.843 |        415.796 |          17.0 |
+| Ir         | 158.148 | 210.864 |        274.123 |           9.0 |
+| Kr         | 138.998 | 185.331 |        240.930 |           8.0 |
+| K_pv       |  87.548 | 116.731 |        151.750 |           7.0 |
+| K_sv       | 194.448 | 259.264 |        337.043 |           9.0 |
+| Kr_GW      | 138.998 | 185.331 |        240.930 |           8.0 |
+| K_sv_GW    | 186.749 | 248.998 |        323.697 |           9.0 |
+| Kr         | 138.998 | 185.331 |        240.930 |           8.0 |
+| Kr_GW      | 138.998 | 185.331 |        240.930 |           8.0 |
+| La         | 164.469 | 219.292 |        285.080 |          11.0 |
+| La_s       | 102.397 |  136.53 |        177.489 |           9.0 |
+| Li_sv_GW   | 325.274 | 433.699 |        563.809 |           3.0 |
+| Li_GW      |  84.078 | 112.104 |        145.735 |           1.0 |
+| Li_AE_GW   | 325.274 | 433.699 |        563.809 |           3.0 |
+| Li         |   100.0 |   140.0 |        182.000 |           1.0 |
+| Li_sv      | 374.276 | 499.034 |        648.744 |           3.0 |
+| Lu         | 191.771 | 255.695 |        332.404 |          25.0 |
+| Lu_3       | 116.244 | 154.992 |        201.490 |           9.0 |
+| Mg_pv_GW   | 302.947 | 403.929 |        525.108 |           8.0 |
+| Mg_GW      |  94.607 | 126.143 |        163.986 |           2.0 |
+| Mg_pv      | 302.947 | 403.929 |        525.108 |           8.0 |
+| Mg         |  94.607 | 126.143 |        163.986 |           2.0 |
+| Mg_sv      | 371.417 | 495.223 |        643.790 |          10.0 |
+| Mg_sv_GW   |  322.42 | 429.893 |        558.861 |          10.0 |
+| Mn_sv_GW   | 268.458 | 357.944 |        465.327 |          15.0 |
+| Mn_pv      | 202.398 | 269.864 |        350.823 |          13.0 |
+| Mn         | 202.398 | 269.864 |        350.823 |           7.0 |
+| Mn_GW      |  208.85 | 278.466 |        362.006 |           7.0 |
+| Mn_sv      |  290.39 | 387.187 |        503.343 |          15.0 |
+| Mo_sv      | 182.007 | 242.676 |        315.479 |          14.0 |
+| Mo_sv_GW   | 233.929 | 311.905 |        405.476 |          14.0 |
+| Mo         | 168.438 | 224.584 |        291.959 |           6.0 |
+| Mo_pv      | 168.438 | 224.584 |        291.959 |          12.0 |
+| Nb_sv      | 219.927 | 293.235 |        381.206 |          13.0 |
+| Nb_pv      | 156.456 | 208.608 |        271.190 |          11.0 |
+| N_s_GW     | 222.371 | 296.495 |        385.444 |           5.0 |
+| Na_pv      | 194.671 | 259.561 |        337.429 |           7.0 |
+| N_GW       | 315.677 | 420.902 |        547.173 |           5.0 |
+| Np         | 190.695 |  254.26 |        330.538 |          15.0 |
+| Ni_sv_GW   | 310.107 | 413.475 |        537.518 |          18.0 |
+| Ne         | 257.704 | 343.606 |        446.688 |           8.0 |
+| N_GW_new   | 315.677 | 420.902 |        547.173 |           5.0 |
+| Na_sv      |  484.23 |  645.64 |        839.332 |           9.0 |
+| Ni         | 202.149 | 269.532 |        350.392 |          10.0 |
+| Ne_GW_soft | 238.695 |  318.26 |        413.738 |           8.0 |
+| N          |   300.0 |   400.0 |        520.000 |           5.0 |
+| N_s        | 209.769 | 279.692 |        363.600 |           5.0 |
+| N_h        |   500.0 |   700.0 |        910.000 |           5.0 |
+| Nb_sv_GW   | 214.344 | 285.792 |        371.530 |          13.0 |
+| Na         |  76.476 | 101.968 |        132.558 |           1.0 |
+| Nd_3       | 136.964 | 182.619 |        237.405 |          11.0 |
+| Ne_GW      | 238.695 |  318.26 |        413.738 |           8.0 |
+| Ni_GW      | 267.992 | 357.323 |        464.520 |          10.0 |
+| Nd         | 189.892 | 253.189 |        329.146 |          14.0 |
+| Np_s       | 155.785 | 207.713 |        270.027 |          15.0 |
+| Na_sv_GW   | 195.049 | 260.065 |        338.084 |           9.0 |
+| Ni_pv      | 275.989 | 367.986 |        478.382 |          16.0 |
+| Na_pv      | 194.671 | 259.561 |        337.429 |           7.0 |
+| Na_sv      |  484.23 |  645.64 |        839.332 |           9.0 |
+| Na         |  76.476 | 101.968 |        132.558 |           1.0 |
+| Na_sv_GW   | 195.049 | 260.065 |        338.084 |           9.0 |
+| Nb_sv      | 219.927 | 293.235 |        381.206 |          13.0 |
+| Nb_pv      | 156.456 | 208.608 |        271.190 |          11.0 |
+| Nb_sv_GW   | 214.344 | 285.792 |        371.530 |          13.0 |
+| Nd_3       | 136.964 | 182.619 |        237.405 |          11.0 |
+| Nd         | 189.892 | 253.189 |        329.146 |          14.0 |
+| Ne         | 257.704 | 343.606 |        446.688 |           8.0 |
+| Ne_GW_soft | 238.695 |  318.26 |        413.738 |           8.0 |
+| Ne_GW      | 238.695 |  318.26 |        413.738 |           8.0 |
+| Ni_sv_GW   | 310.107 | 413.475 |        537.518 |          18.0 |
+| Ni         | 202.149 | 269.532 |        350.392 |          10.0 |
+| Ni_GW      | 267.992 | 357.323 |        464.520 |          10.0 |
+| Ni_pv      | 275.989 | 367.986 |        478.382 |          16.0 |
+| Np         | 190.695 |  254.26 |        330.538 |          15.0 |
+| Np_s       | 155.785 | 207.713 |        270.027 |          15.0 |
+| Os         | 171.017 | 228.022 |        296.429 |           8.0 |
+| O_s        |  212.14 | 282.853 |        367.709 |           6.0 |
+| O          |   300.0 |   400.0 |        520.000 |           6.0 |
+| O_h        |   500.0 |   700.0 |        910.000 |           6.0 |
+| Os_pv      | 171.017 | 228.022 |        296.429 |          14.0 |
+| O_s_GW     | 250.998 | 334.664 |        435.063 |           6.0 |
+| O_GW       | 310.976 | 414.635 |        539.025 |           6.0 |
+| Os_sv_GW   |  239.83 | 319.773 |        415.705 |          16.0 |
+| O_GW_new   | 325.824 | 434.431 |        564.760 |           6.0 |
+| Os         | 171.017 | 228.022 |        296.429 |           8.0 |
+| Os_pv      | 171.017 | 228.022 |        296.429 |          14.0 |
+| Os_sv_GW   |  239.83 | 319.773 |        415.705 |          16.0 |
+| Pt_pv_GW   | 186.537 | 248.716 |        323.331 |          16.0 |
+| Pm         |  193.97 | 258.627 |        336.215 |          15.0 |
+| P_h        | 292.651 | 390.202 |        507.263 |           5.0 |
+| Pb_d       | 178.376 | 237.835 |        309.186 |          14.0 |
+| Pa         | 189.145 | 252.193 |        327.851 |          13.0 |
+| Po_d       | 198.424 | 264.565 |        343.935 |          16.0 |
+| Pb_d_GW    | 178.357 | 237.809 |        309.152 |          14.0 |
+| P          |  191.28 |  255.04 |        331.552 |           5.0 |
+| Pt         | 172.712 | 230.283 |        299.368 |          10.0 |
+| Pd_GW      | 188.194 | 250.925 |        326.203 |          10.0 |
+| Po         |  119.78 | 159.707 |        207.619 |           6.0 |
+| Pd_pv      | 188.194 | 250.925 |        326.203 |          16.0 |
+| Pu         | 190.765 | 254.353 |        330.659 |          16.0 |
+| Pt_GW      | 186.537 | 248.716 |        323.331 |          10.0 |
+| Pb         |   73.48 |  97.973 |        127.365 |           4.0 |
+| Pm_3       | 132.719 | 176.959 |        230.047 |          11.0 |
+| Pr         | 204.706 | 272.941 |        354.823 |          13.0 |
+| Pr_3       | 136.289 | 181.719 |        236.235 |          11.0 |
+| Pt_sv_GW   | 242.752 | 323.669 |        420.770 |          18.0 |
+| P_GW       |  191.28 |  255.04 |        331.552 |           5.0 |
+| Pa_s       |   145.1 | 193.466 |        251.506 |          11.0 |
+| Pd         | 188.194 | 250.925 |        326.203 |          10.0 |
+| Pt_pv      | 220.955 | 294.607 |        382.989 |          16.0 |
+| Pu_s       | 155.873 |  207.83 |        270.179 |          16.0 |
+| Pa         | 189.145 | 252.193 |        327.851 |          13.0 |
+| Pa_s       |   145.1 | 193.466 |        251.506 |          11.0 |
+| Pb_d       | 178.376 | 237.835 |        309.186 |          14.0 |
+| Pb_d_GW    | 178.357 | 237.809 |        309.152 |          14.0 |
+| Pb         |   73.48 |  97.973 |        127.365 |           4.0 |
+| Pd_GW      | 188.194 | 250.925 |        326.203 |          10.0 |
+| Pd_pv      | 188.194 | 250.925 |        326.203 |          16.0 |
+| Pd         | 188.194 | 250.925 |        326.203 |          10.0 |
+| Pm         |  193.97 | 258.627 |        336.215 |          15.0 |
+| Pm_3       | 132.719 | 176.959 |        230.047 |          11.0 |
+| Po_d       | 198.424 | 264.565 |        343.935 |          16.0 |
+| Po         |  119.78 | 159.707 |        207.619 |           6.0 |
+| Pr         | 204.706 | 272.941 |        354.823 |          13.0 |
+| Pr_3       | 136.289 | 181.719 |        236.235 |          11.0 |
+| Pt_pv_GW   | 186.537 | 248.716 |        323.331 |          16.0 |
+| Pt         | 172.712 | 230.283 |        299.368 |          10.0 |
+| Pt_GW      | 186.537 | 248.716 |        323.331 |          10.0 |
+| Pt_sv_GW   | 242.752 | 323.669 |        420.770 |          18.0 |
+| Pt_pv      | 220.955 | 294.607 |        382.989 |          16.0 |
+| Pu         | 190.765 | 254.353 |        330.659 |          16.0 |
+| Pu_s       | 155.873 |  207.83 |        270.179 |          16.0 |
+| Ra_sv      | 178.025 | 237.367 |        308.577 |          10.0 |
+| Rb_sv      | 165.084 | 220.112 |        286.146 |           9.0 |
+| Rb_sv_GW   | 165.898 | 221.197 |        287.556 |           9.0 |
+| Rb_pv      |  91.412 | 121.882 |        158.447 |           7.0 |
+| Re         | 169.662 | 226.216 |        294.081 |           7.0 |
+| Re_pv      | 169.662 | 226.216 |        294.081 |          13.0 |
+| Re_sv_GW   | 237.759 | 317.012 |        412.116 |          15.0 |
+| Rh_sv_GW   | 240.068 | 320.091 |        416.118 |          17.0 |
+| Rh_pv_GW   | 185.556 | 247.408 |        321.630 |          15.0 |
+| Rh_pv      | 185.556 | 247.408 |        321.630 |          15.0 |
+| Rh         | 171.747 | 228.996 |        297.695 |           9.0 |
+| Rh_GW      | 185.556 | 247.408 |        321.630 |           9.0 |
+| Rn         | 114.091 | 152.121 |        197.757 |           8.0 |
+| Ru         | 159.953 | 213.271 |        277.252 |           8.0 |
+| Ru_pv_GW   | 180.037 | 240.049 |        312.064 |          14.0 |
+| Ru_sv_GW   |   240.9 |   321.2 |        417.560 |          16.0 |
+| Ru_pv      | 180.037 | 240.049 |        312.064 |          14.0 |
+| Ru_sv      | 239.141 | 318.855 |        414.512 |          16.0 |
+| Sn_d_GW    | 195.049 | 260.066 |        338.086 |          14.0 |
+| S_h        | 301.827 | 402.436 |        523.167 |           6.0 |
+| Sn         |  77.427 | 103.236 |        134.207 |           4.0 |
+| Sr_sv_GW   | 168.613 | 224.817 |        292.262 |          10.0 |
+| Sc_sv_GW   | 213.799 | 285.066 |        370.586 |          11.0 |
+| Se_GW      | 158.666 | 211.555 |        275.022 |           6.0 |
+| Sm_3       | 132.815 | 177.087 |        230.213 |          11.0 |
+| S_GW       | 194.016 | 258.689 |        336.296 |           6.0 |
+| Si_sv_GW   | 410.683 | 547.578 |        711.851 |          12.0 |
+| Sc_sv      | 166.995 |  222.66 |        289.458 |          11.0 |
+| Se         | 158.666 | 211.555 |        275.022 |           6.0 |
+| S          | 194.016 | 258.689 |        336.296 |           6.0 |
+| Sb_d_GW    | 197.325 |   263.1 |        342.030 |          15.0 |
+| Sn_d       | 180.812 | 241.083 |        313.408 |          14.0 |
+| Sc         | 116.072 | 154.763 |        201.192 |           3.0 |
+| Sr_sv      | 172.014 | 229.353 |        298.159 |          10.0 |
+| Sb         | 129.052 | 172.069 |        223.690 |           5.0 |
+| Si         | 184.009 | 245.345 |        318.949 |           4.0 |
+| Sb_GW      | 129.052 | 172.069 |        223.690 |           5.0 |
+| Sm         | 193.136 | 257.515 |        334.769 |          16.0 |
+| Si_GW      | 184.009 | 245.345 |        318.949 |           4.0 |
+| Sb_d_GW    | 197.325 |   263.1 |        342.030 |          15.0 |
+| Sb         | 129.052 | 172.069 |        223.690 |           5.0 |
+| Sb_GW      | 129.052 | 172.069 |        223.690 |           5.0 |
+| Sc_sv_GW   | 213.799 | 285.066 |        370.586 |          11.0 |
+| Sc_sv      | 166.995 |  222.66 |        289.458 |          11.0 |
+| Sc         | 116.072 | 154.763 |        201.192 |           3.0 |
+| Se_GW      | 158.666 | 211.555 |        275.022 |           6.0 |
+| Se         | 158.666 | 211.555 |        275.022 |           6.0 |
+| Si_sv_GW   | 410.683 | 547.578 |        711.851 |          12.0 |
+| Si         | 184.009 | 245.345 |        318.949 |           4.0 |
+| Si_GW      | 184.009 | 245.345 |        318.949 |           4.0 |
+| Sm_3       | 132.815 | 177.087 |        230.213 |          11.0 |
+| Sm         | 193.136 | 257.515 |        334.769 |          16.0 |
+| Sn_d_GW    | 195.049 | 260.066 |        338.086 |          14.0 |
+| Sn         |  77.427 | 103.236 |        134.207 |           4.0 |
+| Sn_d       | 180.812 | 241.083 |        313.408 |          14.0 |
+| Sr_sv_GW   | 168.613 | 224.817 |        292.262 |          10.0 |
+| Sr_sv      | 172.014 | 229.353 |        298.159 |          10.0 |
+| Ta_pv      |  167.75 | 223.667 |        290.767 |          11.0 |
+| Ta         |  167.75 | 223.667 |        290.767 |           5.0 |
+| Ta_sv_GW   | 214.506 | 286.008 |        371.810 |          13.0 |
+| Tb_3       | 116.709 | 155.613 |        202.297 |           9.0 |
+| Tb         | 198.618 | 264.824 |        344.271 |          19.0 |
+| Tc_pv      | 197.642 | 263.523 |        342.580 |          13.0 |
+| Tc_sv      | 239.028 | 318.703 |        414.314 |          15.0 |
+| Tc_sv_GW   | 238.582 |  318.11 |        413.543 |          15.0 |
+| Tc         | 171.521 | 228.694 |        297.302 |           7.0 |
+| Te         | 131.236 | 174.982 |        227.477 |           6.0 |
+| Te_GW      | 131.236 | 174.982 |        227.477 |           6.0 |
+| Th_s       | 127.022 | 169.363 |        220.172 |          10.0 |
+| Th         |  185.48 | 247.306 |        321.498 |          12.0 |
+| Ti         | 133.747 |  178.33 |        231.829 |           4.0 |
+| Ti_pv      | 166.751 | 222.335 |        289.036 |          10.0 |
+| Ti_sv_GW   | 214.498 | 285.998 |        371.797 |          12.0 |
+| Ti_sv      | 205.957 |  274.61 |        356.993 |          12.0 |
+| Tl_d       | 177.789 | 237.053 |        308.169 |          13.0 |
+| Tl         |  67.605 |   90.14 |        117.182 |           3.0 |
+| Tm         | 193.065 |  257.42 |        334.646 |          23.0 |
+| Tm_3       | 111.916 | 149.221 |        193.987 |           9.0 |
+| U_s        | 156.922 |  209.23 |        271.999 |          14.0 |
+| U          | 189.376 | 252.502 |        328.253 |          14.0 |
+| V_sv       | 197.755 | 263.673 |        342.775 |          13.0 |
+| V          | 144.408 | 192.543 |        250.306 |           5.0 |
+| V_sv_GW    | 242.302 |  323.07 |        419.991 |          13.0 |
+| V_pv       | 197.755 | 263.673 |        342.775 |          11.0 |
+| W          | 167.293 | 223.057 |        289.974 |           6.0 |
+| W_sv_GW    | 237.849 | 317.132 |        412.272 |          14.0 |
+| W_pv       | 167.293 | 223.057 |        289.974 |          12.0 |
+| Xe         | 114.839 | 153.118 |        199.053 |           8.0 |
+| Xe_GW      |  134.66 | 179.547 |        233.411 |           8.0 |
+| Xe         | 114.839 | 153.118 |        199.053 |           8.0 |
+| Xe_GW      |  134.66 | 179.547 |        233.411 |           8.0 |
+| Y_sv       |  151.97 | 202.626 |        263.414 |          11.0 |
+| Y_sv_GW    | 171.957 | 229.276 |        298.059 |          11.0 |
+| Yb         | 189.771 | 253.028 |        328.936 |          24.0 |
+| Yb_2       |  84.433 | 112.578 |        146.351 |           8.0 |
+| Yb         | 189.771 | 253.028 |        328.936 |          24.0 |
+| Yb_2       |  84.433 | 112.578 |        146.351 |           8.0 |
+| Zn_GW      | 246.143 | 328.191 |        426.648 |          12.0 |
+| Zn_pv_GW   | 270.184 | 360.246 |        468.320 |          18.0 |
+| Zn_sv_GW   | 372.453 | 496.604 |        645.585 |          20.0 |
+| Zn         | 207.542 | 276.723 |        359.740 |          12.0 |
+| Zr_sv_GW   | 211.823 | 282.431 |        367.160 |          12.0 |
+| Zr_sv      | 172.424 | 229.898 |        298.867 |          12.0 |
 
 
 * Python
@@ -13234,11 +13280,11 @@ It pays to be careful when dividing by integers because you can get unexpected r
 nPd = 4
 nCu = 5
 x_Cu = nCu/(nPd + nCu)
-print 'x_cu = {0} (integer division)'.format(x_Cu)
+print('x_cu = {0} (integer division)'.format(x_Cu))
 
 # now cast as floats
 x_Cu = float(nCu)/float(nPd + nCu)
-print 'x_cu = {0} (float division)'.format(x_Cu)
+print('x_cu = {0} (float division)'.format(x_Cu))
 #+END_SRC
 
 #+RESULTS:
@@ -13252,7 +13298,7 @@ nCu = 5
 
 # now cast as floats
 x_Cu = float(nCu)/(nPd + nCu)
-print 'x_cu = {0}'.format(x_Cu)
+print('x_cu = {0}'.format(x_Cu))
 #+END_SRC
 
 #+RESULTS:
@@ -13265,7 +13311,7 @@ nPd = 4.  # this is a float
 nCu = 5
 
 x_Cu = nCu/(nPd + nCu)
-print 'x_cu = {0}'.format(x_Cu)
+print('x_cu = {0}'.format(x_Cu))
 #+END_SRC
 
 #+RESULTS:
