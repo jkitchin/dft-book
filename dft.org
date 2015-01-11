@@ -6,6 +6,7 @@
 #+DESCRIPTION: A book on using density functional theory to model materials.
 #+KEYWORDS: Density functional theory, materials, VASP
 
+\maketitle
 
 #+ATTR_HTML: :width 200
 #+ATTR_ORG: :width 200
@@ -662,7 +663,7 @@ num = atoms.get_atomic_numbers()
 
 atom_indices = range(len(atoms))
 
-print
+print()
 print('  # sym    at#    p_x     p_y     p_z')
 print('-------------------------------------')
 for i, s, n, p in zip(atom_indices, sym, num, pos):
@@ -2382,9 +2383,9 @@ The shell script above has been translated to a convenient python function in mo
 #+BEGIN_SRC python :results output
 from jasp import *
 with jasp('molecules/h2o_vib_dfpt') as calc:
-    print 'mode  Relative intensity'
+    print('mode  Relative intensity')
     for i, intensity in enumerate(calc.get_infrared_intensities()):
-        print '{0:02d}     {1:1.3f}'.format(i, intensity)
+        print('{0:02d}     {1:1.3f}'.format(i, intensity))
 #+END_SRC
 
 #+RESULTS:
@@ -2457,9 +2458,9 @@ with jasp('molecules/n2-vib',
     h = 4.1356675e-15 # eV*s
     c = 3.0e10 #cm/s
     vib_energies = [h*c*nu for nu in vib_freq]
-    print 'vibrational energies\n===================='
+    print('vibrational energies\n====================')
     for i,e in enumerate(vib_energies):
-        print '{0:02d}: {1} eV'.format(i,e)
+        print('{0:02d}: {1} eV'.format(i,e))
 
 # # now we can get some properties. Note we only need one vibrational
 # energy since there is only one mode. This example does not work if
@@ -2533,7 +2534,7 @@ T = 298.15
 t = T/1000.
 
 S = A*np.log(t) + B*t + C*t**2/2 + D*t**3/3 - E/(2*t**2) + G
-print '-T*S = {0:1.3f} eV'.format(-T*S/1000/96.4853)
+print('-T*S = {0:1.3f} eV'.format(-T*S/1000/96.4853))
 #+END_SRC
 
 #+RESULTS:
@@ -2584,7 +2585,7 @@ with jasp('molecules/O2',
         E_O2 = None
 
 if None not in (E_O, E_O2):
-    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2 * E_O - E_O2)
+    print('O2 -> 2O  D = {0:1.3f} eV'.format(2 * E_O - E_O2))
 #+END_SRC
 
 #+RESULTS:
@@ -2614,7 +2615,8 @@ with jasp('molecules/O-sp-triplet',
     except (VaspSubmitted, VaspQueued):
         E_O = None
 
-print 'Magnetic moment on O = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
+print('Magnetic moment on O = {0} Bohr'
+      ' magnetons'.format(atoms.get_magnetic_moment()))
 
 # now relaxed O2 dimer
 atoms = Atoms([Atom('O', [5,    5, 5], magmom=1),
@@ -2635,10 +2637,11 @@ with jasp('molecules/O2-sp-triplet',
         E_O2 = None
 
 # verify magnetic moment
-print 'Magnetic moment on O2 = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
+print('Magnetic moment on O2 = {0} Bohr'
+      ' magnetons'.format(atoms.get_magnetic_moment()))
 
 if None not in (E_O, E_O2):
-    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2 * E_O - E_O2)
+    print('O2 -> 2O  D = {0:1.3f} eV'.format(2 * E_O - E_O2))
 #+END_SRC
 
 #+RESULTS:
@@ -2665,8 +2668,8 @@ with jasp('molecules/O2-sp-triplet') as calc:
 
 ind = e <= 0.0
 # integrate up to 0eV
-print 'number of up states = {0}'.format(np.trapz(d_up[ind], e[ind]))
-print 'number of down states = {0}'.format(np.trapz(d_down[ind], e[ind]))
+print('number of up states = {0}'.format(np.trapz(d_up[ind], e[ind])))
+print('number of down states = {0}'.format(np.trapz(d_down[ind], e[ind])))
 
 import pylab as plt
 plt.plot(e, d_up,
@@ -2731,7 +2734,7 @@ for encut in encuts:
     if None not in (E_O, E_O2):
         d = 2*E_O - E_O2
         D.append(d)
-        print 'O2 -> 2O encut = {0}  D = {1:1.3f} eV'.format(encut, d)
+        print('O2 -> 2O encut = {0}  D = {1:1.3f} eV'.format(encut, d))
 
 import matplotlib.pyplot as plt
 plt.plot(encuts, D)
@@ -2757,15 +2760,15 @@ Based on these results (Figure ref:fig:o2-encut), you could argue the dissociati
 
 #+BEGIN_SRC python :results output :exports both
 encuts = [250, 300, 350, 400, 450, 500, 550]
-print 'encut (eV)            Total CPU time'
-print '--------------------------------------------------------'
+print('encut (eV)            Total CPU time')
+print('--------------------------------------------------------')
 
 for encut in encuts:
     OUTCAR = 'molecules/O2-sp-triplet-{0}/OUTCAR'.format(encut)
     f = open(OUTCAR, 'r')
     for line in f:
         if 'Total CPU time used (sec)' in line:
-            print '{0} eV: {1}'.format(encut, line)
+            print('{0} eV: {1}'.format(encut, line))
     f.close()
 #+END_SRC
 
@@ -2852,7 +2855,7 @@ for sigma in sigmas:
     if None not in (E_O, E_O2):
         d = 2 * E_O - E_O2
         D.append(d)
-        print 'O2 -> 2O sigma = {0}  D = {1:1.3f} eV'.format(sigma, d)
+        print('O2 -> 2O sigma = {0}  D = {1:1.3f} eV'.format(sigma, d))
 
 import matplotlib.pyplot as plt
 plt.plot(sigmas, D, 'bo-')
@@ -2889,7 +2892,8 @@ with jasp('molecules/O-sp-singlet',
     except (VaspSubmitted, VaspQueued):
         E_O = None
 
-print 'Magnetic moment on O = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
+print('Magnetic moment on O = {0} Bohr'
+      ' magnetons'.format(atoms.get_magnetic_moment()))
 
 # now relaxed O2 dimer
 atoms = Atoms([Atom('O', [5, 5, 5], magmom=1),
@@ -2910,15 +2914,15 @@ with jasp('molecules/O2-sp-singlet',
         E_O2 = None
 
 # verify magnetic moment
-print 'O2 molecule magnetic moment = ', atoms.get_magnetic_moment()
+print('O2 molecule magnetic moment = ', atoms.get_magnetic_moment())
 
 if None not in (E_O, E_O2):
-    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2)
+    print('O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2))
 #+END_SRC
 
 #+RESULTS:
 : Magnetic moment on O = 1.9998232 Bohr magnetons
-: O2 molecule magnetic moment =  0.0
+: ('O2 molecule magnetic moment = ', 0.0)
 : O2 -> 2O  D = 5.650 eV
 
 Interestingly, VASP still found a triplet spin state on the oxygen atom, even though we guessed an initial magnetic moment of 0. This highlights a difficulty in computing magnetic moments: you provide an initial guess and a solution is found. The magnetic moment of a singlet state is zero, so the  molecule is correct. Also interesting is that the dissociation energy is almost equal to the experimental value. This is probably a coincidence, and may reflect the fact that the singlet oxygen state is less stable than the triplet state. Let us directly compare their total energies:
@@ -2927,10 +2931,10 @@ Interestingly, VASP still found a triplet spin state on the oxygen atom, even th
 from jasp import *
 
 with jasp('molecules/O2-sp-singlet') as calc:
-    print 'singlet: {0} eV'.format(calc.get_atoms().get_potential_energy())
+    print('singlet: {0} eV'.format(calc.get_atoms().get_potential_energy()))
 
 with jasp('molecules/O2-sp-triplet') as calc:
-    print 'triplet: {0} eV'.format(calc.get_atoms().get_potential_energy())
+    print('triplet: {0} eV'.format(calc.get_atoms().get_potential_energy()))
 #+END_SRC
 
 #+RESULTS:
@@ -2958,7 +2962,7 @@ with jasp('molecules/O-square-box-origin',
           ispin=2,
           atoms=atoms) as calc:
     try:
-        print 'Square box (origin): E = {0} eV'.format(atoms.get_potential_energy())
+        print('Square box (origin): E = {0} eV'.format(atoms.get_potential_energy()))
     except (VaspSubmitted, VaspQueued):
         pass
 
@@ -2974,7 +2978,7 @@ with jasp('molecules/O-square-box-center',
           ispin=2,
           atoms=atoms) as calc:
     try:
-        print 'Square box (center): E = {0} eV'.format(atoms.get_potential_energy())
+        print('Square box (center): E = {0} eV'.format(atoms.get_potential_energy()))
     except (VaspSubmitted, VaspQueued):
         pass
 
@@ -2990,7 +2994,7 @@ with jasp('molecules/O-square-box-random',
           ispin=2,
           atoms=atoms) as calc:
     try:
-        print 'Square box (random): E = {0} eV'.format(atoms.get_potential_energy())
+        print('Square box (random): E = {0} eV'.format(atoms.get_potential_energy()))
     except (VaspSubmitted, VaspQueued):
         pass
 #+END_SRC
@@ -3019,7 +3023,7 @@ with jasp('molecules/O-orthorhombic-box-origin',
           ispin=2,
           atoms=atoms) as calc:
     try:
-        print 'Orthorhombic box (origin): E = {0} eV'.format(atoms.get_potential_energy())
+        print('Orthorhombic box (origin): E = {0} eV'.format(atoms.get_potential_energy()))
     except (VaspSubmitted, VaspQueued):
         pass
 
@@ -3035,7 +3039,7 @@ with jasp('molecules/O-orthorhombic-box-center',
           ispin=2,
           atoms=atoms) as calc:
     try:
-        print 'Orthorhombic box (center): E = {0} eV'.format(atoms.get_potential_energy())
+        print('Orthorhombic box (center): E = {0} eV'.format(atoms.get_potential_energy()))
     except (VaspSubmitted, VaspQueued):
         pass
 
@@ -3051,7 +3055,7 @@ with jasp('molecules/O-orthorhombic-box-random',
           ispin=2,
           atoms=atoms) as calc:
     try:
-        print 'Orthorhombic box (random): E = {0} eV'.format(atoms.get_potential_energy())
+        print('Orthorhombic box (random): E = {0} eV'.format(atoms.get_potential_energy()))
     except (VaspSubmitted, VaspQueued):
         pass
 #+END_SRC
@@ -3079,7 +3083,7 @@ with jasp('molecules/O-sp-triplet-lowsym',
           atoms=atoms) as calc:
     try:
         E_O = atoms.get_potential_energy()
-        print 'Magnetic moment on O = {0} Bohr  magnetons'.format(atoms.get_magnetic_moment())
+        print('Magnetic moment on O = {0} Bohr  magnetons'.format(atoms.get_magnetic_moment()))
     except (VaspSubmitted, VaspQueued):
         E_O = None
 
@@ -3100,14 +3104,14 @@ with jasp('molecules/O2-sp-triplet',
     try:
         E_O2 = atoms.get_potential_energy()
         # verify magnetic moment
-        print 'Magnetic moment on O2 = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
+        print('Magnetic moment on O2 = {0} Bohr magnetons'.format(atoms.get_magnetic_moment()))
 
     except (VaspSubmitted, VaspQueued):
         E_O2 = None
 
 if None not in (E_O, E_O2):
-    print 'E_O: ', E_O
-    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2 * E_O - E_O2)
+    print('E_O: ', E_O)
+    print('O2 -> 2O  D = {0:1.3f} eV'.format(2 * E_O - E_O2))
 #+END_SRC
 
 #+RESULTS:
@@ -3120,7 +3124,7 @@ This actually agrees within 30-50 meV of reported literature values, although st
 
 **** Verifying the magnetic moments on each atom
 It is one thing to see the total magnetic moment of a singlet state, and another to ask what are the magnetic moments on each atom. In VASP you must use [[incar:LORBIT][LORBIT]]=11 to get the magnetic moments of the atoms written out.
-
+(global-set-key (kbd "<f12>") 'ace-jump-mode)
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 
@@ -3132,10 +3136,10 @@ with jasp('molecules/O2-sp-singlet-magmoms') as calc:
     atoms = calc.get_atoms()
     magmoms = atoms.get_magnetic_moments()
 
-    print 'singlet ground state'
+    print('singlet ground state')
     for i, atom in enumerate(atoms):
-        print 'atom {0}: magmom = {1}'.format(i, magmoms[i])
-    print atoms.get_magnetic_moment()
+        print('atom {0}: magmom = {1}'.format(i, magmoms[i]))
+    print(atoms.get_magnetic_moment())
 
 with jasp('molecules/O2-sp-triplet') as calc:
     calc.clone('molecules/O2-sp-triplet-magmoms')
@@ -3144,11 +3148,11 @@ with jasp('molecules/O2-sp-triplet-magmoms') as calc:
     calc.set(lorbit=11)
     atoms = calc.get_atoms()
     magmoms = atoms.get_magnetic_moments()
-    print
-    print 'triplet ground state'
+    print()
+    print('triplet ground state')
     for i, atom in enumerate(atoms):
-        print 'atom {0}: magmom = {1}'.format(i, magmoms[i])
-    print atoms.get_magnetic_moment()
+        print('atom {0}: magmom = {1}'.format(i, magmoms[i]))
+    print(atoms.get_magnetic_moment())
 #+END_SRC
 
 #+RESULTS:
@@ -3185,7 +3189,8 @@ with jasp('molecules/O-sp-triplet-lowsym-sv',
     except (VaspSubmitted, VaspQueued):
         E_O = None
 
-print 'Magnetic moment on O = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
+print('Magnetic moment on O = {0} Bohr'
+      ' magnetons'.format(atoms.get_magnetic_moment()))
 
 # now relaxed O2 dimer
 atoms = Atoms([Atom('O', [5,    5, 5], magmom=1),
@@ -3207,10 +3212,11 @@ with jasp('molecules/O2-sp-triplet-sv',
         E_O2 = None
 
 # verify magnetic moment
-print 'Magnetic moment on O2 = {0} Bohr magnetons'.format(atoms.get_magnetic_moment())
+print('Magnetic moment on O2 = {0} Bohr'
+      ' magnetons'.format(atoms.get_magnetic_moment()))
 
 if None not in (E_O, E_O2):
-    print 'O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2)
+    print('O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2))
 #+END_SRC
 
 #+RESULTS:
@@ -3302,9 +3308,9 @@ if None in (eCO2, eH2, eCO, eH2O):
     pass
 else:
     dE = eCO2 + eH2 - eCO - eH2O
-    print 'Delta E = {0:1.3f} eV'.format(dE)
-    print 'Delta E = {0:1.3f} kcal/mol'.format(dE * 23.06035)
-    print 'Delta E = {0:1.3f} kJ/mol'.format(dE * 96.485)
+    print('Delta E = {0:1.3f} eV'.format(dE))
+    print('Delta E = {0:1.3f} kcal/mol'.format(dE * 23.06035))
+    print('Delta E = {0:1.3f} kJ/mol'.format(dE * 96.485))
 #+END_SRC
 
 #+RESULTS:
@@ -3319,30 +3325,30 @@ It is a good idea to verify your calculations and structures are what you expect
 #+BEGIN_SRC python :results output raw :exports both
 from jasp import *
 
-print '**** Calculation summaries'
-print '***** CO'
+print('**** Calculation summaries')
+print('***** CO')
 with jasp('molecules/wgs/CO') as calc:
-    print '#+begin_example'
-    print calc
-    print '#+end_example'
+    print('#+begin_example')
+    print(calc)
+    print('#+end_example')
 
-print '***** CO2'
+print('***** CO2')
 with jasp('molecules/wgs/CO2') as calc:
-    print '#+begin_example'
-    print calc
-    print '#+end_example'
+    print('#+begin_example')
+    print(calc)
+    print('#+end_example')
 
-print '***** H2'
+print('***** H2')
 with jasp('molecules/wgs/H2') as calc:
-    print '#+begin_example'
-    print calc
-    print '#+end_example'
+    print('#+begin_example')
+    print(calc)
+    print('#+end_example')
 
 print '***** H2O'
 with jasp('molecules/wgs/H2O') as calc:
-    print '#+begin_example'
-    print calc
-    print '#+end_example'
+    print('#+begin_example')
+    print(calc)
+    print('#+end_example')
 #+END_SRC
 
 #+RESULTS:
@@ -3537,7 +3543,7 @@ with jasp('molecules/wgs/CO-vib',
     calc.calculate()
     vib_freq = calc.get_vibrational_frequencies()
     for i, f in enumerate(vib_freq):
-        print '{0:02d}: {1} cm^(-1)'.format(i,f)
+        print('{0:02d}: {1} cm^(-1)'.format(i, f))
 #+END_SRC
 
 #+RESULTS:
@@ -3571,7 +3577,7 @@ with jasp('molecules/wgs/CO2-vib',
     calc.calculate()
     vib_freq = calc.get_vibrational_frequencies()
     for i, f in enumerate(vib_freq):
-        print '{0:02d}: {1} cm^(-1)'.format(i, f)
+        print('{0:02d}: {1} cm^(-1)'.format(i, f))
 #+END_SRC
 
 #+RESULTS:
@@ -3608,7 +3614,7 @@ with jasp('molecules/wgs/H2-vib',
     calc.calculate()
     vib_freq = calc.get_vibrational_frequencies()
     for i, f in enumerate(vib_freq):
-        print '{0:02d}: {1} cm^(-1)'.format(i, f)
+        print('{0:02d}: {1} cm^(-1)'.format(i, f))
 #+END_SRC
 
 #+RESULTS:
@@ -3642,7 +3648,7 @@ with jasp('molecules/wgs/H2O-vib',
     calc.calculate()
     vib_freq = calc.get_vibrational_frequencies()
     for i, f in enumerate(vib_freq):
-        print '{0:02d}: {1} cm^(-1)'.format(i, f)
+        print('{0:02d}: {1} cm^(-1)'.format(i, f))
 #+END_SRC
 
 #+RESULTS:
@@ -3935,7 +3941,7 @@ atoms = FaceCenteredCubic('Ag')
 
 write('images/Ag-fcc.png', atoms, show_unit_cell=2)
 
-print atoms
+print(atoms)
 #+END_SRC
 
 #+RESULTS:
@@ -6090,7 +6096,6 @@ At a pressure of 4.5 GPa, we expect that anatase will start converting into ruti
 *************** TODO add literature discussion
 there is some controversy about the most stable phase. add discussion here.
 *************** END
-
 
 ** Bulk reaction energies
    :PROPERTIES:
@@ -10088,56 +10093,109 @@ These images (Figure ref:fig:elf1 and ref:fig:elf2) are basically consistent wit
 cite:doi.10.1021/jp202489s
 
 ** TODO Modeling Core level shifts
+
+
+We need to setup four calculations. First, we setup the bulk Cu and bulk alloy calculations and let them relax. We use similar unit cells for each one to maximize cancellation of errors. 
+
 #+BEGIN_SRC python
-from ase.db import connect
+from jasp import *
+from ase import Atom, Atoms
 
-db = connect('bulk/cls-data.json')
+atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
+               Atom('Cu',  [-1.652,     0.000,      2.039])],
+              cell=  [[0.000, -2.039,  2.039],
+                      [0.000,  2.039,  2.039],
+                      [-3.303,  0.000,  0.000]])
 
-# Select a specific entry in the database
-example = db.get_atoms(id=26)
-print example
+atoms = atoms.repeat((3, 3, 3))
+print atoms[0]
+
+with jasp('bulk/Cu-cls-0',
+          xc='PBE',
+          encut=350,
+          kpts=(4, 4, 4),
+          ibrion=2,
+          isif=3,
+          nsw=40,
+          atoms=atoms) as calc:
+    print(atoms.get_potential_energy())          
 #+END_SRC
 
 #+RESULTS:
-: Atoms(symbols='Cu24', positions=..., tags=..., cell=[[7.270080075032791, 0.0342724757326248, 7.352322015868145], [5.4454905066753225, 5.393756468439129, 0.0330520765170733], [0.0055807399153828, 3.612082596204374, 3.68787360996877]], pbc=[True, True, True], calculator=SinglePointCalculator(...))
+
+
+
+Here, we setup the alloy calculation.
+#+BEGIN_SRC python
+from jasp import *
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
+               Atom('Pd',  [-1.652,     0.000,      2.039])],
+              cell=  [[0.000, -2.039,  2.039],
+                      [0.000,  2.039,  2.039],
+                      [-3.303,  0.000,  0.000]])
+
+atoms = atoms.repeat((3, 3, 3))
+print atoms[0]
+
+with jasp('bulk/CuPd-cls-0',
+          xc='PBE',
+          encut=350,
+          kpts=(4, 4, 4),
+          ibrion=2,
+          isif=3,
+          nsw=40,
+          atoms=atoms) as calc:
+    print(atoms.get_potential_energy())          
+#+END_SRC
+
+#+RESULTS:
+
+Next, we have to do the excitation in each structure. For these, we do not relax the structure. We clone the previous results and modify them.
+
+TODO
+
+#+BEGIN_SRC python
+from jasp import *
+
+with jasp('bulk/Cu -cls-0') as calc:
+    calc.clone('bulk/Cu-cls-1')
+
+with jasp('bulk/Cu-cls-1') as calc:
+    calc.set(ibrion=None,
+             isif=None,
+             nsw=None,
+             setups={'0': 'Cu'},  # Create separate entry in POTCAR for atom index 0
+             icorelevel=2,        # Perform core level shift calculation
+             clnt=0,              # Excite atom index 0
+             cln=2,               # 2p3/2 electorn for Cu core level shift
+             cll=1,
+             clz=1)
+    calc.calculate()
+#+END_SRC
 
 
 #+BEGIN_SRC python
 from jasp import *
 
-# This code demonstrates a standard DFT calculation using JASP
-with jasp('bulk/CuPd/0cl',
-          xc='PBE',            # Specify INCAR parameters
-          encut=400,      
-          kpts=(8, 8, 8),
-          ibrion=-1,
-          ediff=1e-6,
-          atoms=atoms) as calc:
-    try:
-        calc.calculate()
-    except(VaspQueued, VaspSubmitted):
-        pass
+with jasp('bulk/CuPd-cls-0') as calc:
+    calc.clone('bulk/CuPd-cls-1')
 
-# This code shows the modifications to a standard JASP
-# calculation to excite a core electron
-with jasp('bulk/CuPd/1cl',
-          xc='PBE',            # Specify INCAR parameters
-          encut=400,      
-          kpts=(8, 8, 8),
-          ibrion=-1,
-          ediff=1e-6,
-          setups={'0': 'Cu'},  # Create sperate entry in POTCAR for atom index 0
-          icorelevel=2,        # Perform core level shift calculation
-          clnt=0,              # Excite atom index 0
-          cln=2,               # 2p3/2 electorn for Cu core level shift
-          cll=1,
-          clz=1,
-          atoms=atoms) as calc:
-    try:
-        calc.calculate()
-    except(VaspQueued, VaspSubmitted):
-        pass
+with jasp('bulk/CuPd-cls-1') as calc:
+    calc.set(ibrion=None,
+             isif=None,
+             nsw=None,
+             setups={'0': 'Cu'},  # Create separate entry in POTCAR for atom index 0
+             icorelevel=2,        # Perform core level shift calculation
+             clnt=0,              # Excite atom index 0
+             cln=2,               # 2p3/2 electorn for Cu core level shift
+             cll=1,
+             clz=1)
+    calc.calculate()
 #+END_SRC
+
+
 
 ** The BEEF functional in Vasp
 In Vasp 5.3.5 it is possible to use the BEEF functional cite:wellendorff-2012-densit.
@@ -10251,6 +10309,35 @@ You can see the mean is nearly zero, suggesting the deviations are symmetrically
 
 [[./images/beef-ens.png]]
 
+
+This seems to be the canonical way to do this in ASE. Note you have to get the ensemble energies in the jasp context manager, because they try to read the OUTCAR.
+
+#+BEGIN_SRC python
+from jasp import *
+from ase.dft.bee import BEEFEnsemble
+
+with jasp('molecules/H-beef') as calc:
+    BE1 = BEEFEnsemble(calc.get_atoms()).get_ensemble_energies()
+
+with jasp('molecules/H2-beef') as calc:
+    BE2 = BEEFEnsemble(calc.get_atoms()).get_ensemble_energies()
+
+print((2 * BE1 - BE2).mean())
+print((2 * BE1 - BE2).std())
+#+END_SRC
+
+#+RESULTS:
+: beefvdw ensemble started
+: beefvdw ensemble finished
+: beefvdw ensemble started
+: beefvdw ensemble finished
+: 4.81945187253
+: 0.185505941434
+
+* Databases in molecular simulations
+The continued increase in computing power has enabled us to create massive amounts of computational data. Some of this data is accessible in papers, or at websites, e.g. https://cmr.fysik.dtu.dk.
+
+ 
 * Acknowledgments
 I would like to thank Zhongnan Xu for sending me some examples on magnetism. Alan McGaughey and Lars Grabow for sending me some NEB examples. Matt Curnan for examples of phonons.
 
