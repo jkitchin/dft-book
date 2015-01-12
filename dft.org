@@ -10264,6 +10264,7 @@ print('CLS = {} eV'.format(CLS))
 #+RESULTS:
 : CLS = -1.2378242 eV
 
+This is a little negative compared to the literature but that could be due to the highly ordered structure we used.
 
 ** The BEEF functional in Vasp
 In Vasp 5.3.5 it is possible to use the BEEF functional cite:wellendorff-2012-densit.
@@ -13982,3 +13983,10 @@ git add *
 git commit -am "rebuild"
 git push
 #+END_SRC
+
+
+** load dft.el
+### Local Variables:
+### mode: org
+### eval: (load-file "dft.el")
+### End:
