@@ -7447,7 +7447,6 @@ cite:sheppard:074103 recent Henkelman paper
 
 http://scitation.aip.org/content/aip/journal/jcp/137/10/10.1063/1.4752249
 
-
 * Surfaces
   :PROPERTIES:
   :ID:       af4a3f54-6572-49ac-b938-e62401bc35b9
@@ -9882,7 +9881,8 @@ plt.savefig('images/ni-dos-pbe-pbe0-hse06.png')
 [[./images/ni-dos-pbe-pbe0-hse06.png]]
 
 
-** TODO DFT+D
+** TODO DFT+D - van der Waals forces
+This section still needs some polishing and references.
 http://cms.mpi.univie.ac.at/vasp/vasp/DFT_D2_method_Grimme.html
 cite:PhysRevB.82.081101
 
@@ -9979,6 +9979,26 @@ with jasp('surfaces/Au-benzene-pbe',
 #+RESULTS:
 : -158.360082
 
+#+BEGIN_SRC python
+from jasp import *
+
+with jasp('surfaces/Au-benzene-pbe') as calc:
+    e1 = calc.get_atoms().get_potential_energy()
+
+with jasp('surfaces/Au-pbe') as calc:
+    e2 = calc.get_atoms().get_potential_energy()
+
+with jasp('molecules/benzene-pbe') as calc:
+    e3 = calc.get_atoms().get_potential_energy()
+
+print('PBE adsorption energy = {} eV'.format(e1 - e2 - e3))
+#+END_SRC
+
+#+RESULTS:
+: PBE adsorption energy = 0.071056 eV
+
+This is a very weak energy. It is similar to the result in the reference (0.15 eV), and considerably weaker than the experiment. Next we consider one form of a VDW correction.
+
 *** DFT-D2
 To turn on the van der Waals corrections cite:JCC-JCC20495 we set incar:LVDW to =True=.
 **** gas-phase benzene
@@ -10028,6 +10048,7 @@ with jasp('surfaces/Au-pbe-d2',
 #+END_SRC
 
 #+RESULTS:
+: -106.34078774
 
 **** benzene on Au(111)
 #+BEGIN_SRC python
@@ -10069,6 +10090,28 @@ with jasp('surfaces/Au-benzene-pbe-d2',
 #+END_SRC
 
 #+RESULTS:
+: -184.07043811
+
+
+#+BEGIN_SRC python
+from jasp import *
+
+with jasp('surfaces/Au-benzene-pbe-d2') as calc:
+    e1 = calc.get_atoms().get_potential_energy()
+
+with jasp('surfaces/Au-pbe-d2') as calc:
+    e2 = calc.get_atoms().get_potential_energy()
+
+with jasp('molecules/benzene-pbe-d2') as calc:
+    e3 = calc.get_atoms().get_potential_energy()
+
+print('Adsorption energy = {0:1.2f} eV'.format(e1 - e2 - e3))
+#+END_SRC
+
+#+RESULTS:
+: Adsorption energy = -1.57 eV
+
+That is significantly more favorable. This is much higher than this [[http://th.fhi-berlin.mpg.de/site/uploads/Publications/PRL_submitted_2012063-582-586-2012.pdf][reference]] though (0.56 eV), so there could be some issues with convergence or other computational parameters that should be considered.
 
 *** Advanced vdW-DF functionals
 There is a more sophisticated (i.e. more parameters) treatment of van der Waal forces in VASP (http://cms.mpi.univie.ac.at/vasp/vasp/vdW_DF_functional_Langreth_Lundqvist_et_al.html).
@@ -10398,10 +10441,9 @@ print((2 * BE1 - BE2).std())
 : 4.81945187253
 : 0.185505941434
 
-* Databases in molecular simulations
+* TODO Databases in molecular simulations
 The continued increase in computing power has enabled us to create massive amounts of computational data. Some of this data is accessible in papers, or at websites, e.g. https://cmr.fysik.dtu.dk.
 
- 
 * Acknowledgments
 I would like to thank Zhongnan Xu for sending me some examples on magnetism. Alan McGaughey and Lars Grabow for sending me some NEB examples. Matt Curnan for examples of phonons.
 
@@ -13284,7 +13326,6 @@ for symbol in chemical_symbols:
 | Zn         | 207.542 | 276.723 |        359.740 |          12.0 |
 | Zr_sv_GW   | 211.823 | 282.431 |        367.160 |          12.0 |
 | Zr_sv      | 172.424 | 229.898 |        298.867 |          12.0 |
-
 
 * Python
 ** easy_install as a user
