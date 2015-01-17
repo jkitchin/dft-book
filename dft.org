@@ -235,7 +235,7 @@ write('images/simple-cubic-cell.png', atoms, show_unit_cell=2)
 : V = 1000 Angstrom^3
 
 #+caption: Image of a CO molecule with the C at the origin. \label{fig:co-origin}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/simple-cubic-cell.png]]
 
 There are two inconvenient features of the simple cubic cell:
@@ -267,7 +267,7 @@ write('images/fcc-cell.png', atoms, show_unit_cell=2)
 : V = 716 Ang^3
 
 #+caption: CO in a face-centered cubic unit cell. \label{fig:co-fcc}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/fcc-cell.png]]
 
 At this point you might ask, "How do you know the distance to the neighboring image?" The =ag= viewer lets you compute this graphically, but we can use code to determine this too. All we have to do is figure out the length of each lattice vector, because these are what separate the atoms in the images. We use the mod:numpy module to compute the distance of a vector as the square root of the sum of squared elements.
@@ -370,7 +370,7 @@ write('images/isobutane-xyz.png', atoms, show_unit_cell=2)
 #+RESULTS:
 
 #+caption: An isobutane molecule read in from an XYZ formatted data file. \label{fig:isobutane}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/isobutane-xyz.png]]
 
 *** Predefined molecules
@@ -537,7 +537,7 @@ write('images/ch3cn.png', atoms, show_unit_cell=2)
 :  [  0.         0.        15.014576]]
 
 #+caption: A CH_{3}CN molecule in a box. \label{fig:ch3cn}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/ch3cn.png]]
 
 
@@ -567,7 +567,7 @@ write('images/ch3cn-rotated.png', atoms,
 :  [  0.         0.        15.014576]]
 
 #+caption: The rotated version of CH_{3}CN. \label{fig:ch3cn-rot}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/ch3cn-rotated.png]]
 
 If you actually want to rotate the coordinates, there is a nice way to do that too, with the func:ase.Atoms.rotate method. Actually there are some subtleties in rotation. One rotates the molecule an angle (in radians) around a vector, but you have to choose whether the center of mass should be fixed or not. You also must decide whether or not the unit cell should be rotated. In the next example you can see the coordinates have changed due to the rotations. Note that the write function uses the rotation angle in degrees, while the rotate function uses radians.
@@ -633,7 +633,7 @@ write('images/bothatoms.png', bothatoms, show_unit_cell=2, rotation='90x')
 #+RESULTS:
 
 #+caption: Image featuring ammonia and oxygen molecule in one unit cell. \label{fig:combined-atoms}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/bothatoms.png]]
 
 ** Simple properties
@@ -1049,7 +1049,7 @@ plt.show()
 #+RESULTS:
 
 #+caption: Total energy of a CO molecule as a function of the unit cell length.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/co-e-v.png]]
 
 Here there are evidently attractive interactions between the CO molecules which lower the total energy for small box sizes. We have to decide what an appropriate volume for our calculation is, and the choice depends on the goal. We may wish to know the total energy of a molecule that is not interacting with any other molecules, e.g. in the ideal gas limit. In that case we need a large unit cell so the electron density from the molecule does not go outside the unit cell where it would overlap with neighboring images.
@@ -1102,7 +1102,7 @@ plt.savefig('images/ideal-gas-pressure.png')
 #+RESULTS:
 
 #+caption: Ideal gas pressure dependence on temperature and unit cell volume.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/ideal-gas-pressure.png]]
 
 **** Convergence of ENCUT
@@ -1146,7 +1146,7 @@ plt.savefig('images/co-encut-v.png')
 #+RESULTS:
 
 #+caption: Dependence of the total energy of CO molecule on ENCUT.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/co-encut-v.png]]
 
 You can see in this figure that it takes a cutoff energy of about 400 eV to achieve a convergence level around 10 meV, and that even at 500 meV the energy is still changing slightly. Keep in mind that we are generally interested in differences in total energy, and the differences tend to converge faster than a single total energy. Also it is important to note that it is usually a single element that determines the rate of convergence. The reason we do not just use very high ENCUT all the time is it is expensive.
@@ -1171,10 +1171,10 @@ Although here the times do not seem that unreasonable, note we increased the tim
 
 The electron density is a 3\(d\) quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure ref:fig:cd1) of plotting the charge density, and we consider some issues we have to consider when visualizing volumetric data in unit cells with periodic boundary conditions. We will use the results from a previous calculation.
 
-#TODO does not work in canopy
+
 #+BEGIN_SRC python
 from jasp import *
-from enthought.mayavi.mlab import *
+from enthought.mayavi import mlab
 from ase.data import vdw_radii
 from ase.data.colors import cpk_colors
 
@@ -1182,14 +1182,16 @@ with jasp('molecules/simple-co') as calc:
     atoms = calc.get_atoms()
     x, y, z, cd = calc.get_charge_density()
 
-mlab.figure(1, bgcolor=(1, 1, 1)) # make a white figure
+# make a white figure
+mlab.figure(1, bgcolor=(1, 1, 1))  
 
 # plot the atoms as spheres
 for atom in atoms:
     mlab.points3d(atom.x,
                   atom.y,
                   atom.z,
-                  scale_factor=vdw_radii[atom.number]/5., #this determines the size of the atom
+                  #this determines the size of the atom
+                  scale_factor=vdw_radii[atom.number] / 5., 
                   resolution=20,
                   # a tuple is required for the color
                   color=tuple(cpk_colors[atom.number]),
@@ -1228,12 +1230,12 @@ mlab.show()
 #+RESULTS:
 
 #+caption: Charge density of a CO molecule that is located at the origin. The electron density that is outside the cell is wrapped around to the other corners. \label{fig:cd1}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/co-cd.png]]
 
 If we take care to center the CO molecule in the unit cell, we get a nicer looking result.
 
-TODO broken in canopy
+
 #+BEGIN_SRC python
 from jasp import *
 from enthought.mayavi import mlab
@@ -1305,8 +1307,203 @@ mlab.show()
 
 # <<co-centered>>
 #+caption: Charge density of a CO molecule centered in the unit cell. Now the electron density is centered in the unit cell. \label{fig:cd2}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/co-centered-cd.png]]
+
+TODO: how to make this figure http://www.zid.tuwien.ac.at/fileadmin/files_zid/zidline/images/zl22/vasp--fig1.jpg
+
+*** Visualizing electron density differences
+Here, we visualize how charge moves in a benzene ring when you substitute an H atom with an electronegative Cl atom.
+
+#+BEGIN_SRC python
+#!/usr/bin/env python
+from ase import *
+from ase.structure import molecule
+from jasp import *
+
+### Setup calculators
+benzene = molecule('C6H6')
+benzene.set_cell([10, 10, 10])
+benzene.center()
+
+with jasp('molecules/benzene',
+          xc='PBE',
+          nbands=18,
+          encut=350,   
+          atoms=benzene) as calc:
+
+    print(benzene.get_potential_energy())
+    x1, y1, z1, cd1 = calc.get_charge_density()
+    
+chlorobenzene =  molecule('C6H6')
+chlorobenzene.set_cell([10, 10, 10])
+chlorobenzene.center()
+chlorobenzene[11].symbol ='Cl'
+
+with jasp('molecules/chlorobenzene',
+          xc='PBE',
+          nbands=18,
+          encut=350,   
+          atoms=chlorobenzene) as calc:
+    chlorobenzene.get_potential_energy()
+    x2, y2, z2, cd2 = calc.get_charge_density()
+
+cdiff = cd2 - cd1                      
+
+print(cdiff.min(), cdiff.max())
+##########################################
+
+
+##### set up visualization of charge difference
+from enthought.mayavi import mlab
+mlab.contour3d(x1, y1, z1, cdiff,
+               contours=[-0.02, 0.02])
+
+mlab.savefig('images/cdiff.png')
+
+mlab.show()
+#+END_SRC
+
+#+RESULTS:
+: -75.99995466
+: (-2.0821449999999988, 2.9688999999999979)
+
+[[./images/cdiff.png]]
+
+#+BEGIN_SRC python
+#!/usr/bin/env python
+from ase import *
+from ase.structure import molecule
+from jasp import *
+import bisect
+
+def vinterp3d(x, y, z, u, xi, yi, zi):
+    "Interpolate the point (xi, yi, zi) from the values at u(x, y, z)"
+    p = np.array([xi, yi, zi])
+
+    #1D arrays of coordinates
+    xv = x[:, 0, 0]
+    yv = y[0, :, 0]
+    zv = z[0, 0, :]
+
+    # we subtract 1 because bisect tells us where to insert the
+    # element to maintain an ordered list, so we want the index to the
+    # left of that point
+    i = bisect.bisect_right(xv, xi) - 1
+    j = bisect.bisect_right(yv, yi) - 1
+    k = bisect.bisect_right(zv, zi) - 1
+
+    if i == len(x) - 1:
+        i = len(x) - 2
+    elif i < 0:
+        i = 0
+
+    if j == len(y) - 1:
+        j = len(y) - 2
+    elif j < 0:
+        j = 0
+
+    if k == len(z) - 1:
+        k = len(z) - 2
+    elif k < 0:
+        k = 0
+    
+    # points at edge of cell. We only need P1, P2, P3, and P5
+    P1 = np.array([x[i, j, k], 
+                   y[i, j, k],
+                   z[i, j, k]])
+    P2 = np.array([x[i + 1, j, k],
+                   y[i + 1, j, k],
+                   z[i + 1, j, k]])
+    P3 = np.array([x[i, j + 1, k],
+                   y[i, j + 1, k],
+                   z[i, j + 1, k]])
+    P5 = np.array([x[i, j, k + 1],
+                   y[i, j, k + 1],
+                   z[i, j, k + 1]])
+
+    # values of u at edge of cell
+    u1 = u[i, j, k]
+    u2 = u[i+1, j, k]
+    u3 = u[i, j+1, k]
+    u4 = u[i+1, j+1, k]
+    u5 = u[i, j, k+1]
+    u6 = u[i+1, j, k+1]
+    u7 = u[i, j+1, k+1]
+    u8 = u[i+1, j+1, k+1]
+
+    # cell basis vectors, not the unit cell, but the voxel cell containing the point
+    cbasis = np.array([P2 - P1,
+                       P3 - P1,
+                       P5 - P1])
+
+    # now get interpolated point in terms of the cell basis
+    s = np.dot(np.linalg.inv(cbasis.T), np.array([xi, yi, zi]) - P1)
+
+    # now s = (sa, sb, sc) which are fractional coordinates in the vector space
+    # next we do the interpolations
+    ui1 = u1 + s[0] * (u2 - u1)
+    ui2 = u3 + s[0] * (u4 - u3)
+
+    ui3 = u5 + s[0] * (u6 - u5)
+    ui4 = u7 + s[0] * (u8 - u7)
+
+    ui5 = ui1 + s[1] * (ui2 - ui1)
+    ui6 = ui3 + s[1] * (ui4 - ui3)
+
+    ui7 = ui5 + s[2] * (ui6 - ui5)
+
+    return ui7
+
+### Setup calculators
+with jasp('molecules/benzene') as calc:
+    benzene = calc.get_atoms()
+    x1, y1, z1, cd1 = calc.get_charge_density()
+
+with jasp('molecules/chlorobenzene') as calc:
+    x2, y2, z2, cd2 = calc.get_charge_density()
+
+cdiff = cd2 - cd1                      
+
+#we need the x-y plane at z=5
+import matplotlib.pyplot as plt
+from scipy import mgrid
+
+X, Y = mgrid[0: 10: 25j, 0: 10: 25j]
+
+cdiff_plane = np.zeros(X.shape)
+ni, nj = X.shape
+
+for i in range(ni):
+    for j in range(nj):
+        cdiff_plane[i, j] = vinterp3d(x1, y1, z1, cdiff, X[i, j], Y[i, j], 5.0)
+
+plt.imshow(cdiff_plane,
+           vmin=-0.02,  # min charge diff to plot
+           vmax=0.02,  # max charge diff to plot
+           cmap=plt.cm.gist_heat,  # colormap
+           extent=(0., 10., 0., 10.))  # axes limits
+
+# plot atom positions. It is a little tricky to see why we reverse the x and y coordinates. That is because imshow does that. 
+x = [a.y for a in benzene]
+y = [a.x for a in benzene]
+plt.plot(x, y, 'bo')
+
+plt.colorbar() #add colorbar
+plt.savefig('images/cdiff-imshow.png')
+
+plt.figure()
+plt.contourf(X, Y, cdiff_plane)
+plt.plot(y, x, 'ko')
+plt.axis('equal')
+plt.show()
+#+END_SRC
+
+#+RESULTS:
+
+
+[[./images/cdiff-contour.png]]
+
 *** Dipole moments
 [[index:dipole moment]]
 The [[http://en.wikipedia.org/wiki/Molecular_dipole_moment#Molecular_dipoles][dipole moment]] is a vector describing the separation of  electrical (negative) and nuclear (positive) charge. The magnitude of this vector is the dipole moment, which has units of Coulomb-meter, or more commonly Debye. The symmetry of a molecule determines if a molecule has a dipole moment or not. Below we compute the dipole moment of CO. We must integrate the electron density to find the center of electrical charge, and compute a sum over the nuclei to find the center of positive charge.
@@ -1429,7 +1626,7 @@ plt.savefig('images/co-dos.png')
 #+RESULTS:
 
 #+caption: Density of states for a CO molecule.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/co-dos.png]]
 
 *** Atom-projected density of states on molecules
@@ -1492,13 +1689,13 @@ plt.savefig('images/co-ados.png')
 #+RESULTS:
 
 #+caption: Atom-projected DOS for a CO molecule. The total density of states and the \(s\), \(p\) and \(d\) states on the C and O are shown.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/co-ados.png]]
 
 *** Electrostatic potential
 This is an example of the so-called \sigma hole in a [[http://pubs.acs.org/cen/science/87/8738sci2.html][halogen bond]]. The coordinates for the CF_{3}Br molecule were found at [[http://cccbdb.nist.gov/exp2.asp?casno=75638]].
 
-TODO mlab does not work
+
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 from ase import Atom, Atoms
@@ -1565,7 +1762,7 @@ mlab.show()
 #+RESULTS:
 
 #+caption: Plot of the electrostatic potential of CF_{3}Br. TODO: figure out how to do an isosurface of charge, colormapped by the local potential.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/halogen-ep.png]]
 
 See http://www.uni-due.de/~hp0058/?file=manual03.html&dir=vmdplugins for examples of using [[http://www.ks.uiuc.edu/Research/vmd/][VMD]] for visualization.
@@ -1850,7 +2047,7 @@ plt.show()
 
 
 #+caption: Energy vs CO bond length. \label{fig:co-bondlengths}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/co-bondlengths.png]]
 
 *** Automatic geometry optimization with VASP
@@ -2687,7 +2884,7 @@ plt.savefig('images/O2-sp-dos.png')
 : number of down states = 5.00001754136
 
 #+caption: Spin-polarized DOS for the O_{2} molecule. \label{fig:o2-sp-dos}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/O2-sp-dos.png]]
 
 You can see in Figure ref:fig:o2-sp-dos that there are two different densities of states for the two spins. One has 7 electrons in it (the blue lines), and the other has 5 electrons in it (the green line). The difference of two electrons leads to the magnetic moment of 2 which we calculated earlier. Remember that only peaks in the DOS below the Fermi level are occupied. It is customary to set the Fermi level to 0 eV in DOS plots. The peaks roughly correspond to electrons. For example, the blue peak between -25 and -30 eV corresponds to one electron, in a 1s orbital, where as the blue peak between -5 and -10 eV corresponds to three electrons.
@@ -2755,7 +2952,7 @@ plt.savefig('images/O2-dissociation-convergence.png')
 : O2 -> 2O encut = 550  D = 6.650 eV
 
 #+caption: Convergence study of the O_{2} dissociation energy as a function of ENCUT. \label{fig:o2-encut}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/O2-dissociation-convergence.png]]
 
 Based on these results (Figure ref:fig:o2-encut), you could argue the dissociation energy is converged to about 2 meV at a planewave cutoff of 450 eV, and within 50 meV at 350 eV cutoff. You have to decide what an appropriate level of convergence is. Note that increasing the planewave cutoff significantly increases the computational time, so you are balancing level of convergence with computational speed. It would appear that planewave cutoff is not the cause for the discrepancy between our calculations and literature values.
@@ -2869,7 +3066,7 @@ plt.savefig('images/O2-dissociation-sigma-convergence.png')
 #+RESULTS:
 
 #+caption: Effect of SIGMA on the oxygen dissociation energy. \label{fig:sigma-o2-diss}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/O2-dissociation-sigma-convergence.png]]
 
 Clearly SIGMA has an effect, but it does not move the dissociation energy closer to the literature values!
@@ -3769,7 +3966,7 @@ plt.show()
 
 
 #+caption: Thermodynamic energies of the water gas shift reaction as a function of temperature.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/wgs-dG-T.png]]
 You can see a few things here. One is that at near 298K, the Gibbs free energy is about -75 kJ/mol. This is too negative compared to the experimental standard free energy, which we estimated to be about -29 kJ/mol from the [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-nist-webbook/#7][NIST webbook. ]]There could be several reasons for this disagreement, but the most likely one is errors in the exchange-correlation functional. The error in energy has a significant effect on the calculated equilibrium constant, significantly overestimating it.
 
@@ -3954,7 +4151,7 @@ A mod:ase.lattice.bravais.Lattice object is returned! This is practically the sa
 #+end_note
 
 #+caption: A simple fcc Ag bulk structure in the primitive unit cell.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/Ag-fcc.png]]
 
 Here we specify the primitive unit cell, which only has one atom in it.
@@ -3976,7 +4173,7 @@ print atoms
 : Lattice(symbols='Ag', positions=..., cell=[[2.892066735052979, 0.0, 0.0], [1.4460333675264898, 2.5046032619957996, 0.0], [1.4460333675264896, 0.8348677539985997, 2.3613626009855695]], pbc=[True, True, True])
 
 #+caption: A simple fcc Ag bulk structure in the primitive unit cell.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/Ag-fcc-primitive.png]]
 
 We can use these modules to build alloy unit cells. The basic strategy is to create the base unit cell in one element and then selectively change some atoms to different chemical symbols. Here we examine an Ag_{3}Pd alloy structure.
@@ -4028,11 +4225,11 @@ write('images/graphite-top.png',
 #+RESULTS:
 
 #+caption: A top view of graphite.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/graphite-top.png]]
 
 #+caption: A side view of graphite.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/graphite.png]]
 
 To get a compound, we use the following code. We have to specify the basis atoms to the function generating the compound, and the lattice constant. For NaCl we use the lattice constant at (http://en.wikipedia.org/wiki/Sodium_chloride).
@@ -4048,7 +4245,7 @@ write('images/NaCl.png', atoms, show_unit_cell=2, rotation='45x,45y,45z')
 #+RESULTS:
 
 #+caption: A view of a NaCl crystal structure.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/NaCl.png]]
 
 
@@ -4279,7 +4476,7 @@ plt.show()
 #+RESULTS:
 
 #+caption: k-point convergence of the total energy of fcc Ag.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/Ag-kpt-convergence.png]]
 
 Based on this figure, we need at least a $6 \times 6 \times 6$ k-point grid to achieve a convergence level of at least 50 meV. Note: the k-point convergence is not always monotonic like it is in this example, and sometimes very dense grids (e.g. up to $20 \times 20 \times 20$) are needed for highly converged properties such as the density of states in smaller unit cells. Oscillations in the total energy are typical, and it can be difficult to get high levels of convergence. The best practices are to use the same k-point sampling grid in energy differences where possible, and dense (high numbers of k-points) otherwise. It is important to check for convergence in these cases.
@@ -4364,7 +4561,7 @@ plt.show()
 #+RESULTS:
 
 #+caption: Effects of SIGMA on the occupancies of the Cu system. \label{fig:sigma-occ}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/occ-sigma.png]]
 
 *** The number of bands
@@ -4650,7 +4847,7 @@ Use the data in the table above to plot the total energy as a function of the la
 #+end_exercise
 
 #+caption: Total energy vs. fcc lattice contant for Cu. It appears the minimum is near 3.65 \AA.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/Cu-fcc.png]]
 
 If you want to know the lattice constant that gives the lowest energy, you would fit an [[Equations of State][equation of state]] to the data. Here is an example using mod:ase.utils.eos.  See also the appendix [[Equations of State][equations of state]].
@@ -4689,7 +4886,7 @@ eos.plot('images/Cu-fcc-eos.png')
 src_python{return (12.016 * 4)**(1./3.)} =3.63585568663=
 
 #+caption: Total energy vs. volume for fcc Cu with  fitted cubic polynomial equation of state.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/Cu-fcc-eos.png]]
 
 
@@ -4797,7 +4994,7 @@ Use the data for FCC and BCC Cu to plot the total energy as a function of the la
 
 # <<bulk-fcc-bcc-Cu>>
 #+caption: Comparison of energies between fcc and bcc Cu. The fcc structure is lower in energy.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/Cu-bcc-fcc.png]]
 
 Note we plot the energy vs. atomic volume. That is because the lattice constants of the two crystal structures are very different. It also shows that the atomic volumes in the two structures are similar.
@@ -4860,7 +5057,7 @@ plt.show()
 
 # <<ru-e-ca>>
 #+caption: Total energy vs. $c/a$ for different values of $a$. \label{fig:ru-e-ca}
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/Ru-covera-scan.png]]
 
 It looks like there is a minimum in the a=2.7  \AA  curve, at a $c/a$ ratio of about 1.6. We can look at the same data in a contour plot which shows more clearly there is minimum in all directions near that point (Figure ref:fig:ru-contourf).
@@ -4904,7 +5101,7 @@ plt.show()
 
 # <<ru-countourf>>
 #+caption: Contour plot of the total energy of hcp Ru for different values of $a$ and $c/a$. \label{fig:ru-contourf}
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/ru-contourf.png]]
 
 
@@ -4990,7 +5187,7 @@ plt.show()
 #+RESULTS:
 
 #+caption: k-point convergence of rutile TiO_{2}.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/tio2-kpt-convergence.png]]
 
 A k-point grid of $5 \times 5 \times 5$ appears suitable for reasonably converged results. Now we proceed with step 1: Compute the total energy of the unit cell allowing internal degrees of freedom to relax, but keeping a constant cell shape.
@@ -5081,7 +5278,7 @@ for v, e in zip(volumes, energies):
 
 # <<step-1>>
 #+caption: Total energy vs. volume for rutile TiO_{2} in step 1 of the optimization.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/tio2-step1.png]]
 
 Now, we know the minimum energy volume is near 64 \AA^3. You could at this point fit an equation of state to find that minimum. However, we now want to use these initial starting points for a second round of optimization where we allow the unit cell shape to change, at constant volume: ISIF=4.
@@ -5127,7 +5324,7 @@ plt.show()
 
 # <<step-2>>
 #+caption: Total energy vs. volume for step 2 of the unit cell optimization.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/tio2-step2.png]]
 
 The take away message here is that the total energy slightly decreases when we allow the unit cell shape to change, especially for the larger unit cell deformation. This has little effect on the minimum volume, but would have an effect on the bulk modulus, which is related to the curvature of the equation of state. At this point, you could fit an equation of state to the step 2 data, and estimate the volume at the minimum volume, and recalculate the total energy at that volume.
@@ -6024,7 +6221,7 @@ plt.savefig('images/rutile-anatase-eos.png')
 
 # <<tio2-anatase-rutile>>
 #+caption: Equations of state (E(V)) for anatase and rutile TiO$_2$.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/rutile-anatase-eos.png]]
 
 To find the conditions where a phase transition occurs, we have to find the common tangent line between the rutile and anatase phases. In other words we have to solve these two equations:
@@ -6092,7 +6289,7 @@ At a pressure of 4.5 GPa, we expect that anatase will start converting into ruti
 
 # <<common-tangent>>
 #+caption: Illustration of the common tangent that shows the pressure where anatase and rutile coexist before anatase converts to rutile. \label{fig:tio2-cotangent}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/eos-common-tangent.png]]
 
 *************** TODO add literature discussion
@@ -6281,7 +6478,7 @@ print 'Delta Hf cupd-2 = {0:1.2f} eV/atom'.format(e2)
 The answer is yes. Both structures are energetically more favorable than an equal composition mixture of the parent metals. The heat of formation for both structures is exothermic, but the cupd-1 structure is more stable than the cupd-2 structure. This is shown conceptually in Figure ref:fig:alloy1.
 
 #+caption: Conceptual picture of two alloys with exothermic formation energies. The dashed line represents a composition weighted average energy of the parent metals. E4 and E3 are energies associated with two different alloy structures at the same composition. Both structures are more stable than a mixture of pure metals with the same composition, but E3 is more stable than E4. \label{fig:alloy1}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/alloy-stability.png]]
 
 We will now examine another structure at another composition and its stability.
@@ -6356,7 +6553,7 @@ We find the weighted composition formation energy of pure Cu and cupd-1 is more 
 
 # inkscape images/alloy-phase-stability.svg
 #+caption: Illustration of of an alloy structure with an exothermic formation energy that is not stable with respect to phase separation. The solid line shows the composition weighted average energy of a mixture of Cu and cupd-2. Since the energy of cu3pd-1 is above the solid line, it is less favorable than a mixture of Cu and cupd-2 with the same composition. \label{fig:alloy-phase-separation}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/alloy-phase-stability.png]]
 
 Finally, let us consider one more structure with the Cu_{3}Pd stoichiometry.
@@ -6409,7 +6606,7 @@ This looks promising: the formation energy is much more favorable than cu3pd-1, 
 
 # convert ./images/alloy-phase-stability-2.svg ./images/alloy-phase-stability-2.png
 #+caption: Illustration that cu3pd-2 is more stable than cu3pd-1 and that is it is more stable than a composition weighted mixture of Cu and cupd-1. The dotted line shows the energy of a composition weighted average energy of a mixture of Cu and cupd-1. Since cu3pd-2 is below the dotted line, it is more stable than the phase-separated mixture. \label{fig:alloy-phase-separation-2}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/alloy-phase-stability-2.png]]
 
 The construction of alloy phase diagrams is difficult. You are always faced with the possibility that there is a phase that you have not calculated that is more stable than the ones you did calculate. One approach is to use a tool that automates the discovery of relevant structures such as the Alloy Theoretic Automated Toolkit ([[http://www.its.caltech.edu/~avdw/atat/][ATAT]]) cite:vandeWalle2002539,vandeWalle2009266 which uses a cluster expansion methodology.
@@ -6742,7 +6939,7 @@ plt.savefig('images/pd-dos.png')
 #+RESULTS:
 
 #+caption: Total DOS for bulk Pd.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/pd-dos.png]]
 
 This DOS looks roughly like you would expect. The peak between -5 to 0 eV is the Pd d-band.
@@ -6777,7 +6974,7 @@ This not notably different to me.
 
 # <<dos-ismear-5>>
 #+caption: Total DOS for Pd computed with ISMEAR=-5
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/pd-dos-ismear-5.png]]
 
 We can test for convergence of the DOS. The k-points are most important.
@@ -6829,7 +7026,7 @@ plt.show()
 
 # <<dos-k-convergence>>
 #+caption: Convergence of the total DOS with k-points
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/pd-dos-k-convergence-ismear-5.png]]
 
 ** Atom projected density of states
@@ -6924,7 +7121,7 @@ plt.show()
 : d-band width  = 2.72 eV
 
 #+caption: Atom projected $d$-band for bulk Pd. The shaded area corresponds to the occupied states below the Fermi level.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/pd-ados.png]]
 
 *** Effect of RWIGS on ADOS
@@ -7012,13 +7209,13 @@ plt.show()
 #+RESULTS:
 
 #+caption: Effect of the RWIGS on the number of occupied \(d\)-states.
-#+ATTR_latex: placement: [H]
+#+ATTR_latex: :placement [H]
 [[./images/ados-rwigs-occupation.png]]
 
 You can see the number of occupied states increases approximately linearly here with RWIGS. This is due to overcounting of neighboring electrons.
 
 #+caption: Effect of the RWIGS on the \(d\)-band center and width.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/ados-rwigs-moments.png]]
 
 The d-band center and width also change.
@@ -7232,7 +7429,7 @@ plt.savefig('images/Si-bandstructure.png')
 #+RESULTS:
 
 #+caption: Calculated band-structure for Si.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/Si-bandstructure.png]]
 
 
@@ -7256,7 +7453,7 @@ p.savefig('images/tio2-bandstructure-dos.png')
 #+RESULTS:
 
 #+caption: Band structure and total density of states for TiO_{2}.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/tio2-bandstructure-dos.png]]
 
 *** create example showing band dispersion with change in lattice constant
@@ -7361,7 +7558,7 @@ plt.show()
 #+RESULTS:
 
 #+caption: Total energy vs. total magnetic moment for bcc Fe.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/Fe-fixedmagmom.png]]
 
 You can see here there is a minimum in energy at a total magnetic moment somewhere between 4 and 5. There are two Fe atoms in the unit cell, which means the magnetic moment on each atom must be about 2.5 Bohr-magnetons. This is a good guess for a real calculation. Note that VASP [[http://cms.mpi.univie.ac.at/vasp/guide/node100.html#SECTION00099000000000000000][recommends]] you overestimate the magnetic moment guesses if you are looking for ferromagnetic solutions.
@@ -7529,7 +7726,7 @@ p.show()
 
 # <<surface-bands>>
 #+caption: Band structure of an Al slab in the plane (path from Gamma to K1 to K2 to Gamma) and normal to the surface (Gamma to K3). Note the bands are flat in the direction normal to the surface, hence only one k-point is needed in this direction.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/Al-slab-bandstructure.png]]
 
 ** Surface relaxation
@@ -7769,7 +7966,7 @@ with jasp('surfaces/Au-110',
 #+RESULTS:
 
 #+caption: The unreconstructed Au(110) surface viewed from the side.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/Au-110.png]]
 
 **** Missing row in Au(110)
@@ -7804,7 +8001,7 @@ with jasp('surfaces/Au-110-missing-row',
 #+RESULTS:
 
 #+caption: Au(110) with the missing row reconstruction.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/Au-110-missing-row.png]]
 
 **** Bulk Au
@@ -8118,7 +8315,7 @@ print ' The workfunction is {0:1.2f} eV'.format(wf)
 The workfunction of Al is listed as 4.08 at http://hyperphysics.phy-astr.gsu.edu/hbase/tables/photoelec.html.
 
 #+caption: $xy$ averaged local electrostatic potential of an Al(111) slab.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/Al-wf.png]]
 
 ** Surface energy
@@ -8131,7 +8328,7 @@ where $E_{slab}$ is the total energy of a symmetric slab (i.e. one with inversio
 
 # inkscape images/surface-construction.svg
 #+caption: Schematic figure illustrating the calculation of a surface energy.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/surface-construction.png]]
 
 Unfortunately, this approach does not always work. The bulk system is treated subtly different than the slab system, particularly in the $z$-direction where the vacuum is (where typically only one $k$-point is used in slabs). Consequently, the $k$-point sampling is not equivalent in the two systems, and one can in general expect some errors due to this, with the best case being cancellation of the errors due to total $k$-point convergence. In the worst case, one can get a linear divergence in the surface energy with slab thickness cite:PhysRevB.49.16798.
@@ -8202,7 +8399,7 @@ plt.savefig('images/Cu-unrelaxed-surface-energy.png')
 
 # <<oscillating-surface-energy>>
 #+caption: Surface energy of a Cu(111) slab as a function of thickness.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/Cu-unrelaxed-surface-energy.png]]
 
 One reason for the oscillations may be quantum size effects cite:Fiolhais2003209. In citealp:PhysRevB.75.115131 the surface energy of Cu(111) is reported as 0.48 eV/atom, or 1.36 J/m$^2$. Here is an example showing a conversion between these two units. We use ase to compute the area of the unit cell from the norm of the cross-product of the vectors defining the surface unit cell.
@@ -8289,7 +8486,7 @@ with jasp('surfaces/Al-Na-nodip',
 
 # <<asymmetric-slab>>
 #+caption: Example slab with a Na atom on it for illustrating the effects of dipole corrections.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/Na-Al-slab.png]]
 
 *** Slab with a dipole correction
@@ -8398,7 +8595,7 @@ plt.savefig('images/dip-vs-nodip-esp.png')
 : The difference in energy is 3.867888 eV.
 
 #+caption: Comparison of the electrostatic potentials with a dipole correction and without it.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/dip-vs-nodip-esp.png]]
 
 The key points to notice in this figure are:
@@ -8416,7 +8613,7 @@ Calculating an adsorption energy amounts to computing the energy of the followin
 slab + gas-phase molecule $\rightarrow$ slab_adsorbate + products
 
 #+caption: Schematic of an adsorption process.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/adsorbate-energy.png]]
 
 There are many variations of this idea. The slab may already have some adsorbates on it, the slab may reconstruct on adsorption, the gas-phase molecule may or may not dissociate, and the products may or may not stick to the surface. We have to decide where to put the adsorbates, i.e. what site to put them on, and some sites will be more stable than others. We will consider the dissociative adsorption of O$_2$ on three sites of a Pt(111) slab. We will assume the oxygen molecule has split in half, and that the atoms have moved far apart. We will model the oxygen coverage at 0.25 ML, which means we need to use a $2 \times 2$ surface unit cell. For computational speed, we will freeze the slab, but allow the adsorbate to relax.
@@ -8803,7 +9000,7 @@ The adsorption energy is *much* less favorable at 1ML coverage than at 0.25 ML c
 There is a small point to make here about what adsorption does to surface energies. Let us define a general surface formation energy scheme like this:
 
 #+caption: Schematic of forming a surface with adsorbates. First we form two clean surfaces by cleaving the bulk, then allow adsorption to occur on the surfaces.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/adsorbate-surface-energy.png]]
 
 Let us presume the surfaces are symmetric, and that each surface contributes half of the energy change. The overall change in energy:
@@ -9033,7 +9230,7 @@ with jasp('surfaces/Pt-O-fcc-hcp-neb',
 :          Function evaluations: 24
 
 #+caption: Energy pathway for O diffusion from an fcc to hcp site with a spline fit to determine the barrier.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/pt-o-fcc-hcp-neb.png]]
 
 We should compare this barrier to what we could estimate from the simple adsorption energies in the fcc and bridge sites. The adsorption energy in the fcc site was -1.04 eV, and in the bridge site was -0.49 eV. The difference between these two is 0.55 eV, which is very close to the calculated barrier from the NEB calculation. In cases where you can determine what the transition state is, e.g. by symmetry, or other means, it is much faster to directly compute the energy of the initial and transition states for barrier determinations. This is not usually possible though.
@@ -9207,7 +9404,7 @@ plt.savefig('images/O2-mu.png')
 
 
 #+caption: Effect of temperature on the Gibbs free energy of an O_2 molecule at standard state (1 atm).
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/O2-mu.png]]
 
 This is clearly a big effect! Between 500-600K, the energy has dropped by nearly 1 eV.
@@ -9237,7 +9434,7 @@ plt.savefig('images/O2-g-p.png')
 : None
 
 #+caption: Effects of pressure on the ideal gas Gibbs free energy of O$_2$.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/O2-g-p.png]]
 
 Similarly, you can see that simply changing the pressure has a large effect on the Gibbs free energy of an ideal gas through the term: $kT\ln(P/P_0)$, and that this effect is also temperature dependent. This leads us to the final formula we will use for the chemical potential of oxgyen:
@@ -9361,7 +9558,7 @@ plt.savefig('images/O2-mu-diff-p.png')
 : Ag2O decomposition temperature is 478 K
 
 #+caption: \Delta \(\mu_{O_2}\)(T,p) at different pressures and temperatures. \label{fig:mu-o2}
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/O2-mu-diff-p.png]]
 
 
@@ -9426,7 +9623,7 @@ plt.savefig('images/Ag2O-decomposition.png')
 #+RESULTS:
 
 #+caption: Temperature dependent decomposition pressure for Ag_{2}O.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/Ag2O-decomposition.png]]
 
 This shows that at high temperature and low p_{O_{2}} metallic silver is stable, but if the p_{O_{2}} gets high enough, the oxide becomes thermodynamically favorable. Here is another way to look at it.
@@ -9457,7 +9654,7 @@ plt.savefig('images/atomistic-thermo-hf-mu.png')
 : None
 
 #+caption: Dependence of the formation energy on the oxygen chemical potential.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/atomistic-thermo-hf-mu.png]]
 
 This graph shows graphically the $\Delta \mu_{O_2}$ required to make the metal more stable than the oxide. Anything less than about -2 eV will have the metal more stable. That can be achieved by any one of the following combinations (graphically estimated from Figure ref:fig:mu-o2):
@@ -9520,7 +9717,7 @@ plt.show()
 #+RESULTS:
 
 #+caption: Effect of oxygen chemical potential on the adsorption energy.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/atomistic-thermo-adsorption.png]]
 
 ** Atomistic therodynamics and multiple reactions
@@ -9877,7 +10074,7 @@ plt.savefig('images/ni-dos-pbe-pbe0-hse06.png')
 : HSE06 energy:  -6.293369
 
 #+caption: Comparison of DOS from GGA, and two hybrid GGAs (PBE0 ad HSE06).
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/ni-dos-pbe-pbe0-hse06.png]]
 
 
@@ -10157,12 +10354,12 @@ with jasp('molecules/cf4-elf',
 
 
 #+caption: ELF for an isosurface of 0.3 for CF$_4$. \label{fig:elf1}
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/cf4-elf-3.png]]
 
 
 #+caption: ELF for an isosurface of 0.75 for CF$_4$. \label{fig:elf2}
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/cf4-elf-75.png]]
 
 These images (Figure ref:fig:elf1 and ref:fig:elf2) are basically consistent with those in Reference cite:silvi1994.
@@ -10441,6 +10638,201 @@ print((2 * BE1 - BE2).std())
 : 4.81945187253
 : 0.185505941434
 
+** TODO Solvation 
+See http://vaspsol.mse.ufl.edu/download/, cite:fishman-2013-accur,mathew-2014-implic
+
+You need a specially patched version of Vasp.
+
+First, we run our calculation in vacuum. We need this to get the WAVECAR. The following calculation mimics one of the example calculations in the Vaspsol package. The combination of nsw=0 and ibrion=2 does not make sense, but that is the example. I do not use the npar=4 parameter here.
+#+BEGIN_SRC python
+from jasp import *
+from ase.structure import molecule
+
+atoms = molecule('CO')
+atoms.center(vacuum=5)
+
+with jasp('molecules/CO-vacuum',
+          encut=600,
+          prec='Accurate',
+          ismear=0,
+          sigma=0.05,
+          ibrion=2,
+          nsw=0,
+          ediff=1e-6,
+          atoms=atoms) as calc:
+    print(atoms.get_potential_energy())
+    print(atoms.get_forces())
+    print('Calculation time: {} seconds'.format(calc.get_elapsed_time()))
+#+END_SRC
+
+#+RESULTS:
+: -14.81547852
+: [[ 0.     0.    -0.949]
+:  [ 0.     0.     0.949]]
+: Calculation time: 257.546 seconds
+
+The forces are high because nsw was set to 0, so only one iteration was run.
+
+Next, we do the solvation calculation. We use the default solvent dielectric constant of water, which is 80.
+
+#+BEGIN_SRC python
+from jasp import *
+
+with jasp('molecules/CO-vacuum') as calc:
+    calc.clone('molecules/CO-solvated')
+
+with jasp('molecules/CO-solvated',
+          istart=1,  # 
+          lsol=True) as calc:
+    print(calc.get_atoms().get_potential_energy())
+    print(calc.get_atoms().get_forces())
+    print('Calculation time: {} seconds'.format(calc.get_elapsed_time()))
+#+END_SRC
+
+#+RESULTS:
+: -14.82289079
+: [[ 0.     0.    -1.007]
+:  [ 0.     0.     1.007]]
+: Calculation time: 2937.72 seconds
+
+Note these take quite a bit longer to calculate (e.g. 10 times longer)! The energies here are a little different than the vacuum result. To use this energy in an energy difference, you need to make sure the other energies were run with lsol=True also, and the same parameters.
+
+Here is the evidence that we actually ran a calculation with solvation:
+
+#+BEGIN_SRC sh
+grep -A 5 Solvation molecules/CO-solvated/OUTCAR
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+   LSOL =      T    Solvation
+
+ Electronic Relaxation 1
+   ENCUT  =  600.0 eV  44.10 Ry    6.64 a.u.  19.97 19.97 22.27*2*pi/ulx,y,z
+   ENINI  =  600.0     initial cutoff
+   ENAUG  =  644.9 eV  augmentation charge cutoff
+--
+ Solvation parameters
+   EB_K    = 80.000000     relative permittivity of the bulk solvent
+   SIGMA_K =  0.600000     width of the dielectric cavity
+   NC_K    =  0.002500     cutoff charge density
+   TAU     =  0.000525     cavity surface tension
+
+--
+  Solvation contrib.  Ediel  =        -2.06361062
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82417510 eV
+
+  energy without entropy =      -14.82417510  energy(sigma->0) =      -14.82417510
+
+--
+  Solvation contrib.  Ediel  =        -2.08692034
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82331872 eV
+
+  energy without entropy =      -14.82331872  energy(sigma->0) =      -14.82331872
+
+--
+  Solvation contrib.  Ediel  =        -2.11316669
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82319429 eV
+
+  energy without entropy =      -14.82319429  energy(sigma->0) =      -14.82319429
+
+--
+  Solvation contrib.  Ediel  =        -2.16318931
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82278947 eV
+
+  energy without entropy =      -14.82278947  energy(sigma->0) =      -14.82278947
+
+--
+  Solvation contrib.  Ediel  =        -2.17570687
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82272160 eV
+
+  energy without entropy =      -14.82272160  energy(sigma->0) =      -14.82272160
+
+--
+  Solvation contrib.  Ediel  =        -2.19188585
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82267271 eV
+
+  energy without entropy =      -14.82267271  energy(sigma->0) =      -14.82267271
+
+--
+  Solvation contrib.  Ediel  =        -2.19395757
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82272442 eV
+
+  energy without entropy =      -14.82272442  energy(sigma->0) =      -14.82272442
+
+--
+  Solvation contrib.  Ediel  =        -2.19698448
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82288242 eV
+
+  energy without entropy =      -14.82288242  energy(sigma->0) =      -14.82288242
+
+--
+  Solvation contrib.  Ediel  =        -2.19737905
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82288470 eV
+
+  energy without entropy =      -14.82288470  energy(sigma->0) =      -14.82288470
+
+--
+  Solvation contrib.  Ediel  =        -2.19908571
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82287091 eV
+
+  energy without entropy =      -14.82287091  energy(sigma->0) =      -14.82287091
+
+--
+  Solvation contrib.  Ediel  =        -2.19782575
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82288497 eV
+
+  energy without entropy =      -14.82288497  energy(sigma->0) =      -14.82288497
+
+--
+  Solvation contrib.  Ediel  =        -2.19878993
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82288031 eV
+
+  energy without entropy =      -14.82288031  energy(sigma->0) =      -14.82288031
+
+--
+  Solvation contrib.  Ediel  =        -2.19875585
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82288727 eV
+
+  energy without entropy =      -14.82288727  energy(sigma->0) =      -14.82288727
+
+--
+  Solvation contrib.  Ediel  =        -2.19894718
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82288935 eV
+
+  energy without entropy =      -14.82288935  energy(sigma->0) =      -14.82288935
+
+--
+  Solvation contrib.  Ediel  =        -2.19902584
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82289064 eV
+
+  energy without entropy =      -14.82289064  energy(sigma->0) =      -14.82289064
+
+--
+  Solvation contrib.  Ediel  =        -2.19905589
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82289079 eV
+
+  energy without entropy =      -14.82289079  energy(sigma->0) =      -14.82289079
+
+#+end_example
+
+
 * TODO Databases in molecular simulations
 The continued increase in computing power has enabled us to create massive amounts of computational data. Some of this data is accessible in papers, or at websites, e.g. https://cmr.fysik.dtu.dk.
 
@@ -10648,7 +11040,7 @@ plt.savefig('images/np-array-slice.png')
 : None
 
 #+caption: Example of slicing out part of an array. The solid line represents the whole array, and the symbols are the array between $2 < x < 4$.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/np-array-slice.png]]
 The expression \(x>2\) returns an array of booleans (True where the element of $x$ is greater than 2, and False where it is not) equal in size to $x$. Similarly \(x<4\) returns a boolean array where $x$ is less than 4. We take the logical =and= of these two boolean arrays to get another boolean array where both conditions are True (i.e. \(x<2\) and \(x>4\)). This final boolean array is =True= for the part of the arrays we are interested in, and we can use it to extract the subarrays we want.
 
@@ -10912,7 +11304,7 @@ plt.savefig('images/nonlin-fit-ci.png')
 : c1: 2.10995112628 [1.76711622067  2.45278603188]
 
 #+caption: Nonlinear fit to data.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/nonlin-fit-ci.png]]
 
 *** Interpolation with splines
@@ -10949,7 +11341,7 @@ plt.savefig('images/splinefit.png')
 #+END_SRC
 
 #+caption: Illustration of a spline fit to data and finding the maximum point.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/splinefit.png]]
 
 There are other good examples at http://docs.scipy.org/doc/scipy/reference/tutorial/interpolate.html
@@ -11065,7 +11457,7 @@ plt.show()
 : None
 
 #+caption: An example of interpolated charge density of a CO molecule along the axis of molecule.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/CO-charge-density.png]]
 
 To generalize this to non-cubic cells, we need to do interpolation along arbitrary vectors. The overall strategy is the same:
@@ -11173,9 +11565,9 @@ show()
 #+END_SRC
 
 #+RESULTS:
-: None
 
 #+caption: Interpolated charge density for a CO molecule.
+#+ATTR_LaTeX: :placement [H]
 [[./images/interpolated-charge-density.png]]
 
 *** Reading and writing data
@@ -11405,7 +11797,7 @@ plt.savefig('images/vectorized-diffs.png')
 : None
 
 #+caption: Comparison of different numerical derivatives.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/vectorized-diffs.png]]
 
 If your data is very noisy, you will have a hard time getting good derivatives; derivatives tend to magnify noise. In these cases, you have to employ smoothing techniques, either implicitly by using a multipoint derivative formula, or explicitly by smoothing the data yourself, or taking the derivative of a function that has been fit to the data in the neighborhood you are interested in.
@@ -11457,7 +11849,7 @@ plt.savefig('images/multipt-diff.png')
 : None
 
 #+caption: Comparison of 2 point and 4 point numerical derivatives.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/multipt-diff.png]]
 
 The derivative is still noisy, but the four-point derivative is a little better than the two-pt formula.
@@ -11504,7 +11896,7 @@ plt.savefig('images/fft-der.png')
 #+RESULTS:
 
 #+caption: Comparison of FFT numerical derivatives.
-#+ATTR_LaTeX: placement: [H]
+#+ATTR_LaTeX: :placement [H]
 [[./images/fft-der.png]]
 
 This example does not show any major advantage in the quality of the derivative, and it is almost certain I would never remember how to do this off the top of my head.
@@ -12148,7 +12540,7 @@ print('fitted parameters: ', murnpars)
 : fitted parameters:  [-56.466   0.49    4.753  16.573]
 
 #+caption: Fitted equation of state for bulk data. The initial fitted parabola is shown to illustrate how it is useful for making initial guesses of the minimum and bulk modulus.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/a-eos.png]]
 
 You can see the Murnaghan equation of state fits the data better than
@@ -12383,7 +12775,7 @@ if __name__ == '__main__':
 : step2: v2 = 12.0216094217
 
 #+caption: Equation of state for Cu using the multiprocessing module.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/cu-mp-eos.png]]
 
 #+begin_note
@@ -12523,7 +12915,7 @@ if __name__ == '__main__':
 : step2: v2 = 12.0216189798
 
 #+caption: Second view of a Cu equation of state computed with multiprocessing.
-#+attr_latex: placement: [H]
+#+attr_latex: :placement [H]
 [[./images/cu-mp2-eos.png]]
 
 *** Exporting data json, xml, python, sqlite
