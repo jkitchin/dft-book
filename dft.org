@@ -396,60 +396,60 @@ for i in range(len(keys) / 3):
 
 #+RESULTS:
 #+begin_example
-isobutene                CH3CH2OH                 CH3COOH                  
-COF2                     CH3NO2                   CF3CN                    
-CH3OH                    CCH                      CH3CH2NH2                
-PH3                      Si2H6                    O3                       
-O2                       BCl3                     CH2_s1A1d                
-Be                       H2CCl2                   C3H9C                    
-C3H9N                    CH3CH2OCH3               BF3                      
-CH3                      CH4                      S2                       
-C2H6CHOH                 SiH2_s1A1d               H3CNH2                   
-CH3O                     H                        BeH                      
-P                        C3H4_C3v                 C2F4                     
-OH                       methylenecyclopropane    F2O                      
-SiCl4                    HCF3                     HCCl3                    
-C3H7                     CH3CH2O                  AlF3                     
-CH2NHCH2                 SiH2_s3B1d               H2CF2                    
-SiF4                     H2CCO                    PH2                      
-OCS                      HF                       NO2                      
-SH2                      C3H4_C2v                 H2O2                     
-CH3CH2Cl                 isobutane                CH3COF                   
-HCOOH                    CH3ONO                   C5H8                     
-2-butyne                 SH                       NF3                      
-HOCl                     CS2                      P2                       
-C                        CH3S                     O                        
-C4H4S                    S                        C3H7Cl                   
-H2CCHCl                  C2H6                     CH3CHO                   
-C2H4                     HCN                      C2H2                     
-C2Cl4                    bicyclobutane            H2                       
-C6H6                     N2H4                     C4H4NH                   
-H2CCHCN                  H2CCHF                   cyclobutane              
-HCl                      CH3OCH3                  Li2                      
-Na                       CH3SiH3                  NaCl                     
-CH3CH2SH                 OCHCHO                   SiH4                     
-C2H5                     SiH3                     NH                       
-ClO                      AlCl3                    CCl4                     
-NO                       C2H3                     ClF                      
-HCO                      CH3CONH2                 CH2SCH2                  
-CH3COCH3                 C3H4_D2d                 CH                       
-CO                       CN                       F                        
-CH3COCl                  N                        CH3Cl                    
-Si                       C3H8                     CS                       
-N2                       Cl2                      NCCN                     
-F2                       CO2                      Cl                       
-CH2OCH2                  H2O                      CH3CO                    
-SO                       HCOOCH3                  butadiene                
-ClF3                     Li                       PF3                      
-B                        CH3SH                    CF4                      
-C3H6_Cs                  C2H6NH                   N2O                      
-LiF                      H2COH                    cyclobutene              
-LiH                      SiO                      Si2                      
-C2H6SO                   C5H5N                    trans-butane             
-Na2                      C4H4O                    SO2                      
-NH3                      NH2                      CH2_s3B1d                
-ClNO                     C3H6_D3h                 Al                       
-CH3SCH3                  H2CO                     CH3CN                    
+isobutene                CH3CH2OH                 CH3COOH
+COF2                     CH3NO2                   CF3CN
+CH3OH                    CCH                      CH3CH2NH2
+PH3                      Si2H6                    O3
+O2                       BCl3                     CH2_s1A1d
+Be                       H2CCl2                   C3H9C
+C3H9N                    CH3CH2OCH3               BF3
+CH3                      CH4                      S2
+C2H6CHOH                 SiH2_s1A1d               H3CNH2
+CH3O                     H                        BeH
+P                        C3H4_C3v                 C2F4
+OH                       methylenecyclopropane    F2O
+SiCl4                    HCF3                     HCCl3
+C3H7                     CH3CH2O                  AlF3
+CH2NHCH2                 SiH2_s3B1d               H2CF2
+SiF4                     H2CCO                    PH2
+OCS                      HF                       NO2
+SH2                      C3H4_C2v                 H2O2
+CH3CH2Cl                 isobutane                CH3COF
+HCOOH                    CH3ONO                   C5H8
+2-butyne                 SH                       NF3
+HOCl                     CS2                      P2
+C                        CH3S                     O
+C4H4S                    S                        C3H7Cl
+H2CCHCl                  C2H6                     CH3CHO
+C2H4                     HCN                      C2H2
+C2Cl4                    bicyclobutane            H2
+C6H6                     N2H4                     C4H4NH
+H2CCHCN                  H2CCHF                   cyclobutane
+HCl                      CH3OCH3                  Li2
+Na                       CH3SiH3                  NaCl
+CH3CH2SH                 OCHCHO                   SiH4
+C2H5                     SiH3                     NH
+ClO                      AlCl3                    CCl4
+NO                       C2H3                     ClF
+HCO                      CH3CONH2                 CH2SCH2
+CH3COCH3                 C3H4_D2d                 CH
+CO                       CN                       F
+CH3COCl                  N                        CH3Cl
+Si                       C3H8                     CS
+N2                       Cl2                      NCCN
+F2                       CO2                      Cl
+CH2OCH2                  H2O                      CH3CO
+SO                       HCOOCH3                  butadiene
+ClF3                     Li                       PF3
+B                        CH3SH                    CF4
+C3H6_Cs                  C2H6NH                   N2O
+LiF                      H2COH                    cyclobutene
+LiH                      SiO                      Si2
+C2H6SO                   C5H5N                    trans-butane
+Na2                      C4H4O                    SO2
+NH3                      NH2                      CH2_s3B1d
+ClNO                     C3H6_D3h                 Al
+CH3SCH3                  H2CO                     CH3CN
 #+end_example
 
 <<g2-database>>
@@ -863,10 +863,10 @@ print(s.format(atoms.get_distance(0, 1)))
 #+RESULTS:
 : atom symbol
 : ===========
-:  0 N  
-:  1 H  
-:  2 H  
-:  3 H  
+:  0 N
+:  1 H
+:  2 H
+:  3 H
 : The N-H distance is 1.017 angstroms
 
 Bond angles are a little trickier. If we had vectors describing the directions between two atoms, we could use some simple trigonometry to compute the angle between the vectors: $\vec{a} \cdot \vec{b} = |\vec{a}||\vec{b}| \cos(\theta)$.  So we can calculate the angle as $\theta = \arccos\left(\frac{\vec{a} \cdot \vec{b}}{|\vec{a}||\vec{b}|}\right)$, we just have to define our two vectors $\vec{a}$ and $\vec{b}$. We compute these vectors as the difference in positions of two atoms. For example, here we compute the angle H-N-H in an ammonia molecule. This is the angle between N-H$_1$ and N-H$_2$. In the next example, we utilize functions in mod:numpy to perform the calculations, specifically the func:numpy.arccos function, the func:numpy.dot function, and func:numpy.linalg.norm functions.
@@ -896,10 +896,10 @@ print('theta = {0:1.1f} degrees'.format(theta_rad * 180./pi))
 #+RESULTS:
 : atom symbol
 : ===========
-:  0 N  
-:  1 H  
-:  2 H  
-:  3 H  
+:  0 N
+:  1 H
+:  2 H
+:  3 H
 : theta = 106.3 degrees
 
 #+caption: Schematic of the vectors defining the H-N-H angle.
@@ -943,14 +943,14 @@ print('dihedral angle = {0:1.2f} degrees'.format(da))
 #+begin_example
 atom symbol
 ===========
- 0 C  
- 1 C  
- 2 H  
- 3 H  
- 4 H  
- 5 H  
- 6 H  
- 7 H  
+ 0 C
+ 1 C
+ 2 H
+ 3 H
+ 4 H
+ 5 H
+ 6 H
+ 7 H
 dihedral angle = 60.00 degrees
 #+end_example
 
@@ -1151,7 +1151,7 @@ plt.savefig('images/co-encut-v.png')
 
 You can see in this figure that it takes a cutoff energy of about 400 eV to achieve a convergence level around 10 meV, and that even at 500 meV the energy is still changing slightly. Keep in mind that we are generally interested in differences in total energy, and the differences tend to converge faster than a single total energy. Also it is important to note that it is usually a single element that determines the rate of convergence. The reason we do not just use very high ENCUT all the time is it is expensive.
 
-#+BEGIN_SRC sh 
+#+BEGIN_SRC sh
 grep "Elapsed time (sec):" molecules/co-en-*/OUTCAR
 #+END_SRC
 
@@ -1183,7 +1183,7 @@ with jasp('molecules/simple-co') as calc:
     x, y, z, cd = calc.get_charge_density()
 
 # make a white figure
-mlab.figure(1, bgcolor=(1, 1, 1))  
+mlab.figure(1, bgcolor=(1, 1, 1))
 
 # plot the atoms as spheres
 for atom in atoms:
@@ -1191,7 +1191,7 @@ for atom in atoms:
                   atom.y,
                   atom.z,
                   #this determines the size of the atom
-                  scale_factor=vdw_radii[atom.number] / 5., 
+                  scale_factor=vdw_radii[atom.number] / 5.,
                   resolution=20,
                   # a tuple is required for the color
                   color=tuple(cpk_colors[atom.number]),
@@ -1329,12 +1329,12 @@ benzene.center()
 with jasp('molecules/benzene',
           xc='PBE',
           nbands=18,
-          encut=350,   
+          encut=350,
           atoms=benzene) as calc:
 
     print(benzene.get_potential_energy())
     x1, y1, z1, cd1 = calc.get_charge_density()
-    
+
 chlorobenzene =  molecule('C6H6')
 chlorobenzene.set_cell([10, 10, 10])
 chlorobenzene.center()
@@ -1343,12 +1343,12 @@ chlorobenzene[11].symbol ='Cl'
 with jasp('molecules/chlorobenzene',
           xc='PBE',
           nbands=18,
-          encut=350,   
+          encut=350,
           atoms=chlorobenzene) as calc:
     chlorobenzene.get_potential_energy()
     x2, y2, z2, cd2 = calc.get_charge_density()
 
-cdiff = cd2 - cd1                      
+cdiff = cd2 - cd1
 
 print(cdiff.min(), cdiff.max())
 ##########################################
@@ -1407,9 +1407,9 @@ def vinterp3d(x, y, z, u, xi, yi, zi):
         k = len(z) - 2
     elif k < 0:
         k = 0
-    
+
     # points at edge of cell. We only need P1, P2, P3, and P5
-    P1 = np.array([x[i, j, k], 
+    P1 = np.array([x[i, j, k],
                    y[i, j, k],
                    z[i, j, k]])
     P2 = np.array([x[i + 1, j, k],
@@ -1463,7 +1463,7 @@ with jasp('molecules/benzene') as calc:
 with jasp('molecules/chlorobenzene') as calc:
     x2, y2, z2, cd2 = calc.get_charge_density()
 
-cdiff = cd2 - cd1                      
+cdiff = cd2 - cd1
 
 #we need the x-y plane at z=5
 import matplotlib.pyplot as plt
@@ -1484,7 +1484,7 @@ plt.imshow(cdiff_plane,
            cmap=plt.cm.gist_heat,  # colormap
            extent=(0., 10., 0., 10.))  # axes limits
 
-# plot atom positions. It is a little tricky to see why we reverse the x and y coordinates. That is because imshow does that. 
+# plot atom positions. It is a little tricky to see why we reverse the x and y coordinates. That is because imshow does that.
 x = [a.y for a in benzene]
 y = [a.x for a in benzene]
 plt.plot(x, y, 'bo')
@@ -1705,11 +1705,11 @@ from enthought.mayavi import mlab
 from ase.data import vdw_radii
 from ase.data.colors import cpk_colors
 
-atoms = Atoms([Atom('C',  [ 0.0000, 	0.0000, 	-0.8088]),
-               Atom('Br', [ 0.0000, 	0.0000, 	 1.1146]),
-               Atom('F',  [ 0.0000, 	1.2455, 	-1.2651]),
-               Atom('F',  [ 1.0787,    -0.6228, 	-1.2651]),
-               Atom('F',  [-1.0787,    -0.6228, 	-1.2651])],
+atoms = Atoms([Atom('C',  [ 0.0000,	0.0000,		-0.8088]),
+               Atom('Br', [ 0.0000,	0.0000,		 1.1146]),
+               Atom('F',  [ 0.0000,	1.2455,		-1.2651]),
+               Atom('F',  [ 1.0787,    -0.6228,		-1.2651]),
+               Atom('F',  [-1.0787,    -0.6228,		-1.2651])],
                cell=(10, 10, 10))
 atoms.center()
 
@@ -1794,17 +1794,17 @@ with jasp('molecules/h2o-bader',
 
   GRID BASED BADER ANALYSIS  (Version 0.27e 05/09/11)
 
-  OPEN ... CHG                 
+  OPEN ... CHG
   VASP-STYLE INPUT FILE
  VASP5 format
   FFT-grid:   112 x 128 x 120
-  CLOSE ... CHG                 
+  CLOSE ... CHG
 
   RUN TIME:    0.74 SECONDS
 
   CALCULATING BADER CHARGE DISTRIBUTION
                  0  10  25  50  75  100
-  PERCENT DONE:  ********************** 
+  PERCENT DONE:  **********************
 
   REFINING AUTOMATICALLY
   ITERATION: 1
@@ -1847,14 +1847,14 @@ with jasp('molecules/h2o-bader',
       SIGNIFICANT MAXIMA FOUND:             10
            NUMBER OF ELECTRONS:        7.99999
 
-  WRITING ATOMIC VOLUMES 
+  WRITING ATOMIC VOLUMES
                  0  10  25  50  75  100
   PERCENT DONE:  **********************
 
   RUN TIME:    3.96 SECONDS
 
   WRITING BADER ATOMIC INDEX TO AtIndex.dat
- 
+
 #+end_example
 
 #+BEGIN_src sh :dir /home-research/jkitchin/dft-book2/molecules/h2o-bader :results output
@@ -2129,7 +2129,7 @@ with jasp('molecules/h2o_relax',
 : [[ 0.    -0.     0.   ]
 :  [-0.001  0.     0.   ]
 :  [ 0.     0.     0.   ]]
- 
+
 ** Vibrational frequencies
    :PROPERTIES:
    :ID:       a9c1ebd4-65cd-4818-8ee0-923f3b800e22
@@ -4878,7 +4878,7 @@ eos.plot('images/Cu-fcc-eos.png')
 
 
 #+RESULTS:
-: 
+:
 : v0 = 12.0167118546 A^3
 : E0 = -3.7246811445 eV
 : B  = 0.859009528171 eV/A^3
@@ -5037,7 +5037,7 @@ for a in a_list:
                   xc='PBE',
                   # the c-axis is longer than the a-axis, so we use
                   # fewer kpoints.
-                  kpts=(6, 6, 4), 
+                  kpts=(6, 6, 4),
                   encut=350,
                   atoms=atoms) as calc:
             try:
@@ -6122,7 +6122,7 @@ cell0 = atoms.get_cell()
 volumes = [30., 33., 35., 37., 39.]  #vol of one TiO2
 
 for v in volumes:
-    atoms.set_cell(cell0 * ((nTiO2*v/v0)**(1./3.)), 
+    atoms.set_cell(cell0 * ((nTiO2*v/v0)**(1./3.)),
                    scale_atoms=True)
 
     with jasp('bulk/TiO2/anatase/anatase-{0}'.format(v),
@@ -6215,7 +6215,7 @@ plt.savefig('images/rutile-anatase-eos.png')
 : rutile epars: array([ -0.  ,   0.14,  -5.33,  38.59])
 : anatase ppars: array([ 0.  , -0.26,  5.23])
 : rutile ppars: array([ 0.  , -0.29,  5.33])
-: 
+:
 : P_anatase(V) = 0.00*V^2 + -0.26*V + 5.23
 : P_rutile(V) =  0.00*V^2 + -0.29*V + 5.33
 
@@ -7367,10 +7367,10 @@ head -n 20 bulk/Si-bandstructure/EIGENVAL
     2    2    1    1
   0.1956688E+02  0.3810853E-09  0.3810853E-09  0.3810853E-09  0.5000000E-15
   1.000000000000000E-004
-  CAR 
- unknown system                          
+  CAR
+ unknown system
     8   20    8
- 
+
   0.5000000E+00  0.5000000E+00  0.0000000E+00  0.5000000E-01
    1       -1.826311
    2       -1.826306
@@ -7380,7 +7380,7 @@ head -n 20 bulk/Si-bandstructure/EIGENVAL
    6        6.744321
    7       16.392989
    8       16.405965
- 
+
   0.4444444E+00  0.4444444E+00  0.0000000E+00  0.5000000E-01
    1       -2.669062
    2       -0.918013
@@ -7886,7 +7886,7 @@ from jasp import *
 
 with jasp('surfaces/Al-slab-relaxed') as calc:
     atoms = calc.get_atoms()
-    
+
     print 'Constraints = True: ', atoms.get_forces(apply_constraint=True)
 
     print 'Constraints = False: ', atoms.get_forces(apply_constraint=False)
@@ -9062,7 +9062,7 @@ print 'All energies = ', allfreq
 : vibrational energy = 61.606647 meV
 : vibrational freq   = 1.48964216204e+13 1/s
 : vibrational freq   = 496.547387346 cm^{-1}
-: 
+:
 : All energies =  [0.061606647, 0.044346362, 0.044344470000000004]
 
 
@@ -9107,7 +9107,7 @@ print 'All energies = ', allfreq
 : vibrational energy = 63.537929 meV
 : vibrational freq   = 1.53634035507e+13 1/s
 : vibrational freq   = 512.113451691 cm^{-1}
-: 
+:
 : All energies =  [0.06353792899999999, 0.045628623, 0.045628623, 0.023701702, 0.023701702, 0.023223747, 0.022978233, 0.022978233, 0.022190167, 0.021807461, 0.02040119, 0.02040119, 0.019677135000000002, 0.015452848, 0.015302098000000002, 0.015302098000000002, 0.0148412, 0.0148412, 0.014071851000000002, 0.012602063, 0.012602063, 0.012409611999999999, 0.012300973000000002, 0.011735683, 0.011735683, 0.011714521, 0.011482183, 0.011482183, 0.010824891, 0.010414177, 0.010414177, 0.009799697, 0.00932905, 0.00932905, 0.003859079, 0.003859079, (2.9894000000000002e-05+0j), (2.9894000000000002e-05+0j), (0.00012182999999999999+0j)]
 
 
@@ -10078,12 +10078,26 @@ plt.savefig('images/ni-dos-pbe-pbe0-hse06.png')
 [[./images/ni-dos-pbe-pbe0-hse06.png]]
 
 
-** TODO DFT+D - van der Waals forces
-This section still needs some polishing and references.
-http://cms.mpi.univie.ac.at/vasp/vasp/DFT_D2_method_Grimme.html
-cite:PhysRevB.82.081101
+** van der Waals forces
+Older versions (5.2.11+) implement DFT+D2 cite:JCC-JCC20495 with the incar:LVDW tag.
+
+The vdW-DF cite:klimes-2011-van-waals is accessed with incar:LUSE_VDW. See http://cms.mpi.univie.ac.at/vasp/vasp/vdW_DF_functional_Langreth_Lundqvist_et_al.html for notes on its usage.
+
+In Vasp 5.3+, the incar:IVDW tag turns van der Waal calculations on.
+
+You should review the links below before using these
+|    IVDW | method                                                                                    |
+|---------+-------------------------------------------------------------------------------------------|
+|       0 | no correction                                                                             |
+| 1 or 10 | [[http://cms.mpi.univie.ac.at/vasp/vasp/DFT_D2_method.html][DFT-D2]] method of Grimme (available as of VASP.5.2.11)                                     |
+|      11 | zero damping DFT-D3 method of Grimme (available as of VASP.5.3.4)                         |
+|      12 | [[http://cms.mpi.univie.ac.at/vasp/vasp/DFT_D3_method.html][DFT-D3]] method with Becke-Jonson damping (available as of VASP.5.3.4)                      |
+| 2 or 20 | [[http://cms.mpi.univie.ac.at/vasp/vasp/Tkatchenko_Scheffler_method.html][Tkatchenko-Scheffler method]] cite:tkatchenko-2009-accur-molec (available as of VASP.5.3.3) |
+|         |                                                                                           |
+
 
 Van der Waal forces can play a considerable role in binding of aromatic molecules to metal surfaces [[http://th.fhi-berlin.mpg.de/site/uploads/Publications/PRL_submitted_2012063-582-586-2012.pdf][(ref)]]. Here we consider the effects of these forces on the adsorption energy of benzene on an Au(111) surface.First, we consider the regular PBE functional.
+
 
 *** PBE
 **** gas-phase benzene
@@ -10310,14 +10324,10 @@ print('Adsorption energy = {0:1.2f} eV'.format(e1 - e2 - e3))
 
 That is significantly more favorable. This is much higher than this [[http://th.fhi-berlin.mpg.de/site/uploads/Publications/PRL_submitted_2012063-582-586-2012.pdf][reference]] though (0.56 eV), so there could be some issues with convergence or other computational parameters that should be considered.
 
-*** Advanced vdW-DF functionals
-There is a more sophisticated (i.e. more parameters) treatment of van der Waal forces in VASP (http://cms.mpi.univie.ac.at/vasp/vasp/vdW_DF_functional_Langreth_Lundqvist_et_al.html).
 
 
-** ELF
-
-Need better intro here.
-
+** Electron localization function
+The electron localization function (ELF) can be used to characterize chemical bonds, e.g. their ionicity/covalency cite:silvi1994. Here we reproduce an example from Ref. citenum:silvi1994. We compute and plot the ELF for tetrafluoromethane. The incar:LELF tag turns this on.
 
 #+BEGIN_SRC python
 # compute ELF for CF4
@@ -10339,18 +10349,16 @@ with jasp('molecules/cf4-elf',
     calc.calculate()
 
     x, y, z, elf = calc.get_elf()
-    mlab.contour3d(x, y, z, elf,contours=[0.3])
+    mlab.contour3d(x, y, z, elf, contours=[0.3])
     mlab.savefig('../../images/cf4-elf-3.png')
 
     mlab.figure()
-    mlab.contour3d(x, y, z, elf,contours=[0.75])
+    mlab.contour3d(x, y, z, elf, contours=[0.75])
     mlab.savefig('../../images/cf4-elf-75.png')
 #+END_SRC
 
 #+RESULTS:
 : None
-
-[[./images/mlab-test.png]]
 
 
 #+caption: ELF for an isosurface of 0.3 for CF$_4$. \label{fig:elf1}
@@ -10372,7 +10380,7 @@ cite:doi.10.1021/jp202489s
 ** TODO Modeling Core level shifts
 
 
-We need to setup four calculations. First, we setup the bulk Cu and bulk alloy calculations and let them relax. We use similar unit cells for each one to maximize cancellation of errors. 
+We need to setup four calculations. First, we setup the bulk Cu and bulk alloy calculations and let them relax. We use similar unit cells for each one to maximize cancellation of errors.
 
 #+BEGIN_SRC python
 from jasp import *
@@ -10395,7 +10403,7 @@ with jasp('bulk/Cu-cls-0',
           isif=3,
           nsw=40,
           atoms=atoms) as calc:
-    print(atoms.get_potential_energy())          
+    print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
@@ -10422,7 +10430,7 @@ with jasp('bulk/CuPd-cls-0',
           isif=3,
           nsw=40,
           atoms=atoms) as calc:
-    print(atoms.get_potential_energy())          
+    print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
@@ -10602,7 +10610,7 @@ import matplotlib.pyplot as plt
 plt.hist(ensD, 20)
 plt.xlabel('Deviation')
 plt.ylabel('frequency')
-plt.savefig('images/beef-ens.png')      
+plt.savefig('images/beef-ens.png')
 #+END_SRC
 
 #+RESULTS:
@@ -10638,7 +10646,7 @@ print((2 * BE1 - BE2).std())
 : 4.81945187253
 : 0.185505941434
 
-** TODO Solvation 
+** TODO Solvation
 See http://vaspsol.mse.ufl.edu/download/, cite:fishman-2013-accur,mathew-2014-implic
 
 You need a specially patched version of Vasp.
@@ -10682,7 +10690,7 @@ with jasp('molecules/CO-vacuum') as calc:
     calc.clone('molecules/CO-solvated')
 
 with jasp('molecules/CO-solvated',
-          istart=1,  # 
+          istart=1,  #
           lsol=True) as calc:
     print(calc.get_atoms().get_potential_energy())
     print(calc.get_atoms().get_forces())
@@ -11904,7 +11912,7 @@ This example does not show any major advantage in the quality of the derivative,
 *** NetCDF files
 
 [[http://www.unidata.ucar.edu/software/netcdf][NetCDF]] is a binary,
-but cross-platform structured data format. 	The input file and
+but cross-platform structured data format.	The input file and
 output file for Dacapo is the NetCDF format. On creating a NetCDF file
 you must define the dimensions and variables before you can store data
 in them. You can create and read NetCDF files in python using one of
@@ -12197,7 +12205,7 @@ print ('numpy angle = {}',
 print('Scientific A .cross. B = ', A.cross(B))
 
 # you can use Vectors in numpy
-print('numpy A .cross. B      = ', np.cross(A,B))  
+print('numpy A .cross. B      = ', np.cross(A,B))
 #+END_SRC
 
 #+RESULTS:
@@ -12208,7 +12216,7 @@ print('numpy A .cross. B      = ', np.cross(A,B))
 : ('numpy angle = {}', 0.95531661812450919)
 : ('Scientific A .cross. B = ', Vector(-1.000000,0.000000,1.000000))
 : ('numpy A .cross. B      = ', array([-1.,  0.,  1.]))
-: 
+:
 
 *** Unit cell properties
 The volume of a unit cell can be calculated from $V = (a_1 \times a_2)
@@ -12357,12 +12365,12 @@ print('d_111 spacing (method 3) = {0}'.format(d))
 #+RESULTS:
 : d_111 spacing (method 1) = 2.309 Angstroms
 : ('d_111 spacing (method 2) =', 2.3094010767585029)
-: 
+:
 : a   b   c   alpha beta gamma
 : 4.000 4.000 4.000 1.571 1.571 1.571
-: 
+:
 : d_111 spacing (method 3) = 2.30940107676
-: 
+:
 
 ** Equations of State
 
@@ -12639,8 +12647,8 @@ head molecules/O_s-4nodes/OUTCAR
 
 #+RESULTS:
 #+begin_example
- vasp.5.3.5 31Mar14 (build Jan 09 2015 15:20:38) complex                        
-  
+ vasp.5.3.5 31Mar14 (build Jan 09 2015 15:20:38) complex
+
  executed on             LinuxIFC date 2015.01.11  10:18:14
  running on    4 total cores
  distrk:  each k-point on    4 cores,    1 groups
@@ -13178,7 +13186,7 @@ with jasp('bulk/alloy/cu') as calc:
 #+end_example
 
 **** xml							    :archive:
-     This relies on the pyxser module. I cannot get this to install anymore due to some unicode error. 
+     This relies on the pyxser module. I cannot get this to install anymore due to some unicode error.
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 
