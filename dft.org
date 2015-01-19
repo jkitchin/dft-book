@@ -3322,8 +3322,8 @@ if None not in (E_O, E_O2):
 This actually agrees within 30-50 meV of reported literature values, although still nearly an eV greater than the experimental dissociation energy. Note that with a different "random" position, we get the lower energy for the O atom. All the disagreement we had been seeing was apparently in the O atom energy. So, if you do not need the dissociation energy in your analysis, you will not see the error. Also note that this error is specific to there being a spherical atom in a symmetric cell. This is not a problem for most molecules, which are generally non-spherical.
 
 **** Verifying the magnetic moments on each atom
-It is one thing to see the total magnetic moment of a singlet state, and another to ask what are the magnetic moments on each atom. In VASP you must use [[incar:LORBIT][LORBIT]]=11 to get the magnetic moments of the atoms written out.
-(global-set-key (kbd "<f12>") 'ace-jump-mode)
+It is one thing to see the total magnetic moment of a singlet state, and another to ask what are the magnetic moments on each atom. In VASP you must use incar:LORBIT = 11 to get the magnetic moments of the atoms written out.
+
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 
@@ -10077,7 +10077,6 @@ plt.savefig('images/ni-dos-pbe-pbe0-hse06.png')
 #+ATTR_LaTeX: :placement [H]
 [[./images/ni-dos-pbe-pbe0-hse06.png]]
 
-
 ** van der Waals forces
 Older versions (5.2.11+) implement DFT+D2 cite:JCC-JCC20495 with the incar:LVDW tag.
 
@@ -10323,7 +10322,6 @@ print('Adsorption energy = {0:1.2f} eV'.format(e1 - e2 - e3))
 : Adsorption energy = -1.57 eV
 
 That is significantly more favorable. This is much higher than this [[http://th.fhi-berlin.mpg.de/site/uploads/Publications/PRL_submitted_2012063-582-586-2012.pdf][reference]] though (0.56 eV), so there could be some issues with convergence or other computational parameters that should be considered.
-
 
 
 ** Electron localization function
@@ -10839,7 +10837,6 @@ grep -A 5 Solvation molecules/CO-solvated/OUTCAR
   energy without entropy =      -14.82289079  energy(sigma->0) =      -14.82289079
 
 #+end_example
-
 
 * TODO Databases in molecular simulations
 The continued increase in computing power has enabled us to create massive amounts of computational data. Some of this data is accessible in papers, or at websites, e.g. https://cmr.fysik.dtu.dk.
