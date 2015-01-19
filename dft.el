@@ -10,8 +10,8 @@
 ;; renders useful links in output
 (org-add-link-type  "incar"
    (lambda (keyword)
-     browse-url
-    (format "http://cms.mpi.univie.ac.at/wiki/index.php/%s" keyword))
+     (browse-url
+      (format "http://cms.mpi.univie.ac.at/wiki/index.php/%s" keyword)))
   ; this function is for formatting
   (lambda (keyword link format)
    (cond
@@ -124,6 +124,3 @@ Lisp code that opens dft-book at point
 ;C:\Users\jkitchin>initexmf --edit-config-file=miktex\config\latex.ini
 
 ;C:\Users\jkitchin>initexmf --edit-config-file=miktex\config\pdftex.ini
-
-
-
