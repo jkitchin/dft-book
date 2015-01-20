@@ -8,17 +8,19 @@
 ;; [[incar:keyword]]
 ;; this makes nice links in org-mode to the online documentation and
 ;; renders useful links in output
-(org-add-link-type  "incar"
-   (lambda (keyword)
-     (browse-url
-      (format "http://cms.mpi.univie.ac.at/wiki/index.php/%s" keyword)))
-  ; this function is for formatting
-  (lambda (keyword link format)
-   (cond
-    ((eq format 'html)
-     (format "<a href=http://cms.mpi.univie.ac.at/wiki/index.php/%s>%s</a>" keyword keyword))
-    ((eq format 'latex)
-     (format "\\href{http://cms.mpi.univie.ac.at/wiki/index.php/%s}{%s}"  keyword keyword)))))
+(org-add-link-type "incar"
+		   (lambda (keyword)
+		     (browse-url
+		      (format "http://cms.mpi.univie.ac.at/wiki/index.php/%s" keyword)))
+					; this function is for formatting
+		   (lambda (keyword link format)
+		     (cond
+		      ((eq format 'html)
+		       (format "<a href=http://cms.mpi.univie.ac.at/wiki/index.php/%s>%s</a>"
+			       keyword keyword))
+		      ((eq format 'latex)
+		       (format "\\href{http://cms.mpi.univie.ac.at/wiki/index.php/%s}{%s}"
+			       keyword keyword)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Menu for dft-book
