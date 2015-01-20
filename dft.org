@@ -10008,6 +10008,42 @@ This example highlights the challenge of using an approach like DFT+U. On one ha
 
 In any case, you should be careful to use well converged results to avoid compensating for convergence errors with U.
 
+** TODO Linear response DFT+U
+http://cms.mpi.univie.ac.at/vasp-forum/viewtopic.php?f=4&t=16400. suggests this is possible.
+
+
+#+BEGIN_SRC python
+from jasp import *
+from ase.lattice.compounds import Rocksalt
+from ase.visualize import *
+
+atoms = Rocksalt(['Ni', 'O'], latticeconstant=4.17).repeat((2, 2, 2))
+
+
+with jasp('bulk/Ni-dft-u-base',
+          xc='PBE',
+          sigma=0.1,
+          kpts=(4, 4, 4),
+          setups={'0', 'Ni'},
+          ldau=True,
+          ldautype=3,
+          ldau_luj={'Ni': {'L':2,  'U':0.0, 'J':0.0},
+                    'O': {'L':-1, 'U':0.0, 'J':0.0}},
+          lmaxmix=4,
+          lorbit=11,
+          atoms=atoms) as calc:
+
+    print(atoms.get_potential_energy())
+#+END_SRC
+
+#+RESULTS:
+
+#+BEGIN_SRC sh
+cat bulk/Ni-dft-u-base/INCAR
+#+END_SRC
+
+#+RESULTS:
+
 ** Hybrid functionals
 *** FCC Ni DOS
 This example is adapted from http://cms.mpi.univie.ac.at/wiki/index.php/FccNi_DOS
@@ -10017,20 +10053,20 @@ from jasp import *
 from ase.lattice.cubic import FaceCenteredCubic
 from ase.dft import DOS
 
-atoms = FaceCenteredCubic(directions=[[0,1,1],
-                                      [1,0,1],
-                                      [1,1,0]],
-                                      size=(1,1,1),
+atoms = FaceCenteredCubic(directions=[[0, 1, 1],
+                                      [1, 0, 1],
+                                      [1, 1, 0]],
+                                      size=(1, 1, 1),
                                       symbol='Ni')
 atoms[0].magmom = 1
 
 with jasp('bulk/Ni-PBE',
           ismear=-5,
-          kpts=(5,5,5),
+          kpts=(5, 5, 5),
           xc='PBE',
           ispin=2,lorbit=11,
           atoms=atoms) as calc:
-    print 'PBE energy:   ',atoms.get_potential_energy()
+    print('PBE energy:   ',atoms.get_potential_energy())
     dos = DOS(calc, width=0.2)
     e_pbe = dos.get_energies()
     d_pbe = dos.get_dos()
@@ -10043,7 +10079,7 @@ with jasp('bulk/Ni-PBE0') as calc:
               algo='D',
               time=0.4)
      atoms = calc.get_atoms()
-     print 'PBE0 energy:  ',atoms.get_potential_energy()
+     print('PBE0 energy:  ',atoms.get_potential_energy())
      dos = DOS(calc, width=0.2)
      e_pbe0 = dos.get_energies()
      d_pbe0 = dos.get_dos()
@@ -10053,7 +10089,7 @@ with jasp('bulk/Ni-HSE06') as calc:
               hfscreen=0.2,
               algo='D', time=0.4)
      atoms = calc.get_atoms()
-     print 'HSE06 energy: ', atoms.get_potential_energy()
+     print('HSE06 energy: ', atoms.get_potential_energy())
      dos = DOS(calc, width=0.2)
      e_hse06 = dos.get_energies()
      d_hse06 = dos.get_dos()
@@ -10436,8 +10472,6 @@ with jasp('bulk/CuPd-cls-0',
 : -73.53338426
 
 Next, we have to do the excitation in each structure. For these, we do not relax the structure. We clone the previous results and modify them.
-
-TODO
 
 #+BEGIN_SRC python
 from jasp import *
