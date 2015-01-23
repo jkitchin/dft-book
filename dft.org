@@ -1021,7 +1021,7 @@ atoms = Atoms([Atom('C', [0, 0, 0]),
 
 L = [4, 5, 6, 8, 10]
 
-volumes, energies = [], []
+energies = []
 ready = True
 for a in L:
     atoms.set_cell([a, a, a], scale_atoms=False)
@@ -1086,7 +1086,7 @@ atm = 101325 * Pascal
 L = np.linspace(4, 10)
 V = L**3
 
-n = 1  # one atom per unit cell
+n = 1  # one atom/molecule per unit cell
 
 for T in [298, 600, 1000]:
     P = n / V * kB * T / atm  # convert to atmospheres
@@ -1097,6 +1097,7 @@ plt.xlabel('Unit cell volume ($\AA^3$)')
 plt.ylabel('Pressure (atm)')
 plt.legend(loc='best')
 plt.savefig('images/ideal-gas-pressure.png')
+plt.show()
 #+END_SRC
 
 #+RESULTS:
@@ -1994,6 +1995,8 @@ forces = (eV/ang)
 
 #+end_example
 
+[[./images/co-bondlengths.png]]
+
 To find the minimum we could run more calculations, but a simpler and faster way is to fit a polynomial to the data, and find the analytical minimum. The results are shown in Figure ref:fig:co-bondlengths.
 
 #+BEGIN_SRC python :results output :exports both
@@ -2103,14 +2106,17 @@ It is not more complicated to relax more atoms, it just may take longer because 
 #+BEGIN_SRC python :results output :exports both
 from ase import Atoms, Atom
 from jasp import *
+JASPRC['queue.ppn'] = 4
 
 atoms = Atoms([Atom('H', [0.5960812, -0.7677068, 0.0000000]),
                Atom('O', [0.0000000,  0.0000000, 0.0000000]),
                Atom('H', [0.5960812,  0.7677068, 0.0000000])],
               cell=(8, 8, 8))
 
-with jasp('molecules/h2o_relax',
-          xc='PBE',
+atoms.center()
+
+with jasp('molecules/h2o-relax-centered',
+          xc='PBE', debug=logging.DEBUG,
           encut=400,
           ismear=0,  # Gaussian smearing
           ibrion=2,
@@ -2124,11 +2130,8 @@ with jasp('molecules/h2o_relax',
 #+END_SRC
 
 #+RESULTS:
-: forces
-: =======
-: [[ 0.    -0.     0.   ]
-:  [-0.001  0.     0.   ]
-:  [ 0.     0.     0.   ]]
+
+
 
 ** Vibrational frequencies
    :PROPERTIES:
@@ -10008,41 +10011,6 @@ This example highlights the challenge of using an approach like DFT+U. On one ha
 
 In any case, you should be careful to use well converged results to avoid compensating for convergence errors with U.
 
-** TODO Linear response DFT+U
-http://cms.mpi.univie.ac.at/vasp-forum/viewtopic.php?f=4&t=16400. suggests this is possible.
-
-
-#+BEGIN_SRC python
-from jasp import *
-from ase.lattice.compounds import Rocksalt
-from ase.visualize import *
-
-atoms = Rocksalt(['Ni', 'O'], latticeconstant=4.17).repeat((2, 2, 2))
-
-
-with jasp('bulk/Ni-dft-u-base',
-          xc='PBE',
-          sigma=0.1,
-          kpts=(4, 4, 4),
-          setups={'0', 'Ni'},
-          ldau=True,
-          ldautype=3,
-          ldau_luj={'Ni': {'L':2,  'U':0.0, 'J':0.0},
-                    'O': {'L':-1, 'U':0.0, 'J':0.0}},
-          lmaxmix=4,
-          lorbit=11,
-          atoms=atoms) as calc:
-
-    print(atoms.get_potential_energy())
-#+END_SRC
-
-#+RESULTS:
-
-#+BEGIN_SRC sh
-cat bulk/Ni-dft-u-base/INCAR
-#+END_SRC
-
-#+RESULTS:
 
 ** Hybrid functionals
 *** FCC Ni DOS
@@ -14263,47 +14231,7 @@ provided the MMC is eligible for relicensing.
 * build                                                            :noexport:
 
 This is org-header stuff.
-
-#+LANGUAGE:  en
-#+OPTIONS:   H:10 num:t toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t d:HIDDEN
-#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
-#+OPTIONS:   LaTeX:dvipng
-#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
-#+EXPORT_SELECT_TAGS: export
-#+EXPORT_EXCLUDE_TAGS: noexport
-#+LINK_UP:
-#+LINK_HOME:
-#+XSLT:
-#+STYLE: <link rel="stylesheet" type="text/css" href="dft.css"/>
-
-#+latex_header: \usepackage{dftbook}
-#+LATEX_CLASS_OPTIONS: [colorlinks=true,urlcolor=blue,linkcolor=blue,citecolor=red]
-#+LATEX_HEADER: \usepackage{minted}
-#+LATEX_HEADER: \usepackage{lmodern}
-#+LATEX_HEADER: \usepackage{makeidx}
-#+LATEX_HEADER: \newcommand{\LaunchBinary}[2]{%
-#+LATEX_HEADER:   % #1: layer name,
-#+LATEX_HEADER:   % #2: link text
-#+LATEX_HEADER:   \leavevmode%
-#+LATEX_HEADER:   \pdfstartlink  attr{/C [0.9 0 0] /Border [0 0 2]} user {
-#+LATEX_HEADER:     /Subtype /Link
-#+LATEX_HEADER:     /A <<
-#+LATEX_HEADER:       /F <<
-#+LATEX_HEADER:          /DOS (#1)
-#+LATEX_HEADER:          /Mac (#1)
-#+LATEX_HEADER:          /Unix (#1)
-#+LATEX_HEADER:       >>
-#+LATEX_HEADER:       /S /Launch
-#+LATEX_HEADER:     >>
-#+LATEX_HEADER:   } #2%
-#+LATEX_HEADER:   \pdfendlink%
-#+LATEX_HEADER: }
-
-#+LATEX_HEADER: \newcommand{\degC}{$^\circ$C{}}
-#+LATEX_HEADER: \makeindex
-
-
-#+STYLE: <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
+#+INCLUDE: dft-header.org
 
 
 Here we create the tex file. This extracts the scripts out to the dft-scripts folder.
