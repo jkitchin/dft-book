@@ -29,3 +29,5 @@ ltxpng
 /dft.tex
 /mk4ht.cfg
 /topics-to-discuss.org
+/.DS_Store
+/dft.pyg
