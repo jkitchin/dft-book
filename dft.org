@@ -3865,7 +3865,7 @@ Water has 3N-6 = 3 vibrational modes.
 
 **** Thermochemistry
 Now we are ready. We have the electronic energies and vibrational frequencies of each species in the reaction.
-
+pydoc:ase.thermochemistry.IdealGasThermo
 #+BEGIN_SRC python :results silent
 from ase.thermochemistry import IdealGasThermo
 from jasp import *
@@ -3976,13 +3976,16 @@ You can see a few things here. One is that at near 298K, the Gibbs free energy i
 
 
 ** Molecular reaction barriers
+   :PROPERTIES:
+   :ID:       79BC5433-AE0D-4392-B5B0-A11FFF2D3B13
+   :END:
 We will consider a simple example of the barrier for NH_{3} inversion. We have to create an NH_{3} molecule in the initial and inverted state (these have exactly the same energy), and then interpolate a band of images. Then, we use the NEB method cite:sheppard:134106 to compute the barrier to inversion. The NEB class of methods are pretty standard, but other algorithms for finding barriers (saddle-points) exist that may be relevant cite:olsen:9776.
 
 *** Get initial and final states
 #+BEGIN_SRC python :exports code
 # compute initial and final states
 from ase import Atoms
-from ase.data.molecules import molecule
+from ase.structure import molecule
 import numpy as np
 from jasp import *
 from ase.constraints import FixAtoms
@@ -4049,9 +4052,9 @@ with jasp('molecules/nh3-final') as calc:
     atoms2 = calc.get_atoms()
 
 # 5 images including endpoints
-images = [atoms]
+images = [atoms]   # initial state
 images += [atoms.copy() for i in range(3)]
-images += [atoms2]
+images += [atoms2]  # final state
 
 neb = NEB(images)
 neb.interpolate()
@@ -6863,7 +6866,7 @@ density of states can be calculated by a sum over the k-points
 cite:seitsonen2000:phd:
 
 \begin{equation}\label{eq:dos}
-\rho(\epsilon)=\sum_\mathbf{\mathrm{k}} \omega_\mathbf{\mathrm{k}} \sum_i \beta(\epsilon -\epsilon_{i\mathbf{\mathrm{k}}})
+\Rho(\epsilon)=\sum_\mathbf{\mathrm{k}} \omega_\mathbf{\mathrm{k}} \sum_i \beta(\epsilon -\epsilon_{i\mathbf{\mathrm{k}}})
 \end{equation}
 
 where $\omega_\mathbf{\mathrm{k}}$ is the weight associated with the
@@ -6876,7 +6879,7 @@ to zero as the number of k-points approaches infinity.
 from jasp import *
 
 npoints = 200
-width = 0.1
+width = 0.5
 
 def gaussian(energies, eik):
     x = ((energies - eik) / width)
@@ -7088,10 +7091,10 @@ with jasp('bulk/pd-ados',
     occupied = energies <= 0.0
     N_occupied_states = np.trapz(dos[occupied], energies[occupied])
     # first moment
-    ed = np.trapz(energies * dos, energies) / np.trapz(dos, energies)
+    ed = np.trapz(energies * dos, energies) / Nstates
 
     # second moment
-    wd2 = np.trapz(energies**2 * dos, energies) / np.trapz(dos, energies)
+    wd2 = np.trapz(energies**2 * dos, energies) / Nstates
 
     print 'Total # states = {0:1.2f}'.format(Nstates)
     print 'number of occupied states = {0:1.2f}'.format(N_occupied_states)
@@ -7216,7 +7219,7 @@ You can see the number of occupied states increases approximately linearly here 
 
 #+caption: Effect of the RWIGS on the \(d\)-band center and width.
 #+attr_latex: :placement [H]
-[[./images/ados-rwigs-moments.png]]
+[[./images/ados-rwigs-moments.png]]q
 
 The d-band center and width also change.
 
@@ -7602,7 +7605,7 @@ print 'Individual moments are {0} Bohr-magnetons'.format(magmoms)
 : Individual moments are [ 2.134  2.134] Bohr-magnetons
 
 *** Antiferromagnetic spin states
-In an antiferromagnetic material, there are equal numbers of spin up and down electrons that align in a regular pattern, but pointing in opposite directions so that there is no net magnetism. It is possible to model this by setting the magnetic moments on each mod:ase.Atom object.
+In an antiferromagnetic material, there are equal numbers of spin up and down electrons that align in a regular pattern, but pointing in opposite directions so that there is no net magnetism. It is possible to model this by setting the magnetic moments on each mod:ase.Atom object. incar:lreal
 
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
@@ -7638,6 +7641,7 @@ You can see that even though the total magnetic moment is 0, there is a spin on 
 ** TODO phonons
 cite:RevModPhys.73.515
 
+phonopy
 ** TODO solid state NEB
 cite:Caspersen10052005 Carter paper
 cite:sheppard:074103 recent Henkelman paper
@@ -7656,9 +7660,14 @@ ase provides many [[https://wiki.fysik.dtu.dk/ase/ase/surface.html#module-ase.la
 #+BEGIN_SRC python
 from ase.lattice.surface import fcc111
 from ase.io import write
+from ase.visualize import view
 
 slab = fcc111('Al', size=(2, 2, 3), vacuum=10.0)
+from ase.constraints import FixAtoms
+constraint = FixAtoms(mask=[atom.tag >= 2 for atom in slab])
+slab.set_constraint(constraint)
 
+view(slab)
 write('images/Al-slab.png', slab, rotation='90x', show_unit_cell=2)
 #+END_SRC
 
@@ -7814,6 +7823,18 @@ To reduce the forces, we can let VASP relax the geometry. We have to make some d
 Note: the [[https://wiki.fysik.dtu.dk/ase/ase/constraints.html][ase constraints]] are only partially used by =jasp=. The mod:ase.constraints.FixAtoms constraint gets written to the POSCAR file, and is then used internally in VASP. The only other constraint that VASP can use internally is [[mod:ase.constraints.FixScaled]]. The other constraints are not written to the POSCAR and are not used by VASP.
 
 #+BEGIN_SRC python :results output :exports both
+from ase.lattice.surface import fcc111
+atoms = fcc111('Al', size=(2, 2, 4), vacuum=10.0)
+print([atom.z for atom in atoms])
+print [atom.z <= 13 for atom in atoms]
+#+END_SRC
+
+#+RESULTS:
+: [9.9999999999999982, 9.9999999999999982, 9.9999999999999982, 9.9999999999999982, 12.338268590217982, 12.338268590217982, 12.338268590217982, 12.338268590217982, 14.676537180435968, 14.676537180435968, 14.676537180435968, 14.676537180435968, 17.01480577065395, 17.01480577065395, 17.01480577065395, 17.01480577065395]
+: [True, True, True, True, True, True, True, True, False, False, False, False, False, False, False, False]
+
+
+#+BEGIN_SRC python :results output :exports both
 from jasp import *
 from ase.lattice.surface import fcc111
 from ase.constraints import FixAtoms
@@ -7880,7 +7901,7 @@ Al: potpaw_PBE/Al/POTCAR (git-hash: c8d9ecb0b6ebec0256c5f5072cee4de6a046dac2)
 You can see that atoms 2 and 3 (the ones we relaxed, because the have tags of 1 and 2, which are less than 3) now have very low forces on them and it appears that atoms 0 and 1 have no forces on them. That is because the FixAtoms constraint works by setting the forces on those atoms to zero. We can see in the next example that the z-positions of the relaxed atoms have indeed relaxed and changed, while the position of the frozen atoms did not change.
 
 Note there are two versions of the forces. The true forces, and the forces when constraints are applied.
-
+pydoc:ase.atoms.Atoms.get_forces
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 
@@ -7940,6 +7961,22 @@ Thus, if this change in energy: \(E_{bulk} + E_{slab_{missing row}} - E_{slab_{1
 *** Au(110) missing row reconstruction
 We first consider the Au(110) case, where the reconstruction is known to be favorable.
 **** Clean Au(110) slab
+
+#+BEGIN_SRC python
+from jasp import *
+from ase.lattice.surface import fcc110
+from ase.io import write
+from ase.constraints import FixAtoms
+from ase.visualize import view
+
+atoms = fcc110('Au', size=(2, 1, 6), vacuum=10.0)
+constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms.set_constraint(constraint)
+view(atoms)
+#+END_SRC
+
+#+RESULTS:
+
 #+BEGIN_SRC python :results output :exports both
 from jasp import *
 from ase.lattice.surface import fcc110
@@ -8262,6 +8299,115 @@ print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
 
 It is questionable whether we should consider this evidence of a missing row reconstruction because the number is small. That does not mean the reconstruction will not happen, but it could mean it is very easy to lift.
 
+** Surface energy
+The easiest way to calculate surface energies is from this equation:
+
+$\sigma = \frac{1}{2}(E_{slab} - \frac{N_{slab}}{N_{bulk}} E_{bulk})$
+
+where $E_{slab}$ is the total energy of a symmetric slab (i.e. one with inversion symmetry, and where both sides of the slab have been relaxed), $E_{bulk}$ is the total energy of a bulk unit cell, $N_{slab}$ is the number of atoms in the slab, and $N_{bulk}$ is the number of atoms in the bulk unit cell. One should be sure that the bulk energy is fully converged with respect to $k$-points, and that the slab energy is also converged with respect to $k$-points. The energies should be compared at the same cutoff energies. The idea is then to increase the thickness of the slab until the surface energy $\sigma$ converges.
+
+
+# inkscape images/surface-construction.svg
+#+caption: Schematic figure illustrating the calculation of a surface energy.
+#+ATTR_LaTeX: :placement [H]
+[[./images/surface-construction.png]]
+
+Unfortunately, this approach does not always work. The bulk system is treated subtly different than the slab system, particularly in the $z$-direction where the vacuum is (where typically only one $k$-point is used in slabs). Consequently, the $k$-point sampling is not equivalent in the two systems, and one can in general expect some errors due to this, with the best case being cancellation of the errors due to total $k$-point convergence. In the worst case, one can get a linear divergence in the surface energy with slab thickness cite:PhysRevB.49.16798.
+
+A variation of this method that usually results in better $k$-point error cancellation is to calculate the bulk unit cell energy using the slab unit cell with no vacuum space, with the same $k$-point mesh in the $x$ and $y$ directions, but with increased $k$-points in the $z$-direction. Thus, the bulk system and slab system have the same Brillouin zone in at least two dimensions. This maximizes the cancellation of $k$-point errors, but still does not guarantee convergence of the surface energy, as discussed in cite:PhysRevB.49.16798,0953-8984-10-4-017.
+
+For quick estimates of the surface energy, one of the methods described above is likely sufficient. The advantage of these methods is the small number of calculations required to obtain the estimate, one needs only a bulk calculation (which must be done anyhow to get the bulk lattice constant to create the slab), and a slab calculation that is sufficiently thick to get the estimate. Additional calculations are only required to test the convergence of the surface energy.
+
+An alternative method for calculating surface energies that does not involve an explicit bulk calculation follows Ref. cite:0953-8984-10-4-017. The method follows from equation (ref{eq:se}) where for a N-atom slab, in the limit of N \rightarrow \infty,
+
+$E_{slab} \approx 2\sigma + \frac{N_{slab}}{N_{bulk}} E_{bulk}$
+
+Then, we can estimate E_{bulk} by plotting the total energy of the slab as a function of the slab thickness.
+
+$\sigma = \lim_{N \rightarrow \infty} \frac{1}{2}(E_{slab}^N - N \Delta E_N)$
+
+where $\Delta E_N = E_{slab}^N - E_{slab}^{N-1}$.
+
+We will examine this approach here. We will use unrelaxed slabs for computational efficiency.
+
+#+BEGIN_SRC python :results output :exports both
+from jasp import *
+from ase.lattice.surface import fcc111
+import matplotlib.pyplot as plt
+
+Nlayers = [3, 4, 5, 6, 7, 8, 9, 10, 11]
+energies = []
+sigmas = []
+
+for n in Nlayers:
+
+    slab = fcc111('Cu', size=(1, 1, n), vacuum=10.0)
+    slab.center()
+
+    with jasp('bulk/Cu-layers/{0}'.format(n),
+              xc='PBE',
+              encut=350,
+              kpts=(8, 8, 1),
+              atoms=slab) as calc:
+        calc.set_nbands(f=2)  # the default nbands in VASP is too low for Cu
+        try:
+            energies.append(slab.get_potential_energy())
+        except (VaspSubmitted, VaspQueued):
+            pass
+
+for i in range(len(Nlayers) - 1):
+    N = Nlayers[i]
+    DeltaE_N = energies[i + 1] - energies[i]
+    sigma = 0.5 * (-N * energies[i + 1] + (N + 1) * energies[i])
+    sigmas.append(sigma)
+    print 'nlayers = {1:2d} sigma = {0:1.3f} eV/atom'.format(sigma, N)
+
+plt.plot(Nlayers[0:-1], sigmas, 'bo-')
+plt.xlabel('Number of layers')
+plt.ylabel('Surface energy (eV/atom)')
+plt.savefig('images/Cu-unrelaxed-surface-energy.png')
+#+END_SRC
+
+#+RESULTS:
+: nlayers =  3 sigma = 0.551 eV/atom
+: nlayers =  4 sigma = 0.399 eV/atom
+: nlayers =  5 sigma = 0.590 eV/atom
+: nlayers =  6 sigma = 0.319 eV/atom
+: nlayers =  7 sigma = 0.578 eV/atom
+: nlayers =  8 sigma = 0.322 eV/atom
+: nlayers =  9 sigma = 0.592 eV/atom
+: nlayers = 10 sigma = 0.403 eV/atom
+
+# <<oscillating-surface-energy>>
+#+caption: Surface energy of a Cu(111) slab as a function of thickness.
+#+ATTR_LaTeX: :placement [H]
+[[./images/Cu-unrelaxed-surface-energy.png]]
+
+One reason for the oscillations may be quantum size effects cite:Fiolhais2003209. In citealp:PhysRevB.75.115131 the surface energy of Cu(111) is reported as 0.48 eV/atom, or 1.36 J/m$^2$. Here is an example showing a conversion between these two units. We use ase to compute the area of the unit cell from the norm of the cross-product of the vectors defining the surface unit cell.
+
+#+BEGIN_SRC python :results output :exports both
+from ase.lattice.surface import fcc111
+from ase.units import J, m
+import numpy as np
+
+slab = fcc111('Cu', size=(1, 1, 3), vacuum=10.0)
+cell = slab.get_cell()
+
+area = np.linalg.norm(np.cross(cell[0], cell[1]))  # area per atom
+
+sigma = 0.48  # eV/atom
+
+print 'sigma = {0} J/m^2'.format(sigma / area / (J / m**2))
+#+END_SRC
+
+#+RESULTS:
+: sigma = 1.3628146074 J/m^2
+
+*** Advanced topics in surface energy
+The surface energies can be used to estimate the shapes of nanoparticles using a Wulff construction. See citealp:doi.10.1021/jp200950a for an example of computing Mo_{2}C surface energies and particle shapes, and cite:Inoglu2009188 for an example of the influence of adsorbates on surface energies and particle shapes of Cu.
+
+For a classic paper on trends in surface energies see cite:Vitos1998186.
+
 ** Work function
    :PROPERTIES:
    :ID:       6fb2a790-5fc8-47f7-b379-bf6eb65bd3f5
@@ -8318,115 +8464,6 @@ The workfunction of Al is listed as 4.08 at http://hyperphysics.phy-astr.gsu.edu
 #+ATTR_LaTeX: :placement [H]
 [[./images/Al-wf.png]]
 
-** Surface energy
-The easiest way to calculate surface energies is from this equation:
-
-$\sigma = \frac{1}{2}(E_{slab} - \frac{N_{slab}}{N_{bulk}} E_{bulk})$
-
-where $E_{slab}$ is the total energy of a symmetric slab (i.e. one with inversion symmetry, and where both sides of the slab have been relaxed), $E_{bulk}$ is the total energy of a bulk unit cell, $N_{slab}$ is the number of atoms in the slab, and $N_{bulk}$ is the number of atoms in the bulk unit cell. One should be sure that the bulk energy is fully converged with respect to $k$-points, and that the slab energy is also converged with respect to $k$-points. The energies should be compared at the same cutoff energies. The idea is then to increase the thickness of the slab until the surface energy $\sigma$ converges.
-
-
-# inkscape images/surface-construction.svg
-#+caption: Schematic figure illustrating the calculation of a surface energy.
-#+ATTR_LaTeX: :placement [H]
-[[./images/surface-construction.png]]
-
-Unfortunately, this approach does not always work. The bulk system is treated subtly different than the slab system, particularly in the $z$-direction where the vacuum is (where typically only one $k$-point is used in slabs). Consequently, the $k$-point sampling is not equivalent in the two systems, and one can in general expect some errors due to this, with the best case being cancellation of the errors due to total $k$-point convergence. In the worst case, one can get a linear divergence in the surface energy with slab thickness cite:PhysRevB.49.16798.
-
-A variation of this method that usually results in better $k$-point error cancellation is to calculate the bulk unit cell energy using the slab unit cell with no vacuum space, with the same $k$-point mesh in the $x$ and $y$ directions, but with increased $k$-points in the $z$-direction. Thus, the bulk system and slab system have the same Brillouin zone in at least two dimensions. This maximizes the cancellation of $k$-point errors, but still does not guarantee convergence of the surface energy, as discussed in cite:PhysRevB.49.16798,0953-8984-10-4-017.
-
-For quick estimates of the surface energy, one of the methods described above is likely sufficient. The advantage of these methods is the small number of calculations required to obtain the estimate, one needs only a bulk calculation (which must be done anyhow to get the bulk lattice constant to create the slab), and a slab calculation that is sufficiently thick to get the estimate. Additional calculations are only required to test the convergence of the surface energy.
-
-An alternative method for calculating surface energies that does not involve an explicit bulk calculation follows Ref. cite:0953-8984-10-4-017. The method follows from equation (ref{eq:se}) where for a N-atom slab, in the limit of N \rightarrow \infty,
-
-$E_{slab} \approx 2\sigma + \frac{N_{slab}}{N_{bulk}} E_{bulk}$
-
-Then, we can estimate E_{bulk} by plotting the total energy of the slab as a function of the slab thickness.
-
-$\sigma = \lim_{N \rightarrow \infty} \frac{1}{2}(E_{slab}^N - N \Delta E_N)$
-
-where $\Delta E_N = E_{slab}^N - E_{slab}^{N-1}$.
-
-We will examine this approach here. We will use unrelaxed slabs for computational efficiency.
-
-#+BEGIN_SRC python :results output :exports both
-from jasp import *
-from ase.lattice.surface import fcc111
-import matplotlib.pyplot as plt
-
-Nlayers = [3, 4, 5, 6, 7, 8, 9, 10, 11]
-energies = []
-sigmas = []
-
-for n in Nlayers:
-
-    slab = fcc111('Cu', size=(1, 1, n), vacuum=10.0)
-    slab.center()
-
-    with jasp('bulk/Cu-layers/{0}'.format(n),
-              xc='PBE',
-              encut=350,
-              kpts=(8, 8, 1),
-              atoms=slab) as calc:
-        calc.set_nbands(f=2)  # the default nbands in VASP is too low for Al
-        try:
-            energies.append(slab.get_potential_energy())
-        except (VaspSubmitted, VaspQueued):
-            pass
-
-for i in range(len(Nlayers) - 1):
-    N = Nlayers[i]
-    DeltaE_N = energies[i + 1] - energies[i]
-    sigma = 0.5 * (-N * energies[i + 1] + (N + 1) * energies[i])
-    sigmas.append(sigma)
-    print 'nlayers = {1:2d} sigma = {0:1.3f} eV/atom'.format(sigma, N)
-
-plt.plot(Nlayers[0:-1], sigmas, 'bo-')
-plt.xlabel('Number of layers')
-plt.ylabel('Surface energy (eV/atom)')
-plt.savefig('images/Cu-unrelaxed-surface-energy.png')
-#+END_SRC
-
-#+RESULTS:
-: nlayers =  3 sigma = 0.551 eV/atom
-: nlayers =  4 sigma = 0.399 eV/atom
-: nlayers =  5 sigma = 0.590 eV/atom
-: nlayers =  6 sigma = 0.319 eV/atom
-: nlayers =  7 sigma = 0.578 eV/atom
-: nlayers =  8 sigma = 0.322 eV/atom
-: nlayers =  9 sigma = 0.592 eV/atom
-: nlayers = 10 sigma = 0.403 eV/atom
-
-# <<oscillating-surface-energy>>
-#+caption: Surface energy of a Cu(111) slab as a function of thickness.
-#+ATTR_LaTeX: :placement [H]
-[[./images/Cu-unrelaxed-surface-energy.png]]
-
-One reason for the oscillations may be quantum size effects cite:Fiolhais2003209. In citealp:PhysRevB.75.115131 the surface energy of Cu(111) is reported as 0.48 eV/atom, or 1.36 J/m$^2$. Here is an example showing a conversion between these two units. We use ase to compute the area of the unit cell from the norm of the cross-product of the vectors defining the surface unit cell.
-
-#+BEGIN_SRC python :results output :exports both
-from ase.lattice.surface import fcc111
-from ase.units import J, m
-import numpy as np
-
-slab = fcc111('Cu', size=(1, 1, 3), vacuum=10.0)
-cell = slab.get_cell()
-
-area = np.linalg.norm(np.cross(cell[0], cell[1]))
-
-sigma = 0.48  # eV/atom
-
-print 'sigma = {0} J/m^2'.format(sigma / area / (J / m**2))
-#+END_SRC
-
-#+RESULTS:
-: sigma = 1.3628146074 J/m^2
-
-*** Advanced topics in surface energy
-The surface energies can be used to estimate the shapes of nanoparticles using a Wulff construction. See citealp:doi.10.1021/jp200950a for an example of computing Mo_{2}C surface energies and particle shapes, and cite:Inoglu2009188 for an example of the influence of adsorbates on surface energies and particle shapes of Cu.
-
-For a classic paper on trends in surface energies see cite:Vitos1998186.
-
 ** Dipole correction
 [[index:dipole correction]]
 
@@ -8480,7 +8517,7 @@ with jasp('surfaces/Al-Na-nodip',
           lvhar=True,  # write out only electrostatic potential, not xc pot
           atoms=slab) as calc:
     calc.calculate()
-#+END_SRC
+#+END_SRCb
 
 #+RESULTS:
 
@@ -8902,7 +8939,7 @@ You can see that only the \(z\)-position of the O atom changed. Also, the adsorp
 [[./images/Pt-O-bridge-constrained-final.png]]
 
 *** Coverage dependence
-The adsorbates on the surface can interact with each other which results in coverage dependent adsorption energies cite:PhysRevB.82.045414. Coverage dependence is not difficult to model; we simply compute adsorption energies in different size unit cells, and/or with different adsorbate configurations. Here we consider dissociative oxygen adsorption at 1ML on Pt(111) in an fcc site, which is one oxygen atom in a $1 \times 1$ unit cell.
+    The adsorbates on the surface can interact with each other which results in coverage dependent adsorption energies cite:PhysRevB.82.045414. Coverage dependence is not difficult to model; we simply compute adsorption energies in different size unit cells, and/or with different adsorbate configurations. Here we consider dissociative oxygen adsorption at 1ML on Pt(111) in an fcc site, which is one oxygen atom in a $1 \times 1$ unit cell.
 
 For additional reading, see these references from our work:
 - Correlations of coverage dependence of oxygen adsorption on different metals cite:miller:104709,Miller2009794
@@ -9116,6 +9153,13 @@ Note that now there are 39 modes, which is 3*N where N=13 atoms in the unit cell
 
 Calculating these results took 39*2 finite differences. It took about a day to get these results on a single CPU. It pays to use constraints to minimize the number of these calculations.
 
+#+BEGIN_SRC python
+print 77000 / 3600.0
+#+END_SRC
+
+#+RESULTS:
+: 21.3888888889
+
 *** Vibrations of the bridge site
 Here we consider the vibrations of an O atom in a bridge site, which we saw earlier is a metastable saddle point.
 
@@ -9263,6 +9307,7 @@ plt.show()
 
 [[figure:./images/pt-o-cineb.svg][Climbing image NEB.]]
 
+[[./images/pt-o-cineb.svg]]
 
 *** Using vibrations to confirm a transition state
 A transition state should have exactly one imaginary degree of freedom which corresponds to the mode that takes reactants to products. See [[*Vibrations%20of%20the%20bridge%20site][Vibrations of the bridge site]] for an example.
@@ -14262,48 +14307,6 @@ provided the MMC is eligible for relicensing.
 ** Create flashcard exercises for ase commands
 * build                                                            :noexport:
 
-This is org-header stuff.
-
-#+LANGUAGE:  en
-#+OPTIONS:   H:10 num:t toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t d:HIDDEN
-#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
-#+OPTIONS:   LaTeX:dvipng
-#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
-#+EXPORT_SELECT_TAGS: export
-#+EXPORT_EXCLUDE_TAGS: noexport
-#+LINK_UP:
-#+LINK_HOME:
-#+XSLT:
-#+STYLE: <link rel="stylesheet" type="text/css" href="dft.css"/>
-
-#+latex_header: \usepackage{dftbook}
-#+LATEX_CLASS_OPTIONS: [colorlinks=true,urlcolor=blue,linkcolor=blue,citecolor=red]
-#+LATEX_HEADER: \usepackage{minted}
-#+LATEX_HEADER: \usepackage{lmodern}
-#+LATEX_HEADER: \usepackage{makeidx}
-#+LATEX_HEADER: \newcommand{\LaunchBinary}[2]{%
-#+LATEX_HEADER:   % #1: layer name,
-#+LATEX_HEADER:   % #2: link text
-#+LATEX_HEADER:   \leavevmode%
-#+LATEX_HEADER:   \pdfstartlink  attr{/C [0.9 0 0] /Border [0 0 2]} user {
-#+LATEX_HEADER:     /Subtype /Link
-#+LATEX_HEADER:     /A <<
-#+LATEX_HEADER:       /F <<
-#+LATEX_HEADER:          /DOS (#1)
-#+LATEX_HEADER:          /Mac (#1)
-#+LATEX_HEADER:          /Unix (#1)
-#+LATEX_HEADER:       >>
-#+LATEX_HEADER:       /S /Launch
-#+LATEX_HEADER:     >>
-#+LATEX_HEADER:   } #2%
-#+LATEX_HEADER:   \pdfendlink%
-#+LATEX_HEADER: }
-
-#+LATEX_HEADER: \newcommand{\degC}{$^\circ$C{}}
-#+LATEX_HEADER: \makeindex
-
-
-#+STYLE: <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
 
 
 Here we create the tex file. This extracts the scripts out to the dft-scripts folder.
