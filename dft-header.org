@@ -16,6 +16,7 @@
 #+LATEX_HEADER: \usepackage{minted}
 #+LATEX_HEADER: \usepackage{lmodern}
 #+LATEX_HEADER: \usepackage{makeidx}
+#+LATEX_HEADER: \usepackage{longtable}
 #+LATEX_HEADER: \newcommand{\LaunchBinary}[2]{%
 #+LATEX_HEADER:   % #1: layer name,
 #+LATEX_HEADER:   % #2: link text
