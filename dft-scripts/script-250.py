@@ -1,3 +1,2 @@
-from jasp import *
-with jasp('bulk/alloy/cu') as calc:
-    print calc.python
+n = 2
+mom_2 = np.trapz(rho*E**n,E)/np.trapz(rho,E)

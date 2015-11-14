@@ -5,8 +5,8 @@ atoms = FaceCenteredCubic(directions=[[0, 1, 1],
                                       [1, 0, 1],
                                       [1, 1, 0]],
                                      size=(1, 1, 1),
-                                     symbol='Cu')
-with jasp('bulk/Cu-fcc',
+                                     symbol='Au')
+with jasp('bulk/Au-fcc',
           xc='PBE',
           encut=350,
           kpts=(12, 12, 12),

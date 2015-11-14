@@ -12,5 +12,5 @@ with jasp('molecules/simple-co',  # output dir
           ismear=1,    # Methfessel-Paxton smearing
           sigma=0.01,  # very small smearing factor for a molecule
           atoms=co) as calc:
-    print 'energy = {0} eV'.format(co.get_potential_energy())
-    print co.get_forces()
+    print('energy = {0} eV'.format(co.get_potential_energy()))
+    print(co.get_forces())

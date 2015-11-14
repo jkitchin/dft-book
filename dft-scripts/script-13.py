@@ -5,4 +5,4 @@ molecular_weight = masses.sum()
 molecular_formula = atoms.get_chemical_formula(mode='reduce')
 # note use of two lines to keep length of line reasonable
 s = 'The molecular weight of {0} is {1:1.2f} gm/mol'
-print s.format(molecular_formula, molecular_weight)
+print(s.format(molecular_formula, molecular_weight))

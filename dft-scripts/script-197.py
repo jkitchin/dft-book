@@ -1,14 +1,5 @@
-from jasp import *
-from ase import Atom, Atoms
-with jasp('bulk/CuO') as calc:
-    calc.clone('bulk/CuO-U=4.0')
-with jasp('bulk/CuO-U=4.0') as calc:
-    calc.set(ldau=True,   # turn DFT+U on
-             ldautype=2,  # select simplified rotationally invariant option
-             ldau_luj={'Cu':{'L':2,  'U':4.0, 'J':0.0},
-                        'O':{'L':-1, 'U':0.0, 'J':0.0}},
-             ldauprint=1,
-             ibrion=-1,  #do not rerelax
-             nsw=0)
-    calc.calculate()
-    print calc
+from ase.units import *
+K = 1.0
+print J, mol, K
+print 0.100 * kJ / mol / K
+print 1 * eV / (kJ / mol)

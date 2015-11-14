@@ -1,21 +1,17 @@
 from jasp import *
-# read in relaxed geometry
-with jasp('molecules/h2o_relax') as calc:
-    atoms = calc.get_atoms()
-# now define a new calculator
-with jasp('molecules/h2o_vib_dfpt',
-          xc='PBE',
-          encut=400,
-          ismear=0,  # Gaussian smearing
-          ibrion=7,  # switches on the DFPT vibrational analysis (with
-                     # no symmetry constraints)
-          nfree=2,
-          potim=0.015,
-          lepsilon=True,  # enables to calculate and to print the BEC
-                          # tensors
-          lreal=False,
-          nsw=1,
-          nwrite=3,  # affects OUTCAR verbosity: explicitly forces
-                     # SQRT(mass)-divided eigenvectors to be printed
-          atoms=atoms) as calc:
-    calc.calculate(atoms)
+import numpy as np
+c = 3e10  # speed of light cm/s
+h = 4.135667516e-15  # eV/s
+# first, get the frequencies.
+with jasp('molecules/h2o_vib') as calc:
+    freq = calc.get_vibrational_frequencies()
+ZPE = 0.0
+for f in freq:
+    if not isinstance(f, float):
+        continue  # skip complex numbers
+    nu = f * c  # convert to frequency
+    ZPE += 0.5 * h * nu
+print('The ZPE of water is {0:1.3f} eV'.format(ZPE))
+# one liner
+ZPE = np.sum([0.5 * h * f * c for f in freq if isinstance(f, float)])
+print('The ZPE of water is {0:1.3f} eV'.format(ZPE))

@@ -1,21 +1,31 @@
-from ase.lattice.surface import fcc111
-from ase.io import write
 from jasp import *
 from jasp.jasp_bandstructure import *
-slab = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
-with jasp('surfaces/Al-bandstructure',
-          xc='PBE',
-          encut=300,
-          kpts=(6, 6, 6),
-          atoms=slab) as calc:
-    n, bands, p = calc.get_bandstructure(kpts_path=[(r'$\Gamma$', [0, 0, 0]),
-                                                    ('$K1$', [0.5, 0.0, 0.0]),
-                                                    ('$K1$', [0.5, 0.0, 0.0]),
-                                                    ('$K2$', [0.5, 0.5, 0.0]),
-                                                    ('$K2$', [0.5, 0.5, 0.0]),
-                                                    (r'$\Gamma$', [0, 0, 0]),
-                                                    (r'$\Gamma$', [0, 0, 0]),
-                                                    ('$K3$', [0.0, 0.0, 1.0])],
-                                          kpts_nintersections=10)
-p.savefig('images/Al-slab-bandstructure.png')
-p.show()
+from ase import Atom, Atoms
+ready = True
+for i,a in enumerate([4.7, 5.38936, 6.0]):
+    atoms = Atoms([Atom('Si', [0, 0, 0]),
+                   Atom('Si', [0.25, 0.25, 0.25])])
+    atoms.set_cell([[a/2., a/2., 0.0],
+                    [0.0,  a/2., a/2.],
+                    [a/2., 0.0, a/2.]], scale_atoms=True)
+    with jasp('bulk/Si-bs-{0}'.format(i),
+              xc='PBE',
+              prec='Medium',
+              istart=0,
+              icharg=2,
+              ediff=0.1e-03,
+              kpts=(4, 4, 4),
+              atoms=atoms) as calc:
+        try:
+            n,bands,p  = calc.get_bandstructure(kpts_path=[('L', [0.5,0.5,0.0]),
+                                                       ('$\Gamma$', [0, 0, 0]),
+                                                       ('$\Gamma$', [0, 0, 0]),
+                                                       ('X', [0.5, 0.5, 0.5])],
+                                            kpts_nintersections=10)
+        except (VaspSubmitted, VaspQueued):
+            print 'not ready {0}'.format(i)
+            ready = False
+    if not ready:
+        import sys; sys.exit()
+    p.savefig('images/Si-bs-{0}.png'.format(i))
+    p.show()

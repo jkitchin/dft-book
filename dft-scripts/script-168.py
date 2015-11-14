@@ -1,8 +1,14 @@
-from ase.lattice.surface import fcc111
-from ase.units import J, m
-import numpy as np
-slab = fcc111('Cu', size=(1, 1, 3), vacuum=10.0)
-cell = slab.get_cell()
-area = np.linalg.norm(np.cross(cell[0], cell[1]))
-sigma = 0.48  # eV/atom
-print 'sigma = {0} J/m^2'.format(sigma / area / (J / m**2))
+from jasp import *
+from ase.visualize import view
+from ase.lattice.cubic import FaceCenteredCubic
+atoms = FaceCenteredCubic(directions=[[0, 1, 1],
+                                      [1, 0, 1],
+                                      [1, 1, 0]],
+                                      size=(1, 1, 1),
+                                      symbol='Ag')
+with jasp('bulk/Ag-fcc',
+          xc='PBE',
+          encut=350,
+          kpts=(12, 12, 12),
+          atoms=atoms) as calc:
+    calc.calculate()

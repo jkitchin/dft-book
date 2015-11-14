@@ -1,29 +1,17 @@
 from jasp import *
-from ase.lattice.surface import fcc111
-import matplotlib.pyplot as plt
-Nlayers = [3, 4, 5, 6, 7, 8, 9, 10, 11]
-energies = []
-sigmas = []
-for n in Nlayers:
-    slab = fcc111('Cu', size=(1, 1, n), vacuum=10.0)
-    slab.center()
-    with jasp('bulk/Cu-layers/{0}'.format(n),
-              xc='PBE',
-              encut=350,
-              kpts=(8, 8, 1),
-              atoms=slab) as calc:
-        calc.set_nbands(f=2)  # the default nbands in VASP is too low for Al
-        try:
-            energies.append(slab.get_potential_energy())
-        except (VaspSubmitted, VaspQueued):
-            pass
-for i in range(len(Nlayers) - 1):
-    N = Nlayers[i]
-    DeltaE_N = energies[i + 1] - energies[i]
-    sigma = 0.5 * (-N * energies[i + 1] + (N + 1) * energies[i])
-    sigmas.append(sigma)
-    print 'nlayers = {1:2d} sigma = {0:1.3f} eV/atom'.format(sigma, N)
-plt.plot(Nlayers[0:-1], sigmas, 'bo-')
-plt.xlabel('Number of layers')
-plt.ylabel('Surface energy (eV/atom)')
-plt.savefig('images/Cu-unrelaxed-surface-energy.png')
+from ase.lattice.surface import fcc110
+from ase.io import write
+from ase.constraints import FixAtoms
+atoms = fcc110('Ag', size=(2, 1, 6), vacuum=10.0)
+del atoms[11]  # delete surface row
+constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms.set_constraint(constraint)
+with jasp('surfaces/Ag-110-missing-row',
+          xc='PBE',
+          kpts=(6, 6, 1),
+          encut=350,
+          ibrion=2,
+          isif=2,
+          nsw=10,
+          atoms=atoms) as calc:
+    calc.calculate()

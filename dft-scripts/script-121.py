@@ -1,36 +1,29 @@
 from jasp import *
 from ase import Atom, Atoms
-atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
-               Atom('Pd',  [-1.652,     0.000,      2.039])],
-              cell=  [[0.000, -2.039,  2.039],
-                      [0.000,  2.039,  2.039],
-                      [-3.303,  0.000,  0.000]])
-with jasp('bulk/alloy/cupd-1',
-          xc='PBE',
-          encut=350,
-          kpts=(12, 12, 8),
-          nbands=17,
-          ibrion=2,
-          isif=3,
-          nsw=10,
-          atoms=atoms) as calc:
-    cupd1 = atoms.get_potential_energy()
-atoms = Atoms([Atom('Cu',  [-0.049,     0.049,      0.049]),
-               Atom('Cu',  [-11.170,   11.170,     11.170]),
-               Atom('Pd',  [-7.415,     7.415,      7.415]),
-               Atom('Pd',  [-3.804 ,    3.804,      3.804])],
-              cell=[[-5.629,  3.701,  5.629 ],
-                    [-3.701,  5.629,  5.629 ],
-                    [-5.629,  5.629,  3.701 ]])
-with jasp('bulk/alloy/cupd-2',
-          xc='PBE',
-          encut=350,
-          kpts=(8,8,8),
-          nbands=34,
-          ibrion=2,
-          isif=3,
-          nsw=10,
-          atoms=atoms) as calc:
-    cupd2 = atoms.get_potential_energy()
-print 'cupd-1 = {0} eV'.format(cupd1)
-print 'cupd-2 = {0} eV'.format(cupd2)
+# fcc
+LC = [3.5, 3.55, 3.6, 3.65, 3.7, 3.75]
+volumes, energies = [], []
+for a in LC:
+    atoms = Atoms([Atom('Ni', (0, 0, 0), magmom=2.5)],
+              cell=0.5 * a * np.array([[1.0, 1.0, 0.0],
+                                       [0.0, 1.0, 1.0],
+                                       [1.0, 0.0, 1.0]]))
+    with jasp('bulk/Ni-{0}'.format(a),
+              xc='PBE',
+              encut=350,
+              kpts=(12,12,12),
+              ispin=2,
+              atoms=atoms) as calc:
+        try:
+            e = atoms.get_potential_energy()
+            energies.append(e)
+            volumes.append(atoms.get_volume())
+        except:
+            pass
+if len(energies) != len(LC):
+    import sys; sys.exit()
+import matplotlib.pyplot as plt
+plt.plot(LC, fcc_energies)
+plt.xlabel('Lattice constant ($\AA$)')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/Ni-fcc.png')

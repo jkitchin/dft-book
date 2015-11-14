@@ -1,13 +1,17 @@
 from jasp import *
-with jasp('surfaces/Pt-slab-1x1-O-fcc') as calc:
-    atoms = calc.get_atoms()
-    e_slab_o = atoms.get_potential_energy()
-# clean slab
-with jasp('surfaces/Pt-slab-1x1') as calc:
-    atoms = calc.get_atoms()
-    e_slab = atoms.get_potential_energy()
-with jasp('molecules/O2-sp-triplet-350') as calc:
-    atoms = calc.get_atoms()
-    e_O2 = atoms.get_potential_energy()
-hads = e_slab_o - e_slab - 0.5 * e_O2
-print 'Hads (1ML) = {0:1.3f} eV'.format(hads)
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.constraints import FixAtoms
+atoms = fcc111('Pt', size=(2, 2, 3), vacuum=10.0)
+# note this function only works when atoms are created by the surface module.
+add_adsorbate(atoms, 'O', height=1.2, position='bridge')
+constraint = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
+atoms.set_constraint(constraint)
+with jasp('surfaces/Pt-slab-O-bridge',
+          xc='PBE',
+          kpts=(4, 4, 1),
+          encut=350,
+          ibrion=2,
+          nsw=25,
+          atoms=atoms) as calc:
+    calc.calculate()
+    print atoms.get_potential_energy()

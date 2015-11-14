@@ -1,11 +1,10 @@
 from jasp import *
-from ase.lattice.surface import fcc110
-from ase.io import write
+from ase.lattice.surface import fcc111
 from ase.constraints import FixAtoms
-atoms = fcc110('Ag', size=(2, 1, 6), vacuum=10.0)
-constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
+constraint = FixAtoms(mask=[atom.tag >= 3 for atom in atoms])
 atoms.set_constraint(constraint)
-with jasp('surfaces/Ag-110',
+with jasp('surfaces/Al-slab-relaxed',
           xc='PBE',
           kpts=(6, 6, 1),
           encut=350,
@@ -14,3 +13,4 @@ with jasp('surfaces/Ag-110',
           nsw=10,
           atoms=atoms) as calc:
     calc.calculate()
+    print calc

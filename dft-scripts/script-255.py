@@ -1,7 +1,6 @@
-nPd = 4
-nCu = 5
-x_Cu = nCu/(nPd + nCu)
-print 'x_cu = {0} (integer division)'.format(x_Cu)
-# now cast as floats
-x_Cu = float(nCu)/float(nPd + nCu)
-print 'x_cu = {0} (float division)'.format(x_Cu)
+import numpy as np
+x = np.linspace(0.0,6.0,100)
+y = np.cos(x)
+import csv
+writer = csv.writer(open("some.csv", "w"))
+writer.writerows(zip(x,y))

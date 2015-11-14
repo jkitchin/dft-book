@@ -1,12 +1,28 @@
-import numpy as np
-from scipy.stats.distributions import  t
-n = 10 #number of measurements
-dof = n - 1 #degrees of freedom
-avg_x = 16.1 #average measurement
-std_x = 0.01 #standard deviation of measurements
-#Find 95% prediction interval for next measurement
-alpha = 1.0 - 0.95
-pred_interval = t.ppf(1-alpha/2., dof) * std_x * np.sqrt(1.+1./n)
-s = ['We are 95% confident the next measurement',
-       ' will be between {0:1.3f} and {1:1.3f}']
-print ''.join(s).format(avg_x - pred_interval, avg_x + pred_interval)
+# Benzene on the slab
+from jasp import *
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.structure import molecule
+from ase.constraints import FixAtoms
+atoms = fcc111('Au', size=(3,3,3), vacuum=10)
+benzene = molecule('C6H6')
+benzene.translate(-benzene.get_center_of_mass())
+# I want the benzene centered on the position in the middle of atoms
+# 20, 22, 23 and 25
+p = (atoms.positions[20] +
+     atoms.positions[22] +
+     atoms.positions[23] +
+     atoms.positions[25])/4.0 + [0.0, 0.0, 3.05]
+benzene.translate(p)
+atoms += benzene
+# now we constrain the slab
+c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
+atoms.set_constraint(c)
+#from ase.visualize import view; view(atoms)
+with jasp('surfaces/Au-benzene-pbe',
+          xc='PBE',
+          encut=350,
+          kpts=(4,4,1),
+          ibrion=1,
+          nsw=100,
+          atoms=atoms) as calc:
+    print atoms.get_potential_energy()

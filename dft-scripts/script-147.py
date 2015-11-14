@@ -1,9 +1,10 @@
-from ase.lattice.surface import surface
-from ase.io import write
-# Au(211) with 9 layers
-s1 = surface('Au', (2, 1, 1), 9)
-s1.center(vacuum=10, axis=2)
-write('images/Au-211.png',
-      s1.repeat((3, 3, 1)),
-      rotation='-30z,90x',  # change the orientation for viewing
-      show_unit_cell=2)
+from jasp import *
+from jasp.jasp_bandstructure import *
+with jasp('bulk/tio2/step3') as calc:
+    n, bands, p = calc.get_bandstructure(kpts_path=[('$\Gamma$', [0.0, 0.0, 0.0]),
+                                                  ('X', [0.5, 0.5, 0.0]),
+                                                  ('X', [0.5, 0.5, 0.0]),
+                                                  ('M', [0.0, 0.5, 0.5]),
+                                                  ('M', [0.0, 0.5, 0.5]),
+                                                  ('$\Gamma$', [0.0, 0.0, 0.0])])
+p.savefig('images/tio2-bandstructure-dos.png')

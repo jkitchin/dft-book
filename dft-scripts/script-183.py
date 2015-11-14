@@ -1,23 +1,27 @@
 from jasp import *
-with jasp('surfaces/Pt-slab-O-fcc') as calc:
-    calc.clone('Pt-slab-O-fcc-vib-ibrion=6')
-with jasp('surfaces/Pt-slab-O-fcc-vib-ibrion=6') as calc:
-    calc.set(ibrion=6,  # finite differences with symmetry
-             nfree=2,  # central differences (default)
-             potim=0.015,  # default as well
-             ediff=1e-8,
-             nsw=1)
+from ase.io import write
+with jasp('surfaces/Pt-slab') as calc:
     atoms = calc.get_atoms()
-    print 'Elapsed time = {0} seconds'.format(calc.get_elapsed_time())
-    f, m = calc.get_vibrational_modes(0)
-    allfreq = calc.get_vibrational_modes()[0]
-from ase.units import meV
-c = 3e10  # cm/s
-h = 4.135667516e-15  # eV*s
-print 'For mode 0:'
-print 'vibrational energy = {0} eV'.format(f)
-print 'vibrational energy = {0} meV'.format(f / meV)
-print 'vibrational freq   = {0} 1/s'.format(f / h)
-print 'vibrational freq   = {0} cm^{{-1}}'.format(f / (h * c))
-print
-print 'All energies = ', allfreq
+    e_slab = atoms.get_potential_energy()
+write('images/pt-slab.png', atoms,show_unit_cell=2)
+with jasp('surfaces/Pt-slab-O-fcc') as calc:
+    atoms = calc.get_atoms()
+    e_slab_o_fcc = atoms.get_potential_energy()
+write('images/pt-slab-fcc-o.png', atoms,show_unit_cell=2)
+with jasp('surfaces/Pt-slab-O-hcp') as calc:
+    atoms = calc.get_atoms()
+    e_slab_o_hcp = atoms.get_potential_energy()
+write('images/pt-slab-hcp-o.png', atoms,show_unit_cell=2)
+with jasp('surfaces/Pt-slab-O-bridge') as calc:
+    atoms = calc.get_atoms()
+    e_slab_o_bridge = atoms.get_potential_energy()
+write('images/pt-slab-bridge-o.png', atoms,show_unit_cell=2)
+with jasp('molecules/O2-sp-triplet-350') as calc:
+    atoms = calc.get_atoms()
+    e_O2 = atoms.get_potential_energy()
+Hads_fcc = e_slab_o_fcc - e_slab - 0.5 * e_O2
+Hads_hcp = e_slab_o_hcp - e_slab - 0.5 * e_O2
+Hads_bridge = e_slab_o_bridge - e_slab - 0.5 * e_O2
+print 'Hads (fcc)    = {0} eV/O'.format(Hads_fcc)
+print 'Hads (hcp)    = {0} eV/O'.format(Hads_hcp)
+print 'Hads (bridge) = {0} eV/O'.format(Hads_bridge)

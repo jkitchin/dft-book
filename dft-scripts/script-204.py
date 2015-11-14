@@ -1,13 +1,14 @@
 from jasp import *
-from ase.data.molecules import molecule
-benzene = molecule('C6H6')
-benzene.center(vacuum=5)
-with jasp('molecules/benzene-pbe-d2',
-          xc='PBE',
-          encut=350,
-          kpts=(1,1,1),
-          ibrion=1,
-          nsw=100,
-          lvdw=True,
-          atoms=benzene) as calc:
-    print benzene.get_potential_energy()
+from ase import Atom, Atoms
+with jasp('bulk/Cu2O') as calc:
+    calc.clone('bulk/Cu2O-U=4.0')
+with jasp('bulk/Cu2O-U=4.0') as calc:
+    calc.set(ldau=True,   # turn DFT+U on
+             ldautype=2,  # select simplified rotationally invariant option
+             ldau_luj={'Cu':{'L':2,  'U':4.0, 'J':0.0},
+                        'O':{'L':-1, 'U':0.0, 'J':0.0}},
+             ldauprint=1,
+             ibrion=-1,  #do not rerelax
+             nsw=0)
+    calc.calculate()
+    print calc

@@ -1,8 +1,11 @@
-v1 = ['john', 'robert', 'terry']
-v2 = [4,5,6]
-f = open('somefile', 'w') #note 'w' = write mode
-f.write('#header\n')
-f.write('#ignore these lines\n')
-for a,b in zip(v1,v2):
-	f.write('{0}, {1}\n'.format(a,b))
-f.close()
+from jasp import *
+with jasp('bulk/CuPd-cls-0') as calc:
+    alloy_0 = calc.get_atoms().get_potential_energy()
+with jasp('bulk/CuPd-cls-1') as calc:
+    alloy_1 = calc.get_atoms().get_potential_energy()
+with jasp('bulk/Cu-cls-0') as calc:
+    ref_0 = calc.get_atoms().get_potential_energy()
+with jasp('bulk/Cu-cls-1') as calc:
+    ref_1 = calc.get_atoms().get_potential_energy()
+CLS = (alloy_1 - alloy_0) - (ref_1 - ref_0)
+print('CLS = {} eV'.format(CLS))

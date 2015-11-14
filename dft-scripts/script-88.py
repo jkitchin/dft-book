@@ -1,3 +1,6 @@
-import numpy as np
-print int(np.ceil(50 / 2.))
-print int(np.ceil(51 / 2.))
+from jasp import *
+with jasp('bulk/Ru2O4',
+          xc='PBE',
+          setups={'Ru': '_pv'}) as calc:
+    calc.calculate()
+    print calc

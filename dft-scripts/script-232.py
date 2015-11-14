@@ -1,8 +1,10 @@
-import csv
-reader = csv.reader(open("some.csv",'r'),delimiter=',')
-x,y = [],[]
-for row in reader:
-#csv returns strings that must be cast as floats
-    a,b = [float(z) for z in row]
-    x.append(a)
-    y.append(b)
+import textwrap
+from ase.structure import molecule
+atoms = molecule('CH3CH2OH')
+print(atoms)
+# delete all the hydrogens
+ind2del = [atom.index for atom in atoms if atom.symbol == 'H']
+print('Indices to delete: ', ind2del)
+del atoms[ind2del]
+# now print what is left
+print(atoms)

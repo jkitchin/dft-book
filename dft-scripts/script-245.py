@@ -1,1 +1,1 @@
-head -n 1 molecules/O_sv/POTCAR
+x,y = pylab.load('pdat.dat')

@@ -1,5 +1,8 @@
-nPd = 4
-nCu = 5
-# now cast as floats
-x_Cu = float(nCu)/(nPd + nCu)
-print 'x_cu = {0}'.format(x_Cu)
+import csv
+reader = csv.reader(open("some.csv",'r'),delimiter=',')
+x,y = [],[]
+for row in reader:
+#csv returns strings that must be cast as floats
+    a,b = [float(z) for z in row]
+    x.append(a)
+    y.append(b)

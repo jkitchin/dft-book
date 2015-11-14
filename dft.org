@@ -97,43 +97,48 @@ One of the most useful sources of information has been the dissertations of othe
    :PROPERTIES:
    :ID:       065443d5-59d7-4119-b530-7b63af28349b
    :END:
-In 1926, Erwin Schr\"odinger published the first accounts of his now famous wave equation cite:pauling1963. He later shared the Nobel prize with Paul A. M. Dirac in 1933 for this discovery. Schr\"odinger's wave function seemed extremely promising, as it contains all of the information available about a system. Unfortunately, most practical systems of interest consist of many interacting electrons, and the effort required to find solutions to Schr\"odinger's equation increases exponentially with the number of electrons, limiting this approach to systems with a small number of relevant electrons, $N \lesssim O(10)$ cite:RevModPhys.71.1253. Even if this rough estimate is off by an order of magnitude, a system with 100 electrons is still very small, for example, two Ru atoms if all the electrons are counted, or perhaps ten Pt atoms if only the valence electrons are counted. Thus, the wave function method, which has been extremely successful in studying the properties of small molecules, is unsuitable for studies of large, extended solids. Interestingly, this difficulty was recognized by Dirac as early as 1929, when he wrote "The underlying physical laws necessary for the mathematical theory of a large part of physics and the whole of chemistry are thus completely known, and the difficulty is only that the application of these laws leads to equations much too complicated to be soluble."  cite:dirac1929:quant-mechan-many-elect-system.
+In 1926, Erwin Schr\ouml{}dinger published the first accounts of his now famous wave equation cite:pauling1963. He later shared the Nobel prize with Paul A. M. Dirac in 1933 for this discovery. Schr\ouml{}dinger's wave function seemed extremely promising, as it contains all of the information available about a system. Unfortunately, most practical systems of interest consist of many interacting electrons, and the effort required to find solutions to Schr\ouml{}dinger's equation increases exponentially with the number of electrons, limiting this approach to systems with a small number of relevant electrons, $N \lesssim O(10)$ cite:RevModPhys.71.1253. Even if this rough estimate is off by an order of magnitude, a system with 100 electrons is still very small, for example, two Ru atoms if all the electrons are counted, or perhaps ten Pt atoms if only the valence electrons are counted. Thus, the wave function method, which has been extremely successful in studying the properties of small molecules, is unsuitable for studies of large, extended solids. Interestingly, this difficulty was recognized by Dirac as early as 1929, when he wrote "The underlying physical laws necessary for the mathematical theory of a large part of physics and the whole of chemistry are thus completely known, and the difficulty is only that the application of these laws leads to equations much too complicated to be soluble."  cite:dirac1929:quant-mechan-many-elect-system.
 
 In 1964, Hohenberg and Kohn showed that the ground state total energy of a system of interacting electrons is a unique functional of the electron density cite:PhysRev.136.B864. By definition, a function returns a number when given a number. For example, in $f(x)=x^2$, $f(x)$ is the function, and it equals four when $x=2$. A functional returns a number when given a function. Thus, in $g(f(x))=\int_0^\pi f(x) dx$, $g(f(x))$ is the functional, and it is equal to two when $f(x)=\sin(x)$. Hohenberg and Kohn further identified a variational principle that appeared to reduce the problem of finding the ground state energy of an electron gas in an external potential (i.e., in the presence of ion cores) to that of the minimization of a functional of the three-dimensional density function.  Unfortunately, the definition of the functional involved a set of 3N-dimensional trial wave functions.
 
 In 1965, Kohn and Sham made a significant breakthrough when they showed that the problem of many interacting electrons in an external potential can be mapped exactly to a set of noninteracting electrons in an effective external potential cite:PhysRev.140.A1133.  This led to a set of self-consistent, single particle equations known as the Kohn-Sham (KS) equations:
 
+#+BEGIN_LaTeX
 \begin{equation}\label{eq:KS}
 \biggl(-\frac{1}{2}\nabla^2 + v_{eff}(\mathbf{r}) -\epsilon_j \biggr) \varphi_j (\mathbf{r})=0,
 \end{equation}
-
+#+END_LaTeX
 with
 
+#+BEGIN_LaTeX
 \begin{equation}\label{eq:veff}
 v_{eff}(\mathbf{r})=v(\mathbf{r})+\int \frac{n(\mathbf{r'})}{|\mathbf{r-r'}|}d\mathbf{r'} + v_{xc}(\mathbf{r}),
 \end{equation}
+#+END_LaTeX
 
 where $v(\mathbf{r})$ is the external potential and $v_{xc}(\mathbf{r})$ is the exchange-correlation potential, which depends on the entire density function. Thus, the density needs to be known in order to define the effective potential so that Eq. eqref:eq:KS can be solved.  $\varphi_j(\mathbf{r})$ corresponds to the $j^{th}$ KS orbital of energy $\epsilon_j$.
 
 The ground state density is given by:
+#+BEGIN_LaTeX
 \begin{equation}\label{eq:density} \displaystyle n(\mathbf{r})=\sum_{j=1}^{N}|\varphi_j(\mathbf{r})|^2
 \end{equation}
-
+#+END_LaTeX
 To solve Eq. \eqref{eq:KS} then, an initial guess is used for $\varphi_j(r)$ which is used to generate Eq. \eqref{eq:density}, which is subsequently used in Eq. \eqref{eq:veff}. This equation is then solved for $\varphi_j(\mathbf{r})$ iteratively until the $\varphi_j(\mathbf{r})$ that result from the solution are the same as the $\varphi_j(\mathbf{r})$ that are used to define the equations, that is, the solutions are self-consistent.  Finally, the ground state energy is given by:
 
+#+BEGIN_LaTeX
 \begin{equation}\label{eq:dftEnergy}
 \displaystyle
 E=\sum_j\epsilon_j + E_{xc}[n(\mathbf{r})]-\int v_{xc}(\mathbf{r}) n(\mathbf{r}) d\mathbf{r}
   -\frac{1}{2}\int{\frac{n(\mathbf{r})n(\mathbf{r'})}{|\mathbf{r-r'}|}d\mathbf{r'}\mathbf{r}},
 \end{equation}
-
+#+END_LaTeX
 where $E_{xc}[n(\mathbf{r})]$ is the exchange-correlation energy functional.  Walter Kohn shared the Nobel prize in Chemistry in 1998 for this work cite:RevModPhys.71.1253. The other half of the prize went to John Pople for his efforts in wave function based quantum mechanical methods cite:RevModPhys.71.1267.  Provided the exchange-correlation energy functional is known, Eq.  (ref:eq:dftEnergy) is exact.  However, the exact form of the exchange-correlation energy functional is not known, thus approximations for this functional must be used.
 
 ** Exchange correlation functionals
 
 The two main types of exchange/correlation functionals used in DFT are the local density approximation (LDA) and the generalized gradient approximation (GGA). In the LDA, the exchange-correlation functional is defined for an electron in a uniform electron gas of density $n$ cite:PhysRev.140.A1133. It is exact for a uniform electron gas, and is anticipated to be a reasonable approximation for slowly varying densities. In molecules and solids, however, the density tends to vary substantially in space. Despite this, the LDA has been very successfully used in many systems. It tends to predict overbonding in both molecular and solid systems cite:fuchs1998:pseud, and it tends to make semiconductor systems too metallic (the band gap problem) cite:perdew1982:elect-kohn-sham.
 
-The generalized gradient approximation includes corrections for gradients in the electron density, and is often implemented as a corrective function of the LDA.  The form of this corrective function, or "exchange enhancement" function determines which functional it is, e.g. PBE, RPBE, revPBE, etc. cite:hammer1999:improv-pbe. In this book the PBE GGA functional is used the most. N{\o}rskov and coworkers have found that the RPBE functional gives superior chemisorption energies for atomic and molecular bonding to surfaces, but that it gives worse bulk properties, such as lattice constants compared to experimental data cite:hammer1999:improv-pbe.
+The generalized gradient approximation includes corrections for gradients in the electron density, and is often implemented as a corrective function of the LDA.  The form of this corrective function, or "exchange enhancement" function determines which functional it is, e.g. PBE, RPBE, revPBE, etc. cite:hammer1999:improv-pbe. In this book the PBE GGA functional is used the most. N\o{}rskov and coworkers have found that the RPBE functional gives superior chemisorption energies for atomic and molecular bonding to surfaces, but that it gives worse bulk properties, such as lattice constants compared to experimental data cite:hammer1999:improv-pbe.
 
 Finally, there are increasingly new types of functionals in the literature. The so-called hybrid functionals, such as B3LYP, are more popular with gaussian basis sets (e.g. in Gaussian), but they are presently inefficient with planewave basis sets. None of these other types of functionals were used in this work. For more details see Chapter 6 in Ref. citealp:koch2001 and Thomas Bligaard's thesis on exchange and correlation functionals cite:bligaard2000:exchan-correl-funct.
 
@@ -159,7 +164,7 @@ In aperiodic systems, such as systems with even one defect, or randomly ordered 
 
 To get a perfect expansion, one needs an infinite number of planewaves.  Luckily, the coefficients of the planewaves must go to zero for high energy planewaves, otherwise the energy of the wave function would go to infinity. This provides justification for truncating the planewave basis set above a cutoff energy. Careful testing of the effect of the cutoff energy on the total energy can be done to determine a suitable cutoff energy. The cutoff energy required to obtain a particular convergence precision is also element dependent, shown in Table ref:tab:pwcut. It can also vary with the "softness" of the pseudopotential.  Thus, careful testing should be done to ensure the desired level of convergence of properties in different systems. Table ref:tab:pwcut refers to convergence of total energies. These energies are rarely considered directly, it is usually differences in energy that are important. These tend to converge with the planewave cutoff energy much more quickly than total energies, due to cancellations of convergence errors.  In this work, 350 eV was found to be suitable for the H adsorption calculations, but a cutoff energy of 450 eV was required for O adsorption calculations.
 
-#+caption: Planewave cutoff energies (in eV) required for different convergence precisions for different elements. \label{tab:pwcut}
+#+caption: Planewave cutoff energies (in eV) required for different convergence precisions for two different elements with different pseudopotential setups. label:tab:pwcut
 | Precision |  Low | High |
 |-----------+------+------|
 | Mo        |  168 |  293 |
@@ -1021,7 +1026,7 @@ atoms = Atoms([Atom('C', [0, 0, 0]),
 
 L = [4, 5, 6, 8, 10]
 
-volumes, energies = [], []
+energies = []
 ready = True
 for a in L:
     atoms.set_cell([a, a, a], scale_atoms=False)
@@ -1086,7 +1091,7 @@ atm = 101325 * Pascal
 L = np.linspace(4, 10)
 V = L**3
 
-n = 1  # one atom per unit cell
+n = 1  # one atom/molecule per unit cell
 
 for T in [298, 600, 1000]:
     P = n / V * kB * T / atm  # convert to atmospheres
@@ -1097,6 +1102,7 @@ plt.xlabel('Unit cell volume ($\AA^3$)')
 plt.ylabel('Pressure (atm)')
 plt.legend(loc='best')
 plt.savefig('images/ideal-gas-pressure.png')
+plt.show()
 #+END_SRC
 
 #+RESULTS:
@@ -1994,6 +2000,8 @@ forces = (eV/ang)
 
 #+end_example
 
+[[./images/co-bondlengths.png]]
+
 To find the minimum we could run more calculations, but a simpler and faster way is to fit a polynomial to the data, and find the analytical minimum. The results are shown in Figure ref:fig:co-bondlengths.
 
 #+BEGIN_SRC python :results output :exports both
@@ -2103,14 +2111,17 @@ It is not more complicated to relax more atoms, it just may take longer because 
 #+BEGIN_SRC python :results output :exports both
 from ase import Atoms, Atom
 from jasp import *
+JASPRC['queue.ppn'] = 4
 
 atoms = Atoms([Atom('H', [0.5960812, -0.7677068, 0.0000000]),
                Atom('O', [0.0000000,  0.0000000, 0.0000000]),
                Atom('H', [0.5960812,  0.7677068, 0.0000000])],
               cell=(8, 8, 8))
 
-with jasp('molecules/h2o_relax',
-          xc='PBE',
+atoms.center()
+
+with jasp('molecules/h2o-relax-centered',
+          xc='PBE', debug=logging.DEBUG,
           encut=400,
           ismear=0,  # Gaussian smearing
           ibrion=2,
@@ -2124,11 +2135,8 @@ with jasp('molecules/h2o_relax',
 #+END_SRC
 
 #+RESULTS:
-: forces
-: =======
-: [[ 0.    -0.     0.   ]
-:  [-0.001  0.     0.   ]
-:  [ 0.     0.     0.   ]]
+
+
 
 ** Vibrational frequencies
    :PROPERTIES:
@@ -10053,41 +10061,6 @@ This example highlights the challenge of using an approach like DFT+U. On one ha
 
 In any case, you should be careful to use well converged results to avoid compensating for convergence errors with U.
 
-** TODO Linear response DFT+U
-http://cms.mpi.univie.ac.at/vasp-forum/viewtopic.php?f=4&t=16400. suggests this is possible.
-
-
-#+BEGIN_SRC python
-from jasp import *
-from ase.lattice.compounds import Rocksalt
-from ase.visualize import *
-
-atoms = Rocksalt(['Ni', 'O'], latticeconstant=4.17).repeat((2, 2, 2))
-
-
-with jasp('bulk/Ni-dft-u-base',
-          xc='PBE',
-          sigma=0.1,
-          kpts=(4, 4, 4),
-          setups={'0', 'Ni'},
-          ldau=True,
-          ldautype=3,
-          ldau_luj={'Ni': {'L':2,  'U':0.0, 'J':0.0},
-                    'O': {'L':-1, 'U':0.0, 'J':0.0}},
-          lmaxmix=4,
-          lorbit=11,
-          atoms=atoms) as calc:
-
-    print(atoms.get_potential_energy())
-#+END_SRC
-
-#+RESULTS:
-
-#+BEGIN_SRC sh
-cat bulk/Ni-dft-u-base/INCAR
-#+END_SRC
-
-#+RESULTS:
 
 ** Hybrid functionals
 *** FCC Ni DOS
@@ -14308,6 +14281,8 @@ provided the MMC is eligible for relicensing.
 * build                                                            :noexport:
 
 
+This is org-header stuff.
+#+INCLUDE: dft-header.org
 
 Here we create the tex file. This extracts the scripts out to the dft-scripts folder.
 #+BEGIN_SRC emacs-lisp

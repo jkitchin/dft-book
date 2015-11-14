@@ -1,16 +1,17 @@
-import numpy as np
-import matplotlib as mpl
-#http://matplotlib.sourceforge.net/users/customizing.html
-mpl.rcParams['legend.numpoints'] = 1 #default is 2
-import matplotlib.pyplot as plt
-x = np.linspace(0,6,100)
-y = np.cos(x)
-plt.plot(x,y,label='full')
-ind = (x>2) & (x<4)
-subx = x[ind]
-suby = y[ind]
-plt.plot(subx,suby,'bo',label='sliced')
-xlabel('x')
-ylabel('cos(x)')
-plt.legend(loc='lower right')
-plt.savefig('images/np-array-slice.png')
+# the clean gold slab
+from jasp import *
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.constraints import FixAtoms
+atoms = fcc111('Au', size=(3,3,3), vacuum=10)
+# now we constrain the slab
+c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
+atoms.set_constraint(c)
+#from ase.visualize import view; view(atoms)
+with jasp('surfaces/Au-pbe',
+          xc='PBE',
+          encut=350,
+          kpts=(4,4,1),
+          ibrion=1,
+          nsw=100,
+          atoms=atoms) as calc:
+    print atoms.get_potential_energy()

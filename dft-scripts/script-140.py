@@ -1,27 +1,34 @@
-f = open('bulk/Si-bandstructure/EIGENVAL', 'r')
-line1 = f.readline()
-line2 = f.readline()
-line3 = f.readline()
-line4 = f.readline()
-comment = f.readline()
-unknown, nkpoints, nbands = [int(x) for x in f.readline().split()]
-blankline = f.readline()
-band_energies = [[] for i in range(nbands)]
-for i in range(nkpoints):
-    x, y, z, weight = [float(x) for x in f.readline().split()]
-    for j in range(nbands):
-        fields = f.readline().split()
-        id, energy = int(fields[0]), float(fields[1])
-        band_energies[id - 1].append(energy)
-    blankline = f.readline()
-f.close()
+from ase import Atoms, Atom
+from jasp import *
+import sys
 import matplotlib.pyplot as plt
-for i in range(nbands):
-    plt.plot(range(nkpoints), band_energies[i])
-ax = plt.gca()
-ax.set_xticks([]) # no tick marks
-plt.xlabel('k-vector')
-plt.ylabel('Energy (eV)')
-ax.set_xticks([0, 10, 19])
-ax.set_xticklabels(['$L$', '$\Gamma$', '$X$'])
-plt.savefig('images/Si-bandstructure.png')
+import numpy as np
+from ase.dft import DOS
+import pylab as plt
+a = 3.9  # approximate lattice constant
+b = a / 2.
+bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
+             cell=[(0, b, b),
+                   (b, 0, b),
+                   (b, b, 0)])
+kpts = [8, 10, 12, 14, 16, 18, 20]
+for k in kpts:
+    with jasp('bulk/pd-dos-k{0}-ismear-5'.format(k),
+              encut=300,
+              xc='PBE',
+              kpts=(k, k, k),
+              atoms=bulk) as calc:
+        # this runs the calculation
+        try:
+            bulk.get_potential_energy()
+            dos = DOS(calc, width=0.2)
+            d = dos.get_dos() + k / 4.0
+            e = dos.get_energies()
+            plt.plot(e,d, label='k={0}'.format(k))
+        except:
+            pass
+plt.xlabel('energy (eV)')
+plt.ylabel('DOS')
+plt.legend()
+plt.savefig('images/pd-dos-k-convergence-ismear-5.png')
+plt.show()

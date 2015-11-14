@@ -1,14 +1,16 @@
-from ase.lattice.surface import fcc111
 import numpy as np
-np.set_printoptions(precision=3,suppress=True)
-slab = fcc111('Pd',
-              a=3.92,       # Pd lattice constant
-              size=(2,2,3), #3-layer slab in 1x1 configuration
-              vacuum=10.0)
-pos = slab.get_positions() #these positions use x,y,z vectors as a basis
-# we want to see the atoms in terms of the unitcell vectors
-newbasis = slab.get_cell()
-s = np.dot(np.linalg.inv(newbasis.T),pos.T).T
-print 'Coordinates in new basis are: \n',s
-# what we just did is equivalent to the following atoms method
-print 'Scaled coordinates from ase are: \n',slab.get_scaled_positions()
+import matplotlib as mpl
+# http://matplotlib.sourceforge.net/users/customizing.html
+mpl.rcParams['legend.numpoints'] = 1  # default is 2
+import matplotlib.pyplot as plt
+x = np.linspace(0, 6, 100)
+y = np.cos(x)
+plt.plot(x, y, label='full')
+ind = (x > 2) & (x < 4)
+subx = x[ind]
+suby = y[ind]
+plt.plot(subx, suby, 'bo', label='sliced')
+xlabel('x')
+ylabel('cos(x)')
+plt.legend(loc='lower right')
+plt.savefig('images/np-array-slice.png')
