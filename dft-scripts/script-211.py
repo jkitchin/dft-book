@@ -1,17 +1,8 @@
-# the clean gold slab
 from jasp import *
-from ase.lattice.surface import fcc111, add_adsorbate
-from ase.constraints import FixAtoms
-atoms = fcc111('Au', size=(3,3,3), vacuum=10)
-# now we constrain the slab
-c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
-atoms.set_constraint(c)
-#from ase.visualize import view; view(atoms)
-with jasp('surfaces/Au-pbe',
-          xc='PBE',
-          encut=350,
-          kpts=(4,4,1),
-          ibrion=1,
-          nsw=100,
-          atoms=atoms) as calc:
-    print atoms.get_potential_energy()
+with jasp('surfaces/Au-benzene-pbe') as calc:
+    e1 = calc.get_atoms().get_potential_energy()
+with jasp('surfaces/Au-pbe') as calc:
+    e2 = calc.get_atoms().get_potential_energy()
+with jasp('molecules/benzene-pbe') as calc:
+    e3 = calc.get_atoms().get_potential_energy()
+print('PBE adsorption energy = {} eV'.format(e1 - e2 - e3))

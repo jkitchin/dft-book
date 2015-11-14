@@ -1,21 +1,17 @@
-# compute ELF for CF4
 from jasp import *
-from ase.structure import molecule
-from enthought.mayavi import mlab
-atoms = molecule('CF4')
-atoms.center(vacuum=5)
-with jasp('molecules/cf4-elf',
-          encut=350,
-          prec='high',
-          ismear=0,
-          sigma=0.01,
+from ase import Atom, Atoms
+atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
+               Atom('Pd',  [-1.652,     0.000,      2.039])],
+              cell=  [[0.000, -2.039,  2.039],
+                      [0.000,  2.039,  2.039],
+                      [-3.303,  0.000,  0.000]])
+atoms = atoms.repeat((2, 2, 2))
+with jasp('bulk/CuPd-cls-0',
           xc='PBE',
-          lelf=True,
+          encut=350,
+          kpts=(4, 4, 4),
+          ibrion=2,
+          isif=3,
+          nsw=40,
           atoms=atoms) as calc:
-    calc.calculate()
-    x, y, z, elf = calc.get_elf()
-    mlab.contour3d(x, y, z, elf, contours=[0.3])
-    mlab.savefig('../../images/cf4-elf-3.png')
-    mlab.figure()
-    mlab.contour3d(x, y, z, elf, contours=[0.75])
-    mlab.savefig('../../images/cf4-elf-75.png')
+    print(atoms.get_potential_energy())

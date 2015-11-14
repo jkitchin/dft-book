@@ -1,8 +1,9 @@
 from jasp import *
-from ase.dft.bee import BEEFEnsemble
-with jasp('molecules/H-beef') as calc:
-    BE1 = BEEFEnsemble(calc.get_atoms()).get_ensemble_energies()
-with jasp('molecules/H2-beef') as calc:
-    BE2 = BEEFEnsemble(calc.get_atoms()).get_ensemble_energies()
-print((2 * BE1 - BE2).mean())
-print((2 * BE1 - BE2).std())
+with jasp('molecules/CO-vacuum') as calc:
+    calc.clone('molecules/CO-solvated')
+with jasp('molecules/CO-solvated',
+          istart=1,  #
+          lsol=True) as calc:
+    print(calc.get_atoms().get_potential_energy())
+    print(calc.get_atoms().get_forces())
+    print('Calculation time: {} seconds'.format(calc.get_elapsed_time()))

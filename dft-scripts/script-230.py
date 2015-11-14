@@ -1,9 +1,10 @@
-from jasp import *
-with jasp('molecules/CO-vacuum') as calc:
-    calc.clone('molecules/CO-solvated')
-with jasp('molecules/CO-solvated',
-          istart=1,  #
-          lsol=True) as calc:
-    print(calc.get_atoms().get_potential_energy())
-    print(calc.get_atoms().get_forces())
-    print('Calculation time: {} seconds'.format(calc.get_elapsed_time()))
+import textwrap
+from ase.structure import molecule
+atoms = molecule('CH3CH2OH')
+print(atoms)
+# delete all the hydrogens
+ind2del = [atom.index for atom in atoms if atom.symbol == 'H']
+print('Indices to delete: ', ind2del)
+del atoms[ind2del]
+# now print what is left
+print(atoms)

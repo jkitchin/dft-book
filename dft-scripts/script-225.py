@@ -1,15 +1,13 @@
 from jasp import *
-from ase.structure import molecule
-H = molecule('H')
-H.set_cell([8, 8, 8], scale_atoms=False)
-with jasp('molecules/H-beef',
-          xc='PBE', gga='BF',
-          encut=350,
-          ismear=0,
-          atoms=H) as calc:
-    try:
-        eH = H.get_potential_energy()
-        print(eH)
-    except (VaspSubmitted, VaspQueued):
-        print('running or queued')
-        eH = None
+with jasp('molecules/H-beef') as calc:
+    ensH = calc.get_beefens()
+with jasp('molecules/H2-beef') as calc:
+    ensH2 = calc.get_beefens()
+ensD = 2 * ensH - ensH2
+print('mean = {} eV'.format(ensD.mean()))
+print('std = {} eV'.format(ensD.std()))
+import matplotlib.pyplot as plt
+plt.hist(ensD, 20)
+plt.xlabel('Deviation')
+plt.ylabel('frequency')
+plt.savefig('images/beef-ens.png')

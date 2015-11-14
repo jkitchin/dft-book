@@ -1,8 +1,8 @@
 from jasp import *
+from ase.dft.bee import BEEFEnsemble
 with jasp('molecules/H-beef') as calc:
-    H = calc.get_atoms()
-    eH = H.get_potential_energy()
+    BE1 = BEEFEnsemble(calc.get_atoms()).get_ensemble_energies()
 with jasp('molecules/H2-beef') as calc:
-    H2 = calc.get_atoms()
-    eH2 = H2.get_potential_energy()
-print('D = {} eV'.format(2 * eH - eH2))
+    BE2 = BEEFEnsemble(calc.get_atoms()).get_ensemble_energies()
+print((2 * BE1 - BE2).mean())
+print((2 * BE1 - BE2).std())

@@ -1,14 +1,14 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from ase.units import *
-K = 1.  # not defined in ase.units!
-atm = 101325*Pascal
-Hf = -0.99
-P = 1 * atm
-Dmu = np.linspace(-4, 0)
-Hf = -0.99 - 0.5*Dmu
-plt.plot(Dmu, Hf, label='Ag$_2$O')
-plt.plot(Dmu, np.zeros(Hf.shape), label='Ag')
-plt.xlabel(r'$\Delta \mu_{O_2}$ (eV)')
-plt.ylabel('$H_f$ (eV)')
-plt.savefig('images/atomistic-thermo-hf-mu.png')
+from jasp import *
+from ase import Atom, Atoms
+with jasp('bulk/Cu2O') as calc:
+    calc.clone('bulk/Cu2O-U=4.0')
+with jasp('bulk/Cu2O-U=4.0') as calc:
+    calc.set(ldau=True,   # turn DFT+U on
+             ldautype=2,  # select simplified rotationally invariant option
+             ldau_luj={'Cu':{'L':2,  'U':4.0, 'J':0.0},
+                        'O':{'L':-1, 'U':0.0, 'J':0.0}},
+             ldauprint=1,
+             ibrion=-1,  #do not rerelax
+             nsw=0)
+    calc.calculate()
+    print calc

@@ -1,14 +1,17 @@
 from jasp import *
-with jasp('bulk/CuPd-cls-0') as calc:
-    calc.clone('bulk/CuPd-cls-1')
-with jasp('bulk/CuPd-cls-1') as calc:
-    calc.set(ibrion=None,
-             isif=None,
-             nsw=None,
-             setups={'0': 'Cu'},  # Create separate entry in POTCAR for atom index 0
-             icorelevel=2,        # Perform core level shift calculation
-             clnt=0,              # Excite atom index 0
-             cln=2,               # 2p3/2 electron for Cu core level shift
-             cll=1,
-             clz=1)
-    print(calc.get_atoms().get_potential_energy())
+from ase.structure import molecule
+import matplotlib.pyplot as plt
+H2 = molecule('H2')
+H2.set_cell([8, 8, 8], scale_atoms=False)
+with jasp('molecules/H2-beef',
+          xc='PBE', gga='BF',
+          encut=350,
+          ismear=0,
+          ibrion=2,
+          nsw=10,
+          atoms=H2) as calc:
+    try:
+        eH2 = H2.get_potential_energy()
+        print(eH2)
+    except (VaspSubmitted, VaspQueued):
+        eH2 = None

@@ -1,11 +1,15 @@
 from jasp import *
-with jasp('bulk/CuPd-cls-0') as calc:
-    alloy_0 = calc.get_atoms().get_potential_energy()
-with jasp('bulk/CuPd-cls-1') as calc:
-    alloy_1 = calc.get_atoms().get_potential_energy()
-with jasp('bulk/Cu-cls-0') as calc:
-    ref_0 = calc.get_atoms().get_potential_energy()
-with jasp('bulk/Cu-cls-1') as calc:
-    ref_1 = calc.get_atoms().get_potential_energy()
-CLS = (alloy_1 - alloy_0) - (ref_1 - ref_0)
-print('CLS = {} eV'.format(CLS))
+from ase.structure import molecule
+H = molecule('H')
+H.set_cell([8, 8, 8], scale_atoms=False)
+with jasp('molecules/H-beef',
+          xc='PBE', gga='BF',
+          encut=350,
+          ismear=0,
+          atoms=H) as calc:
+    try:
+        eH = H.get_potential_energy()
+        print(eH)
+    except (VaspSubmitted, VaspQueued):
+        print('running or queued')
+        eH = None

@@ -1,18 +1,14 @@
 from jasp import *
-from ase import Atom, Atoms
-atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
-               Atom('Cu',  [-1.652,     0.000,      2.039])],
-              cell=  [[0.000, -2.039,  2.039],
-                      [0.000,  2.039,  2.039],
-                      [-3.303,  0.000,  0.000]])
-atoms = atoms.repeat((2, 2, 2))
-print atoms[0]
-with jasp('bulk/Cu-cls-0',
-          xc='PBE',
-          encut=350,
-          kpts=(4, 4, 4),
-          ibrion=2,
-          isif=3,
-          nsw=40,
-          atoms=atoms) as calc:
-    print(atoms.get_potential_energy())
+with jasp('bulk/Cu-cls-0') as calc:
+    calc.clone('bulk/Cu-cls-1')
+with jasp('bulk/Cu-cls-1') as calc:
+    calc.set(ibrion=None,
+             isif=None,
+             nsw=None,
+             setups={'0': 'Cu'},  # Create separate entry in POTCAR for atom index 0
+             icorelevel=2,        # Perform core level shift calculation
+             clnt=0,              # Excite atom index 0
+             cln=2,               # 2p3/2 electron for Cu core level shift
+             cll=1,
+             clz=1)
+    print(calc.get_atoms().get_potential_energy())

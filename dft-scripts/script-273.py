@@ -1,3 +1,1 @@
-from jasp import *
-with jasp('bulk/alloy/cu') as calc:
-    print(calc.xml)
+pip install --user some-package
