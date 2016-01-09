@@ -50,8 +50,6 @@
   :keymap dft-book-mode-map)
 
 
-(dft-book-mode)
-
 ; some notes on what it might take to make EnableWrite/shell-escape globally true.
 ;C:\Users\jkitchin>initexmf --edit-config-file=miktex\config\pdflatex.ini
 
