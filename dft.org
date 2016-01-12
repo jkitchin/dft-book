@@ -14497,5 +14497,5 @@ git push
 ** load dft.el
 ### Local Variables:
 ### mode: org
-### eval: (load-file "dft.el")
+### eval: (dft-book-mode)
 ### End:
