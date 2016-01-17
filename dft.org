@@ -407,124 +407,66 @@ for i in range(len(keys) / 3):
 
 #+RESULTS:
 #+begin_example
-isobutene                CH3CH2OH                 CH3COOH
-COF2                     CH3NO2                   CF3CN
-CH3OH                    CCH                      CH3CH2NH2
-PH3                      Si2H6                    O3
-O2                       BCl3                     CH2_s1A1d
-Be                       H2CCl2                   C3H9C
-C3H9N                    CH3CH2OCH3               BF3
-CH3                      CH4                      S2
-C2H6CHOH                 SiH2_s1A1d               H3CNH2
-CH3O                     H                        BeH
-P                        C3H4_C3v                 C2F4
-OH                       methylenecyclopropane    F2O
-SiCl4                    HCF3                     HCCl3
-C3H7                     CH3CH2O                  AlF3
-CH2NHCH2                 SiH2_s3B1d               H2CF2
-SiF4                     H2CCO                    PH2
-OCS                      HF                       NO2
-SH2                      C3H4_C2v                 H2O2
-CH3CH2Cl                 isobutane                CH3COF
-HCOOH                    CH3ONO                   C5H8
-2-butyne                 SH                       NF3
-HOCl                     CS2                      P2
-C                        CH3S                     O
-C4H4S                    S                        C3H7Cl
-H2CCHCl                  C2H6                     CH3CHO
-C2H4                     HCN                      C2H2
-C2Cl4                    bicyclobutane            H2
-C6H6                     N2H4                     C4H4NH
-H2CCHCN                  H2CCHF                   cyclobutane
-HCl                      CH3OCH3                  Li2
-Na                       CH3SiH3                  NaCl
-CH3CH2SH                 OCHCHO                   SiH4
-C2H5                     SiH3                     NH
-ClO                      AlCl3                    CCl4
-NO                       C2H3                     ClF
-HCO                      CH3CONH2                 CH2SCH2
-CH3COCH3                 C3H4_D2d                 CH
-CO                       CN                       F
-CH3COCl                  N                        CH3Cl
-Si                       C3H8                     CS
-N2                       Cl2                      NCCN
-F2                       CO2                      Cl
-CH2OCH2                  H2O                      CH3CO
-SO                       HCOOCH3                  butadiene
-ClF3                     Li                       PF3
-B                        CH3SH                    CF4
-C3H6_Cs                  C2H6NH                   N2O
-LiF                      H2COH                    cyclobutene
-LiH                      SiO                      Si2
-C2H6SO                   C5H5N                    trans-butane
-Na2                      C4H4O                    SO2
-NH3                      NH2                      CH2_s3B1d
-ClNO                     C3H6_D3h                 Al
-CH3SCH3                  H2CO                     CH3CN
+isobutene                CH3CH2OH                 CH3COOH                  
+COF2                     CH3NO2                   CF3CN                    
+CH3OH                    CCH                      CH3CH2NH2                
+PH3                      Si2H6                    O3                       
+O2                       BCl3                     CH2_s1A1d                
+Be                       H2CCl2                   C3H9C                    
+C3H9N                    CH3CH2OCH3               BF3                      
+CH3                      CH4                      S2                       
+C2H6CHOH                 SiH2_s1A1d               H3CNH2                   
+CH3O                     H                        BeH                      
+P                        C3H4_C3v                 C2F4                     
+OH                       methylenecyclopropane    F2O                      
+SiCl4                    HCF3                     HCCl3                    
+C3H7                     CH3CH2O                  AlF3                     
+CH2NHCH2                 SiH2_s3B1d               H2CF2                    
+SiF4                     H2CCO                    PH2                      
+OCS                      HF                       NO2                      
+SH2                      C3H4_C2v                 H2O2                     
+CH3CH2Cl                 isobutane                CH3COF                   
+HCOOH                    CH3ONO                   C5H8                     
+2-butyne                 SH                       NF3                      
+HOCl                     CS2                      P2                       
+C                        CH3S                     O                        
+C4H4S                    S                        C3H7Cl                   
+H2CCHCl                  C2H6                     CH3CHO                   
+C2H4                     HCN                      C2H2                     
+C2Cl4                    bicyclobutane            H2                       
+C6H6                     N2H4                     C4H4NH                   
+H2CCHCN                  H2CCHF                   cyclobutane              
+HCl                      CH3OCH3                  Li2                      
+Na                       CH3SiH3                  NaCl                     
+CH3CH2SH                 OCHCHO                   SiH4                     
+C2H5                     SiH3                     NH                       
+ClO                      AlCl3                    CCl4                     
+NO                       C2H3                     ClF                      
+HCO                      CH3CONH2                 CH2SCH2                  
+CH3COCH3                 C3H4_D2d                 CH                       
+CO                       CN                       F                        
+CH3COCl                  N                        CH3Cl                    
+Si                       C3H8                     CS                       
+N2                       Cl2                      NCCN                     
+F2                       CO2                      Cl                       
+CH2OCH2                  H2O                      CH3CO                    
+SO                       HCOOCH3                  butadiene                
+ClF3                     Li                       PF3                      
+B                        CH3SH                    CF4                      
+C3H6_Cs                  C2H6NH                   N2O                      
+LiF                      H2COH                    cyclobutene              
+LiH                      SiO                      Si2                      
+C2H6SO                   C5H5N                    trans-butane             
+Na2                      C4H4O                    SO2                      
+NH3                      NH2                      CH2_s3B1d                
+ClNO                     C3H6_D3h                 Al                       
+CH3SCH3                  H2CO                     CH3CN                    
 #+end_example
 
 <<g2-database>>
-#+RESULTS:
-#+begin_example
-isobutene                CH3CH2OH                 CH3COOH
-COF2                     CH3NO2                   CF3CN
-CH3OH                    CCH                      CH3CH2NH2
-PH3                      Si2H6                    O3
-O2                       BCl3                     CH2_s1A1d
-Be                       H2CCl2                   C3H9C
-C3H9N                    CH3CH2OCH3               BF3
-CH3                      CH4                      S2
-C2H6CHOH                 SiH2_s1A1d               H3CNH2
-CH3O                     H                        BeH
-P                        C3H4_C3v                 C2F4
-OH                       methylenecyclopropane    F2O
-SiCl4                    HCF3                     HCCl3
-C3H7                     CH3CH2O                  AlF3
-CH2NHCH2                 SiH2_s3B1d               H2CF2
-SiF4                     H2CCO                    PH2
-OCS                      HF                       NO2
-SH2                      C3H4_C2v                 H2O2
-CH3CH2Cl                 isobutane                CH3COF
-HCOOH                    CH3ONO                   C5H8
-2-butyne                 SH                       NF3
-HOCl                     CS2                      P2
-C                        CH3S                     O
-C4H4S                    S                        C3H7Cl
-H2CCHCl                  C2H6                     CH3CHO
-C2H4                     HCN                      C2H2
-C2Cl4                    bicyclobutane            H2
-C6H6                     N2H4                     C4H4NH
-H2CCHCN                  H2CCHF                   cyclobutane
-HCl                      CH3OCH3                  Li2
-Na                       CH3SiH3                  NaCl
-CH3CH2SH                 OCHCHO                   SiH4
-C2H5                     SiH3                     NH
-ClO                      AlCl3                    CCl4
-NO                       C2H3                     ClF
-HCO                      CH3CONH2                 CH2SCH2
-CH3COCH3                 C3H4_D2d                 CH
-CO                       CN                       F
-CH3COCl                  N                        CH3Cl
-Si                       C3H8                     CS
-N2                       Cl2                      NCCN
-F2                       CO2                      Cl
-CH2OCH2                  H2O                      CH3CO
-SO                       HCOOCH3                  butadiene
-ClF3                     Li                       PF3
-B                        CH3SH                    CF4
-C3H6_Cs                  C2H6NH                   N2O
-LiF                      H2COH                    cyclobutene
-LiH                      SiO                      Si2
-C2H6SO                   C5H5N                    trans-butane
-Na2                      C4H4O                    SO2
-NH3                      NH2                      CH2_s3B1d
-ClNO                     C3H6_D3h                 Al
-CH3SCH3                  H2CO                     CH3CN
-#+end_example
-
 Some other databases include the mod:ase.data.s22 for weakly interacting dimers and complexes, and mod:ase.data.extra_molecules which has a few extras like biphenyl and C60.
 
-Here is an example of getting the geometry of an acetonitrile molecule and writing an image to a file. Note that the default unit cell is a $1 \mathrm{\AA} \times 1 \mathrm{\AA} \times 1 \mathrm{\AA}$ cubic cell. That is too small to use if your calculator uses periodic boundary conditions. We center the atoms in the unit cell and add vacuum on each side. We will add 6 \AA of vacuum on each side. In the write command we use the option =show_unit_cell= =2 to draw the unit cell boundaries. See Figure ref:fig:ch3cn.
+Here is an example of getting the geometry of an acetonitrile molecule and writing an image to a file. Note that the default unit cell is a 1 Å × Å × Å  cubic cell. That is too small to use if your calculator uses periodic boundary conditions. We center the atoms in the unit cell and add vacuum on each side. We will add 6 Å of vacuum on each side. In the write command we use the option =show_unit_cell= =2 to draw the unit cell boundaries. See Figure ref:fig:ch3cn.
 
 #+BEGIN_SRC python :results output :exports both
 from ase.structure import molecule
@@ -703,7 +645,7 @@ for i, s, n, p in zip(atom_indices, sym, num, pos):
   9 H      0.00   -2.48    0.00
  10 H     -2.15   -1.24    0.00
  11 H     -2.15    1.24    0.00
-
+()
   # sym    at#    p_x     p_y     p_z
 -------------------------------------
   0  C       6    0.00    1.40    0.00
@@ -792,49 +734,49 @@ from ase.structure import molecule
 
 print('linear rotors: I = [0 Ia Ia]')
 atoms = molecule('CO2')
-print('  CO2 moments of inertia: ', atoms.get_moments_of_inertia())
-print()
+print('  CO2 moments of inertia: {}'.format(atoms.get_moments_of_inertia()))
+print('')
 
 print('symmetric rotors (Ia = Ib) < Ic')
 atoms = molecule('NH3')
-print('  NH3 moments of inertia: ', atoms.get_moments_of_inertia())
+print('  NH3 moments of inertia: {}'.format(atoms.get_moments_of_inertia()))
 
 atoms = molecule('C6H6')
-print('  C6H6 moments of inertia:', atoms.get_moments_of_inertia())
-print()
+print('  C6H6 moments of inertia: {}'.format(atoms.get_moments_of_inertia()))
+print('')
 
 print('symmetric rotors Ia < (Ib = Ic)')
 atoms = molecule('CH3Cl')
-print('CH3Cl moments of inertia: ', atoms.get_moments_of_inertia())
-print()
+print('CH3Cl moments of inertia: {}'.format(atoms.get_moments_of_inertia()))
+print('')
 
 print('spherical rotors Ia = Ib = Ic')
 atoms = molecule('CH4')
-print('  CH4 moments of inertia: ', atoms.get_moments_of_inertia())
-print()
+print('  CH4 moments of inertia: {}'.format(atoms.get_moments_of_inertia()))
+print('')
 
 print('unsymmetric rotors Ia != Ib != Ic')
 atoms = molecule('C3H7Cl')
-print('  C3H7Cl moments of inertia: ', atoms.get_moments_of_inertia())
+print('  C3H7Cl moments of inertia: {}'.format(atoms.get_moments_of_inertia()))
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
 linear rotors: I = [0 Ia Ia]
-  CO2 moments of inertia:  [  0.          44.45384271  44.45384271]
+  CO2 moments of inertia: [  0.          44.45384271  44.45384271]
 
 symmetric rotors (Ia = Ib) < Ic
-  NH3 moments of inertia:  [ 1.71012426  1.71012548  2.67031768]
+  NH3 moments of inertia: [ 1.71012426  1.71012548  2.67031768]
   C6H6 moments of inertia: [  88.77914641   88.77916799  177.5583144 ]
 
 symmetric rotors Ia < (Ib = Ic)
-CH3Cl moments of inertia:  [  3.20372189  37.97009644  37.97009837]
+CH3Cl moments of inertia: [  3.20372189  37.97009644  37.97009837]
 
 spherical rotors Ia = Ib = Ic
-  CH4 moments of inertia:  [ 3.19145621  3.19145621  3.19145621]
+  CH4 moments of inertia: [ 3.19145621  3.19145621  3.19145621]
 
 unsymmetric rotors Ia != Ib != Ic
-  C3H7Cl moments of inertia:  [  19.41351508  213.18961963  223.16255537]
+  C3H7Cl moments of inertia: [  19.41351508  213.18961963  223.16255537]
 #+end_example
 
 If you want to know the principle axes of rotation, we simply pass =vectors=True= to the function, and it returns the moments of inertia and the principle axes.
@@ -878,10 +820,10 @@ print(s.format(atoms.get_distance(0, 1)))
 #+RESULTS:
 : atom symbol
 : ===========
-:  0 N
-:  1 H
-:  2 H
-:  3 H
+:  0 N  
+:  1 H  
+:  2 H  
+:  3 H  
 : The N-H distance is 1.017 angstroms
 
 Bond angles are a little trickier. If we had vectors describing the directions between two atoms, we could use some simple trigonometry to compute the angle between the vectors: $\vec{a} \cdot \vec{b} = |\vec{a}||\vec{b}| \cos(\theta)$.  So we can calculate the angle as $\theta = \arccos\left(\frac{\vec{a} \cdot \vec{b}}{|\vec{a}||\vec{b}|}\right)$, we just have to define our two vectors $\vec{a}$ and $\vec{b}$. We compute these vectors as the difference in positions of two atoms. For example, here we compute the angle H-N-H in an ammonia molecule. This is the angle between N-H$_1$ and N-H$_2$. In the next example, we utilize functions in mod:numpy to perform the calculations, specifically the func:numpy.arccos function, the func:numpy.dot function, and func:numpy.linalg.norm functions.
@@ -911,10 +853,10 @@ print('theta = {0:1.1f} degrees'.format(theta_rad * 180./pi))
 #+RESULTS:
 : atom symbol
 : ===========
-:  0 N
-:  1 H
-:  2 H
-:  3 H
+:  0 N  
+:  1 H  
+:  2 H  
+:  3 H  
 : theta = 106.3 degrees
 
 #+caption: Schematic of the vectors defining the H-N-H angle.
@@ -959,14 +901,14 @@ print('dihedral angle = {0:1.2f} degrees'.format(da))
 #+begin_example
 atom symbol
 ===========
- 0 C
- 1 C
- 2 H
- 3 H
- 4 H
- 5 H
- 6 H
- 7 H
+ 0 C  
+ 1 C  
+ 2 H  
+ 3 H  
+ 4 H  
+ 5 H  
+ 6 H  
+ 7 H  
 dihedral angle = 60.00 degrees
 #+end_example
 
@@ -998,7 +940,7 @@ This is your first DFT calculation in the book! See [[incar:ISMEAR][ISMEAR]], in
 #+end_note
 
 
-#+BEGIN_SRC python :results output :exports both
+#+BEGIN_SRC python
 from ase import Atoms, Atom
 from jasp import *
 import numpy as np
@@ -1020,9 +962,9 @@ with jasp('molecules/simple-co',  # output dir
 #+END_SRC
 
 #+RESULTS:
-: energy = -14.687906 eV
-: [[ 5.095  0.     0.   ]
-:  [-5.095  0.     0.   ]]
+: energy = -14.69111507 eV
+: [[ 5.091  0.     0.   ]
+:  [-5.091  0.     0.   ]]
 
 **** Convergence with unit cell size
 There are a number of parameters that affect the energy and forces including the calculation parameters and the unit cell. We will first consider the effect of the unit cell on the total energy and forces. The reason that the unit cell affects the total energy is that it can change the distribution of electrons in the molecule.
@@ -1060,13 +1002,13 @@ plt.plot(L, energies, 'bo-')
 plt.xlabel('Unit cell length ($\AA$)')
 plt.ylabel('Total energy (eV)')
 plt.savefig('images/co-e-v.png')
-plt.show()
 #+END_SRC
 
 #+RESULTS:
 
 #+caption: Total energy of a CO molecule as a function of the unit cell length.
 #+attr_latex: :placement [H]
+#+attr_org: :width 200
 [[./images/co-e-v.png]]
 
 Here there are evidently attractive interactions between the CO molecules which lower the total energy for small box sizes. We have to decide what an appropriate volume for our calculation is, and the choice depends on the goal. We may wish to know the total energy of a molecule that is not interacting with any other molecules, e.g. in the ideal gas limit. In that case we need a large unit cell so the electron density from the molecule does not go outside the unit cell where it would overlap with neighboring images.
@@ -1084,11 +1026,11 @@ for a in L:
 #+END_SRC
 
 #+RESULTS:
-: 4 1.601 seconds
-: 5 3.932 seconds
-: 6 6.543 seconds
-: 8 19.678 seconds
-: 10 36.013 seconds
+: 4 2.179 seconds
+: 5 3.93 seconds
+: 6 6.573 seconds
+: 8 20.741 seconds
+: 10 37.121 seconds
 
 
 Let us consider what the pressure in the unit cell is. In the ideal gas limit we have $PV = nRT$, which gives a pressure of zero at absolute zero. At non-zero temperatures, we have $P=n/V RT$. Let us consider some examples. In atomic units we use $k_B$ instead of $R$.
@@ -1114,7 +1056,6 @@ plt.xlabel('Unit cell volume ($\AA^3$)')
 plt.ylabel('Pressure (atm)')
 plt.legend(loc='best')
 plt.savefig('images/ideal-gas-pressure.png')
-plt.show()
 #+END_SRC
 
 #+RESULTS:
