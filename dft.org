@@ -2312,10 +2312,9 @@ Let us briefly discuss how to determine which vectors are vibrations and which a
 from jasp import *
 import numpy as np
 with jasp('molecules/h2o_vib') as calc:
-    energies, modes = calc.get_vibrational_modes(mode=3, massweighted=True,
+    energies, modes = calc.get_vibrational_modes(mode=4, massweighted=True,
                                                  show=True)
 #+end_src
-
 #+RESULTS:
 
 See http://www.gaussian.com/g_whitepap/vib.htm for a more quantitative discussion of these modes, identifying them, and a method to project the rotations and translations out of the Hessian matrix.
@@ -2344,6 +2343,8 @@ for f in freq:
     nu = f * c  # convert to frequency
     ZPE += 0.5 * h * nu
 
+print(np.sum([0.5 * h * f * c for f in freq if isinstance(f, float)]))
+
 print('The ZPE of water is {0:1.3f} eV'.format(ZPE))
 
 # one liner
@@ -2352,6 +2353,8 @@ print('The ZPE of water is {0:1.3f} eV'.format(ZPE))
 #+END_SRC
 
 #+RESULTS:
+: 0.572046824843
+: The ZPE of water is 0.572 eV
 : The ZPE of water is 0.572 eV
 
 
@@ -3524,7 +3527,7 @@ We [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-n
 
 It is a good idea to verify your calculations and structures are what you expected. Let us print them here. Inspection of these results shows the geometries were all relaxed, i.e., the forces on each atom are less than 0.05 eV/\AA.
 
-#+BEGIN_SRC python :results output raw :exports both
+#+BEGIN_SRC python :results output raw
 from jasp import *
 
 print('**** Calculation summaries')
@@ -3558,7 +3561,7 @@ with jasp('molecules/wgs/H2O') as calc:
 ***** CO
 #+begin_example
 : -----------------------------
-  VASP calculation from /home-research/jkitchin/dft-book2/molecules/wgs/CO
+  VASP calculation from /home-research/jkitchin/dft-book/molecules/wgs/CO
   converged: True
   Energy = -14.789536 eV
 
@@ -3593,13 +3596,13 @@ INCAR Parameters:
 
 Pseudopotentials used:
 ----------------------
-C: potpaw_PBE/C/POTCAR (git-hash: 2272d6745da89a3d872983542cef1d18750fc952)
-O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
+C: /potpaw_PBE/C/POTCAR (git-hash: ee4d8576584f8e9f32e90853a0cbf9d4a9297330)
+O: /potpaw_PBE/O/POTCAR (git-hash: 592f34096943a6f30db8749d13efca516d75ec55)
 #+end_example
 ***** CO2
 #+begin_example
 : -----------------------------
-  VASP calculation from /home-research/jkitchin/dft-book2/molecules/wgs/CO2
+  VASP calculation from /home-research/jkitchin/dft-book/molecules/wgs/CO2
   converged: True
   Energy = -22.959572 eV
 
@@ -3635,13 +3638,13 @@ INCAR Parameters:
 
 Pseudopotentials used:
 ----------------------
-C: potpaw_PBE/C/POTCAR (git-hash: 2272d6745da89a3d872983542cef1d18750fc952)
-O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
+C: /potpaw_PBE/C/POTCAR (git-hash: ee4d8576584f8e9f32e90853a0cbf9d4a9297330)
+O: /potpaw_PBE/O/POTCAR (git-hash: 592f34096943a6f30db8749d13efca516d75ec55)
 #+end_example
 ***** H2
 #+begin_example
 : -----------------------------
-  VASP calculation from /home-research/jkitchin/dft-book2/molecules/wgs/H2
+  VASP calculation from /home-research/jkitchin/dft-book/molecules/wgs/H2
   converged: True
   Energy = -6.744001 eV
 
@@ -3676,12 +3679,12 @@ INCAR Parameters:
 
 Pseudopotentials used:
 ----------------------
-H: potpaw_PBE/H/POTCAR (git-hash: fbc0773b08b32f553234b0b50cc6ad6f5085c816)
+H: /potpaw_PBE/H/POTCAR (git-hash: 51dd11a1883cb1d482388078d3764b6e1fde9e02)
 #+end_example
 ***** H2O
 #+begin_example
 : -----------------------------
-  VASP calculation from /home-research/jkitchin/dft-book2/molecules/wgs/H2O
+  VASP calculation from /home-research/jkitchin/dft-book/molecules/wgs/H2O
   converged: True
   Energy = -14.193569 eV
 
@@ -3717,9 +3720,10 @@ INCAR Parameters:
 
 Pseudopotentials used:
 ----------------------
-H: potpaw_PBE/H/POTCAR (git-hash: fbc0773b08b32f553234b0b50cc6ad6f5085c816)
-O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
+H: /potpaw_PBE/H/POTCAR (git-hash: 51dd11a1883cb1d482388078d3764b6e1fde9e02)
+O: /potpaw_PBE/O/POTCAR (git-hash: 592f34096943a6f30db8749d13efca516d75ec55)
 #+end_example
+
 
 *** Temperature dependent water gas shift equilibrium constant
 To correct the reaction energy for temperature effects, we must compute the vibrational frequencies of each species, and estimate the temperature dependent contributions to vibrational energy and entropy. We will break these calculations into several pieces. First we do each vibrational calculation. After those are done, we can get the data and construct the thermochemistry objects we need to estimate the reaction energy as a function of temperature (at constant pressure).
@@ -3985,7 +3989,7 @@ We will consider a simple example of the barrier for NH_{3} inversion. We have t
 #+BEGIN_SRC python :exports code
 # compute initial and final states
 from ase import Atoms
-from ase.data.molecules import molecule
+from ase.structure import molecule
 import numpy as np
 from jasp import *
 from ase.constraints import FixAtoms
@@ -4020,7 +4024,7 @@ with jasp('molecules/nh3-initial',
           nsw=10,
           atoms=atoms) as calc:
     try:
-        calc.calculate()
+        print(atoms.get_potential_energy())
     except (VaspSubmitted, VaspQueued):
         pass
 
@@ -4031,12 +4035,14 @@ with jasp('molecules/nh3-final',
           nsw=10,
           atoms=atoms2) as calc:
     try:
-        calc.calculate()
+        print(atoms.get_potential_energy())
     except (VaspSubmitted, VaspQueued):
         pass
 #+END_SRC
 
 #+RESULTS:
+: -19.442059
+: -19.442059
 
 *** Run band calculation
 Now we do the band calculation. [[index:nudged elastic band]]
@@ -8595,7 +8601,7 @@ plt.savefig('images/dip-vs-nodip-esp.png')
 #+END_SRC
 
 #+RESULTS:
-: The difference in energy is 3.867888 eV.
+: The difference in energy is 0.006397 eV.
 
 #+caption: Comparison of the electrostatic potentials with a dipole correction and without it.
 #+ATTR_LaTeX: :placement [H]
