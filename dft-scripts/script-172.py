@@ -1,14 +1,14 @@
 from jasp import *
-from ase.lattice.surface import fcc111
-from ase.constraints import FixAtoms
-atoms = fcc111('Pt', size=(2, 2, 3), vacuum=10.0)
-constraint = FixAtoms(mask=[True for atom in atoms])
-atoms.set_constraint(constraint)
-from ase.io import write
-write('images/Pt-fcc-ori.png', atoms, show_unit_cell=2)
-with jasp('surfaces/Pt-slab',
+from ase.visualize import view
+from ase.lattice.cubic import FaceCenteredCubic
+atoms = FaceCenteredCubic(directions=[[0, 1, 1],
+                                      [1, 0, 1],
+                                      [1, 1, 0]],
+                                     size=(1, 1, 1),
+                                     symbol='Cu')
+with jasp('bulk/Cu-fcc',
           xc='PBE',
-          kpts=(4, 4, 1),
           encut=350,
+          kpts=(12, 12, 12),
           atoms=atoms) as calc:
-    print atoms.get_potential_energy()
+    calc.calculate()

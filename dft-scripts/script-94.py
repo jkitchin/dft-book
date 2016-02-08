@@ -1,8 +1,16 @@
+from jasp import *
 from ase import Atom, Atoms
-import numpy as np
-a = 3.61 # lattice constant
-atoms = Atoms([Atom('Cu', [0,0,0])],
-              cell=0.5 * a*np.array([[ 1.0,  1.0, -1.0],
-                                     [-1.0,  1.0,  1.0],
-                                     [ 1.0, -1.0,  1.0]]))
-print 'BCC lattice constant = {0} Ang'.format(a * (11.8 / atoms.get_volume())**(1./3.))
+atoms = Atoms([Atom('Cu', [0.000, 0.000, 0.000])],
+              cell=[[1.818, 0.000, 1.818],
+                    [1.818, 1.818, 0.000],
+                    [0.000, 1.818, 1.818]])
+with jasp('bulk/alloy/cu-setnbands',
+          xc='PBE',
+          encut=350,
+          kpts=(13, 13, 13),
+          ibrion=2,
+          isif=4,
+          nsw=10,
+          atoms=atoms) as calc:
+    calc.set_nbands(f=3)
+    print calc

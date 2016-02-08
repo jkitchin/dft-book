@@ -1,28 +1,19 @@
 from jasp import *
-from ase.lattice.cubic import BodyCenteredCubic
-atoms = BodyCenteredCubic(directions=[[1, 0, 0],
-                                      [0, 1, 0],
-                                      [0, 0, 1]],
-                                      size=(1, 1, 1),
-                                      symbol='Fe')
-NUPDOWNS = [0.0, 2.0, 4.0, 5.0, 6.0, 8.0]
-energies = []
-for B in NUPDOWNS:
-    with jasp('bulk/Fe-bcc-fixedmagmom-{0:1.2f}'.format(B),
+from ase import Atom, Atoms
+from ase.visualize import view
+a = 5.38936
+atoms = Atoms([Atom('Si', [0, 0, 0]),
+               Atom('Si', [0.25, 0.25, 0.25])])
+atoms.set_cell([[a / 2., a / 2., 0.0],
+                [0.0,  a / 2., a / 2.],
+                [a / 2., 0.0, a / 2.]], scale_atoms=True)
+with jasp('bulk/Si-selfconsistent',
           xc='PBE',
-          encut=300,
-          kpts=(4, 4, 4),
-          ispin=2,
-          nupdown=B,
+          prec='Medium',
+          istart=0,
+          icharg=2,
+          ediff=0.1e-03,
+          kpts=(4, 4, 4), debug=logging.DEBUG,
           atoms=atoms) as calc:
-        try:
-            e = atoms.get_potential_energy()
-            energies.append(e)
-        except (VaspSubmitted, VaspQueued):
-            pass
-import matplotlib.pyplot as plt
-plt.plot(NUPDOWNS, energies)
-plt.xlabel('Total Magnetic Moment')
-plt.ylabel('Energy (eV)')
-plt.savefig('images/Fe-fixedmagmom.png')
-plt.show()
+    atoms.get_potential_energy()
+    print calc

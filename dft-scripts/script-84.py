@@ -1,3 +1,7 @@
-from ase.io import read, write
-atoms = read('bulk/Ru2O4_1.cif')
-write('images/Ru2O4.png', atoms, show_unit_cell=2)
+from ase.lattice.spacegroup import crystal
+# FCC aluminum
+a = 4.05
+al = crystal('Al', [(0, 0, 0)],
+             spacegroup=225,
+             cellpar=[a, a, a, 90, 90, 90])
+print(al)

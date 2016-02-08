@@ -1,14 +1,10 @@
 from jasp import *
-from ase.lattice.cubic import FaceCenteredCubic
-atoms = FaceCenteredCubic(symbol='Al')
-with jasp('bulk/Al-bulk',
-          xc='PBE',
-          kpts=(12, 12, 12),
-          encut=350,
-          prec='High',
-          isif=3,
-          nsw=30,
-          ibrion=1,
-          atoms=atoms) as calc:
-    print atoms.get_potential_energy()
-    print atoms.get_stress()
+from ase.lattice import bulk
+Al = bulk('Al', 'fcc', a=4.5, cubic=True)
+with jasp('bulk/Al-lda-vasp',
+          xc='LDA', isif=7, nsw=5,
+          ibrion=1, ediffg=-1e-3,
+          lwave=False, lcharg=False,
+          atoms=Al) as calc:
+    calc.calculate(Al)
+    print calc

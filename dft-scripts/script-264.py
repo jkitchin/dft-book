@@ -1,0 +1,1 @@
+head -n 1 molecules/O_sv/POTCAR

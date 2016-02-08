@@ -1,0 +1,1 @@
+head molecules/O_s-4nodes/OUTCAR

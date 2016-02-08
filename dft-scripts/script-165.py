@@ -1,11 +1,11 @@
 from jasp import *
-with jasp('surfaces/Cu-110') as calc:
+with jasp('surfaces/Au-110') as calc:
     slab = calc.get_atoms()
     eslab = slab.get_potential_energy()
-with jasp('surfaces/Cu-110-missing-row') as calc:
+with jasp('surfaces/Au-110-missing-row') as calc:
     missingrow = calc.get_atoms()
     emissingrow = missingrow.get_potential_energy()
-with jasp('bulk/Cu-fcc') as calc:
+with jasp('bulk/Au-fcc') as calc:
     bulk = calc.get_atoms()
     ebulk = bulk.get_potential_energy()
 print 'natoms slab        = {0}'.format(len(slab))

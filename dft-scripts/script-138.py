@@ -1,15 +1,12 @@
 from jasp import *
-wd = 'bulk/Si-bandstructure'
-with jasp('bulk/Si-selfconsistent') as calc:
-    calc.clone(wd)
-kpts = [[0.5, 0.5, 0.0],   # L
-        [0, 0, 0],         # Gamma
-        [0, 0, 0],
-        [0.5, 0.5, 0.5]]  # X
-with jasp(wd,
-          kpts=kpts,
-          reciprocal=True,
-          kpts_nintersections=10,
-          icharg=11) as calc:
-    calc.calculate()
-    print(calc)
+import matplotlib.pyplot as plt
+from ase.dft import DOS
+with jasp('bulk/pd-dos') as calc:
+    dos = DOS(calc, width=0.2)
+    d = dos.get_dos()
+    e = dos.get_energies()
+import pylab as plt
+plt.plot(e, d)
+plt.xlabel('energy (eV)')
+plt.ylabel('DOS')
+plt.savefig('images/pd-dos.png')

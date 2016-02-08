@@ -1,1 +1,1 @@
-head molecules/O_sv-4nodes/OUTCAR
+e_avg = np.trapz(rho*E,E)/np.trapz(rho,E)

@@ -1,29 +1,36 @@
-# <<water-vib>>
-# adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
-from ase import Atoms, Atom
 from jasp import *
-import ase.units
-atoms = Atoms([Atom('H', [0.5960812,  -0.7677068,   0.0000000]),
-               Atom('O', [0.0000000,   0.0000000,   0.0000000]),
-               Atom('H', [0.5960812,   0.7677068,   0.0000000])],
-               cell=(8, 8, 8))
-atoms.center()
-with jasp('molecules/h2o_vib',
-          xc='PBE',
-          encut=400,
-          ismear=0,     # Gaussian smearing
-          ibrion=6,     # finite differences with symmetry
-          nfree=2,      # central differences (default)
-          potim=0.015,  # default as well
-          ediff=1e-8,   # for vibrations you need precise energies
-          nsw=1,        # Set to 1 for vibrational calculation
-          atoms=atoms) as calc:
-    print 'Forces'
-    print '======'
-    print atoms.get_forces()
-    print
-    # vibrational energies are in eV
-    energies, modes = calc.get_vibrational_modes()
-    print 'energies\n========'
-    for i, e in enumerate(energies):
-        print '{0:02d}: {1} eV'.format(i, e)
+from ase.units import *
+bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
+energies = []
+for d in bond_lengths:
+    with jasp('molecules/co-{0}'.format(d)) as calc:
+        atoms = calc.get_atoms()
+        energies.append(atoms.get_potential_energy())
+# fit the data
+pars = np.polyfit(bond_lengths, energies, 3)
+xfit = np.linspace(1.05, 1.25)
+efit = np.polyval(pars, xfit)
+# first derivative
+dpars = np.polyder(pars)
+# find where the minimum is. chose the second one because it is the
+# minimum we need.
+droots = np.roots(dpars)
+# second derivative
+ddpars = np.polyder(dpars)
+d_min = droots[np.polyval(ddpars, droots) > 0]
+# curvature at minimum = force constant in SI units
+k = np.polyval(ddpars, d_min) / (J / m**2)
+# mu, reduced mass
+from ase.data import atomic_masses
+C_mass = atomic_masses[6] / kg
+O_mass = atomic_masses[8] / kg
+mu = 1.0 / (1.0 / C_mass + 1.0 / O_mass)
+frequency = 1. / (2. * np.pi) * np.sqrt(k / mu)
+print('The CO vibrational frequency is {0} Hz'.format(*frequency))
+print('The CO vibrational frequency is {0} cm^{{-1}}'.format(frequency / 3e10))
+import matplotlib.pyplot as plt
+plt.plot(bond_lengths, energies, 'bo ')
+plt.plot(xfit, efit, 'b-')
+plt.xlabel('Bond length ($\AA$)')
+plt.ylabel('Total energy (eV)')
+plt.show()

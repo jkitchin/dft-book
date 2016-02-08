@@ -1,10 +1,18 @@
-encuts = [250, 300, 350, 400, 450, 500, 550]
-print 'encut (eV)            Total CPU time'
-print '--------------------------------------------------------'
-for encut in encuts:
-    OUTCAR = 'molecules/O2-sp-triplet-{0}/OUTCAR'.format(encut)
-    f = open(OUTCAR, 'r')
-    for line in f:
-        if 'Total CPU time used (sec)' in line:
-            print '{0} eV: {1}'.format(encut, line)
-    f.close()
+from jasp import *
+from ase.dft.dos import *
+with jasp('molecules/O2-sp-triplet') as calc:
+    dos = DOS(calc, width=0.2)
+    d_up = dos.get_dos(spin=0)
+    d_down = dos.get_dos(spin=1)
+    e = dos.get_energies()
+ind = e <= 0.0
+# integrate up to 0eV
+print('number of up states = {0}'.format(np.trapz(d_up[ind], e[ind])))
+print('number of down states = {0}'.format(np.trapz(d_down[ind], e[ind])))
+import pylab as plt
+plt.plot(e, d_up,
+         e, -d_down)
+plt.xlabel('energy [eV]')
+plt.ylabel('DOS')
+plt.legend(['up', 'down'])
+plt.savefig('images/O2-sp-dos.png')

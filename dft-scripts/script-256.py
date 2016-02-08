@@ -1,5 +1,5 @@
-nPd = 4
-nCu = 5
-# now cast as floats
-x_Cu = float(nCu)/(nPd + nCu)
-print 'x_cu = {0}'.format(x_Cu)
+import xlrd
+wbk = xlrd.open_workbook('images/test-write.xls')
+sheet1 = wbk.sheet_by_name('sheet 1')
+print(sheet1.col_values(0))
+print(sheet1.col_values(1))

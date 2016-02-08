@@ -1,66 +1,67 @@
-'''Example of fitting the Birch-Murnaghan EOS to data'''
+from jasp import jasp
 import numpy as np
+with jasp('molecules/co-centered') as calc:
+    atoms = calc.get_atoms()
+    x, y, z, cd = calc.get_charge_density()
+def interp3d(x,y,z,cd,xi,yi,zi):
+    '''
+    interpolate a cubic 3D grid defined by x,y,z,cd at the point
+    (xi,yi,zi)
+    '''
+    def get_index(value,vector):
+        '''
+        assumes vector ordered decreasing to increasing. A bisection
+        search would be faster.
+        '''
+        for i,val in enumerate(vector):
+            if val > value:
+                return i-1
+        return None
+    xv = x[:,0,0]
+    yv = y[0,:,0]
+    zv = z[0,0,:]
+    a,b,c = xi, yi, zi
+    i = get_index(a,xv)
+    j = get_index(b,yv)
+    k = get_index(c,zv)
+    x1 = x[i,j,k]
+    x2 = x[i+1,j,k]
+    y1 = y[i,j,k]
+    y2 = y[i,j+1,k]
+    z1 = z[i,j,k]
+    z2 = z[i,j,k+1]
+    u1 = cd[i, j, k]
+    u2 = cd[i+1, j, k]
+    u3 = cd[i, j+1, k]
+    u4 = cd[i+1, j+1, k]
+    u5 = cd[i, j, k+1]
+    u6 = cd[i+1, j, k+1]
+    u7 = cd[i, j+1, k+1]
+    u8 = cd[i+1, j+1, k+1]
+    w1 = u2 + (u2-u1)/(x2-x1)*(a-x2)
+    w2 = u4 + (u4-u3)/(x2-x1)*(a-x2)
+    w3 = w2 + (w2-w1)/(y2-y1)*(b-y2)
+    w4 = u5 + (u6-u5)/(x2-x1)*(a-x1)
+    w5 = u7 + (u8-u7)/(x2-x1)*(a-x1)
+    w6 = w4 + (w5-w4)/(y2-y1)*(b-y1)
+    w7 = w3 + (w6-w3)/(z2-z1)*(c-z1)
+    u = w7
+    return u
+pos = atoms.get_positions()
+P1 = np.array([0.0, 5.0, 5.0])
+P2 = np.array([9.0, 5.0, 5.0])
+npoints = 60
+points = [P1 + n*(P2-P1)/npoints for n in range(npoints)]
+R = [np.linalg.norm(p-P1) for p in points]
+# interpolated line
+icd = [interp3d(x,y,z,cd,p[0],p[1],p[2]) for p in points]
 import matplotlib.pyplot as plt
-from scipy.optimize import leastsq
-# raw data from 2.2.3-al-analyze-eos.py
-v = np.array([13.72, 14.83, 16.0, 17.23, 18.52])
-e = np.array([-56.29, -56.41, -56.46, -56.46, -56.42])
-#make a vector to evaluate fits on with a lot of points so it looks smooth
-vfit = np.linspace(min(v),max(v),100)
-### fit a parabola to the data
-# y = ax^2 + bx + c
-a,b,c = np.polyfit(v,e,2) #this is from pylab
-'''
-the parabola does not fit the data very well, but we can use it to get
-some analytical guesses for other parameters.
-V0 = minimum energy volume, or where dE/dV=0
-E = aV^2 + bV + c
-dE/dV = 2aV + b = 0
-V0 = -b/2a
-E0 is the minimum energy, which is:
-E0 = aV0^2 + bV0 + c
-B is equal to V0*d^2E/dV^2, which is just 2a*V0
-and from experience we know Bprime_0 is usually a small number like 4
-'''
-#now here are our initial guesses.
-v0 = -b/(2*a)
-e0 = a*v0**2 + b*v0 + c
-b0 = 2*a*v0
-bP = 4
-#now we have to create the equation of state function
-def Murnaghan(parameters,vol):
-    '''
-    given a vector of parameters and volumes, return a vector of energies.
-    equation From PRB 28,5480 (1983)
-    '''
-    E0 = parameters[0]
-    B0 = parameters[1]
-    BP = parameters[2]
-    V0 = parameters[3]
-    E = E0 + B0*vol/BP*(((V0/vol)**BP)/(BP-1)+1) - V0*B0/(BP-1.)
-    return E
-# and we define an objective function that will be minimized
-def objective(pars,y,x):
-    #we will minimize this function
-    err =  y - Murnaghan(pars,x)
-    return err
-x0 = [e0, b0, bP, v0] #initial guesses in the same order used in the Murnaghan function
-murnpars, ier = leastsq(objective, x0, args=(e,v)) #this is from scipy
-#now we make a figure summarizing the results
-plt.plot(v,e,'ro')
-plt.plot(vfit, a*vfit**2 + b*vfit + c,'--',label='parabolic fit')
-plt.plot(vfit, Murnaghan(murnpars,vfit), label='Murnaghan fit')
-plt.xlabel('Volume ($\AA^3$)')
-plt.ylabel('Energy (eV)')
-plt.legend(loc='best')
-#add some text to the figure in figure coordinates
-ax = plt.gca()
-plt.text(0.4, 0.5, 'Min volume = {0:1.2f} $\AA^3$'.format(murnpars[3]),
-     transform = ax.transAxes)
-plt.text(0.4, 0.4, 'Bulk modulus = {0:1.2f} eV/$\AA^3$ = {1:1.2f} GPa'.format(murnpars[1],
-                                                                          murnpars[1]*160.21773),
-     transform = ax.transAxes)
-plt.savefig('images/a-eos.png')
-np.set_printoptions(precision=3)
-print 'initial guesses  : ', np.array(x0) #array for easy printing
-print 'fitted parameters: ', murnpars
+plt.plot(R, icd)
+cR = np.linalg.norm(pos[0] - P1)
+oR = np.linalg.norm(pos[1] - P1)
+plt.plot([cR, cR], [0, 2], 'r-') #markers for where the nuclei are
+plt.plot([oR, oR], [0, 8], 'r-')
+plt.xlabel('|R| ($\AA$)')
+plt.ylabel('Charge density (e/$\AA^3$)')
+plt.savefig('images/CO-charge-density.png')
+plt.show()

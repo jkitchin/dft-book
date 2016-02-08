@@ -1,6 +1,6 @@
 
 #+LANGUAGE:  en
-#+OPTIONS:   H:10 num:t toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t d:HIDDEN
+#+OPTIONS:   H:10 num:t toc:nil \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t d:HIDDEN
 #+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
 #+OPTIONS:   LaTeX:dvipng
 #+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
@@ -16,6 +16,7 @@
 #+LATEX_HEADER: \usepackage{minted}
 #+LATEX_HEADER: \usepackage{lmodern}
 #+LATEX_HEADER: \usepackage{makeidx}
+#+LATEX_HEADER: \usepackage{longtable}
 #+LATEX_HEADER: \newcommand{\LaunchBinary}[2]{%
 #+LATEX_HEADER:   % #1: layer name,
 #+LATEX_HEADER:   % #2: link text

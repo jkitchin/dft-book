@@ -1,97 +1,46 @@
-#!/usr/bin/env python
-import multiprocessing
-from jasp import *
-from ase import Atom, Atoms
-from ase.utils.eos import EquationOfState
 import numpy as np
-JASPRC['queue.nodes'] = 1
-# Here we will be able to run three MPI jobs on 2 cores at a time.
-JASPRC['queue.ppn'] = 6
-JASPRC['multiprocessing.cores_per_process'] = 2
-# to submit this script, save it as cu-mp.py
-# qsub -l nodes=1:ppn=6,walltime=10:00:00 cu-mp.py
-import os
-if 'PBS_O_WORKDIR' in os.environ:
-    os.chdir(os.environ['PBS_O_WORKDIR'])
-# this is the function that runs a calculation
-def do_calculation(calculator):
-    'function to run a calculation through multiprocessing'
-    with calculator as calc:
-        atoms = calc.get_atoms()
-        e = atoms.get_potential_energy()
-        v = atoms.get_volume()
-    return v, e
-# this only runs in the main script, not in processes on other cores
-if __name__ == '__main__':
-    # setup an atoms object
-    a = 3.6
-    atoms = Atoms([Atom('Cu',(0, 0, 0))],
-                  cell=0.5 * a*np.array([[1.0, 1.0, 0.0],
-                                         [0.0, 1.0, 1.0],
-                                         [1.0, 0.0, 1.0]]))
-    v0 = atoms.get_volume()
-    # Step 1
-    COUNTER = 0
-    calculators = []  # list of calculators to be run
-    factors = [-0.1, 0.05, 0.0, 0.05, 0.1]
-    for f in factors:
-        newatoms = atoms.copy()
-        newatoms.set_volume(v0*(1 + f))
-        label = 'bulk/cu-mp2/step1-{0}'.format(COUNTER)
-        COUNTER += 1
-        calc = jasp(label,
-                    xc='PBE',
-                    encut=350,
-                    kpts=(6,6,6),
-                    isym=2,
-                    debug=logging.DEBUG,
-                    atoms=newatoms)
-        calculators.append(calc)
-    # now we set up the Pool of processes
-    pool = multiprocessing.Pool(processes=3) # ask for 6 cores but run MPI on 2 cores
-    # get the output from running each calculation
-    out = pool.map(do_calculation, calculators)
-    pool.close()
-    pool.join() # this makes the script wait here until all jobs are done
-    # now proceed with analysis
-    V = [x[0] for x in out]
-    E = [x[1] for x in out]
-    eos = EquationOfState(V, E)
-    v1, e1, B = eos.fit()
-    print 'step1: v1 = {v1}'.format(**locals())
-    ### ################################################################
-    ## STEP 2, eos around the minimum
-    ## #################################################################
-    factors = [-0.06, -0.04, -0.02,
-               0.0,
-               0.02, 0.04, 0.06]
-    calculators = [] # reset list
-    for f in factors:
-        newatoms = atoms.copy()
-        newatoms.set_volume(v1*(1 + f))
-        label = 'bulk/cu-mp2/step2-{0}'.format(COUNTER)
-        COUNTER += 1
-        calc = jasp(label,
-                    xc='PBE',
-                    encut=350,
-                    kpts=(6,6,6),
-                    isym=2,
-                    debug=logging.DEBUG,
-                    atoms=newatoms)
-        calculators.append(calc)
-    pool = multiprocessing.Pool(processes=3)
-    out = pool.map(do_calculation, calculators)
-    pool.close()
-    pool.join() # wait here for calculations to finish
-    # proceed with analysis
-    V += [x[0] for x in out]
-    E += [x[1] for x in out]
-    V = np.array(V)
-    E = np.array(E)
-    f = np.array(V)/v1
-    # only take points within +- 10% of the minimum
-    ind = (f >=0.90) & (f <= 1.1)
-    eos = EquationOfState(V[ind], E[ind])
-    v2, e2, B = eos.fit()
-    print 'step2: v2 = {v2}'.format(**locals())
-    eos.plot('images/cu-mp2-eos.png',show=True)
+import matplotlib.pyplot as plt
+import time
+'''
+These are the brainless way to calculate numerical derivatives. They
+work well for very smooth data. they are surprisingly fast even up to
+10000 points in the vector.
+'''
+x = np.linspace(0.78, 0.79, 100) # 100 points between 0.78 and 0.79
+y = np.sin(x)
+dy_analytical = np.cos(x)
+'''
+let us use a forward difference method:
+that works up until the last point, where there is not
+a forward difference to use. there, we use a backward difference.
+'''
+tf1 = time.time()
+dyf = [0.0]*len(x)
+for i in range(len(y)-1):
+    dyf[i] = (y[i+1] - y[i])/(x[i+1]-x[i])
+# set last element by backwards difference
+dyf[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
+print(' Forward difference took {0:1.1f} seconds'.format(time.time() - tf1))
+# and now a backwards difference
+tb1 = time.time()
+dyb = [0.0]*len(x)
+# set first element by forward difference
+dyb[0] = (y[0] - y[1])/(x[0] - x[1])
+for i in range(1,len(y)):
+    dyb[i] = (y[i] - y[i-1])/(x[i]-x[i-1])
+print(' Backward difference took {0:1.1f} seconds'.format(time.time() - tb1))
+# and now, a centered formula
+tc1 = time.time()
+dyc = [0.0]*len(x)
+dyc[0] = (y[0] - y[1])/(x[0] - x[1])
+for i in range(1,len(y)-1):
+    dyc[i] = (y[i+1] - y[i-1])/(x[i+1]-x[i-1])
+dyc[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
+print(' Centered difference took {0:1.1f} seconds'.format(time.time() - tc1))
+# the centered formula is the most accurate formula here
+plt.plot(x,dy_analytical, label='analytical derivative')
+plt.plot(x,dyf,'--', label='forward')
+plt.plot(x,dyb,'--', label='backward')
+plt.plot(x,dyc,'--', label='centered')
+plt.legend(loc='lower left')
+plt.savefig('images/simple-diffs.png')

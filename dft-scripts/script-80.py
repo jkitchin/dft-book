@@ -1,4 +1,7 @@
-from ase.lattice.compounds import NaCl
 from ase.io import write
-atoms = NaCl(['Na', 'Cl'], latticeconstant=5.65)
-write('images/NaCl.png', atoms, show_unit_cell=2, rotation='45x,45y,45z')
+from ase.lattice.cubic import FaceCenteredCubic
+atoms = FaceCenteredCubic('Ag', directions=[[0, 1, 1],
+                                            [1, 0, 1],
+                                            [1, 1, 0]])
+write('images/Ag-fcc-primitive.png', atoms, show_unit_cell=2)
+print atoms

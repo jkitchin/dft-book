@@ -1,18 +1,17 @@
-# the clean gold slab
 from jasp import *
-from ase.lattice.surface import fcc111, add_adsorbate
-from ase.constraints import FixAtoms
-atoms = fcc111('Au', size=(3,3,3), vacuum=10)
-# now we constrain the slab
-c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
-atoms.set_constraint(c)
-#from ase.visualize import view; view(atoms)
-with jasp('surfaces/Au-pbe-d2',
-          xc='PBE',
-          encut=350,
-          kpts=(4,4,1),
-          ibrion=1,
-          nsw=100,
-          lvdw=True,
-          atoms=atoms) as calc:
-    print atoms.get_potential_energy()
+# don't forget to normalize your total energy to a formula unit. Cu2O
+# has 3 atoms, so the number of formula units in an atoms is
+# len(atoms)/3.
+with jasp('bulk/Cu2O-U=4.0') as calc:
+    atoms = calc.get_atoms()
+    cu2o_energy = atoms.get_potential_energy()/(len(atoms)/3)
+with jasp('bulk/CuO-U=4.0') as calc:
+    atoms = calc.get_atoms()
+    cuo_energy = atoms.get_potential_energy()/(len(atoms)/2)
+# make sure to use the same cutoff energy for the O2 molecule!
+with jasp('molecules/O2-sp-triplet-400') as calc:
+    atoms = calc.get_atoms()
+    o2_energy = atoms.get_potential_energy()
+rxn_energy = 4.0*cuo_energy - o2_energy - 2.0*cu2o_energy
+print 'Reaction energy  = {0} eV'.format(rxn_energy)
+print 'Corrected energy = {0} eV'.format(rxn_energy - 1.36)

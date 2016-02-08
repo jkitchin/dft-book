@@ -1,1 +1,1 @@
-export VASP_SCRIPT=$HOME/kitchinpython/jasp/bin/run_vasp.py
+pylab.save('pdat.dat',(x,y))

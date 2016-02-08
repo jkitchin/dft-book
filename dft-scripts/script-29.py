@@ -1,54 +1,35 @@
+#!/usr/bin/env python
+from ase import *
+from ase.structure import molecule
 from jasp import *
-from ase.units import Debye
-with jasp('molecules/co-centered') as calc:
-    atoms = calc.get_atoms()
-    atoms.get_potential_energy()
-    vcd = VaspChargeDensity()
-    cd = np.array(vcd.chg[0])
-    n0, n1, n2 = cd.shape
-    s0 = 1.0 / n0
-    s1 = 1.0 / n1
-    s2 = 1.0 / n2
-    X, Y, Z = np.mgrid[0.0:1.0:s0,
-                       0.0:1.0:s1,
-                       0.0:1.0:s2]
-    C = np.column_stack([X.ravel(),
-                         Y.ravel(),
-                         Z.ravel()])
-    atoms = calc.get_atoms()
-    uc = atoms.get_cell()
-    real = np.dot(C, uc)
-    # now convert arrays back to unitcell shape
-    x = np.reshape(real[:, 0], (n0, n1, n2))
-    y = np.reshape(real[:, 1], (n0, n1, n2))
-    z = np.reshape(real[:, 2], (n0, n1, n2))
-    nelements = n0 * n1 * n2
-    voxel_volume = atoms.get_volume() / nelements
-    total_electron_charge = -cd.sum() * voxel_volume
-    electron_density_center = np.array([(cd * x).sum(),
-                                        (cd * y).sum(),
-                                        (cd * z).sum()])
-    electron_density_center *= voxel_volume
-    electron_density_center /= total_electron_charge
-    electron_dipole_moment = -electron_density_center * total_electron_charge
-    # now the ion charge center. We only need the Zval listed in the potcar
-    from jasp.POTCAR import get_ZVAL
-    LOP = calc.get_pseudopotentials()
-    ppp = os.environ['VASP_PP_PATH']
-    zval = {}
-    for sym, ppath, hash in LOP:
-        fullpath = os.path.join(ppp, ppath)
-        z = get_ZVAL(fullpath)
-        zval[sym] = z
-    ion_charge_center = np.array([0.0, 0.0, 0.0])
-    total_ion_charge = 0.0
-    for atom in atoms:
-        Z = zval[atom.symbol]
-        total_ion_charge += Z
-        pos = atom.position
-        ion_charge_center += Z*pos
-    ion_charge_center /= total_ion_charge
-    ion_dipole_moment = ion_charge_center * total_ion_charge
-    dipole_vector = (ion_dipole_moment + electron_dipole_moment)
-    dipole_moment = ((dipole_vector**2).sum())**0.5 / Debye
-    print 'The dipole moment is {0:1.2f} Debye'.format(dipole_moment)
+### Setup calculators
+benzene = molecule('C6H6')
+benzene.set_cell([10, 10, 10])
+benzene.center()
+with jasp('molecules/benzene',
+          xc='PBE',
+          nbands=18,
+          encut=350,
+          atoms=benzene) as calc:
+    print(benzene.get_potential_energy())
+    x1, y1, z1, cd1 = calc.get_charge_density()
+chlorobenzene =  molecule('C6H6')
+chlorobenzene.set_cell([10, 10, 10])
+chlorobenzene.center()
+chlorobenzene[11].symbol ='Cl'
+with jasp('molecules/chlorobenzene',
+          xc='PBE',
+          nbands=18,
+          encut=350,
+          atoms=chlorobenzene) as calc:
+    chlorobenzene.get_potential_energy()
+    x2, y2, z2, cd2 = calc.get_charge_density()
+cdiff = cd2 - cd1
+print(cdiff.min(), cdiff.max())
+##########################################
+##### set up visualization of charge difference
+from enthought.mayavi import mlab
+mlab.contour3d(x1, y1, z1, cdiff,
+               contours=[-0.02, 0.02])
+mlab.savefig('images/cdiff.png')
+mlab.show()

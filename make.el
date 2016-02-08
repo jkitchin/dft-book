@@ -1,3 +1,7 @@
+;; M-x eval-buffer to run this
+;; Should be run on gilgamesh.
+
+
 (load-file "dft.el")
 (find-file "dft.org")
 (require 'ox-publish)
@@ -7,7 +11,7 @@
 	 :base-directory "/home-research/jkitchin/dft/course/dft-book/"
 	 :base-extension "org"
 	 :publishing-directory "~/home-research/jkitchin/dft/course/dft-book/gh-pages/"
-	 :exclude "gh-pages\\|test\\|archive\\|molecules\\|surfaces\\|bulk\\|study-guides\\|blog\\|topics\\|index\\|help\\|header" 
+	 :exclude "gh-pages\\|test\\|archive\\|molecules\\|surfaces\\|bulk\\|study-guides\\|blog\\|topics\\|index\\|help\\|header"
 	 :recursive t
 	 :publishing-function org-html-publish-to-html
 	 :headline-levels 4             ; Just the default for this project.

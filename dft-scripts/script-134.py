@@ -1,34 +1,30 @@
-from ase import Atoms, Atom
+# run CuO calculation
 from jasp import *
-import sys
-import matplotlib.pyplot as plt
-import numpy as np
-from ase.dft import DOS
-import pylab as plt
-a = 3.9  # approximate lattice constant
-b = a / 2.
-bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
-             cell=[(0, b, b),
-                   (b, 0, b),
-                   (b, b, 0)])
-kpts = [8, 10, 12, 14, 16, 18, 20]
-for k in kpts:
-    with jasp('bulk/pd-dos-k{0}-ismear-5'.format(k),
-              encut=300,
-              xc='PBE',
-              kpts=(k, k, k),
-              atoms=bulk) as calc:
-        # this runs the calculation
-        try:
-            bulk.get_potential_energy()
-            dos = DOS(calc, width=0.2)
-            d = dos.get_dos() + k / 4.0
-            e = dos.get_energies()
-            plt.plot(e,d, label='k={0}'.format(k))
-        except:
-            pass
-plt.xlabel('energy (eV)')
-plt.ylabel('DOS')
-plt.legend()
-plt.savefig('images/pd-dos-k-convergence-ismear-5.png')
-plt.show()
+from ase import Atom, Atoms
+# CuO
+# http://cst-www.nrl.navy.mil/lattice/struk/b26.html
+# http://www.springermaterials.com/docs/info/10681727_51.html
+a = 4.6837
+b = 3.4226
+c = 5.1288
+beta = 99.54/180*np.pi
+y = 0.5819
+a1 = np.array([0.5*a, -0.5*b, 0.0])
+a2 = np.array([0.5*a, 0.5*b, 0.0])
+a3 = np.array([c*np.cos(beta), 0.0, c*np.sin(beta)])
+atoms = Atoms([Atom('Cu', 0.5*a2),
+               Atom('Cu', 0.5*a1 + 0.5*a3),
+               Atom('O', -y*a1 + y*a2 + 0.25*a3),
+               Atom('O',  y*a1 - y*a2 - 0.25*a3)],
+               cell=(a1, a2, a3))
+with jasp('bulk/CuO',
+          encut=400,
+          kpts=(8, 8, 8),
+          ibrion=2,
+          isif=3,
+          nsw=30,
+          xc='PBE',
+          atoms=atoms) as calc:
+    calc.set_nbands()
+    calc.calculate()
+    print calc

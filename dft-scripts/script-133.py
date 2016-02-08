@@ -1,16 +1,23 @@
+# run Cu2O calculation
 from jasp import *
-from ase.dft import DOS
-with jasp('bulk/pd-dos') as calc:
-    calc.clone('bulk/pd-dos-ismear-5')
-with jasp('bulk/pd-dos-ismear-5') as calc:
-    bulk = calc.get_atoms()
-    calc.set(ismear=-5)
-    bulk.get_potential_energy()
-    dos = DOS(calc, width=0.2)
-    d = dos.get_dos()
-    e = dos.get_energies()
-import pylab as plt
-plt.plot(e, d)
-plt.xlabel('energy [eV]')
-plt.ylabel('DOS')
-plt.savefig('images/pd-dos-ismear-5.png')
+from ase import Atom, Atoms
+# http://phycomp.technion.ac.il/~ira/types.html#Cu2O
+a = 4.27
+atoms = Atoms([Atom('Cu', [0, 0, 0]),
+               Atom('Cu', [0.5, 0.5, 0.0]),
+               Atom('Cu', [0.5, 0.0, 0.5]),
+               Atom('Cu', [0.0, 0.5, 0.5]),
+               Atom('O', [0.25, 0.25, 0.25]),
+               Atom('O', [0.75, 0.75, 0.75])])
+atoms.set_cell((a, a, a), scale_atoms=True)
+with jasp('bulk/Cu2O',
+          encut=400,
+          kpts=(8, 8, 8),
+          ibrion=2,
+          isif=3,
+          nsw=30,
+          xc='PBE',
+          atoms=atoms) as calc:
+    calc.set_nbands()
+    calc.calculate()
+    print calc

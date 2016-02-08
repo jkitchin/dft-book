@@ -1,17 +1,19 @@
 from jasp import *
-from enthought.mayavi.mlab import *
+from enthought.mayavi import mlab
 from ase.data import vdw_radii
 from ase.data.colors import cpk_colors
 with jasp('molecules/simple-co') as calc:
     atoms = calc.get_atoms()
     x, y, z, cd = calc.get_charge_density()
-mlab.figure(1, bgcolor=(1, 1, 1)) # make a white figure
+# make a white figure
+mlab.figure(1, bgcolor=(1, 1, 1))
 # plot the atoms as spheres
 for atom in atoms:
     mlab.points3d(atom.x,
                   atom.y,
                   atom.z,
-                  scale_factor=vdw_radii[atom.number]/5., #this determines the size of the atom
+                  #this determines the size of the atom
+                  scale_factor=vdw_radii[atom.number] / 5.,
                   resolution=20,
                   # a tuple is required for the color
                   color=tuple(cpk_colors[atom.number]),

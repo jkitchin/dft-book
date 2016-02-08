@@ -1,33 +1,18 @@
-# get bulk Cu and Pd energies. <<pure-metal-components>>
 from jasp import *
-from ase import Atom, Atoms
-atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000])],
-              cell=  [[ 1.818,  0.000,  1.818],
-                      [ 1.818,  1.818,  0.000],
-                      [ 0.000,  1.818,  1.818]])
-with jasp('bulk/alloy/cu',
-          xc='PBE',
-          encut=350,
-          kpts=(13, 13, 13),
-          nbands=9,
-          ibrion=2,
-          isif=3,
-          nsw=10,
-          atoms=atoms) as calc:
-    cu = atoms.get_potential_energy()
-atoms = Atoms([Atom('Pd',  [0.000,      0.000,      0.000])],
-              cell=[[ 1.978,  0.000,  1.978],
-                    [ 1.978,  1.978,  0.000],
-                    [0.000,  1.978,  1.978]])
-with jasp('bulk/alloy/pd',
-          xc='PBE',
-          encut=350,
-          kpts=(13, 13, 13),
-          nbands=9,
-          ibrion=2,
-          isif=3,
-          nsw=10,
-          atoms=atoms) as calc:
-    pd = atoms.get_potential_energy()
-print 'Cu energy = {0} eV'.format(cu)
-print 'Pd energy = {0} eV'.format(pd)
+from jasp.elastic_moduli import *
+with jasp('bulk/Al-bulk') as calc:
+    calc.clone('bulk/Al-elastic')
+with jasp('bulk/Al-elastic',
+          ibrion=6,    #
+          isif=3,      # gets elastic constants
+          potim=0.015,  # displacements
+          nsw=1,
+          nfree=2) as calc:
+    atoms = calc.get_atoms()
+    print atoms.get_potential_energy()
+    EM = calc.get_elastic_moduli()
+    print EM
+c11 = EM[0,0]
+c12 = EM[0,1]
+B = (c11 + 2 * c12) / 3.0
+print B

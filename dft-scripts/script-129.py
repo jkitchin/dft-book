@@ -1,16 +1,30 @@
 from jasp import *
-# don't forget to normalize your total energy to a formula unit. Cu2O
-# has 3 atoms, so the number of formula units in an atoms is
-# len(atoms)/3.
-with jasp('bulk/Cu2O') as calc:
+# bulk energy 1
+with jasp('bulk/alloy/cu') as calc:
     atoms = calc.get_atoms()
-    cu2o_energy = atoms.get_potential_energy()/(len(atoms)/3)
-with jasp('bulk/CuO') as calc:
+    cu = atoms.get_potential_energy()/len(atoms)
+# bulk energy 2
+with jasp('bulk/alloy/pd') as calc:
     atoms = calc.get_atoms()
-    cuo_energy = atoms.get_potential_energy()/(len(atoms)/2)
-# make sure to use the same cutoff energy for the O2 molecule!
-with jasp('molecules/O2-sp-triplet-400') as calc:
+    pd = atoms.get_potential_energy()/len(atoms)
+with jasp('bulk/alloy/cupd-1') as calc:
     atoms = calc.get_atoms()
-    o2_energy = atoms.get_potential_energy()
-rxn_energy = 4.0*cuo_energy - o2_energy - 2.0*cu2o_energy
-print 'Reaction energy = {0} eV'.format(rxn_energy)
+    e1 = atoms.get_potential_energy()
+    # subtract bulk energies off of each atom in cell
+    for atom in atoms:
+        if atom.symbol == 'Cu':
+            e1 -= cu
+        else:
+            e1 -= pd
+    e1 /= len(atoms)  # normalize by number of atoms in cell
+with jasp('bulk/alloy/cupd-2') as calc:
+    atoms = calc.get_atoms()
+    e2 = atoms.get_potential_energy()
+    for atom in atoms:
+        if atom.symbol == 'Cu':
+            e2 -= cu
+        else:
+            e2 -= pd
+    e2 /= len(atoms)
+print 'Delta Hf cupd-1 = {0:1.2f} eV/atom'.format(e1)
+print 'Delta Hf cupd-2 = {0:1.2f} eV/atom'.format(e2)

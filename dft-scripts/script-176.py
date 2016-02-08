@@ -1,27 +1,28 @@
 from jasp import *
-from ase.io import write
-with jasp('surfaces/Pt-slab') as calc:
+import matplotlib.pyplot as plt
+with jasp('surfaces/Al-slab-relaxed') as calc:
     atoms = calc.get_atoms()
-    e_slab = atoms.get_potential_energy()
-write('images/pt-slab.png', atoms,show_unit_cell=2)
-with jasp('surfaces/Pt-slab-O-fcc') as calc:
+with jasp('surfaces/Al-slab-locpot',
+          xc='PBE',
+          kpts=(6, 6, 1),
+          encut=350,
+          lvtot=True,  # write out local potential
+          lvhar=True,  # write out only electrostatic potential, not xc pot
+          atoms=atoms) as calc:
+    calc.calculate()
+    ef = calc.get_fermi_level()
     atoms = calc.get_atoms()
-    e_slab_o_fcc = atoms.get_potential_energy()
-write('images/pt-slab-fcc-o.png', atoms,show_unit_cell=2)
-with jasp('surfaces/Pt-slab-O-hcp') as calc:
-    atoms = calc.get_atoms()
-    e_slab_o_hcp = atoms.get_potential_energy()
-write('images/pt-slab-hcp-o.png', atoms,show_unit_cell=2)
-with jasp('surfaces/Pt-slab-O-bridge') as calc:
-    atoms = calc.get_atoms()
-    e_slab_o_bridge = atoms.get_potential_energy()
-write('images/pt-slab-bridge-o.png', atoms,show_unit_cell=2)
-with jasp('molecules/O2-sp-triplet-350') as calc:
-    atoms = calc.get_atoms()
-    e_O2 = atoms.get_potential_energy()
-Hads_fcc = e_slab_o_fcc - e_slab - 0.5 * e_O2
-Hads_hcp = e_slab_o_hcp - e_slab - 0.5 * e_O2
-Hads_bridge = e_slab_o_bridge - e_slab - 0.5 * e_O2
-print 'Hads (fcc)    = {0} eV/O'.format(Hads_fcc)
-print 'Hads (hcp)    = {0} eV/O'.format(Hads_hcp)
-print 'Hads (bridge) = {0} eV/O'.format(Hads_bridge)
+    x, y, z, lp = calc.get_local_potential()
+nx, ny, nz = lp.shape
+axy = np.array([np.average(lp[:, :, z]) for z in range(nz)])
+# setup the x-axis in realspace
+uc = atoms.get_cell()
+xaxis = np.linspace(0, uc[2][2], nz)
+plt.plot(xaxis, axy)
+plt.plot([min(xaxis), max(xaxis)], [ef, ef], 'k:')
+plt.xlabel('Position along z-axis')
+plt.ylabel('x-y averaged electrostatic potential')
+plt.savefig('images/Al-wf.png')
+ind = (xaxis > 0) & (xaxis < 5)
+wf = np.average(axy[ind]) - ef
+print ' The workfunction is {0:1.2f} eV'.format(wf)
