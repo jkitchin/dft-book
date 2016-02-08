@@ -3985,6 +3985,7 @@ with jasp('molecules/nh3-initial',
           atoms=atoms) as calc:
     try:
         calc.calculate()
+        print(atoms.get_potential_energy())
     except (VaspSubmitted, VaspQueued):
         pass
 
@@ -3996,17 +3997,21 @@ with jasp('molecules/nh3-final',
           atoms=atoms2) as calc:
     try:
         calc.calculate()
+        print(atoms2.get_potential_energy())
     except (VaspSubmitted, VaspQueued):
         pass
 #+END_SRC
 
 #+RESULTS:
+: -19.44121951
+: -19.4412195
 
 *** Run band calculation
 Now we do the band calculation. [[index:nudged elastic band]]
 #+BEGIN_SRC python
 # Run NH3 NEB calculations
 from jasp import *
+JASPRC['queue.walltime'] = '10:00:00'
 from ase.neb import NEB
 
 with jasp('molecules/nh3-initial') as calc:
@@ -4039,7 +4044,7 @@ plt.show()
 
 #+RESULTS:
 : Optimization terminated successfully.
-:          Current function value: -0.223946
+:          Current function value: -0.223098
 :          Iterations: 15
 :          Function evaluations: 30
 
