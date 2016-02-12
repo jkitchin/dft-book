@@ -1758,120 +1758,28 @@ with jasp('molecules/h2o-bader',
 
 #+RESULTS:
 
-Now that the calculation is done, get the bader code and scripts from http://theory.cm.utexas.edu/henkelman/code/bader/. Following the "Note for VASP users" at that site we now combine the relevant charge densities.  The core charge is written to AECCAR0 and the vaeance charge to AECCAR2. 
+Now that the calculation is done, get the bader code and scripts from http://theory.cm.utexas.edu/henkelman/code/bader/. 
 
-#+BEGIN_SRC sh :dir /home-research/jkitchin/dft-book/molecules/h2o-bader
-chgsum.pl AECCAR0 AECCAR2
-#+END_SRC
-
-#+RESULTS:
-: Atoms in file1: 3, Atoms in file2: 3
-: Points in file1: 1720320, Points in file2: 1720320
-
-Now, we can use that as a reference file for the bader analysis.
-#+BEGIN_SRC sh :dir /home-research/jkitchin/dft-book/molecules/h2o-bader
-bader CHGCAR -ref CHGCAR_sum
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-
-  GRID BASED BADER ANALYSIS  (Version 0.95 11/17/15)
-
-  OPEN ... CHGCAR              
-  VASP5-STYLE INPUT FILE
-  DENSITY-GRID:  112 x 128 x 120
-  CLOSE ... CHGCAR              
-  RUN TIME:    0.88 SECONDS
-
-  OPEN ... CHGCAR_sum          
-  VASP5-STYLE INPUT FILE
-  DENSITY-GRID:  112 x 128 x 120
-  CLOSE ... CHGCAR_sum          
-  RUN TIME:    0.87 SECONDS
-
-  CALCULATING BADER CHARGE DISTRIBUTION
-                 0  10  25  50  75  100
-  PERCENT DONE:  ********************** 
-
-  REFINING AUTOMATICALLY
-  ITERATION: 1
-  EDGE POINTS:         15484
-  REASSIGNED POINTS:     456
-  ITERATION: 2
-  CHECKED POINTS:       5070
-  REASSIGNED POINTS:       0
-
-  RUN TIME:       0.69 SECONDS
-
-  CALCULATING MINIMUM DISTANCES TO ATOMS
-                 0  10  25  50  75  100
-  PERCENT DONE:  **********************
-  RUN TIME:    0.08 SECONDS
-
-  WRITING BADER ATOMIC CHARGES TO ACF.dat
-  WRITING BADER VOLUME CHARGES TO BCF.dat
-
-  NUMBER OF BADER MAXIMA FOUND:             27
-      SIGNIFICANT MAXIMA FOUND:              3
-                 VACUUM CHARGE:         0.0225
-           NUMBER OF ELECTRONS:        7.99999
- 
-#+end_example
-
-
-#+BEGIN_src sh :dir /home-research/jkitchin/dft-book/molecules/h2o-bader :results output
-cat ACF.dat
-#+END_SRC
-
-#+RESULTS:
-:     #         X           Y           Z        CHARGE     MIN DIST    ATOMIC VOL
-:  --------------------------------------------------------------------------------
-:     1   6.0000000   6.7632390   6.5963091   7.2161934   0.6645993  45.0501815
-:     2   6.0000000   7.5264840   5.9999999   0.3807380   0.0912967   7.0002788
-:     3   6.0000000   5.9999940   5.9999999   0.3805618   0.0912967   6.8671666
-:  --------------------------------------------------------------------------------
-:     VACUUM CHARGE:               0.0225
-:     VACUUM VOLUME:            1985.6867
-:     NUMBER OF ELECTRONS:         8.0000
-
-The results above are comparable to those from gpaw at https://wiki.fysik.dtu.dk/gpaw/tutorials/bader/bader.html.
-
-
-This next script should work, but only if displacement is set to None or we convert the positions to Bohr. Otherwise, the positions do not match because of a Bohr/Angstrom units problem (bader uses Bohr, and ase uses angstroms) Note the sorting that has to be done, because the order of atoms in the Atoms object is not the same as in the POSCAR file.
-
-#+BEGIN_SRC python :results output org raw
+We use this code to see the changes in charges on the atoms.
+#+BEGIN_SRC python
 from jasp import *
-from ase.io.bader import attach_charges
-from ase.units import Bohr
 
 with jasp('molecules/h2o-bader') as calc:
     atoms = calc.get_atoms()
-
-    symbols = np.array(atoms.get_chemical_symbols())[calc.sort]
-    pos = atoms.positions[calc.sort] * Bohr
-    newatoms = Atoms(symbols, positions=pos, cell=atoms.get_cell())
-
-    attach_charges(newatoms, 'ACF.dat')
-
-    print('#+tblname: bader')
-    print('#+caption: Bader charges for a water molecule')
-    print('| atom | Bader charge|')
-    print('|-')
-    for atom in newatoms:
+    calc.bader(ref=True, overwrite=True)
+    atoms.attach_charges('ACF.dat')
+    for atom in atoms:
         print('|{0} | {1} |'.format(atom.symbol, atom.charge))
 #+END_SRC
 
 #+RESULTS:
-#+tblname: bader
-#+caption: Bader charges for a water molecule
-| atom | Bader charge |
-|------+--------------|
-| O    |    7.2161934 |
-| H    |     0.380738 |
-| H    |    0.3805618 |
+: |O | -1.2326 |
+: |H | 0.6161 |
+: |H | 0.6165 |
 
-You can see some charge has been "transferred" form H (which usually has 1 electron) to oxygen (which usually has 6 electrons).
+The results above are comparable to those from gpaw at https://wiki.fysik.dtu.dk/gpaw/tutorials/bader/bader.html.
+
+You can see some charge has been "transferred" from H to O.
 
 
 ** Geometry optimization
