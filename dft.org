@@ -922,7 +922,7 @@ In this section we covered properties that require simple calculations, but not 
    :PROPERTIES:
    :ID:       4fff14db-59ee-4e84-bbd2-f4428d1679f9
    :END:
-There are many properties that only require a single DFT calculation to obtain the energy, forces, density of states, electron denisty and electrostatic potential. This section describes some of these calculations and their analysis.
+There are many properties that only require a single DFT calculation to obtain the energy, forces, density of states, electron density and electrostatic potential. This section describes some of these calculations and their analysis.
 *** Energy and forces
 Two of the most important quantities we are interested in are the total
 energy and the forces on the atoms. To get these quantities, we have
@@ -1224,7 +1224,7 @@ for atom in atoms:
     mlab.points3d(atom.x,
                   atom.y,
                   atom.z,
-                  scale_factor=vdw_radii[atom.number]/5.,
+                  scale_factor=vdw_radii[atom.number]/5,
                   resolution=20,
                   # a tuple is required for the color
                   color=tuple(cpk_colors[atom.number]),
@@ -1439,25 +1439,25 @@ for i in range(ni):
     for j in range(nj):
         cdiff_plane[i, j] = vinterp3d(x1, y1, z1, cdiff, X[i, j], Y[i, j], 5.0)
 
-plt.imshow(cdiff_plane,
+plt.imshow(cdiff_plane.T,
            vmin=-0.02,  # min charge diff to plot
            vmax=0.02,  # max charge diff to plot
            cmap=plt.cm.gist_heat,  # colormap
            extent=(0., 10., 0., 10.))  # axes limits
 
 # plot atom positions. It is a little tricky to see why we reverse the x and y coordinates. That is because imshow does that.
-x = [a.y for a in benzene]
-y = [a.x for a in benzene]
+x = [a.x for a in benzene]
+y = [a.y for a in benzene]
 plt.plot(x, y, 'bo')
 
 plt.colorbar() #add colorbar
 plt.savefig('images/cdiff-imshow.png')
-
-plt.figure()
-plt.contourf(X, Y, cdiff_plane)
-plt.plot(y, x, 'ko')
-plt.axis('equal')
 plt.show()
+#plt.figure()
+#plt.contourf(X, Y, cdiff_plane)
+#plt.plot(y, x, 'ko')
+#plt.axis('equal')
+#plt.show()
 #+END_SRC
 
 #+RESULTS:
@@ -1734,10 +1734,16 @@ need to read wavecar files! We cannot do this yet. There is some hope at http://
 
 *** Bader analysis
 index:bader
+
+Note: Thanks to @prtkm for helping improve this section (https://github.com/jkitchin/dft-book/issues/2).
 Bader analysis is a charge partitioning scheme where charge is divided by surfaces of zero flux that define atomic basins of charge. The most modern way of calculating the Bader charges is using the =bader= program from Graeme Henkelmen's group cite:Henkelman2006354,doi.10.1021/ct100125x. Let us consider a water molecule, centered in a box. The strategy is first to run the calculation, then run the bader program on the results.
+
+We have to specify laechg to be true so that the all-electron core charges will be written out to files. Here we setup and run the calculation to get the densities first.
 
 #+BEGIN_SRC python :results output
 from jasp import *
+JASPRC['queue.walltime'] = '10:00:00'
+
 from ase.structure import molecule
 atoms = molecule('H2O')
 atoms.center(vacuum=6)
@@ -1745,101 +1751,94 @@ atoms.center(vacuum=6)
 with jasp('molecules/h2o-bader',
           xc='PBE',
           encut=350,
+          laechg=True,
           atoms=atoms) as calc:
     calc.calculate()
+#+END_SRC
 
-    os.system('bader -p all_atom -p atom_index CHG')
+#+RESULTS:
+
+Now that the calculation is done, get the bader code and scripts from http://theory.cm.utexas.edu/henkelman/code/bader/. Following the "Note for VASP users" at that site we now combine the relevant charge densities.  The core charge is written to AECCAR0 and the vaeance charge to AECCAR2. 
+
+#+BEGIN_SRC sh :dir /home-research/jkitchin/dft-book/molecules/h2o-bader
+chgsum.pl AECCAR0 AECCAR2
+#+END_SRC
+
+#+RESULTS:
+: Atoms in file1: 3, Atoms in file2: 3
+: Points in file1: 1720320, Points in file2: 1720320
+
+Now, we can use that as a reference file for the bader analysis.
+#+BEGIN_SRC sh :dir /home-research/jkitchin/dft-book/molecules/h2o-bader
+bader CHGCAR -ref CHGCAR_sum
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
 
-  GRID BASED BADER ANALYSIS  (Version 0.27e 05/09/11)
+  GRID BASED BADER ANALYSIS  (Version 0.95 11/17/15)
 
-  OPEN ... CHG
-  VASP-STYLE INPUT FILE
- VASP5 format
-  FFT-grid:   112 x 128 x 120
-  CLOSE ... CHG
+  OPEN ... CHGCAR              
+  VASP5-STYLE INPUT FILE
+  DENSITY-GRID:  112 x 128 x 120
+  CLOSE ... CHGCAR              
+  RUN TIME:    0.88 SECONDS
 
-  RUN TIME:    0.74 SECONDS
+  OPEN ... CHGCAR_sum          
+  VASP5-STYLE INPUT FILE
+  DENSITY-GRID:  112 x 128 x 120
+  CLOSE ... CHGCAR_sum          
+  RUN TIME:    0.87 SECONDS
 
   CALCULATING BADER CHARGE DISTRIBUTION
                  0  10  25  50  75  100
-  PERCENT DONE:  **********************
+  PERCENT DONE:  ********************** 
 
   REFINING AUTOMATICALLY
   ITERATION: 1
-  EDGE POINTS:       1400048
-  REASSIGNED POINTS:  111247
+  EDGE POINTS:         15484
+  REASSIGNED POINTS:     456
   ITERATION: 2
-  CHECKED POINTS:     913174
-  REASSIGNED POINTS:    1424
-  ITERATION: 3
-  CHECKED POINTS:      15784
-  REASSIGNED POINTS:     362
-  ITERATION: 4
-  CHECKED POINTS:       3190
-  REASSIGNED POINTS:     176
-  ITERATION: 5
-  CHECKED POINTS:       1228
-  REASSIGNED POINTS:      99
-  ITERATION: 6
-  CHECKED POINTS:        688
-  REASSIGNED POINTS:      21
-  ITERATION: 7
-  CHECKED POINTS:        267
-  REASSIGNED POINTS:       1
-  ITERATION: 8
-  CHECKED POINTS:         26
+  CHECKED POINTS:       5070
   REASSIGNED POINTS:       0
 
-  RUN TIME:      26.40 SECONDS
+  RUN TIME:       0.69 SECONDS
 
   CALCULATING MINIMUM DISTANCES TO ATOMS
                  0  10  25  50  75  100
   PERCENT DONE:  **********************
-
-  RUN TIME:    1.29 SECONDS
+  RUN TIME:    0.08 SECONDS
 
   WRITING BADER ATOMIC CHARGES TO ACF.dat
   WRITING BADER VOLUME CHARGES TO BCF.dat
 
-  NUMBER OF BADER MAXIMA FOUND:           5407
-      SIGNIFICANT MAXIMA FOUND:             10
+  NUMBER OF BADER MAXIMA FOUND:             27
+      SIGNIFICANT MAXIMA FOUND:              3
+                 VACUUM CHARGE:         0.0225
            NUMBER OF ELECTRONS:        7.99999
-
-  WRITING ATOMIC VOLUMES
-                 0  10  25  50  75  100
-  PERCENT DONE:  **********************
-
-  RUN TIME:    3.96 SECONDS
-
-  WRITING BADER ATOMIC INDEX TO AtIndex.dat
-
+ 
 #+end_example
 
-#+BEGIN_src sh :dir /home-research/jkitchin/dft-book2/molecules/h2o-bader :results output
+
+#+BEGIN_src sh :dir /home-research/jkitchin/dft-book/molecules/h2o-bader :results output
 cat ACF.dat
 #+END_SRC
 
 #+RESULTS:
 :     #         X           Y           Z        CHARGE     MIN DIST    ATOMIC VOL
 :  --------------------------------------------------------------------------------
-:     1      6.0000      6.7632      6.5963      7.9990      2.2193    644.5831
-:     2      6.0000      7.5265      6.0000      0.0007      1.6422    759.8654
-:     3      6.0000      6.0000      6.0000      0.0003      1.6422    640.1559
+:     1   6.0000000   6.7632390   6.5963091   7.2161934   0.6645993  45.0501815
+:     2   6.0000000   7.5264840   5.9999999   0.3807380   0.0912967   7.0002788
+:     3   6.0000000   5.9999940   5.9999999   0.3805618   0.0912967   6.8671666
 :  --------------------------------------------------------------------------------
-:     VACUUM CHARGE:               0.0000
-:     VACUUM VOLUME:               0.0000
+:     VACUUM CHARGE:               0.0225
+:     VACUUM VOLUME:            1985.6867
 :     NUMBER OF ELECTRONS:         8.0000
 
+The results above are comparable to those from gpaw at https://wiki.fysik.dtu.dk/gpaw/tutorials/bader/bader.html.
 
-This script should work, but only if displacement is set to None or we
-convert the positions to Bohr. Otherwise, the positions do not match
-because of a Bohr/Angstrom units problem in the code. Note the sorting
-that has to be done, because the order of atoms in the Atoms object is
-not the same as in the POSCAR file.
+
+This next script should work, but only if displacement is set to None or we convert the positions to Bohr. Otherwise, the positions do not match because of a Bohr/Angstrom units problem (bader uses Bohr, and ase uses angstroms) Note the sorting that has to be done, because the order of atoms in the Atoms object is not the same as in the POSCAR file.
 
 #+BEGIN_SRC python :results output org raw
 from jasp import *
@@ -1868,11 +1867,11 @@ with jasp('molecules/h2o-bader') as calc:
 #+caption: Bader charges for a water molecule
 | atom | Bader charge |
 |------+--------------|
-| O    |        0.001 |
-| H    |       0.9993 |
-| H    |       0.9997 |
+| O    |    7.2161934 |
+| H    |     0.380738 |
+| H    |    0.3805618 |
 
-It looks like not much has been transferred. This may be an artifact of using the valence electron density, or a lack of convergence. See https://wiki.fysik.dtu.dk/ase/ase/dft/bader.html#example-the-water-molecule for a comparison.
+You can see some charge has been "transferred" form H (which usually has 1 electron) to oxygen (which usually has 6 electrons).
 
 
 ** Geometry optimization
