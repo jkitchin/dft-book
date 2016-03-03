@@ -407,60 +407,60 @@ for i in range(len(keys) / 3):
 
 #+RESULTS:
 #+begin_example
-isobutene                CH3CH2OH                 CH3COOH                  
-COF2                     CH3NO2                   CF3CN                    
-CH3OH                    CCH                      CH3CH2NH2                
-PH3                      Si2H6                    O3                       
-O2                       BCl3                     CH2_s1A1d                
-Be                       H2CCl2                   C3H9C                    
-C3H9N                    CH3CH2OCH3               BF3                      
-CH3                      CH4                      S2                       
-C2H6CHOH                 SiH2_s1A1d               H3CNH2                   
-CH3O                     H                        BeH                      
-P                        C3H4_C3v                 C2F4                     
-OH                       methylenecyclopropane    F2O                      
-SiCl4                    HCF3                     HCCl3                    
-C3H7                     CH3CH2O                  AlF3                     
-CH2NHCH2                 SiH2_s3B1d               H2CF2                    
-SiF4                     H2CCO                    PH2                      
-OCS                      HF                       NO2                      
-SH2                      C3H4_C2v                 H2O2                     
-CH3CH2Cl                 isobutane                CH3COF                   
-HCOOH                    CH3ONO                   C5H8                     
-2-butyne                 SH                       NF3                      
-HOCl                     CS2                      P2                       
-C                        CH3S                     O                        
-C4H4S                    S                        C3H7Cl                   
-H2CCHCl                  C2H6                     CH3CHO                   
-C2H4                     HCN                      C2H2                     
-C2Cl4                    bicyclobutane            H2                       
-C6H6                     N2H4                     C4H4NH                   
-H2CCHCN                  H2CCHF                   cyclobutane              
-HCl                      CH3OCH3                  Li2                      
-Na                       CH3SiH3                  NaCl                     
-CH3CH2SH                 OCHCHO                   SiH4                     
-C2H5                     SiH3                     NH                       
-ClO                      AlCl3                    CCl4                     
-NO                       C2H3                     ClF                      
-HCO                      CH3CONH2                 CH2SCH2                  
-CH3COCH3                 C3H4_D2d                 CH                       
-CO                       CN                       F                        
-CH3COCl                  N                        CH3Cl                    
-Si                       C3H8                     CS                       
-N2                       Cl2                      NCCN                     
-F2                       CO2                      Cl                       
-CH2OCH2                  H2O                      CH3CO                    
-SO                       HCOOCH3                  butadiene                
-ClF3                     Li                       PF3                      
-B                        CH3SH                    CF4                      
-C3H6_Cs                  C2H6NH                   N2O                      
-LiF                      H2COH                    cyclobutene              
-LiH                      SiO                      Si2                      
-C2H6SO                   C5H5N                    trans-butane             
-Na2                      C4H4O                    SO2                      
-NH3                      NH2                      CH2_s3B1d                
-ClNO                     C3H6_D3h                 Al                       
-CH3SCH3                  H2CO                     CH3CN                    
+isobutene                CH3CH2OH                 CH3COOH
+COF2                     CH3NO2                   CF3CN
+CH3OH                    CCH                      CH3CH2NH2
+PH3                      Si2H6                    O3
+O2                       BCl3                     CH2_s1A1d
+Be                       H2CCl2                   C3H9C
+C3H9N                    CH3CH2OCH3               BF3
+CH3                      CH4                      S2
+C2H6CHOH                 SiH2_s1A1d               H3CNH2
+CH3O                     H                        BeH
+P                        C3H4_C3v                 C2F4
+OH                       methylenecyclopropane    F2O
+SiCl4                    HCF3                     HCCl3
+C3H7                     CH3CH2O                  AlF3
+CH2NHCH2                 SiH2_s3B1d               H2CF2
+SiF4                     H2CCO                    PH2
+OCS                      HF                       NO2
+SH2                      C3H4_C2v                 H2O2
+CH3CH2Cl                 isobutane                CH3COF
+HCOOH                    CH3ONO                   C5H8
+2-butyne                 SH                       NF3
+HOCl                     CS2                      P2
+C                        CH3S                     O
+C4H4S                    S                        C3H7Cl
+H2CCHCl                  C2H6                     CH3CHO
+C2H4                     HCN                      C2H2
+C2Cl4                    bicyclobutane            H2
+C6H6                     N2H4                     C4H4NH
+H2CCHCN                  H2CCHF                   cyclobutane
+HCl                      CH3OCH3                  Li2
+Na                       CH3SiH3                  NaCl
+CH3CH2SH                 OCHCHO                   SiH4
+C2H5                     SiH3                     NH
+ClO                      AlCl3                    CCl4
+NO                       C2H3                     ClF
+HCO                      CH3CONH2                 CH2SCH2
+CH3COCH3                 C3H4_D2d                 CH
+CO                       CN                       F
+CH3COCl                  N                        CH3Cl
+Si                       C3H8                     CS
+N2                       Cl2                      NCCN
+F2                       CO2                      Cl
+CH2OCH2                  H2O                      CH3CO
+SO                       HCOOCH3                  butadiene
+ClF3                     Li                       PF3
+B                        CH3SH                    CF4
+C3H6_Cs                  C2H6NH                   N2O
+LiF                      H2COH                    cyclobutene
+LiH                      SiO                      Si2
+C2H6SO                   C5H5N                    trans-butane
+Na2                      C4H4O                    SO2
+NH3                      NH2                      CH2_s3B1d
+ClNO                     C3H6_D3h                 Al
+CH3SCH3                  H2CO                     CH3CN
 #+end_example
 
 <<g2-database>>
@@ -820,10 +820,10 @@ print(s.format(atoms.get_distance(0, 1)))
 #+RESULTS:
 : atom symbol
 : ===========
-:  0 N  
-:  1 H  
-:  2 H  
-:  3 H  
+:  0 N
+:  1 H
+:  2 H
+:  3 H
 : The N-H distance is 1.017 angstroms
 
 Bond angles are a little trickier. If we had vectors describing the directions between two atoms, we could use some simple trigonometry to compute the angle between the vectors: $\vec{a} \cdot \vec{b} = |\vec{a}||\vec{b}| \cos(\theta)$.  So we can calculate the angle as $\theta = \arccos\left(\frac{\vec{a} \cdot \vec{b}}{|\vec{a}||\vec{b}|}\right)$, we just have to define our two vectors $\vec{a}$ and $\vec{b}$. We compute these vectors as the difference in positions of two atoms. For example, here we compute the angle H-N-H in an ammonia molecule. This is the angle between N-H$_1$ and N-H$_2$. In the next example, we utilize functions in mod:numpy to perform the calculations, specifically the func:numpy.arccos function, the func:numpy.dot function, and func:numpy.linalg.norm functions.
@@ -853,10 +853,10 @@ print('theta = {0:1.1f} degrees'.format(theta_rad * 180./pi))
 #+RESULTS:
 : atom symbol
 : ===========
-:  0 N  
-:  1 H  
-:  2 H  
-:  3 H  
+:  0 N
+:  1 H
+:  2 H
+:  3 H
 : theta = 106.3 degrees
 
 #+caption: Schematic of the vectors defining the H-N-H angle.
@@ -901,14 +901,14 @@ print('dihedral angle = {0:1.2f} degrees'.format(da))
 #+begin_example
 atom symbol
 ===========
- 0 C  
- 1 C  
- 2 H  
- 3 H  
- 4 H  
- 5 H  
- 6 H  
- 7 H  
+ 0 C
+ 1 C
+ 2 H
+ 3 H
+ 4 H
+ 5 H
+ 6 H
+ 7 H
 dihedral angle = 60.00 degrees
 #+end_example
 
@@ -1758,7 +1758,7 @@ with jasp('molecules/h2o-bader',
 
 #+RESULTS:
 
-Now that the calculation is done, get the bader code and scripts from http://theory.cm.utexas.edu/henkelman/code/bader/. 
+Now that the calculation is done, get the bader code and scripts from http://theory.cm.utexas.edu/henkelman/code/bader/.
 
 We use this code to see the changes in charges on the atoms.
 #+BEGIN_SRC python
@@ -4053,7 +4053,7 @@ atoms = FaceCenteredCubic('Ag', directions=[[0, 1, 1],
 
 write('images/Ag-fcc-primitive.png', atoms, show_unit_cell=2)
 
-print atoms
+print(atoms)
 #+END_SRC
 
 #+ATTR_LaTeX: :placement [H] :width 2in
@@ -4169,7 +4169,7 @@ a = 4.6
 c = 2.95
 rutile = crystal(['Ti', 'O'], basis=[(0, 0, 0), (0.3, 0.3, 0.0)],
                  spacegroup=136, cellpar=[a, a, c, 90, 90, 90])
-print rutile
+print(rutile)
 #+END_SRC
 
 #+RESULTS:
@@ -4256,7 +4256,7 @@ with jasp('bulk/Ru2O4',
           xc='PBE',
           setups={'Ru': '_pv'}) as calc:
     calc.calculate()
-    print calc
+    print(calc)
 #+END_SRC
 
 #+RESULTS:
@@ -4492,8 +4492,8 @@ Here is an example of what this equation does.
 #+BEGIN_SRC python :results output
 import numpy as np
 
-print int(np.ceil(50 / 2.))
-print int(np.ceil(51 / 2.))
+print(int(np.ceil(50 / 2.)))
+print(int(np.ceil(51 / 2.)))
 #+END_SRC
 
 #+RESULTS:
@@ -4527,7 +4527,7 @@ with jasp('bulk/alloy/cu',
           isif=4,
           nsw=10,
           atoms=atoms) as calc:
-    print calc.get_valence_electrons()
+    print(calc.get_valence_electrons())
 #+END_SRC
 
 #+RESULTS:
@@ -4555,7 +4555,7 @@ with jasp('bulk/alloy/cu',
           nsw=10,
           atoms=atoms) as calc:
     calc.set_nbands(9)
-    print calc
+    print(calc)
 #+END_SRC
 
 #+RESULTS:
@@ -4616,7 +4616,7 @@ with jasp('bulk/alloy/cu-setnbands',
           nsw=10,
           atoms=atoms) as calc:
     calc.set_nbands(f=3)
-    print calc
+    print(calc)
 #+END_SRC
 
 #+RESULTS:
@@ -4716,10 +4716,10 @@ plt.xlabel('Lattice constant ($\AA$)')
 plt.ylabel('Total energy (eV)')
 plt.savefig('images/Cu-fcc.png')
 
-print '#+tblname: cu-fcc-energies'
-print r'| lattice constant ($\AA$) | Total Energy (eV) |'
+print('#+tblname: cu-fcc-energies')
+print(r'| lattice constant ($\AA$) | Total Energy (eV) |')
 for lc, e in zip(LC, fcc_energies):
-    print '| {0} | {1} |'.format(lc, e)
+    print('| {0} | {1} |'.format(lc, e))
 #+END_SRC
 
 #+RESULTS:
@@ -4759,10 +4759,10 @@ for a in LC:
 eos = EquationOfState(volumes, energies)
 v0, e0, B = eos.fit()
 
-print '''
+print('''
 v0 = {0} A^3
 E0 = {1} eV
-B  = {2} eV/A^3'''.format(v0, e0, B)
+B  = {2} eV/A^3'''.format(v0, e0, B))
 
 eos.plot('images/Cu-fcc-eos.png')
 #+END_SRC
@@ -4793,7 +4793,7 @@ atoms = Atoms([Atom('Cu', [0,0,0])],
                                      [-1.0,  1.0,  1.0],
                                      [ 1.0, -1.0,  1.0]]))
 
-print 'BCC lattice constant = {0} Ang'.format(a * (11.8 / atoms.get_volume())**(1./3.))
+print('BCC lattice constant = {0} Ang'.format(a * (11.8 / atoms.get_volume())**(1./3.)))
 #+END_SRC
 
 #+RESULTS:
@@ -4858,12 +4858,12 @@ plt.legend()
 plt.savefig('images/Cu-bcc-fcc.png')
 
 # print table of data
-print '#+tblname: bcc-data'
-print '#+caption: Total energy vs. lattice constant for BCC Cu.'
-print '| Lattice constant (\AA$^3$) | Total energy (eV) |'
-print '|-'
+print('#+tblname: bcc-data')
+print('#+caption: Total energy vs. lattice constant for BCC Cu.')
+print('| Lattice constant (\AA$^3$) | Total energy (eV) |')
+print('|-')
 for lc, e in zip(bcc_LC, bcc_energies):
-    print '| {0} | {1} |'.format(lc, e)
+    print('| {0} | {1} |'.format(lc, e))
 #+END_SRC
 
 #+RESULTS:
@@ -5148,12 +5148,12 @@ plt.xlabel('Vol. ($\AA^3)$')
 plt.ylabel('Total energy (eV)')
 plt.savefig('images/tio2-step1.png')
 
-print '#+tblname: tio2-vol-ene'
-print '#+caption: Total energy of TiO_{2} vs. volume.'
-print '| Volume ($\AA^3$) | Energy (eV) |'
-print '|-'
+print('#+tblname: tio2-vol-ene')
+print('#+caption: Total energy of TiO_{2} vs. volume.')
+print('| Volume ($\AA^3$) | Energy (eV) |')
+print('|-')
 for v, e in zip(volumes, energies):
-    print '| {0} | {1} |'.format(v, e)
+    print('| {0} | {1} |'.format(v, e))
 #+END_SRC
 
 #+RESULTS:
@@ -5233,10 +5233,10 @@ with jasp('bulk/tio2/step3',
           isif=3) as calc:
     calc.calculate()
     atoms = calc.get_atoms()
-    print calc
+    print(calc)
 
 from pyspglib import spglib
-print '\nThe spacegroup is {0}'.format(spglib.get_spacegroup(atoms))
+print('\nThe spacegroup is {0}'.format(spglib.get_spacegroup(atoms)))
 #+END_SRC
 
 #+RESULTS:
@@ -5298,14 +5298,14 @@ from jasp import *
 
 with jasp('bulk/tio2/step3') as calc:
     atoms = calc.get_atoms()
-    print 'default ismear: ', atoms.get_potential_energy()
+    print('default ismear: ', atoms.get_potential_energy())
     calc.clone('bulk/tio2/step4')
 
 with jasp('bulk/tio2/step4',
           ismear=-5,
           nsw=0) as calc:
     atoms = calc.get_atoms()
-    print 'ismear=-5:      ', atoms.get_potential_energy()
+    print('ismear=-5:      ', atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
@@ -5345,7 +5345,7 @@ for a in LC:
 if len(energies) == len(LC):
     eos = EquationOfState(volumes, energies)
     v0, e0, B = eos.fit()
-    print 'LDA lattice constant is {0:1.3f} Ang^3'.format((4*v0)**(1./3.))
+    print('LDA lattice constant is {0:1.3f} Ang^3'.format((4*v0)**(1./3.)))
 #+END_SRC
 
 #+RESULTS:
@@ -5388,11 +5388,11 @@ for key in GGA:
     if len(energies) == len(LC):
         eos = EquationOfState(volumes, energies)
         v0, e0, B = eos.fit()
-        print '{1:6s} lattice constant is {0:1.3f} Ang^3'.format((4*v0)**(1./3.),
-                                                             GGA[key])
+        print('{1:6s} lattice constant is {0:1.3f} Ang^3'.format((4*v0)**(1./3.),
+                                                             GGA[key]))
     else:
-        print energies, LC
-        print '{0} is not ready'.format(GGA[key])
+        print(energies, LC)
+        print('{0} is not ready'.format(GGA[key]))
 #+END_SRC
 
 #+RESULTS:
@@ -5420,7 +5420,7 @@ with jasp('bulk/Al-lda-vasp',
           lwave=False, lcharg=False,
           atoms=Al) as calc:
     calc.calculate(Al)
-    print calc
+    print(calc)
 #+END_SRC
 
 #+RESULTS:
@@ -5484,9 +5484,9 @@ with jasp('bulk/Al-lda-ase',
     sf = StrainFilter(Al)
     qn = QuasiNewton(sf, logfile='relaxation.log')
     qn.run(fmax=0.1, steps=5)
-    print 'Stress:\n', calc.read_stress()
-    print 'Al post ASE volume relaxation\n', calc.get_atoms().get_cell()
-    print calc
+    print('Stress:\n', calc.read_stress())
+    print('Al post ASE volume relaxation\n', calc.get_atoms().get_cell())
+    print(calc)
 #+END_SRC
 
 #+RESULTS:
@@ -5548,7 +5548,7 @@ import numpy as np
 cellA = atoms.get_cell()
 cellB = atoms2.get_cell()
 
-print (np.abs(cellA - cellB) < 0.01).all()
+print((np.abs(cellA - cellB) < 0.01).all())
 #+END_SRC
 
 #+RESULTS:
@@ -5594,7 +5594,7 @@ with jasp('bulk/atomic-rh',
     atomic_energy = atoms.get_potential_energy()
 
 cohesive_energy = atomic_energy - bulk_energy
-print 'The cohesive energy is {0:1.3f} eV'.format(cohesive_energy)
+print('The cohesive energy is {0:1.3f} eV'.format(cohesive_energy))
 #+END_SRC
 
 #+RESULTS:
@@ -5628,7 +5628,7 @@ for k in kpts:
           atoms=atoms) as calc:
         e = atoms.get_potential_energy()
 
-    print '({0:2d}, {0:2d}, {0:2d}): cohesive energy = {1} eV'.format(k,e-atomic_energy)
+    print('({0:2d}, {0:2d}, {0:2d}): cohesive energy = {1} eV'.format(k,e-atomic_energy))
 #+END_SRC
 
 #+RESULTS:
@@ -5678,7 +5678,7 @@ with jasp('bulk/atomic-rh-sp',
     atomic_energy = atoms.get_potential_energy()
 
 cohesive_energy = atomic_energy - bulk_energy
-print 'The cohesive energy is {0:1.3f} eV'.format(cohesive_energy)
+print('The cohesive energy is {0:1.3f} eV'.format(cohesive_energy))
 #+END_SRC
 
 #+RESULTS:
@@ -5712,8 +5712,8 @@ with jasp('bulk/Fe-bulk',
           nsw=30,
           ibrion=1,
           atoms=atoms) as calc:
-    print atoms.get_potential_energy()
-    print atoms.get_stress()
+    print(atoms.get_potential_energy())
+    print(atoms.get_stress())
 #+END_SRC
 
 #+RESULTS:
@@ -5737,7 +5737,7 @@ with jasp('bulk/Fe-elastic',
           nsw=1,
           nfree=2) as calc:
     atoms = calc.get_atoms()
-    print atoms.get_potential_energy()
+    print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
@@ -5802,7 +5802,7 @@ with open('bulk/Fe-elastic/OUTCAR') as f:
 for line in data:
     EM += [[float(x) for x in line.split()[1:]]]
 
-print np.array(EM)
+print(np.array(EM))
 #+END_SRC
 
 #+RESULTS:
@@ -5835,8 +5835,8 @@ with jasp('bulk/Al-bulk',
           nsw=30,
           ibrion=1,
           atoms=atoms) as calc:
-    print atoms.get_potential_energy()
-    print atoms.get_stress()
+    print(atoms.get_potential_energy())
+    print(atoms.get_stress())
 #+END_SRC
 
 #+RESULTS:
@@ -5859,14 +5859,14 @@ with jasp('bulk/Al-elastic',
           nsw=1,
           nfree=2) as calc:
     atoms = calc.get_atoms()
-    print atoms.get_potential_energy()
+    print(atoms.get_potential_energy())
     EM = calc.get_elastic_moduli()
-    print EM
+    print(EM)
 
 c11 = EM[0,0]
 c12 = EM[0,1]
 B = (c11 + 2 * c12) / 3.0
-print B
+print(B)
 #+END_SRC
 
 #+RESULTS:
@@ -5879,1851 +5879,8 @@ print B
 :  [  0.      0.      0.      0.      0.      1.687]]
 : 77.08309
 
-This example shows the basic mechanics of getting the elastic constants. The C_{44} constant above is too low, and probably we need to check these constants for convergence with respect to kpoints, planewave cutoff, and maybe the value of POTIM.
-
-** Bulk thermodynamics
-We can predict temperature dependent thermodynamic properties of bulk materials without too much effort. As with the thermochemical properties of ideal gases, we must use some simple models that we parameterize by DFT. Here we follow the example in Reference citealp:Shang20101040 for computing the thermal coefficient of expansion, heat capacity, enthalpy and entropy for Ni as a function of temperature.
-
-We start by computing the equation of state for fcc Ni.
-#+BEGIN_SRC python
-from jasp import *
-from ase import Atom, Atoms
-
-# fcc
-LC = [3.5, 3.55, 3.6, 3.65, 3.7, 3.75]
-volumes, energies = [], []
-for a in LC:
-    atoms = Atoms([Atom('Ni', (0, 0, 0), magmom=2.5)],
-              cell=0.5 * a * np.array([[1.0, 1.0, 0.0],
-                                       [0.0, 1.0, 1.0],
-                                       [1.0, 0.0, 1.0]]))
-
-    with jasp('bulk/Ni-{0}'.format(a),
-              xc='PBE',
-              encut=350,
-              kpts=(12,12,12),
-              ispin=2,
-              atoms=atoms) as calc:
-        try:
-            e = atoms.get_potential_energy()
-            energies.append(e)
-            volumes.append(atoms.get_volume())
-        except:
-            pass
-
-if len(energies) != len(LC):
-    import sys; sys.exit()
-
-import matplotlib.pyplot as plt
-plt.plot(LC, fcc_energies)
-plt.xlabel('Lattice constant ($\AA$)')
-plt.ylabel('Total energy (eV)')
-plt.savefig('images/Ni-fcc.png')
-#+END_SRC
-
-#+RESULTS:
-
-[[./images/Ni-fcc.png]]
-
-** Effect of pressure on phase stability
-So far we have only considered relative stability at a pressure of 0 Pa. We now consider the relative stability of two phases under pressure. We will consider TiO$_2$ in the rutile and anatase phases.
-
-The pressure is defined by: $P = -\left(\frac{\partial E}{\partial V}\right)_T$. So if we have an equation of state $E(V)$ we can calculate the pressure at any volume, or alternatively, given a pressure, compute the volume. Pressure can affect the energy of two phases differently, so that one may become stable under pressure. The condition where a phase transition occurs is when the pressure in the two phases is the same, which occurs at a common tangent.
-
-To show this, we need $E_{rutile}(V)$ and $E_{anatase}(V)$.
-
-#+BEGIN_SRC python :results output :exports both
-# run the rutile calculations
-from jasp import *
-from ase import Atom, Atoms
-
-B = 'Ti'; X = 'O'; a = 4.59; c = 2.958; u = 0.305;
-'''
-create a rutile structure from the lattice vectors at
-http://cst-www.nrl.navy.mil/lattice/struk/c4.html
-
-spacegroup: 136 P4_2/mnm
-'''
-a1 = a * np.array([1.0, 0.0, 0.0])
-a2 = a * np.array([0.0, 1.0, 0.0])
-a3 = c * np.array([0.0, 0.0, 1.0])
-
-atoms = Atoms([Atom(B, [0., 0., 0.]),
-               Atom(B, 0.5*a1 + 0.5*a2 + 0.5*a3),
-               Atom(X,  u*a1 + u*a2),
-               Atom(X, -u*a1 - u*a2),
-               Atom(X, (0.5+u)*a1 + (0.5-u)*a2 + 0.5*a3),
-               Atom(X, (0.5-u)*a1 + (0.5+u)*a2 + 0.5*a3)],
-              cell=[a1, a2, a3])
-
-nTiO2 = len(atoms) / 3.
-v0 = atoms.get_volume()
-cell0 = atoms.get_cell()
-
-volumes = [28., 30., 32., 34., 36.]  #vol of one TiO2
-
-for v in volumes:
-    atoms.set_cell(cell0 * ((nTiO2 * v / v0)**(1. / 3.)),
-                   scale_atoms=True)
-
-    with jasp('bulk/TiO2/rutile/rutile-{0}'.format(v),
-              encut=350,
-              kpts=(6, 6, 6),
-              xc='PBE',
-              ismear=0,
-              sigma=0.001,
-              isif=2,
-              ibrion=2,
-              nsw=20,
-              atoms=atoms) as calc:
-        try:
-            calc.calculate()
-        except (VaspSubmitted, VaspQueued):
-            pass
-#+END_SRC
-
-#+RESULTS:
-
-
-#+BEGIN_SRC python :results output :exports both
-# run the anatase calculations
-from jasp import *
-from ase import Atom, Atoms
-# http://cst-www.nrl.navy.mil/lattice/struk/c5.html
-
-B = 'Ti'; X = 'O'; a = 3.7842; c = 2*4.7573; z = 0.0831;
-
-a1 = a * np.array([1.0, 0.0, 0.0])
-a2 = a * np.array([0.0, 1.0, 0.0])
-a3 = np.array([0.5 * a, 0.5 * a, 0.5 * c])
-
-atoms = Atoms([Atom(B, -0.125 * a1 + 0.625 * a2 + 0.25 * a3),
-               Atom(B,  0.125 * a1 + 0.375 * a2 + 0.75 * a3),
-               Atom(X, -z*a1 + (0.25-z)*a2 + 2.*z*a3),
-               Atom(X, -(0.25+z)*a1 + (0.5-z)*a2 + (0.5+2*z)*a3),
-               Atom(X, z*a1 - (0.25 - z)*a2 + (1-2*z)*a3),
-               Atom(X, (0.25 + z)*a1 + (0.5 + z)*a2 + (0.5-2*z)*a3)],
-               cell=[a1,a2,a3])
-
-nTiO2 = len(atoms) / 3.
-v0 = atoms.get_volume()
-cell0 = atoms.get_cell()
-
-volumes = [30., 33., 35., 37., 39.]  #vol of one TiO2
-
-for v in volumes:
-    atoms.set_cell(cell0 * ((nTiO2*v/v0)**(1./3.)),
-                   scale_atoms=True)
-
-    with jasp('bulk/TiO2/anatase/anatase-{0}'.format(v),
-              encut=350,
-              kpts=(6, 6, 6),
-              xc='PBE',
-              ismear=0,
-              sigma=0.001,
-              isif=2,
-              ibrion=2,
-              nsw=20,
-              atoms=atoms) as calc:
-        try:
-            calc.calculate()
-        except (VaspSubmitted, VaspQueued):
-            pass
-#+END_SRC
-
-#+RESULTS:
-
-Now we will fit cubic polynomials to the data.
-
-#+BEGIN_SRC python :results output :exports both
-# fit cubic polynomials to E(V) for rutile and anatase
-from jasp import *
-import matplotlib.pyplot as plt
-import numpy as np
-np.set_printoptions(precision=2)
-
-# anatase equation of state
-volumes = [30., 33., 35., 37., 39.]  # vol of one TiO2 formula unit
-a_volumes, a_energies = [], []
-for v in volumes:
-    with jasp('bulk/TiO2/anatase/anatase-{0}'.format(v)) as calc:
-        atoms = calc.get_atoms()
-        nTiO2 = len(atoms) / 3.0
-        a_volumes.append(atoms.get_volume() / nTiO2)
-        a_energies.append(atoms.get_potential_energy() / nTiO2)
-
-# rutile equation of state
-volumes = [28., 30., 32., 34., 36.]  # vol of one TiO2
-r_volumes, r_energies = [], []
-for v in volumes:
-    with jasp('bulk/TiO2/rutile/rutile-{0}'.format(v)) as calc:
-        atoms = calc.get_atoms()
-        nTiO2 = len(atoms) / 3.0
-        r_volumes.append(atoms.get_volume() / nTiO2)
-        r_energies.append(atoms.get_potential_energy() / nTiO2)
-
-# cubic polynomial fit to equation of state E(V) = pars*[V^3 V^2 V^1 V^0]
-apars = np.polyfit(a_volumes, a_energies, 3)
-rpars = np.polyfit(r_volumes, r_energies, 3)
-
-print 'E_anatase(V) = {0:1.2f}*V^3 + {1:1.2f}*V^2 + {2:1.2f}*V + {3:1.2f}'.format(*apars)
-print 'E_rutile(V) =  {0:1.2f}*V^3 + {1:1.2f}*V^2 + {2:1.2f}*V + {3:1.2f}'.format(*rpars)
-print 'anatase epars: {0!r}'.format(apars)
-print 'rutile epars: {0!r}'.format(rpars)
-# get pressure parameters P(V) = -dE/dV
-dapars = -np.polyder(apars)
-drpars = -np.polyder(rpars)
-
-print 'anatase ppars: {0!r}'.format(dapars)
-print 'rutile ppars: {0!r}'.format(drpars)
-
-print
-print 'P_anatase(V) = {0:1.2f}*V^2 + {1:1.2f}*V + {2:1.2f}'.format(*dapars)
-print 'P_rutile(V) =  {0:1.2f}*V^2 + {1:1.2f}*V + {2:1.2f}'.format(*drpars)
-
-vfit = np.linspace(28, 40)
-
-# plot the equations of state
-plt.plot(a_volumes, a_energies,'bo ', label='Anatase')
-plt.plot(vfit, np.polyval(apars, vfit), 'b-')
-
-plt.plot(r_volumes, r_energies,'gs ', label='Rutile')
-plt.plot(vfit, np.polyval(rpars, vfit), 'g-')
-
-plt.xlabel('Volume ($\AA^3$/f.u.)')
-plt.ylabel('Total energy (eV/f.u.)')
-plt.legend()
-plt.xlim([25, 40])
-plt.ylim([-27, -26])
-plt.savefig('images/rutile-anatase-eos.png')
-#+END_SRC
-
-#+RESULTS:
-: E_anatase(V) = -0.00*V^3 + 0.13*V^2 + -5.23*V + 42.47
-: E_rutile(V) =  -0.00*V^3 + 0.14*V^2 + -5.33*V + 38.59
-: anatase epars: array([ -0.  ,   0.13,  -5.23,  42.47])
-: rutile epars: array([ -0.  ,   0.14,  -5.33,  38.59])
-: anatase ppars: array([ 0.  , -0.26,  5.23])
-: rutile ppars: array([ 0.  , -0.29,  5.33])
-:
-: P_anatase(V) = 0.00*V^2 + -0.26*V + 5.23
-: P_rutile(V) =  0.00*V^2 + -0.29*V + 5.33
-
-# <<tio2-anatase-rutile>>
-#+ATTR_LaTeX: :placement [H]
-#+caption: Equations of state (E(V)) for anatase and rutile TiO$_2$.
-[[./images/rutile-anatase-eos.png]]
-
-To find the conditions where a phase transition occurs, we have to find the common tangent line between the rutile and anatase phases. In other words we have to solve these two equations:
-
-$(E_{anatase}(V1) - E_{rutile}(V2))/(V1-V2) = P_{anatase}(V1)$
-
-$(E_{anatase}(V1) - E_{rutile}(V2))/(V1-V2) = P_{rutile}(V2)$
-
-This is a nonlinear algebra problem. We use the func:scipy.optimize.fsolve to solve this problem.
-
-#+BEGIN_SRC python :results output :exports both
-from ase.units import GPa
-from numpy import array, linspace, polyval
-
-# copied from polynomial fit above
-anatase_epars = array([-1.06049246e-03,   1.30279404e-01,  -5.23520055e+00,
-         4.25202869e+01])
-rutile_epars = array([-1.24680208e-03,   1.42966536e-01,  -5.33239733e+00,
-         3.85903670e+01])
-
-# polynomial fits for pressures
-anatase_ppars = array([3.18147737e-03,  -2.60558808e-01,   5.23520055e+00])
-rutile_ppars = array([3.74040625e-03,  -2.85933071e-01,   5.33239733e+00])
-
-
-def func(V):
-    V1 = V[0] # rutile volume
-    V2 = V[1] # anatase volume
-
-    E_rutile = polyval(rutile_epars, V1)
-    E_anatase = polyval(anatase_epars, V2)
-
-    P_rutile =  polyval(rutile_ppars, V1)
-    P_anatase = polyval(anatase_ppars, V2)
-
-    return [(E_anatase - E_rutile) / (V1 - V2) - P_anatase,
-            (E_anatase - E_rutile) / (V1 - V2) - P_rutile]
-
-from scipy.optimize import fsolve
-x0 = fsolve(func, [28, 34])
-print 'The solutions are at V = {0}'.format(x0)
-print 'Anatase pressure: {0} GPa'.format(polyval(anatase_ppars, x0[1]) / GPa)
-print 'Rutile  pressure: {0} GPa'.format(polyval(rutile_ppars, x0[0]) / GPa)
-
-# illustrate the common tangent
-import matplotlib.pyplot as plt
-
-vfit = linspace(28, 40)
-plt.plot(vfit, polyval(anatase_epars,vfit), label='anatase')
-plt.plot(vfit, polyval(rutile_epars,vfit), label='rutile')
-plt.plot(x0, [polyval(rutile_epars,x0[0]),
-              polyval(anatase_epars,x0[1])], 'ko-', label='common tangent')
-plt.legend()
-plt.xlabel('Volume ($\AA^3$/f.u.)')
-plt.ylabel('Total energy (eV/f.u.)')
-plt.savefig('images/eos-common-tangent.png')
-#+END_SRC
-
-#+RESULTS:
-: The solutions are at V = [ 31.67490656  34.60893508]
-: Anatase pressure: 4.52495142656 GPa
-: Rutile  pressure: 4.5249514267 GPa
-
-At a pressure of 4.5 GPa, we expect that anatase will start converting into rutile. Along this common tangent, a mixture of the two phases will be more stable than either pure phase.
-
-# <<common-tangent>>
-#+ATTR_LaTeX: :placement [H]
-#+caption: Illustration of the common tangent that shows the pressure where anatase and rutile coexist before anatase converts to rutile. \label{fig:tio2-cotangent}
-[[./images/eos-common-tangent.png]]
-
-*************** TODO add literature discussion
-there is some controversy about the most stable phase. add discussion here.
-*************** END
-
-** Bulk reaction energies
-   :PROPERTIES:
-   :ID:       15961dbc-5a10-42b6-8a3c-ca1d73b390f9
-   :END:
-*** Alloy formation energies
-In this section we will consider how to calculate the formation energy of an fcc Cu-Pd alloy and how to use that information to discuss relative stabilities. The kinds of questions we can easily answer are:
-
-1. Is the formation of an alloy at a particular composition and structure energetically favorable?
-2. Given two alloy structures at the same composition, which one is more stable?
-3. Given a set of alloy structures at different compositions, which ones are stable with respect to phase separation?
-
-Each of these questions is answered by calculating the formation energy of the alloy from the parent metals. Thus, we will need the total energies of fcc Cu and fcc Pd. To get started. We get those first. Rather than compute a full equation of state for these, we will rely on the built in unit cell optimization algorithm in VASP (ISIF=3).
-
-**** Basic alloy formation energy
-#+BEGIN_SRC python :results output :exports both
-# get bulk Cu and Pd energies. <<pure-metal-components>>
-from jasp import *
-from ase import Atom, Atoms
-
-atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000])],
-              cell=  [[ 1.818,  0.000,  1.818],
-                      [ 1.818,  1.818,  0.000],
-                      [ 0.000,  1.818,  1.818]])
-
-with jasp('bulk/alloy/cu',
-          xc='PBE',
-          encut=350,
-          kpts=(13, 13, 13),
-          nbands=9,
-          ibrion=2,
-          isif=3,
-          nsw=10,
-          atoms=atoms) as calc:
-    cu = atoms.get_potential_energy()
-
-atoms = Atoms([Atom('Pd',  [0.000,      0.000,      0.000])],
-              cell=[[ 1.978,  0.000,  1.978],
-                    [ 1.978,  1.978,  0.000],
-                    [0.000,  1.978,  1.978]])
-
-with jasp('bulk/alloy/pd',
-          xc='PBE',
-          encut=350,
-          kpts=(13, 13, 13),
-          nbands=9,
-          ibrion=2,
-          isif=3,
-          nsw=10,
-          atoms=atoms) as calc:
-    pd = atoms.get_potential_energy()
-
-print 'Cu energy = {0} eV'.format(cu)
-print 'Pd energy = {0} eV'.format(pd)
-#+END_SRC
-
-#+RESULTS:
-: Cu energy = -3.723352 eV
-: Pd energy = -5.18438 eV
-
-Note that the Pd energy is more negative than the Cu energy. This does not mean anything significant. We cannot say Pd is more stable than Cu; it is not like Cu could transmutate into Pd!
-
-Next, we will consider a question like which of two structures with composition of CuPd is more stable. These coordinates for these structures came from research of the author. The approach is pretty general, you must identify the coordinates and unit cell of the candidate structure, and then run a calculation to find the optimized geometry and unit cell. This may take some work, as previously described in the multistep process for optimizing a bulk system. Here the geometry is pretty close to optimized, so we can use the VASP optimization routines. We consider two structures with composition CuPd.
-
-# <<50-50-cu-pd>>
-#+BEGIN_SRC python :results output :exports both
-from jasp import *
-from ase import Atom, Atoms
-
-atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
-               Atom('Pd',  [-1.652,     0.000,      2.039])],
-              cell=  [[0.000, -2.039,  2.039],
-                      [0.000,  2.039,  2.039],
-                      [-3.303,  0.000,  0.000]])
-
-with jasp('bulk/alloy/cupd-1',
-          xc='PBE',
-          encut=350,
-          kpts=(12, 12, 8),
-          nbands=17,
-          ibrion=2,
-          isif=3,
-          nsw=10,
-          atoms=atoms) as calc:
-    cupd1 = atoms.get_potential_energy()
-
-atoms = Atoms([Atom('Cu',  [-0.049,     0.049,      0.049]),
-               Atom('Cu',  [-11.170,   11.170,     11.170]),
-               Atom('Pd',  [-7.415,     7.415,      7.415]),
-               Atom('Pd',  [-3.804 ,    3.804,      3.804])],
-              cell=[[-5.629,  3.701,  5.629 ],
-                    [-3.701,  5.629,  5.629 ],
-                    [-5.629,  5.629,  3.701 ]])
-
-with jasp('bulk/alloy/cupd-2',
-          xc='PBE',
-          encut=350,
-          kpts=(8,8,8),
-          nbands=34,
-          ibrion=2,
-          isif=3,
-          nsw=10,
-          atoms=atoms) as calc:
-    cupd2 = atoms.get_potential_energy()
-
-print 'cupd-1 = {0} eV'.format(cupd1)
-print 'cupd-2 = {0} eV'.format(cupd2)
-#+END_SRC
-
-#+RESULTS:
-: cupd-1 = -9.148409 eV
-: cupd-2 = -17.979436 eV
-
-Looking at these energies, you could be tempted to say cupd-2 is more stable than cupd-1 because its energy is much lower. This is wrong, however, because cupd-2 has twice as many atoms as cupd-1. We should compare the normalized total energies, that is the energy normalized per CuPd formula unit, or as an alternative  the number of atoms in the unit cell. It does not matter which, as long as we normalize consistently. It is conventional in alloy calculation to normalize by the number of atoms in the unit cell.
-
-#+BEGIN_SRC python :results output :exports both
-from jasp import *
-
-with jasp('bulk/alloy/cupd-1') as calc:
-    atoms = calc.get_atoms()
-    e1 = atoms.get_potential_energy()/len(atoms)
-
-with jasp('bulk/alloy/cupd-2') as calc:
-    atoms = calc.get_atoms()
-    e2 = atoms.get_potential_energy()/len(atoms)
-
-print 'cupd-1: {0} eV/atom'.format(e1)
-print 'cupd-2: {0} eV/atom'.format(e2)
-#+END_SRC
-
-#+RESULTS:
-: cupd-1: -4.5742045 eV/atom
-: cupd-2: -4.494859 eV/atom
-
-After normalizing by number of atoms, we can see that cupd-1 is a more stable structure. However, we are looking at total energies, and we might ask: is cupd-1 more stable than an unreacted mixture of the parent compounds, fcc Cu and Pd? In other words, is the following reaction exothermic:
-
-Cu + Pd $\rightarrow$ CuPd for the two configurations we examined? Below, we show some pretty general code that computes these formation energies, and normalizes them by the number of atoms in the unit cell.
-
-#+BEGIN_SRC python :results output :exports both
-from jasp import *
-
-# bulk energy 1
-with jasp('bulk/alloy/cu') as calc:
-    atoms = calc.get_atoms()
-    cu = atoms.get_potential_energy()/len(atoms)
-
-# bulk energy 2
-with jasp('bulk/alloy/pd') as calc:
-    atoms = calc.get_atoms()
-    pd = atoms.get_potential_energy()/len(atoms)
-
-with jasp('bulk/alloy/cupd-1') as calc:
-    atoms = calc.get_atoms()
-    e1 = atoms.get_potential_energy()
-    # subtract bulk energies off of each atom in cell
-    for atom in atoms:
-        if atom.symbol == 'Cu':
-            e1 -= cu
-        else:
-            e1 -= pd
-    e1 /= len(atoms)  # normalize by number of atoms in cell
-
-with jasp('bulk/alloy/cupd-2') as calc:
-    atoms = calc.get_atoms()
-    e2 = atoms.get_potential_energy()
-    for atom in atoms:
-        if atom.symbol == 'Cu':
-            e2 -= cu
-        else:
-            e2 -= pd
-    e2 /= len(atoms)
-
-print 'Delta Hf cupd-1 = {0:1.2f} eV/atom'.format(e1)
-print 'Delta Hf cupd-2 = {0:1.2f} eV/atom'.format(e2)
-#+END_SRC
-
-#+RESULTS:
-: Delta Hf cupd-1 = -0.12 eV/atom
-: Delta Hf cupd-2 = -0.04 eV/atom
-
-The answer is yes. Both structures are energetically more favorable than an equal composition mixture of the parent metals. The heat of formation for both structures is exothermic, but the cupd-1 structure is more stable than the cupd-2 structure. This is shown conceptually in Figure ref:fig:alloy1.
-
-#+ATTR_LaTeX: :placement [H] :width 2in
-#+attr_org: :width 300
-#+caption: Conceptual picture of two alloys with exothermic formation energies. The dashed line represents a composition weighted average energy of the parent metals. E4 and E3 are energies associated with two different alloy structures at the same composition. Both structures are more stable than a mixture of pure metals with the same composition, but E3 is more stable than E4. label:fig:alloy1
-[[./images/alloy-stability.png]]
-
-We will now examine another structure at another composition and its stability.
-
-# <<alloy-cu3pd>>
-#+BEGIN_SRC python :results output :exports both
-from jasp import *
-from ase import Atom, Atoms
-
-# parent metals
-with jasp('bulk/alloy/cu') as calc:
-    atoms = calc.get_atoms()
-    cu = atoms.get_potential_energy()/len(atoms)
-
-with jasp('bulk/alloy/pd') as calc:
-    atoms = calc.get_atoms()
-    pd = atoms.get_potential_energy()/len(atoms)
-
-atoms = Atoms([Atom('Cu',  [-3.672,     3.672,      3.672]),
-               Atom('Cu',  [0.000,     0.000,      0.000]),
-               Atom('Cu',  [-10.821,   10.821,     10.821]),
-               Atom('Pd',  [-7.246,     7.246,      7.246])],
-               cell=[[-5.464,  3.565,  5.464],
-                     [-3.565,  5.464,  5.464],
-                     [-5.464,  5.464,  3.565]])
-
-with jasp('bulk/alloy/cu3pd-1',
-          xc='PBE',
-          encut=350,
-          kpts=(8, 8, 8),
-          nbands=34,
-          ibrion=2,
-          isif=3,
-          nsw=10,
-          atoms=atoms) as calc:
-    e3 = atoms.get_potential_energy()
-    for atom in atoms:
-        if atom.symbol == 'Cu':
-            e3 -= cu
-        else:
-            e3 -= pd
-    e3 /= len(atoms)
-print 'Delta Hf cu3pd-1 = {0:1.2f} eV/atom'.format(e3)
-#+END_SRC
-
-#+RESULTS:
-: Delta Hf cu3pd-1 = -0.02 eV/atom
-
-The formation energy is slightly exothermic, which means the structure is more stable than a mixture of the parent metals. However, let us consider whether the structure is stable with respect to phase separation into pure Cu and the cupd-1 structure. We define the following quantities:
-
-$H_{f,Cu}$ = 0.0 eV/atom,    $x_0$ = 0,
-$H_{f,cupd-1}$ = -0.12 eV/atom,   $x_3$ = 0.5.
-
-The composition weighted average at $x_{Pd}=0.25$ is:
-
-$H_f = H_{f,Cu} + \frac{x0-x}{x0-x3}(H_{f,cupd-1} - H_{f,Cu})$
-
-#+BEGIN_SRC python :results output :exports both
-x0 = 0.0; x3 = 0.5; x = 0.25;
-Hf1 = 0.0; Hf3 = -0.12;
-
-print 'Composition weighted average  = {0} eV'.format(Hf1 +
-                                                      (x0 - x)
-                                                      / (x0 - x3)
-                                                      * (Hf3 - Hf1))
-#+END_SRC
-
-#+RESULTS:
-: Composition weighted average  = -0.06 eV
-
-We find the weighted composition formation energy of pure Cu and cupd-1 is more favorable than the formation energy of cu3pd-1. Therefore, we could expect that structure to phase separate into a mixture of pure Cu and cupd-1. Schematically what we are seeing is shown in Figure \ref:fig:alloy-phase-separation.
-
-# inkscape images/alloy-phase-stability.svg
-#+ATTR_LaTeX: :placement [H] :width 3in
-#+attr_org: :width 300
-#+caption: Illustration of of an alloy structure with an exothermic formation energy that is not stable with respect to phase separation. The solid line shows the composition weighted average energy of a mixture of Cu and cupd-2. Since the energy of cu3pd-1 is above the solid line, it is less favorable than a mixture of Cu and cupd-2 with the same composition. \label{fig:alloy-phase-separation}
-[[./images/alloy-phase-stability.png]]
-
-Finally, let us consider one more structure with the Cu_{3}Pd stoichiometry.
-
-# <<alloy-cu3pd-2>>
-#+BEGIN_SRC python :results output :exports both
-from jasp import *
-from ase import Atom, Atoms
-
-# parent metals
-with jasp('bulk/alloy/cu') as calc:
-    atoms = calc.get_atoms()
-    cu = atoms.get_potential_energy()/len(atoms)
-
-with jasp('bulk/alloy/pd') as calc:
-    atoms = calc.get_atoms()
-    pd = atoms.get_potential_energy()/len(atoms)
-
-atoms = Atoms([Atom('Cu',  [-1.867,     1.867,      0.000]),
-               Atom('Cu',  [0.000,      0.000,      0.000]),
-               Atom('Cu',  [0.000,      1.867,      1.867]),
-               Atom('Pd',  [-1.867,     0.000,      1.86])],
-               cell=[[-3.735,  0.000,  0.000],
-                     [0.000,  0.000,  3.735],
-                     [0.000,  3.735,  0.000]])
-
-with jasp('bulk/alloy/cu3pd-2',
-          xc='PBE',
-          encut=350,
-          kpts=(8, 8, 8),
-          nbands=34,
-          ibrion=2,
-          isif=3,
-          nsw=10,
-          atoms=atoms) as calc:
-    e4 = atoms.get_potential_energy()
-    for atom in atoms:
-        if atom.symbol == 'Cu':
-            e4 -= cu
-        else:
-            e4 -= pd
-    e4 /= len(atoms)
-print 'Delta Hf cu3pd-2 = {0:1.2f} eV/atom'.format(e4)
-#+END_SRC
-
-#+RESULTS:
-: Delta Hf cu3pd-2 = -0.10 eV/atom
-
-This looks promising: the formation energy is much more favorable than cu3pd-1, and it is below the composition weighted formation energy of -0.06 eV/atom. Consequently, we conclude that this structure will not phase separate into a mixture of Cu and CuPd. We cannot say, however, if there is a more stable phase not yet considered, or if it might phase separate into two other phases. We also note here that we have ignored a few other contributions to alloy stability. We have only considered the electronic energy contributions to the formation energy. At temperatures above absolute zero there are additional contributions including configurational and vibrational entropy, which may stabilize some structures more than others. Finally, our analysis is limited to comparisons of the structures computed on the fcc lattice. In fact, it is known that the CuPd alloy forms a bcc structure. We did not calculate that structure, so we can not say if it is more or less stable than the obvious fcc structure we found.
-
-# convert ./images/alloy-phase-stability-2.svg ./images/alloy-phase-stability-2.png
-
-#+ATTR_LaTeX: :placement [H] :width 3in
-#+ATTR_org: :width 200
-#+caption: Illustration that cu3pd-2 is more stable than cu3pd-1 and that is it is more stable than a composition weighted mixture of Cu and cupd-1. The dotted line shows the energy of a composition weighted average energy of a mixture of Cu and cupd-1. Since cu3pd-2 is below the dotted line, it is more stable than the phase-separated mixture. \label{fig:alloy-phase-separation-2}
-[[./images/alloy-phase-stability-2.png]]
-
-The construction of alloy phase diagrams is difficult. You are always faced with the possibility that there is a phase that you have not calculated that is more stable than the ones you did calculate. One approach is to use a tool that automates the discovery of relevant structures such as the Alloy Theoretic Automated Toolkit ([[http://www.its.caltech.edu/~avdw/atat/][ATAT]]) cite:vandeWalle2002539,vandeWalle2009266 which uses a cluster expansion methodology.
-
-*** Metal oxide oxidation energies
-We will consider here the reaction 2 Cu_{2}O + O_{2} $\rightleftharpoons$ 4 CuO. The reaction energy is:
-
-$\Delta E = 4E_{CuO} - 2E_{Cu_2O} - E_{O_2}$. We need to compute the energy of each species.
-
-**** Cu_{2}O calculation
-#+BEGIN_SRC python :results output :exports both
-# run Cu2O calculation
-from jasp import *
-from ase import Atom, Atoms
-
-# http://phycomp.technion.ac.il/~ira/types.html#Cu2O
-a = 4.27
-
-atoms = Atoms([Atom('Cu', [0, 0, 0]),
-               Atom('Cu', [0.5, 0.5, 0.0]),
-               Atom('Cu', [0.5, 0.0, 0.5]),
-               Atom('Cu', [0.0, 0.5, 0.5]),
-               Atom('O', [0.25, 0.25, 0.25]),
-               Atom('O', [0.75, 0.75, 0.75])])
-
-atoms.set_cell((a, a, a), scale_atoms=True)
-
-with jasp('bulk/Cu2O',
-          encut=400,
-          kpts=(8, 8, 8),
-          ibrion=2,
-          isif=3,
-          nsw=30,
-          xc='PBE',
-          atoms=atoms) as calc:
-    calc.set_nbands()
-    calc.calculate()
-    print calc
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-: -----------------------------
-  VASP calculation from /home-research/jkitchin/dft-book2/bulk/Cu2O
-  converged: True
-  Energy = -27.204590 eV
-
-  Unit cell vectors (angstroms)
-        x       y     z      length
-  a0 [ 4.270  0.000  0.000] 4.270
-  a1 [ 0.000  4.270  0.000] 4.270
-  a2 [ 0.000  0.000  4.270] 4.270
-  a,b,c,alpha,beta,gamma (deg):4.270 4.270 4.270 90.0 90.0 90.0
-  Unit cell volume = 77.854 Ang^3
-  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
-             0.000  0.000  0.000-0.000 -0.000 -0.000
- Atom#  sym       position [x,y,z]tag  rmsForce constraints
-   0    Cu  [0.000      0.000      0.000]  0   0.00      T T T
-   1    Cu  [2.135      2.135      0.000]  0   0.00      T T T
-   2    Cu  [2.135      0.000      2.135]  0   0.00      T T T
-   3    Cu  [0.000      2.135      2.135]  0   0.00      T T T
-   4    O   [1.067      1.067      1.067]  0   0.00      T T T
-   5    O   [3.202      3.202      3.202]  0   0.00      T T T
---------------------------------------------------
-
-INCAR Parameters:
------------------
-        nbands: 37
-           nsw: 30
-        ibrion: 2
-          isif: 3
-         encut: 400.0
-        magmom: None
-          prec: Normal
-          kpts: (8, 8, 8)
-    reciprocal: False
-            xc: PBE
-           txt: -
-         gamma: False
-
-Pseudopotentials used:
-----------------------
-O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
-Cu: potpaw_PBE/Cu/POTCAR (git-hash: a44c591415026f53deb16a99ca3f06b1e69be10b)
-#+end_example
-
-**** CuO calculation
-#+BEGIN_SRC python :results output
-# run CuO calculation
-from jasp import *
-from ase import Atom, Atoms
-
-# CuO
-# http://cst-www.nrl.navy.mil/lattice/struk/b26.html
-# http://www.springermaterials.com/docs/info/10681727_51.html
-a = 4.6837
-b = 3.4226
-c = 5.1288
-beta = 99.54/180*np.pi
-y = 0.5819
-
-a1 = np.array([0.5*a, -0.5*b, 0.0])
-a2 = np.array([0.5*a, 0.5*b, 0.0])
-a3 = np.array([c*np.cos(beta), 0.0, c*np.sin(beta)])
-
-atoms = Atoms([Atom('Cu', 0.5*a2),
-               Atom('Cu', 0.5*a1 + 0.5*a3),
-               Atom('O', -y*a1 + y*a2 + 0.25*a3),
-               Atom('O',  y*a1 - y*a2 - 0.25*a3)],
-               cell=(a1, a2, a3))
-
-with jasp('bulk/CuO',
-          encut=400,
-          kpts=(8, 8, 8),
-          ibrion=2,
-          isif=3,
-          nsw=30,
-          xc='PBE',
-          atoms=atoms) as calc:
-    calc.set_nbands()
-    calc.calculate()
-    print calc
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-: -----------------------------
-  VASP calculation from /home-research/jkitchin/dft-book2/bulk/CuO
-  converged: True
-  Energy = -19.509498 eV
-
-  Unit cell vectors (angstroms)
-        x       y     z      length
-  a0 [ 2.302 -1.776  0.046] 2.908
-  a1 [ 2.302  1.776  0.046] 2.908
-  a2 [-0.762  0.000  5.087] 5.144
-  a,b,c,alpha,beta,gamma (deg):2.908 2.908 5.144 95.8 95.8 95.8
-  Unit cell volume = 41.730 Ang^3
-  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
-             0.008  0.013  0.009-0.000  0.000 -0.000
- Atom#  sym       position [x,y,z]tag  rmsForce constraints
-   0    Cu  [1.151      0.888      0.023]  0   0.00      T T T
-   1    Cu  [0.770     -0.888      2.566]  0   0.00      T T T
-   2    O   [2.111     -0.168      1.318]  0   0.03      T T T
-   3    O   [1.730      0.168      3.861]  0   0.03      T T T
---------------------------------------------------
-
-INCAR Parameters:
------------------
-        nbands: 23
-           nsw: 30
-        ibrion: 2
-          isif: 3
-         encut: 400.0
-        magmom: None
-          prec: Normal
-          kpts: (8, 8, 8)
-    reciprocal: False
-            xc: PBE
-           txt: -
-         gamma: False
-
-Pseudopotentials used:
-----------------------
-O: potpaw_PBE/O/POTCAR (git-hash: 9a0489b46120b0cad515d935f44b5fbe3a3b1dfa)
-Cu: potpaw_PBE/Cu/POTCAR (git-hash: a44c591415026f53deb16a99ca3f06b1e69be10b)
-#+end_example
-
-**** Reaction energy calculation
-#+BEGIN_SRC python :results output :exports both
-from jasp import *
-
-# don't forget to normalize your total energy to a formula unit. Cu2O
-# has 3 atoms, so the number of formula units in an atoms is
-# len(atoms)/3.
-with jasp('bulk/Cu2O') as calc:
-    atoms = calc.get_atoms()
-    cu2o_energy = atoms.get_potential_energy()/(len(atoms)/3)
-
-with jasp('bulk/CuO') as calc:
-    atoms = calc.get_atoms()
-    cuo_energy = atoms.get_potential_energy()/(len(atoms)/2)
-
-# make sure to use the same cutoff energy for the O2 molecule!
-with jasp('molecules/O2-sp-triplet-400') as calc:
-    atoms = calc.get_atoms()
-    o2_energy = atoms.get_potential_energy()
-
-rxn_energy = 4.0*cuo_energy - o2_energy - 2.0*cu2o_energy
-print 'Reaction energy = {0} eV'.format(rxn_energy)
-#+END_SRC
-
-#+RESULTS:
-: Reaction energy = -1.966119 eV
-
-This is the reaction energy for 2 Cu_{2}O $\rightarrow$ 4 CuO. In cite:PhysRevB.73.195107, the experimental reaction is estimated to be  about -3.14 eV.
-
-There are a few reasons why our number does not agree with the experimental reaction energy. One reason is related to errors in the O_{2} dissociation energy, and another reason is related to localization of electrons in the Cu 3\(d\) orbitals cite:PhysRevB.73.195107. The first error of incorrect O_{2} dissociation error is a systematic error that can be corrected empirically cite:PhysRevB.73.195107. Fixing the second error requires the application of DFT+U (see [[*DFT%2BU][DFT+U]]).
-
-The heat of reaction is reported to be 1000 J/g product at http://onlinelibrary.wiley.com/doi/10.1002/er.4440130107/pdf for the reaction 2CuO $\rightleftharpoons$ Cu_{2}O + 1/2 O_{2}.
-
-#+BEGIN_SRC python :results output
-from ase import Atoms
-atoms = Atoms('Cu2O')
-MW = atoms.get_masses().sum()
-
-H = 1.  # kJ/g
-print 'rxn energy = {0:1.1f} eV'.format(-2 * H * MW / 96.4)  # convert to eV
-#+END_SRC
-
-#+RESULTS:
-: rxn energy = -3.0 eV
-
-This is pretty close to the value in cite:PhysRevB.73.195107 and might need a temperature correction to get agreement at 298K.
-
-** Bulk density of states
-   :PROPERTIES:
-   :ID:       cdf40b4f-f686-48b4-a458-c885f62b8bbf
-   :END:
-The density of states refers to the number of electronic states in a particular energy range.
-
-The solution to Eq. eqref:eq:KS yields a set of Kohn-Sham (K-S) orbitals and an
-associated set of eigenvalues that correspond to the energies of these
-orbitals, neither of which have any known directly observable meaning
-cite:RevModPhys.71.1253.  The sum of the squared K-S orbitals,
-however, is equal to the electron density (Eq. \eqref{eq:density}),
-and the sum of the eigenvalues is a significant part of the total
-energy (Eq.  \eqref{eq:dftEnergy}). Thus, it seems reasonable to
-suppose these quantities have other significant relationships to
-physical observables. Perdew et al. showed that the highest occupied
-eigenvalue is equal to the ionization energy of a system within an
-exact density functional theory cite:perdew1982:elect-kohn-sham, but
-their interpretation has been vigorously debated in the literature
-cite:kleinman1997:signif-kohn-sham,perdew1997,kleinman1997:reply-commen-kohn-sham,
-and is only true for the exact exchange/correlation functional, not
-the approximate ones used in practice cite:koch2001.
-Stowasser and Hoffmann discussed an approach to using the K-S orbitals
-in more traditional molecular orbital interpretations, but the results
-were primarily qualitative cite:stowasser1999:what-kohn-sham. More
-recently, a DFT analog of Koopmans' theorem has been developed that
-formally identifies the eigenvalues with vertical ionization
-potentials, which can be measured with photoelectron spectroscopy
-cite:gritsenko2002.
-
-Despite the arguments against ascribing physical meaning to the K-S
-orbitals and eigenvalues, it has become fairly standard, especially
-for solids, to use them to calculate the density of states (DOS)
-cite:jones1989 [Sec.  VI.  B].  This has been found to yield
-reasonable results for the valence bands in metals, but poor results
-for tightly bound orbitals and band gaps
-cite:perdew1982:elect-kohn-sham. A highly technical discussion of
-this issue can be found in Ref. citealp:perdew1981:self.  The
-density of states can be calculated by a sum over the k-points
-cite:seitsonen2000:phd:
-
-\begin{equation}\label{eq:dos}
-\Rho(\epsilon)=\sum_\mathbf{\mathrm{k}} \omega_\mathbf{\mathrm{k}} \sum_i \beta(\epsilon -\epsilon_{i\mathbf{\mathrm{k}}})
-\end{equation}
-
-where $\omega_\mathbf{\mathrm{k}}$ is the weight associated with the
-k-point, and $\beta$ is a broadening function, typically a gaussian
-function, to account for the finite number of k-points used in the
-calculations. The amount of broadening is arbitrary, and should tend
-to zero as the number of k-points approaches infinity.
-
-#+BEGIN_SRC python :results output
-from jasp import *
-
-npoints = 200
-width = 0.5
-
-def gaussian(energies, eik):
-    x = ((energies - eik) / width)
-    return np.exp(-x**2) / np.sqrt(np.pi) / width
-
-with jasp('bulk/pd-dos') as calc:
-
-    # kpt weights
-    wk = calc.get_k_point_weights()
-
-    # for each k-point there are a series of eigenvalues
-    # here we get all the eigenvalues for each k-point
-    e_kn = []
-    for i, k in enumerate(wk):
-        e_kn.append(calc.get_eigenvalues(kpt=i))
-
-    e_kn = np.array(e_kn) - calc.get_fermi_level()
-
-    # these are the energies we want to evaluate the dos at
-    energies = np.linspace(e_kn.min(), e_kn.max(), npoints)
-
-    # this is where we build up the dos
-    dos = np.zeros(npoints)
-
-    for j in range(npoints):
-        for k in range(len(wk)): # loop over all kpoints
-            for i in range(len(e_kn[k])): # loop over eigenvalues in each k
-                dos[j] += wk[k] * gaussian(energies[j], e_kn[k][i])
-
-import matplotlib.pyplot as plt
-plt.plot(energies, dos)
-plt.savefig('images/manual-dos.png')
-plt.show()
-#+END_SRC
-
-#+RESULTS:
-
-#+attr_latex: :placement [H]
-#+caption: Density of states.
-[[./images/manual-dos.png]]
-
-
-Here is a more convenient way to compute the DOS using mod:ase.dft.
-
-#+BEGIN_SRC python
-from jasp import *
-import matplotlib.pyplot as plt
-from ase.dft import DOS
-
-with jasp('bulk/pd-dos') as calc:
-    dos = DOS(calc, width=0.2)
-    d = dos.get_dos()
-    e = dos.get_energies()
-
-import pylab as plt
-plt.plot(e, d)
-plt.xlabel('energy (eV)')
-plt.ylabel('DOS')
-plt.savefig('images/pd-dos.png')
-#+END_SRC
-
-#+RESULTS:
-
-#+ATTR_LaTeX: :placement [H]
-#+caption: Total DOS for bulk Pd.
-[[./images/pd-dos.png]]
-
-This DOS looks roughly like you would expect. The peak between -5 to 0 eV is the Pd d-band.
-
-The VASP manual [[http://cms.mpi.univie.ac.at/vasp/guide/node124.html#SECTION000933000000000000000][recommends]] a final run be made with ISMEAR=-5, which uses the tetrahedron method with Bl\"ochl corrections.
-
-#+BEGIN_SRC python :results output
-from jasp import *
-from ase.dft import DOS
-with jasp('bulk/pd-dos') as calc:
-    calc.clone('bulk/pd-dos-ismear-5')
-
-with jasp('bulk/pd-dos-ismear-5') as calc:
-    bulk = calc.get_atoms()
-    calc.set(ismear=-5)
-
-    bulk.get_potential_energy()
-    dos = DOS(calc, width=0.2)
-    d = dos.get_dos()
-    e = dos.get_energies()
-
-import pylab as plt
-plt.plot(e, d)
-plt.xlabel('energy [eV]')
-plt.ylabel('DOS')
-plt.savefig('images/pd-dos-ismear-5.png')
-#+END_SRC
-
-#+RESULTS:
-
-This not notably different to me.
-
-# <<dos-ismear-5>>
-#+ATTR_LaTeX: :placement [H]
-#+caption: Total DOS for Pd computed with ISMEAR=-5
-[[./images/pd-dos-ismear-5.png]]
-
-We can test for convergence of the DOS. The k-points are most important.
-
-#+BEGIN_SRC python
-from ase import Atoms, Atom
-from jasp import *
-import sys
-
-import matplotlib.pyplot as plt
-import numpy as np
-from ase.dft import DOS
-import pylab as plt
-
-a = 3.9  # approximate lattice constant
-b = a / 2.
-bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
-             cell=[(0, b, b),
-                   (b, 0, b),
-                   (b, b, 0)])
-
-kpts = [8, 10, 12, 14, 16, 18, 20]
-
-for k in kpts:
-    with jasp('bulk/pd-dos-k{0}-ismear-5'.format(k),
-              encut=300,
-              xc='PBE',
-              kpts=(k, k, k),
-              atoms=bulk) as calc:
-
-        # this runs the calculation
-        try:
-            bulk.get_potential_energy()
-            dos = DOS(calc, width=0.2)
-            d = dos.get_dos() + k / 4.0
-            e = dos.get_energies()
-
-            plt.plot(e,d, label='k={0}'.format(k))
-        except:
-            pass
-plt.xlabel('energy (eV)')
-plt.ylabel('DOS')
-plt.legend()
-plt.savefig('images/pd-dos-k-convergence-ismear-5.png')
-plt.show()
-#+END_SRC
-
-#+RESULTS:
-
-# <<dos-k-convergence>>
-#+attr_latex: :placement [H]
-#+caption: Convergence of the total DOS with k-points
-[[./images/pd-dos-k-convergence-ismear-5.png]]
-
-** Atom projected density of states
-One major disadvantage of a planewave basis set is that it is difficult to relate the completely delocalized planewaves to localized phenomena such as bonding. Much insight into bonding has been gained by atomic/molecular orbital theory, which has carried over to the solid-state arena cite:RevModPhys.60.601. Consequently, several schemes have been developed to project the one-electron Kohn-Sham wave functions onto atomic wave functions cite:sanchez-portal1995:projec,segall1996:popul,segall1996:popul-mp.  In VASP, the one electron wave functions can be projected onto spherical harmonic orbitals. The radial component of the atomic orbitals extends to infinity. In a solid, this means that the projection on one atom may overlap with the projection on a neighboring atom, resulting in double counting of electrons.  Consequently, a cutoff radius was introduced, beyond which no contributions are included.  It is not obvious what the best cutoff radius is. If the radius is too small, it might not capture all of the electrons associated with the atom. However, if it is too large, it may include electrons from neighboring atoms.  One might want to use different cutoff radii for different atoms, which have different sizes.  Furthermore, the ideal cutoff radius for an atom may change in different environments, thus it would require an iterative procedure to determine it.  This difficulty arises because the orbital-band occupations are not observable, thus how the electrons are divided up between atoms is arbitrary and, as will be seen later, is sensitive to the cutoff radius (and in other DFT implementations, the basis set).  However, Mulliken orbital populations have been used successfully for many years to examine the qualitative differences between similar systems, and that is precisely what these quantities are used for here.  Thus, a discussion of the analysis and results is warranted.
-
-The s and p states in a metal are typically delocalized in space and more like free-electrons, whereas the d-orbitals are fairly localized in space and have been treated successfully with tight-binding theories such as extended H\"u ckel theory cite:RevModPhys.60.601, and linear muffin tin orbital theory cite:ruban1997:surfac.  Consequently, the remaining discussion will be focused on the properties of the projected d-states.
-
-In this example, we consider how to get the atom-projected density of states (ADOS). We are interested in properties of the $d$-band on Pd, such as the $d$-band center and $d$-band width. You must set the [[incar:RWIGS][RWIGS]] tag to get ADOS, and these are the Wigner-Seitz radii for each atom.  By integrating the projected d-band up to the Fermi level, the d-band filling can be determined.  It is not obvious what the electron count in the d-band should be for an atom in a metal.  For a gas-phase, neutral metal atom in the ground state, however, the d-orbital electron count is well defined, so it will be used as an initial reference point for comparison cite:kittel.
-
-A powerful method for characterizing distributions is to examine various moments of the distribution (see Chapter 4 in Ref.  citealp:cottrell1988 and Chapter 6 in Refs. citealp:ducastelle1991 and citealp:pettifor1992:elect-theor-alloy-desig). The $n^{th}$ order moment, $\mu_n$, of a distribution of states $\rho(\epsilon)$ with respect to a reference $\epsilon_o$ is defined by
-\begin{equation}
-\mu_n = \frac{\int_{-\infty}^\infty \epsilon^n \rho(\epsilon-\epsilon_o)d\epsilon}
-{\int_{-\infty}^\infty \rho(\epsilon-\epsilon_o)d\epsilon}
-\end{equation}
-In this work, the reference energy is always the Fermi level.  The zeroth moment is just the total number of states, in this case it will be normalized to unity. The first moment is the average energy of distribution, analogous to the center of mass for a mass density distribution. The second moment is the mean squared width of the distribution. The third moment is a measure of skewness and the fourth moment is related to kurtosis, but these moments are rarely used, and only the first and second moments are considered in this work.
-
-It is important to note that these projected density of states are not physical observables. They are the wavefunctions projected onto atomic orbitals. For some situations this makes sense, e.g. the $d$ orbitals are fairly localized and reasonably approximated by atomic orbitals. The $s$ valence orbitals in a metal, in contrast, are almost totally delocalized. Depending on the cutoff radius (RWIGS) you choose, you can see very different ADOS.
-
-# << ados-pd-example>>
-#+BEGIN_SRC python :results output :exports both
-from ase import Atoms, Atom
-from jasp import *
-from ase.calculators.vasp import VaspDos
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-a = 3.9  # approximate lattice constant
-b = a / 2.
-bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
-             cell=[(0, b, b),
-                   (b, 0, b),
-                   (b, b, 0)])
-
-with jasp('bulk/pd-ados',
-          encut=300,
-          xc='PBE',
-          lreal=False,
-          rwigs=[1.5],  # wigner-seitz radii for ados
-          kpts=(8, 8, 8),
-          atoms=bulk) as calc:
-
-    # this runs the calculation
-    bulk.get_potential_energy()
-
-    # now get results
-    ados = VaspDos(efermi=calc.get_fermi_level())
-
-    energies = ados.energy       # energy is an attribute, not a function
-    dos = ados.site_dos(0, 'd')  # this is a function, get d-orbitals on atom 0
-
-    # we will select energies in the range of -10, 5
-    ind = (energies < 5) & (energies > -10)
-
-    energies = energies[ind]
-    dos = dos[ind]
-
-    Nstates = np.trapz(dos, energies)
-    occupied = energies <= 0.0
-    N_occupied_states = np.trapz(dos[occupied], energies[occupied])
-    # first moment
-    ed = np.trapz(energies * dos, energies) / Nstates
-
-    # second moment
-    wd2 = np.trapz(energies**2 * dos, energies) / Nstates
-
-    print 'Total # states = {0:1.2f}'.format(Nstates)
-    print 'number of occupied states = {0:1.2f}'.format(N_occupied_states)
-    print 'd-band center = {0:1.2f} eV'.format(ed)
-    print 'd-band width  = {0:1.2f} eV'.format(np.sqrt(wd2))
-
-    # plot the d-band
-    plt.plot(energies, dos, label='$d$-orbitals')
-
-    # plot the occupied states in shaded gray
-    plt.fill_between(x=energies[occupied],
-                     y1=dos[occupied],
-                     y2=np.zeros(dos[occupied].shape),
-                     color='gray', alpha=0.25)
-
-    plt.xlabel('$E - E_f$ (eV)')
-    plt.ylabel('DOS (arbitrary units)')
-
-plt.savefig('images/pd-ados.png')
-plt.show()
-#+END_SRC
-
-#+RESULTS:
-: Total # states = 9.29
-: number of occupied states = 8.18
-: d-band center = -2.00 eV
-: d-band width  = 2.72 eV
-
-#+ATTR_LaTeX: :placement [H]
-#+caption: Atom projected $d$-band for bulk Pd. The shaded area corresponds to the occupied states below the Fermi level.
-[[./images/pd-ados.png]]
-
-*** Effect of RWIGS on ADOS
-
-Here we examine the effect of changing RWIGS on the number of counted electrons, and properties of the d-band moments.
-
-#+BEGIN_SRC python :results output :exports both
-from ase import Atoms, Atom
-from jasp import *
-from ase.calculators.vasp import VaspDos
-import sys
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-a = 3.9  # approximate lattice constant
-b = a / 2.
-bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
-             cell=[(0, b, b),
-                   (b, 0, b),
-                   (b, b, 0)])
-
-RWIGS = [1.0, 1.1, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0 ]
-
-ED, WD, N = [], [], []
-
-for rwigs in RWIGS:
-    with jasp('bulk/pd-ados') as calc:
-        calc.clone('bulk/pd-ados-rwigs-{0}'.format(rwigs))
-
-    with jasp('bulk/pd-ados-rwigs-{0}'.format(rwigs)) as calc:
-        calc.set(rwigs=[rwigs])
-
-        try:
-            calc.calculate()
-        except (VaspSubmitted, VaspQueued):
-            continue
-
-        # now get results
-        ados = VaspDos(efermi=calc.get_fermi_level())
-
-        energies = ados.energy
-        dos = ados.site_dos(0, 'd')
-
-        #we will select energies in the range of -10, 5
-        ind = (energies < 5) & (energies > -10)
-
-        energies = energies[ind]
-        dos = dos[ind]
-
-        Nstates = np.trapz(dos, energies)
-        occupied = energies <= 0.0
-        N_occupied_states = np.trapz(dos[occupied], energies[occupied])
-        ed = np.trapz(energies * dos, energies) / np.trapz(dos, energies)
-        wd2 = np.trapz(energies**2 * dos, energies) / np.trapz(dos, energies)
-
-        N.append(N_occupied_states)
-        ED.append(ed)
-        WD.append(wd2**0.5)
-
-plt.plot(RWIGS, N, 'bo', label='N. occupied states')
-plt.legend(loc='best')
-plt.xlabel('RWIGS ($\AA$)')
-plt.ylabel('# occupied states')
-plt.savefig('images/ados-rwigs-occupation.png')
-
-
-fig, ax1 = plt.subplots()
-ax1.plot(RWIGS, ED, 'bo', label='d-band center (eV)')
-ax1.set_xlabel('RWIGS ($\AA$)')
-ax1.set_ylabel('d-band center (eV)', color='b')
-for tl in ax1.get_yticklabels():
-    tl.set_color('b')
-
-ax2 = ax1.twinx()
-ax2.plot(RWIGS, WD, 'gs', label='d-band width (eV)')
-ax2.set_ylabel('d-band width (eV)', color='g')
-for tl in ax2.get_yticklabels():
-    tl.set_color('g')
-
-plt.savefig('images/ados-rwigs-moments.png')
-plt.show()
-#+END_SRC
-
-#+RESULTS:
-
-#+ATTR_latex: :placement [H]
-#+caption: Effect of the RWIGS on the number of occupied \(d\)-states.
-[[./images/ados-rwigs-occupation.png]]
-
-You can see the number of occupied states increases approximately linearly here with RWIGS. This is due to overcounting of neighboring electrons.
-
-#+attr_latex: :placement [H]
-#+caption: Effect of the RWIGS on the \(d\)-band center and width.
-[[./images/ados-rwigs-moments.png]]q
-
-The d-band center and width also change.
-
-** Band structures
-[[index:band structure]]
-To compute a band structure we do two things. First, we compute the self-consistent band structure. Then we compute the band structure at the desired $k$-points. We will use Si as an example (adapted from http://bbs.sciencenet.cn/bbs/upload/20083418325986.pdf).
-
-First, we get the self-consistent electron density in a calculation.
-
-#+BEGIN_SRC python :results output
-from jasp import *
-from ase import Atom, Atoms
-from ase.visualize import view
-
-a = 5.38936
-atoms = Atoms([Atom('Si', [0, 0, 0]),
-               Atom('Si', [0.25, 0.25, 0.25])])
-
-atoms.set_cell([[a / 2., a / 2., 0.0],
-                [0.0,  a / 2., a / 2.],
-                [a / 2., 0.0, a / 2.]], scale_atoms=True)
-
-with jasp('bulk/Si-selfconsistent',
-          xc='PBE',
-          prec='Medium',
-          istart=0,
-          icharg=2,
-          ediff=0.1e-03,
-          kpts=(4, 4, 4), debug=logging.DEBUG,
-          atoms=atoms) as calc:
-    atoms.get_potential_energy()
-    print calc
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-: -----------------------------
-  VASP calculation from /home-research/jkitchin/dft-book2/bulk/Si-selfconsistent
-  converged: True
-  Energy = -10.799983 eV
-
-  Unit cell vectors (angstroms)
-        x       y     z      length
-  a0 [ 2.695  2.695  0.000] 3.811
-  a1 [ 0.000  2.695  2.695] 3.811
-  a2 [ 2.695  0.000  2.695] 3.811
-  a,b,c,alpha,beta,gamma (deg):3.811 3.811 3.811 60.0 60.0 60.0
-  Unit cell volume = 39.134 Ang^3
-  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
-            -0.026 -0.026 -0.026-0.000 -0.000 -0.000
- Atom#  sym       position [x,y,z]tag  rmsForce constraints
-   0    Si  [0.000      0.000      0.000]  0   0.00      T T T
-   1    Si  [1.347      1.347      1.347]  0   0.00      T T T
---------------------------------------------------
-
-INCAR Parameters:
------------------
-        nbands: 8
-        istart: 0
-        icharg: 2
-         ediff: 0.0001
-        magmom: None
-          prec: Medium
-          kpts: (4, 4, 4)
-    reciprocal: False
-            xc: PBE
-           txt: -
-         gamma: False
-
-Pseudopotentials used:
-----------------------
-Si: potpaw_PBE/Si/POTCAR (git-hash: ae2291fdf186a34272463039fb5a87cde0e50174)
-#+end_example
-
-Now, we run a new calculation along the k-point path desired. The standard VASP way of doing this is to modify the INCAR and KPOINTS file and rerun VASP. We will not do that. Doing that results in some lost information if you overwrite the old files. We will copy the old directory to a new directory, using code to ensure this only happens one time.
-
-#+BEGIN_SRC python :results output
-from jasp import *
-
-wd = 'bulk/Si-bandstructure'
-
-with jasp('bulk/Si-selfconsistent') as calc:
-    calc.clone(wd)
-
-kpts = [[0.5, 0.5, 0.0],   # L
-        [0, 0, 0],         # Gamma
-        [0, 0, 0],
-        [0.5, 0.5, 0.5]]  # X
-
-with jasp(wd,
-          kpts=kpts,
-          reciprocal=True,
-          kpts_nintersections=10,
-          icharg=11) as calc:
-    calc.calculate()
-    print(calc)
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-: -----------------------------
-  VASP calculation from /home-research/jkitchin/dft-book2/bulk/Si-bandstructure
-  converged: True
-  Energy = -3.620909 eV
-
-  Unit cell vectors (angstroms)
-        x       y     z      length
-  a0 [ 2.695  2.695  0.000] 3.811
-  a1 [ 0.000  2.695  2.695] 3.811
-  a2 [ 2.695  0.000  2.695] 3.811
-  a,b,c,alpha,beta,gamma (deg):3.811 3.811 3.811 60.0 60.0 60.0
-  Unit cell volume = 39.134 Ang^3
-  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
-            -0.205 -0.205 -0.205-0.000 -0.000 -0.000
- Atom#  sym       position [x,y,z]tag  rmsForce constraints
-   0    Si  [0.000      0.000      0.000]  0   0.00      T T T
-   1    Si  [1.347      1.347      1.347]  0   0.00      T T T
---------------------------------------------------
-
-INCAR Parameters:
------------------
-        nbands: 8
-        istart: 0
-        icharg: 11
-         ediff: 0.0001
-        magmom: None
-          prec: Medium
-          kpts: [[0.5, 0.5, 0.0], [0, 0, 0], [0, 0, 0], [0.5, 0.5, 0.5]]
-  kpts_nintersections: 10
-    reciprocal: True
-            xc: PBE
-           txt: -
-         gamma: False
-
-Pseudopotentials used:
-----------------------
-Si: potpaw_PBE/Si/POTCAR (git-hash: ae2291fdf186a34272463039fb5a87cde0e50174)
-#+end_example
-
-We will learn how to manually parse the EIGENVAL file here to generate the band structure. The structure of the EIGENVAL file looks like this:
-
-#+BEGIN_SRC sh :results output
-head -n 20 bulk/Si-bandstructure/EIGENVAL
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-    2    2    1    1
-  0.1956688E+02  0.3810853E-09  0.3810853E-09  0.3810853E-09  0.5000000E-15
-  1.000000000000000E-004
-  CAR
- unknown system
-    8   20    8
-
-  0.5000000E+00  0.5000000E+00  0.0000000E+00  0.5000000E-01
-   1       -1.826311
-   2       -1.826306
-   3        3.153690
-   4        3.153716
-   5        6.744294
-   6        6.744321
-   7       16.392989
-   8       16.405965
-
-  0.4444444E+00  0.4444444E+00  0.0000000E+00  0.5000000E-01
-   1       -2.669062
-   2       -0.918013
-#+end_example
-
-We can ignore the first five lines.
-
-#+BEGIN_SRC python :results output
-f = open('bulk/Si-bandstructure/EIGENVAL', 'r')
-
-line1 = f.readline()
-line2 = f.readline()
-line3 = f.readline()
-line4 = f.readline()
-comment = f.readline()
-unknown, nkpoints, nbands = [int(x) for x in f.readline().split()]
-
-blankline = f.readline()
-
-band_energies = [[] for i in range(nbands)]
-
-for i in range(nkpoints):
-    x, y, z, weight = [float(x) for x in f.readline().split()]
-
-    for j in range(nbands):
-        fields = f.readline().split()
-        id, energy = int(fields[0]), float(fields[1])
-        band_energies[id - 1].append(energy)
-    blankline = f.readline()
-f.close()
-
-import matplotlib.pyplot as plt
-
-for i in range(nbands):
-    plt.plot(range(nkpoints), band_energies[i])
-
-ax = plt.gca()
-ax.set_xticks([]) # no tick marks
-plt.xlabel('k-vector')
-plt.ylabel('Energy (eV)')
-ax.set_xticks([0, 10, 19])
-ax.set_xticklabels(['$L$', '$\Gamma$', '$X$'])
-plt.savefig('images/Si-bandstructure.png')
-#+END_SRC
-
-#+RESULTS:
-
-#+ATTR_LaTeX: :placement [H]
-#+caption: Calculated band-structure for Si.
-[[./images/Si-bandstructure.png]]
-
-
-Next we will examine the connection between band structures and density of states. In this example, we will compute the band structure of TiO_{2} using a function built into mod:jasp to do the analysis described above.
-
-#+BEGIN_SRC python :results output
-from jasp import *
-from jasp.jasp_bandstructure import *
-
-with jasp('bulk/tio2/step3') as calc:
-    n, bands, p = calc.get_bandstructure(kpts_path=[('$\Gamma$', [0.0, 0.0, 0.0]),
-                                                  ('X', [0.5, 0.5, 0.0]),
-                                                  ('X', [0.5, 0.5, 0.0]),
-                                                  ('M', [0.0, 0.5, 0.5]),
-                                                  ('M', [0.0, 0.5, 0.5]),
-                                                  ('$\Gamma$', [0.0, 0.0, 0.0])])
-
-p.savefig('images/tio2-bandstructure-dos.png')
-#+END_SRC
-
-#+RESULTS:
-
-#+attr_latex: :placement [H]
-#+caption: Band structure and total density of states for TiO_{2}.
-[[./images/tio2-bandstructure-dos.png]]
-
-*** create example showing band dispersion with change in lattice constant
-
-In this section, we examine the effect of the lattice constant on the band structure. Since the lattice constant affects the overlap of neighboring atoms, we expect that smaller lattice constants will show more dispersion, i.e. broader bands. Larger lattice constants, in contrast, should show narrower bands. We examine this in silicon.
-
-#+BEGIN_SRC python
-from jasp import *
-from jasp.jasp_bandstructure import *
-
-from ase import Atom, Atoms
-ready = True
-for i,a in enumerate([4.7, 5.38936, 6.0]):
-
-    atoms = Atoms([Atom('Si', [0, 0, 0]),
-                   Atom('Si', [0.25, 0.25, 0.25])])
-
-    atoms.set_cell([[a/2., a/2., 0.0],
-                    [0.0,  a/2., a/2.],
-                    [a/2., 0.0, a/2.]], scale_atoms=True)
-
-    with jasp('bulk/Si-bs-{0}'.format(i),
-              xc='PBE',
-              prec='Medium',
-              istart=0,
-              icharg=2,
-              ediff=0.1e-03,
-              kpts=(4, 4, 4),
-              atoms=atoms) as calc:
-        try:
-            n,bands,p  = calc.get_bandstructure(kpts_path=[('L', [0.5,0.5,0.0]),
-                                                       ('$\Gamma$', [0, 0, 0]),
-                                                       ('$\Gamma$', [0, 0, 0]),
-                                                       ('X', [0.5, 0.5, 0.5])],
-                                            kpts_nintersections=10)
-        except (VaspSubmitted, VaspQueued):
-            print 'not ready {0}'.format(i)
-            ready = False
-
-    if not ready:
-        import sys; sys.exit()
-
-
-    p.savefig('images/Si-bs-{0}.png'.format(i))
-    p.show()
-#+END_SRC
-
-#+RESULTS:
-: not ready 0
-
-#+attr_latex: :placement [H]
-#+caption: Si band structure for a=4.7
-[[./images/Si-bs-0.png]]
-
-#+attr_latex: :placement [H]
-#+caption: Si band structure for a=5.38936
-[[./images/Si-bs-1.png]]
-
-#+attr_latex: :placement [H]
-#+caption: Si band structure for a=6.0
-[[./images/Si-bs-2.png]]
-
-You can see the band structure for a=6.0 is notably sharper than the band structure for a=4.0.
-** Magnetism
-   :PROPERTIES:
-   :ID:       9aba409a-1d3b-4bbb-96df-6cd58a787991
-   :END:
-*** Determining if a magnetic solution is energetically favorable
-We can force a total magnetic moment onto a unit cell and compute the total energy as function of the total magnetic moment. If there is a minimum in the energy, then we know there is a lower energy magnetic solution than a non-magnetic solution. We use incar:NUPDOWN to enforce the magnetic moment in the cell. Note that NUPDOWN can only be an integer. You cannot set it to be an arbitrary float.
-
-#+BEGIN_SRC python :results output
-from jasp import *
-from ase.lattice.cubic import BodyCenteredCubic
-
-atoms = BodyCenteredCubic(directions=[[1, 0, 0],
-                                      [0, 1, 0],
-                                      [0, 0, 1]],
-                                      size=(1, 1, 1),
-                                      symbol='Fe')
-
-NUPDOWNS = [0.0, 2.0, 4.0, 5.0, 6.0, 8.0]
-energies = []
-for B in NUPDOWNS:
-    with jasp('bulk/Fe-bcc-fixedmagmom-{0:1.2f}'.format(B),
-          xc='PBE',
-          encut=300,
-          kpts=(4, 4, 4),
-          ispin=2,
-          nupdown=B,
-          atoms=atoms) as calc:
-        try:
-            e = atoms.get_potential_energy()
-            energies.append(e)
-        except (VaspSubmitted, VaspQueued):
-            pass
-
-import matplotlib.pyplot as plt
-plt.plot(NUPDOWNS, energies)
-plt.xlabel('Total Magnetic Moment')
-plt.ylabel('Energy (eV)')
-plt.savefig('images/Fe-fixedmagmom.png')
-plt.show()
-#+END_SRC
-
-#+RESULTS:
-
-#+ATTR_LaTeX: :placement [H]
-#+caption: Total energy vs. total magnetic moment for bcc Fe.
-[[./images/Fe-fixedmagmom.png]]
-
-You can see here there is a minimum in energy at a total magnetic moment somewhere between 4 and 5. There are two Fe atoms in the unit cell, which means the magnetic moment on each atom must be about 2.5 Bohr-magnetons. This is a good guess for a real calculation. Note that VASP [[http://cms.mpi.univie.ac.at/vasp/guide/node100.html#SECTION00099000000000000000][recommends]] you overestimate the magnetic moment guesses if you are looking for ferromagnetic solutions.
-
-To run a spin-polarized calculation with initial guesses on each atom, we must set the magnetic moment on the atoms. Here we set it through the =magmom= attribute on the atom. In the example after this, we set it in the =Atoms= object.
-
-#+BEGIN_SRC python :results output
-from jasp import *
-from ase.lattice.cubic import BodyCenteredCubic
-
-atoms = BodyCenteredCubic(directions=[[1, 0, 0],
-                                      [0, 1, 0],
-                                      [0, 0, 1]],
-                                      size=(1, 1, 1),
-                                      symbol='Fe')
-
-# set magnetic moments on each atom
-for atom in atoms:
-    atom.magmom = 2.5
-
-with jasp('bulk/Fe-bcc-sp-1',
-          xc='PBE',
-          encut=300,
-          kpts=(4, 4, 4),
-          ispin=2,
-          lorbit=11, # you need this for individual magnetic moments
-          atoms=atoms) as calc:
-        try:
-            e = atoms.get_potential_energy()
-            B = atoms.get_magnetic_moment()
-            magmoms = atoms.get_magnetic_moments()
-        except (VaspSubmitted, VaspQueued):
-            pass
-
-print 'Total magnetic moment is {0:1.2f} Bohr-magnetons'.format(B)
-print 'Individual moments are {0} Bohr-magnetons'.format(magmoms)
-#+END_SRC
-
-#+RESULTS:
-: Total magnetic moment is 4.25 Bohr-magnetons
-: Individual moments are [ 2.134  2.134] Bohr-magnetons
-
-*** Antiferromagnetic spin states
-In an antiferromagnetic material, there are equal numbers of spin up and down electrons that align in a regular pattern, but pointing in opposite directions so that there is no net magnetism. It is possible to model this by setting the magnetic moments on each mod:ase.Atom object. incar:lreal
-
-#+BEGIN_SRC python :results output :exports both
-from jasp import *
-from ase import Atom, Atoms
-
-atoms = Atoms([Atom('Fe', [0.00,  0.00,  0.00], magmom=5),
-               Atom('Fe', [4.3,   4.3,   4.3],  magmom=-5),
-               Atom('O', [2.15,  2.15,  2.15], magmom=0),
-               Atom('O', [6.45,  6.45,  6.45], magmom=0)],
-               cell=[[4.3,    2.15,    2.15],
-                     [2.15,    4.3,     2.15],
-                     [2.15,    2.15,    4.3]])
-
-with jasp('bulk/afm-feo',
-          encut=350,
-          prec='Normal',
-          ispin=2,
-          nupdown=0, # this forces a non-magnetic solution
-          lorbit=11, # to get individual moments
-          lreal=False,
-          atoms=atoms) as calc:
-    print 'Magnetic moments = ', atoms.get_magnetic_moments()
-    print 'Total magnetic moment = ', atoms.get_magnetic_moment()
-#+END_SRC
-
-#+RESULTS:
-: Magnetic moments =  [ 2.652 -2.652  0.     0.   ]
-: Total magnetic moment =  0.0
-
-You can see that even though the total magnetic moment is 0, there is a spin on both Fe atoms, and they are pointing in opposite directions. Hence, the sum of spins is zero, and this arrangement is called anti-ferromagnetic.
-
-*** TODO NiO-FeO formation energies with magnetism
-** TODO phonons
-cite:RevModPhys.73.515
-
-phonopy
-** TODO solid state NEB
-cite:Caspersen10052005 Carter paper
-cite:sheppard:074103 recent Henkelman paper
-
-http://scitation.aip.org/content/aip/journal/jcp/137/10/10.1063/1.4752249
-
-* Surfaces
-  :PROPERTIES:
-  :ID:       af4a3f54-6572-49ac-b938-e62401bc35b9
-  :END:
-** Surface structures
-As with molecules and bulk systems mod:ase provides several convenience functions for making surfaces.
-*** Simple surfaces
-ase provides many [[https://wiki.fysik.dtu.dk/ase/ase/surface.html#module-ase.lattice.surface][utility functions]] to setup surfaces. Here is a simple example of an fcc111 Al surface. There are built in functions for fcc111, bcc110, bcc111, hcp001 and diamond111.
-
-#+BEGIN_SRC python
-from ase.lattice.surface import fcc111
-from ase.io import write
-from ase.visualize import view
-
-slab = fcc111('Al', size=(2, 2, 3), vacuum=10.0)
-from ase.constraints import FixAtoms
-constraint = FixAtoms(mask=[atom.tag >= 2 for atom in slab])
-slab.set_constraint(constraint)
-
-view(slab)
-write('images/Al-slab.png', slab, rotation='90x', show_unit_cell=2)
-#+END_SRC
-
-#+RESULTS:
-
-#+ATTR_LaTeX: :width 205bp :placement [H]
-#+caption: An Al(111) slab with three layers and 20 \AA of vacuum.
-[[./images/Al-slab.png]]
-
-*** Vicinal surfaces
-
-The vast majority of surface calculations are performed on flat surfaces. This is partially because these surfaces tend to have the lowest surface energies, and thus are likely to be experimentally observed. The flat surfaces, also known as low Miller index surfaces, also have small unit cells, which tends to make them computationally affordable. There are, however, many reasons to model the properties of surfaces that are not flat. You may be interested in the reactivity of a step edge, for example, or you may use the lower cooridnation of steps as a proxy for nanoparticle reactivity.  Many stepped surfaces are not that difficult to make now. The main idea in generating them is described [[https://wiki.fysik.dtu.dk/ase/_downloads/general_surface.pdf][here]]. mod:ase provides a general function for making vicinal surfaces. Here is an example of a (211) surface.
-
-#+BEGIN_SRC python
-from ase.lattice.surface import surface
-from ase.io import write
-
-# Au(211) with 9 layers
-s1 = surface('Au', (2, 1, 1), 9)
-s1.center(vacuum=10, axis=2)
-
-write('images/Au-211.png',
-      s1.repeat((3, 3, 1)),
-      rotation='-30z,90x',  # change the orientation for viewing
-      show_unit_cell=2)
-#+END_SRC
-
-#+RESULTS:
-
-#+ATTR_LaTeX: :width 3in :placement [H]
-#+attr_org: :width 300
-#+caption: An Au(211) surface constructed with =ase=.
-[[./images/Au-211.png]]
-
-** Surface calculation parameters
-There is one important parameter that is different for surfaces than for bulk calculations, the k-point grid. Assuming you have followed the convention that the z-axis is normal to the surface, the k-point grids for slab calculations always have the form of $M \times N \times 1$. To illustrate why, consider this example:
-
-
-#+BEGIN_SRC python :results output
-from ase.lattice.surface import fcc111
-from ase.io import write
-from jasp import *
-from jasp.jasp_bandstructure import *
-slab = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
-
-with jasp('surfaces/Al-bandstructure',
-          xc='PBE',
-          encut=300,
-          kpts=(6, 6, 6),
-          atoms=slab) as calc:
-    n, bands, p = calc.get_bandstructure(kpts_path=[(r'$\Gamma$', [0, 0, 0]),
-                                                    ('$K1$', [0.5, 0.0, 0.0]),
-                                                    ('$K1$', [0.5, 0.0, 0.0]),
-                                                    ('$K2$', [0.5, 0.5, 0.0]),
-                                                    ('$K2$', [0.5, 0.5, 0.0]),
-                                                    (r'$\Gamma$', [0, 0, 0]),
-                                                    (r'$\Gamma$', [0, 0, 0]),
-                                                    ('$K3$', [0.0, 0.0, 1.0])],
-                                          kpts_nintersections=10)
-
-p.savefig('images/Al-slab-bandstructure.png')
-p.show()
-#+END_SRC
-
-#+RESULTS:
-
-# <<surface-bands>>
-#+attr_latex: :placement [H]
-#+caption: Band structure of an Al slab in the plane (path from Gamma to K1 to K2 to Gamma) and normal to the surface (Gamma to K3). Note the bands are flat in the direction normal to the surface, hence only one k-point is needed in this direction.
-[[./images/Al-slab-bandstructure.png]]
-
-** Surface relaxation
-   :PROPERTIES:
-   :ID:       10d1486b-97d1-48a4-83dd-d71097668d18
-   :END:
-When a surface is created, the bulk symmetry is broken and consequently there will be forces on the surface atoms. We will examine some consequences of this with a simple Al slab. First, we show there are forces on the slab atoms.
-
-#+BEGIN_SRC python :results output :exports both
-from jasp import *
-from ase.lattice.surface import fcc111
-
-atoms = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
-
-with jasp('surfaces/Al-slab-unrelaxed',
-          xc='PBE',
-          kpts=(6, 6, 1),
-          encut=350,
-          atoms=atoms) as calc:
-    atoms.get_forces()
-    print calc
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-: -----------------------------
-  VASP calculation from /home-research/jkitchin/dft-book2/surfaces/Al-slab-unrelaxed
-  converged: True
-  Energy = -14.177069 eV
-
-  Unit cell vectors (angstroms)
-        x       y     z      length
-  a0 [ 2.864  0.000  0.000] 2.864
-  a1 [ 1.432  2.480  0.000] 2.864
-  a2 [ 0.000  0.000  27.015] 27.015
-  a,b,c,alpha,beta,gamma (deg):2.864 2.864 27.015 90.0 90.0 90.0
-  Unit cell volume = 191.872 Ang^3
-  Stress (GPa):xx,   yy,    zz,    yz,    xz,    xy
-             0.007  0.007  0.002-0.000 -0.000 -0.000
- Atom#  sym       position [x,y,z]tag  rmsForce constraints
-   0    Al  [0.000      0.000     10.000]  0   0.01      T T T
-   1    Al  [1.432      0.827     12.338]  0   0.18      T T T
-   2    Al  [2.864      1.653     14.677]  0   0.18      T T T
-   3    Al  [0.000      0.000     17.015]  0   0.01      T T T
---------------------------------------------------
-
-INCAR Parameters:
------------------
-        nbands: 10
-         encut: 350.0
-        magmom: None
-          prec: Normal
-          kpts: (6, 6, 1)
-    reciprocal: False
-            xc: PBE
-           txt: -
-         gamma: False
-
-Pseudopotentials used:
-----------------------
-Al: potpaw_PBE/Al/POTCAR (git-hash: c8d9ecb0b6ebec0256c5f5072cee4de6a046dac2)
-#+end_example
-
-Some points to note. The forces on the atoms have symmetry to them. That is because the slab is centered. Had the slab had an odd number of atoms, it is likely the center atom would have no forces on it. Next we consider the spacing between each layer in the slab. We do this for comparison later.
-
-#+BEGIN_SRC python :results output :exports both
-from jasp import *
-
-with jasp('surfaces/Al-slab-unrelaxed') as calc:
-    atoms = calc.get_atoms()
-    print 'Total energy: {0:1.3f} eV'.format(atoms.get_potential_energy())
-
-    for i in range(1, len(atoms)):
-        print '{0}  deltaz = {1:1.3f} angstroms'.format(i, atoms[i].z - atoms[i-1].z)
-#+END_SRC
-
-#+RESULTS:
-: Total energy: -14.177 eV
-: 1  deltaz = 2.338 angstroms
-: 2  deltaz = 2.338 angstroms
-: 3  deltaz = 2.338 angstroms
-
-To reduce the forces, we can let VASP relax the geometry. We have to make some decisions about how to relax the slab. One choice would be to relax all the atoms in the slab. If we do that, then there will be no atoms with bulk like spacing unless we increase the slab thickness pretty dramatically. It is pretty common to freeze some atoms at the bulk coordinates, and let the others relax. We will freeze the bottom two layers (defined by tags 3 and 4) and let the first two layers relax. To do that we add constraints to the slab.
-
-Note: the [[https://wiki.fysik.dtu.dk/ase/ase/constraints.html][ase constraints]] are only partially used by =jasp=. The mod:ase.constraints.FixAtoms constraint gets written to the POSCAR file, and is then used internally in VASP. The only other constraint that VASP can use internally is [[mod:ase.constraints.FixScaled]]. The other constraints are not written to the POSCAR and are not used by VASP.
-
-#+BEGIN_SRC python :results output :exports both
-from ase.lattice.surface import fcc111
-atoms = fcc111('Al', size=(2, 2, 4), vacuum=10.0)
-print([atom.z for atom in atoms])
-print [atom.z <= 13 for atom in atoms]
+This example shows the basic mechanics of getting the elastic constants. The print([atom.z for atom in atoms])
+print([atom.z <= 13 for atom in atoms])
 #+END_SRC
 
 #+RESULTS:
@@ -7750,7 +5907,7 @@ with jasp('surfaces/Al-slab-relaxed',
           nsw=10,
           atoms=atoms) as calc:
     calc.calculate()
-    print calc
+    print(calc)
 #+END_SRC
 
 #+RESULTS:
@@ -7805,9 +5962,9 @@ from jasp import *
 with jasp('surfaces/Al-slab-relaxed') as calc:
     atoms = calc.get_atoms()
 
-    print 'Constraints = True: ', atoms.get_forces(apply_constraint=True)
+    print('Constraints = True: ', atoms.get_forces(apply_constraint=True))
 
-    print 'Constraints = False: ', atoms.get_forces(apply_constraint=False)
+    print('Constraints = False: ', atoms.get_forces(apply_constraint=False))
 
 #+END_SRC
 
@@ -7827,11 +5984,11 @@ from ase.lattice.surface import fcc111
 
 with jasp('surfaces/Al-slab-relaxed') as calc:
     atoms = calc.get_atoms()
-    print 'Total energy: {0:1.3f}'.format(atoms.get_potential_energy())
+    print('Total energy: {0:1.3f}'.format(atoms.get_potential_energy()))
 
     for i in range(1, len(atoms)):
-        print 'd_({0},{1}) = {2:1.3f} angstroms'.format(i, i-1,
-                                                   atoms[i].z - atoms[i-1].z)
+        print('d_({0},{1}) = {2:1.3f} angstroms'.format(i, i-1,
+                                                   atoms[i].z - atoms[i-1].z))
 #+END_SRC
 
 #+RESULTS:
@@ -7978,11 +6135,11 @@ with jasp('bulk/Au-fcc') as calc:
     bulk = calc.get_atoms()
     ebulk = bulk.get_potential_energy()
 
-print 'natoms slab        = {0}'.format(len(slab))
-print 'natoms missing row = {0}'.format(len(missingrow))
-print 'natoms bulk        = {0}'.format(len(bulk))
+print('natoms slab        = {0}'.format(len(slab)))
+print('natoms missing row = {0}'.format(len(missingrow)))
+print('natoms bulk        = {0}'.format(len(bulk)))
 
-print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
+print('dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab))
 #+END_SRC
 
 #+RESULTS:
@@ -8082,11 +6239,11 @@ with jasp('bulk/Ag-fcc') as calc:
     bulk = calc.get_atoms()
     ebulk = bulk.get_potential_energy()
 
-print 'natoms slab        = {0}'.format(len(slab))
-print 'natoms missing row = {0}'.format(len(missingrow))
-print 'natoms bulk        = {0}'.format(len(bulk))
+print('natoms slab        = {0}'.format(len(slab)))
+print('natoms missing row = {0}'.format(len(missingrow)))
+print('natoms bulk        = {0}'.format(len(bulk)))
 
-print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
+print('dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab))
 #+END_SRC
 
 #+RESULTS:
@@ -8183,11 +6340,11 @@ with jasp('bulk/Cu-fcc') as calc:
     bulk = calc.get_atoms()
     ebulk = bulk.get_potential_energy()
 
-print 'natoms slab        = {0}'.format(len(slab))
-print 'natoms missing row = {0}'.format(len(missingrow))
-print 'natoms bulk        = {0}'.format(len(bulk))
+print('natoms slab        = {0}'.format(len(slab)))
+print('natoms missing row = {0}'.format(len(missingrow)))
+print('natoms bulk        = {0}'.format(len(bulk)))
 
-print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
+print('dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab))
 #+END_SRC
 
 #+RESULTS:
@@ -8260,7 +6417,7 @@ for i in range(len(Nlayers) - 1):
     DeltaE_N = energies[i + 1] - energies[i]
     sigma = 0.5 * (-N * energies[i + 1] + (N + 1) * energies[i])
     sigmas.append(sigma)
-    print 'nlayers = {1:2d} sigma = {0:1.3f} eV/atom'.format(sigma, N)
+    print('nlayers = {1:2d} sigma = {0:1.3f} eV/atom'.format(sigma, N))
 
 plt.plot(Nlayers[0:-1], sigmas, 'bo-')
 plt.xlabel('Number of layers')
@@ -8297,7 +6454,7 @@ area = np.linalg.norm(np.cross(cell[0], cell[1]))  # area per atom
 
 sigma = 0.48  # eV/atom
 
-print 'sigma = {0} J/m^2'.format(sigma / area / (J / m**2))
+print('sigma = {0} J/m^2'.format(sigma / area / (J / m**2)))
 #+END_SRC
 
 #+RESULTS:
@@ -8352,7 +6509,7 @@ plt.savefig('images/Al-wf.png')
 
 ind = (xaxis > 0) & (xaxis < 5)
 wf = np.average(axy[ind]) - ef
-print ' The workfunction is {0:1.2f} eV'.format(wf)
+print(' The workfunction is {0:1.2f} eV'.format(wf))
 #+END_SRC
 
 #+RESULTS:
@@ -8518,7 +6675,7 @@ with jasp('surfaces/Al-Na-dip-step2') as calc:
     ef2 = calc.get_fermi_level()
     e2 = atoms.get_potential_energy()
 
-print 'The difference in energy is {0} eV.'.format(e2-e1)
+print('The difference in energy is {0} eV.'.format(e2-e1))
 
 plt.plot(xaxis_1, axy_1, label='no dipole correction')
 plt.plot(xaxis_2, axy_2, label='dipole correction')
@@ -8577,7 +6734,7 @@ with jasp('surfaces/Pt-slab',
           kpts=(4, 4, 1),
           encut=350,
           atoms=atoms) as calc:
-    print atoms.get_potential_energy()
+    print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
@@ -8614,7 +6771,7 @@ with jasp('surfaces/Pt-slab-O-fcc',
           nsw=25,
           atoms=atoms) as calc:
 
-    print atoms.get_potential_energy()
+    print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
@@ -8648,7 +6805,7 @@ with jasp('surfaces/Pt-slab-O-bridge',
           atoms=atoms) as calc:
 
     calc.calculate()
-    print atoms.get_potential_energy()
+    print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
@@ -8725,9 +6882,9 @@ Hads_fcc = e_slab_o_fcc - e_slab - 0.5 * e_O2
 Hads_hcp = e_slab_o_hcp - e_slab - 0.5 * e_O2
 Hads_bridge = e_slab_o_bridge - e_slab - 0.5 * e_O2
 
-print 'Hads (fcc)    = {0} eV/O'.format(Hads_fcc)
-print 'Hads (hcp)    = {0} eV/O'.format(Hads_hcp)
-print 'Hads (bridge) = {0} eV/O'.format(Hads_bridge)
+print('Hads (fcc)    = {0} eV/O'.format(Hads_fcc))
+print('Hads (hcp)    = {0} eV/O'.format(Hads_hcp))
+print('Hads (bridge) = {0} eV/O'.format(Hads_bridge))
 #+END_SRC
 
 #+RESULTS:
@@ -8804,7 +6961,7 @@ constraint2 = FixScaled(atoms.get_cell(), 12, [True, True, False])
 
 atoms.set_constraint([constraint1, constraint2])
 write('images/Pt-O-bridge-constrained-initial.png', atoms, show_unit_cell=2)
-print 'Initial O position: {0}'.format(atoms.positions[-1])
+print('Initial O position: {0}'.format(atoms.positions[-1]))
 
 with jasp('surfaces/Pt-slab-O-bridge-xy-constrained',
           xc='PBE',
@@ -8816,7 +6973,7 @@ with jasp('surfaces/Pt-slab-O-bridge-xy-constrained',
     e_bridge = atoms.get_potential_energy()
 
 write('images/Pt-O-bridge-constrained-final.png', atoms, show_unit_cell=2)
-print 'Final O position  : {0}'.format(atoms.positions[-1])
+print('Final O position  : {0}'.format(atoms.positions[-1]))
 
 # now compute Hads
 with jasp('surfaces/Pt-slab') as calc:
@@ -8830,7 +6987,7 @@ with jasp('molecules/O2-sp-triplet-350') as calc:
 
 Hads_bridge = e_bridge - e_slab - 0.5*e_O2
 
-print 'Hads (bridge) = {0:1.3f} eV/O'.format(Hads_bridge)
+print('Hads (bridge) = {0:1.3f} eV/O'.format(Hads_bridge))
 #+END_SRC
 
 #+RESULTS:
@@ -8875,7 +7032,7 @@ with jasp('surfaces/Pt-slab-1x1',
           encut=350,
           atoms=atoms) as calc:
     slab_e = atoms.get_potential_energy()
-    print slab_e
+    print(slab_e)
 #+END_SRC
 
 #+RESULTS:
@@ -8913,7 +7070,7 @@ with jasp('surfaces/Pt-slab-1x1-O-fcc',
           ibrion=2,
           nsw=25,
           atoms=atoms) as calc:
-    print atoms.get_potential_energy()
+    print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
@@ -8942,7 +7099,7 @@ with jasp('molecules/O2-sp-triplet-350') as calc:
     e_O2 = atoms.get_potential_energy()
 
 hads = e_slab_o - e_slab - 0.5 * e_O2
-print 'Hads (1ML) = {0:1.3f} eV'.format(hads)
+print('Hads (1ML) = {0:1.3f} eV'.format(hads))
 #+END_SRC
 
 #+RESULTS:
@@ -9003,12 +7160,12 @@ from ase.units import meV
 c = 3e10  # cm/s
 h = 4.135667516e-15  # eV*s
 
-print 'vibrational energy = {0} eV'.format(f)
-print 'vibrational energy = {0} meV'.format(f/meV)
-print 'vibrational freq   = {0} 1/s'.format(f/h)
-print 'vibrational freq   = {0} cm^{{-1}}'.format(f/(h*c))
-print
-print 'All energies = ', allfreq
+print('vibrational energy = {0} eV'.format(f))
+print('vibrational energy = {0} meV'.format(f / meV))
+print('vibrational freq   = {0} 1/s'.format(f / h))
+print('vibrational freq   = {0} cm^{{-1}}'.format(f / (h * c)))
+
+print('All energies = ', allfreq)
 #+END_SRC
 
 #+RESULTS:
@@ -9046,13 +7203,13 @@ from ase.units import meV
 c = 3e10  # cm/s
 h = 4.135667516e-15  # eV*s
 
-print 'For mode 0:'
-print 'vibrational energy = {0} eV'.format(f)
-print 'vibrational energy = {0} meV'.format(f / meV)
-print 'vibrational freq   = {0} 1/s'.format(f / h)
-print 'vibrational freq   = {0} cm^{{-1}}'.format(f / (h * c))
-print
-print 'All energies = ', allfreq
+print('For mode 0:')
+print('vibrational energy = {0} eV'.format(f))
+print('vibrational energy = {0} meV'.format(f / meV))
+print('vibrational freq   = {0} 1/s'.format(f / h))
+print('vibrational freq   = {0} cm^{{-1}}'.format(f / (h * c)))
+
+print('All energies = ', allfreq)
 #+END_SRC
 
 #+RESULTS:
@@ -9072,7 +7229,7 @@ Note that now there are 39 modes, which is 3*N where N=13 atoms in the unit cell
 Calculating these results took 39*2 finite differences. It took about a day to get these results on a single CPU. It pays to use constraints to minimize the number of these calculations.
 
 #+BEGIN_SRC python
-print 77000 / 3600.0
+print(77000 / 3600.0)
 #+END_SRC
 
 #+RESULTS:
@@ -9107,10 +7264,10 @@ from ase.units import meV
 c = 3e10  # cm/s
 h = 4.135667516e-15  # eV*s
 
-print 'vibrational energy = {0} eV'.format(f)
-print 'vibrational energy = {0} meV'.format(f/meV)
-print 'vibrational freq   = {0} 1/s'.format(f/h)
-print 'vibrational freq   = {0} cm^(-1)'.format(f/(h*c))
+print('vibrational energy = {0} eV'.format(f))
+print('vibrational energy = {0} meV'.format(f / meV))
+print('vibrational freq   = {0} 1/s'.format(f / h))
+print('vibrational freq   = {0} cm^(-1)'.format(f / (h * c)))
 #+END_SRC
 
 #+RESULTS:
@@ -9257,7 +7414,7 @@ for field in [-0.5, 0.0, 0.5]:
               idipol=3,      # set field in z-direction
               atoms=atoms) as calc:
         try:
-            print '{0}: {1:1.3f}'.format(field, atoms.get_potential_energy())
+            print('{0}: {1:1.3f}'.format(field, atoms.get_potential_energy()))
         except (VaspSubmitted, VaspQueued):
             pass
 #+END_SRC
@@ -9312,17 +7469,17 @@ Let us consider how much the Gibbs free energy of an O_{2} molecule changes as a
 from ase.units import *
 K = 1.0
 
-print J, mol, K
+print(J, mol, K)
 
-print 0.100 * kJ / mol / K
+print(0.100 * kJ / mol / K)
 
-print 1 * eV / (kJ / mol)
+print(1 * eV / (kJ / mol))
 #+END_SRC
 
 #+RESULTS:
-: 6.24150636309e+18 6.0221367e+23 1.0
-: 0.00103642721413
-: 96.485308989
+: 6.241506363094028e+18 6.0221367e+23 1.0
+: 0.0010364272141304978
+: 96.4853089890101
 
 
 # <<delta muO2 shomate>>
@@ -9492,15 +7649,15 @@ def func(T):
     'Cu2O'
     return -1.95 - 0.5*DeltaMu(T, P)
 
-print 'Cu2O decomposition temperature is {0:1.0f} K'.format(fsolve(func,
-                                                                   900)[0])
+print('Cu2O decomposition temperature is {0:1.0f} K'.format(fsolve(func,
+                                                                   900)[0]))
 
 def func(T):
     'Ag2O'
     return -0.99 - 0.5 * DeltaMu(T, P)
 
-print 'Ag2O decomposition temperature is {0:1.0f} K'.format(fsolve(func,
-                                                                   470)[0])
+print('Ag2O decomposition temperature is {0:1.0f} K'.format(fsolve(func,
+                                                                   470)[0]))
 
 
 T = np.linspace(100, 1000)
@@ -9745,7 +7902,7 @@ with jasp('bulk/Cu2O-U=4.0') as calc:
              ibrion=-1,  #do not rerelax
              nsw=0)
     calc.calculate()
-    print calc
+    print(calc)
 #+END_SRC
 
 #+RESULTS:
@@ -9830,7 +7987,7 @@ with jasp('bulk/CuO-U=4.0') as calc:
              ibrion=-1,  #do not rerelax
              nsw=0)
     calc.calculate()
-    print calc
+    print(calc)
 #+END_SRC
 
 #+RESULTS:
@@ -9906,8 +8063,8 @@ with jasp('molecules/O2-sp-triplet-400') as calc:
     o2_energy = atoms.get_potential_energy()
 
 rxn_energy = 4.0*cuo_energy - o2_energy - 2.0*cu2o_energy
-print 'Reaction energy  = {0} eV'.format(rxn_energy)
-print 'Corrected energy = {0} eV'.format(rxn_energy - 1.36)
+print('Reaction energy  = {0} eV'.format(rxn_energy))
+print('Corrected energy = {0} eV'.format(rxn_energy - 1.36))
 #+END_SRC
 
 #+RESULTS:
@@ -9959,7 +8116,7 @@ for U in [2.0, 4.0, 6.0]:
         o2_energy = atoms.get_potential_energy()
 
     rxn_energy = 4.0*cuo_energy - o2_energy - 2.0*cu2o_energy
-    print 'U = {0}  reaction energy = {1}'.format(U,rxn_energy - 1.99)
+    print('U = {0}  reaction energy = {1}'.format(U,rxn_energy - 1.99))
 #+END_SRC
 
 #+RESULTS:
@@ -10080,7 +8237,7 @@ with jasp('molecules/benzene-pbe',
           ibrion=1,
           nsw=100,
           atoms=benzene) as calc:
-    print benzene.get_potential_energy()
+    print(benzene.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
@@ -10108,7 +8265,7 @@ with jasp('surfaces/Au-pbe',
           ibrion=1,
           nsw=100,
           atoms=atoms) as calc:
-    print atoms.get_potential_energy()
+    print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
@@ -10149,7 +8306,7 @@ with jasp('surfaces/Au-benzene-pbe',
           ibrion=1,
           nsw=100,
           atoms=atoms) as calc:
-    print atoms.get_potential_energy()
+    print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
@@ -10358,7 +8515,7 @@ atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
                       [-3.303,  0.000,  0.000]])
 
 atoms = atoms.repeat((2, 2, 2))
-print atoms[0]
+print(atoms[0])
 
 with jasp('bulk/Cu-cls-0',
           xc='PBE',
@@ -12164,7 +10321,7 @@ print('|a| = ', np.sum(a**2)**0.5)  # numpy way
 print('|a| = ', np.linalg.norm(a))  # numpy way 2
 
 print('ScientificPython angle = ', A.angle(B))  # in radians
-print ('numpy angle = {}',
+print('numpy angle = {}',
        np.arccos(np.dot(a / np.linalg.norm(a),
                         B / np.linalg.norm(B))))
 
