@@ -407,60 +407,60 @@ for i in range(len(keys) / 3):
 
 #+RESULTS:
 #+begin_example
-isobutene                CH3CH2OH                 CH3COOH                  
-COF2                     CH3NO2                   CF3CN                    
-CH3OH                    CCH                      CH3CH2NH2                
-PH3                      Si2H6                    O3                       
-O2                       BCl3                     CH2_s1A1d                
-Be                       H2CCl2                   C3H9C                    
-C3H9N                    CH3CH2OCH3               BF3                      
-CH3                      CH4                      S2                       
-C2H6CHOH                 SiH2_s1A1d               H3CNH2                   
-CH3O                     H                        BeH                      
-P                        C3H4_C3v                 C2F4                     
-OH                       methylenecyclopropane    F2O                      
-SiCl4                    HCF3                     HCCl3                    
-C3H7                     CH3CH2O                  AlF3                     
-CH2NHCH2                 SiH2_s3B1d               H2CF2                    
-SiF4                     H2CCO                    PH2                      
-OCS                      HF                       NO2                      
-SH2                      C3H4_C2v                 H2O2                     
-CH3CH2Cl                 isobutane                CH3COF                   
-HCOOH                    CH3ONO                   C5H8                     
-2-butyne                 SH                       NF3                      
-HOCl                     CS2                      P2                       
-C                        CH3S                     O                        
-C4H4S                    S                        C3H7Cl                   
-H2CCHCl                  C2H6                     CH3CHO                   
-C2H4                     HCN                      C2H2                     
-C2Cl4                    bicyclobutane            H2                       
-C6H6                     N2H4                     C4H4NH                   
-H2CCHCN                  H2CCHF                   cyclobutane              
-HCl                      CH3OCH3                  Li2                      
-Na                       CH3SiH3                  NaCl                     
-CH3CH2SH                 OCHCHO                   SiH4                     
-C2H5                     SiH3                     NH                       
-ClO                      AlCl3                    CCl4                     
-NO                       C2H3                     ClF                      
-HCO                      CH3CONH2                 CH2SCH2                  
-CH3COCH3                 C3H4_D2d                 CH                       
-CO                       CN                       F                        
-CH3COCl                  N                        CH3Cl                    
-Si                       C3H8                     CS                       
-N2                       Cl2                      NCCN                     
-F2                       CO2                      Cl                       
-CH2OCH2                  H2O                      CH3CO                    
-SO                       HCOOCH3                  butadiene                
-ClF3                     Li                       PF3                      
-B                        CH3SH                    CF4                      
-C3H6_Cs                  C2H6NH                   N2O                      
-LiF                      H2COH                    cyclobutene              
-LiH                      SiO                      Si2                      
-C2H6SO                   C5H5N                    trans-butane             
-Na2                      C4H4O                    SO2                      
-NH3                      NH2                      CH2_s3B1d                
-ClNO                     C3H6_D3h                 Al                       
-CH3SCH3                  H2CO                     CH3CN                    
+isobutene                CH3CH2OH                 CH3COOH
+COF2                     CH3NO2                   CF3CN
+CH3OH                    CCH                      CH3CH2NH2
+PH3                      Si2H6                    O3
+O2                       BCl3                     CH2_s1A1d
+Be                       H2CCl2                   C3H9C
+C3H9N                    CH3CH2OCH3               BF3
+CH3                      CH4                      S2
+C2H6CHOH                 SiH2_s1A1d               H3CNH2
+CH3O                     H                        BeH
+P                        C3H4_C3v                 C2F4
+OH                       methylenecyclopropane    F2O
+SiCl4                    HCF3                     HCCl3
+C3H7                     CH3CH2O                  AlF3
+CH2NHCH2                 SiH2_s3B1d               H2CF2
+SiF4                     H2CCO                    PH2
+OCS                      HF                       NO2
+SH2                      C3H4_C2v                 H2O2
+CH3CH2Cl                 isobutane                CH3COF
+HCOOH                    CH3ONO                   C5H8
+2-butyne                 SH                       NF3
+HOCl                     CS2                      P2
+C                        CH3S                     O
+C4H4S                    S                        C3H7Cl
+H2CCHCl                  C2H6                     CH3CHO
+C2H4                     HCN                      C2H2
+C2Cl4                    bicyclobutane            H2
+C6H6                     N2H4                     C4H4NH
+H2CCHCN                  H2CCHF                   cyclobutane
+HCl                      CH3OCH3                  Li2
+Na                       CH3SiH3                  NaCl
+CH3CH2SH                 OCHCHO                   SiH4
+C2H5                     SiH3                     NH
+ClO                      AlCl3                    CCl4
+NO                       C2H3                     ClF
+HCO                      CH3CONH2                 CH2SCH2
+CH3COCH3                 C3H4_D2d                 CH
+CO                       CN                       F
+CH3COCl                  N                        CH3Cl
+Si                       C3H8                     CS
+N2                       Cl2                      NCCN
+F2                       CO2                      Cl
+CH2OCH2                  H2O                      CH3CO
+SO                       HCOOCH3                  butadiene
+ClF3                     Li                       PF3
+B                        CH3SH                    CF4
+C3H6_Cs                  C2H6NH                   N2O
+LiF                      H2COH                    cyclobutene
+LiH                      SiO                      Si2
+C2H6SO                   C5H5N                    trans-butane
+Na2                      C4H4O                    SO2
+NH3                      NH2                      CH2_s3B1d
+ClNO                     C3H6_D3h                 Al
+CH3SCH3                  H2CO                     CH3CN
 #+end_example
 
 <<g2-database>>
@@ -820,10 +820,10 @@ print(s.format(atoms.get_distance(0, 1)))
 #+RESULTS:
 : atom symbol
 : ===========
-:  0 N  
-:  1 H  
-:  2 H  
-:  3 H  
+:  0 N
+:  1 H
+:  2 H
+:  3 H
 : The N-H distance is 1.017 angstroms
 
 Bond angles are a little trickier. If we had vectors describing the directions between two atoms, we could use some simple trigonometry to compute the angle between the vectors: $\vec{a} \cdot \vec{b} = |\vec{a}||\vec{b}| \cos(\theta)$.  So we can calculate the angle as $\theta = \arccos\left(\frac{\vec{a} \cdot \vec{b}}{|\vec{a}||\vec{b}|}\right)$, we just have to define our two vectors $\vec{a}$ and $\vec{b}$. We compute these vectors as the difference in positions of two atoms. For example, here we compute the angle H-N-H in an ammonia molecule. This is the angle between N-H$_1$ and N-H$_2$. In the next example, we utilize functions in mod:numpy to perform the calculations, specifically the func:numpy.arccos function, the func:numpy.dot function, and func:numpy.linalg.norm functions.
@@ -853,10 +853,10 @@ print('theta = {0:1.1f} degrees'.format(theta_rad * 180./pi))
 #+RESULTS:
 : atom symbol
 : ===========
-:  0 N  
-:  1 H  
-:  2 H  
-:  3 H  
+:  0 N
+:  1 H
+:  2 H
+:  3 H
 : theta = 106.3 degrees
 
 #+caption: Schematic of the vectors defining the H-N-H angle.
@@ -901,14 +901,14 @@ print('dihedral angle = {0:1.2f} degrees'.format(da))
 #+begin_example
 atom symbol
 ===========
- 0 C  
- 1 C  
- 2 H  
- 3 H  
- 4 H  
- 5 H  
- 6 H  
- 7 H  
+ 0 C
+ 1 C
+ 2 H
+ 3 H
+ 4 H
+ 5 H
+ 6 H
+ 7 H
 dihedral angle = 60.00 degrees
 #+end_example
 
@@ -1758,7 +1758,7 @@ with jasp('molecules/h2o-bader',
 
 #+RESULTS:
 
-Now that the calculation is done, get the bader code and scripts from http://theory.cm.utexas.edu/henkelman/code/bader/. 
+Now that the calculation is done, get the bader code and scripts from http://theory.cm.utexas.edu/henkelman/code/bader/.
 
 We use this code to see the changes in charges on the atoms.
 #+BEGIN_SRC python
@@ -3954,7 +3954,7 @@ plt.show()
 
 #+RESULTS:
 : Optimization terminated successfully.
-:          Current function value: -0.223098
+:          Current function value: -0.223946
 :          Iterations: 15
 :          Function evaluations: 30
 
@@ -6769,7 +6769,7 @@ to zero as the number of k-points approaches infinity.
 #+BEGIN_SRC python :results output
 from jasp import *
 
-npoints = 200
+npoints = 20
 width = 0.5
 
 def gaussian(energies, eik):
@@ -6960,7 +6960,7 @@ bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
 with jasp('bulk/pd-ados',
           encut=300,
           xc='PBE',
-          lreal=False,
+          lreal=False,  # incar:lreal
           rwigs=[1.5],  # wigner-seitz radii for ados
           kpts=(8, 8, 8),
           atoms=bulk) as calc:
@@ -7112,7 +7112,7 @@ You can see the number of occupied states increases approximately linearly here 
 
 #+attr_latex: :placement [H]
 #+caption: Effect of the RWIGS on the \(d\)-band center and width.
-[[./images/ados-rwigs-moments.png]]q
+[[./images/ados-rwigs-moments.png]]
 
 The d-band center and width also change.
 
@@ -9209,7 +9209,6 @@ with jasp('surfaces/Pt-O-fcc-hcp-neb') as calc:
 with jasp('surfaces/Pt-O-fcc-hcp-cineb',
           debug=logging.DEBUG) as calc:
     calc.set(ichain=0, lclimb=True)
-
     images, energies = calc.get_neb()
     calc.plot_neb(show=False)
 import matplotlib.pyplot as plt
@@ -9218,12 +9217,7 @@ plt.show()
 #+END_SRC
 
 #+RESULTS:
-: Optimization terminated successfully.
-:          Current function value: -46.519590
-:          Iterations: 12
-:          Function evaluations: 24
 
-[[figure:./images/pt-o-cineb.svg][Climbing image NEB.]]
 
 #+attr_latex: :placement [H]
 #+caption: Climbing image NEB
