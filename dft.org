@@ -12144,6 +12144,8 @@ unit cell in terms of the primitive basis
 =Scientific.Geometry= contains several useful functions for
 performing vector algebra including computing lengths and angles.
 
+Note: Scientific does not seem to be Python3 compliant at this time.
+https://sourcesup.renater.fr/frs/download.php/file/4570/ScientificPython-2.9.4.tar.gz
 #+BEGIN_SRC python :results output
 import numpy as np
 from Scientific.Geometry import Vector
@@ -12153,31 +12155,32 @@ a = np.array([1, 1, 1])  # numpy
 
 B = Vector([0.0, 1.0, 0.0])
 
-print('|A| = ', A.length())        # Scientific Python way
-print('|a| = ', np.sum(a**2)**0.5)  # numpy way
-print('|a| = ', np.linalg.norm(a))  # numpy way 2
+print('|A| = {}'.format(A.length()))        # Scientific Python way
+print('|a| = {}'.format(np.sum(a**2)**0.5))  # numpy way
+print('|a| = {}'.format(np.linalg.norm(a)))  # numpy way 2
 
 print('ScientificPython angle = ', A.angle(B))  # in radians
+<<<<<<< HEAD
+print('numpy angle = {}'.format(np.arccos(np.dot(a / np.linalg.norm(a),
+                                                 B / np.linalg.norm(B)))))
+||||||| 69ebbc1... mostly change print statements to functions
+print('numpy angle = {}',
+       np.arccos(np.dot(a / np.linalg.norm(a),
+                        B / np.linalg.norm(B))))
+=======
 print ('numpy angle = {}',
        np.arccos(np.dot(a / np.linalg.norm(a),
                         B / np.linalg.norm(B))))
+>>>>>>> parent of 69ebbc1... mostly change print statements to functions
 
 # cross products
-print('Scientific A .cross. B = ', A.cross(B))
+print('Scientific A .cross. B = {}'.format(A.cross(B)))
 
 # you can use Vectors in numpy
-print('numpy A .cross. B      = ', np.cross(A,B))
+print('numpy A .cross. B      = {}'.format(np.cross(A, B)))
 #+END_SRC
 
 #+RESULTS:
-: ('|A| = ', 1.7320508075688772)
-: ('|a| = ', 1.7320508075688772)
-: ('|a| = ', 1.7320508075688772)
-: ('ScientificPython angle = ', 0.9553166181245092)
-: ('numpy angle = {}', 0.95531661812450919)
-: ('Scientific A .cross. B = ', Vector(-1.000000,0.000000,1.000000))
-: ('numpy A .cross. B      = ', array([-1.,  0.,  1.]))
-:
 
 *** Unit cell properties
 The volume of a unit cell can be calculated from $V = (a_1 \times a_2)
