@@ -4155,15 +4155,16 @@ print rutile
 #+END_SRC
 
 #+RESULTS:
-: Atoms(symbols='Ti2O4', positions=..., cell=[[4.6, 0.0, 0.0], [2.816687638038912e-16, 4.6, 0.0], [1.806354028742346e-16, 1.806354028742346e-16, 2.95]], pbc=[True, True, True])
-sho
+=Atoms(symbols='Ti2O4', positions=..., cell=[[4.6, 0.0, 0.0], [2.816687638038912e-16, 4.6, 0.0], [1.806354028742346e-16, 1.806354028742346e-16, 2.95]], pbc=[True, True, True])
+==Atoms(symbols='Ti2O4', positions=..., cell=[[4.6, 0.0, 0.0], [2.816687638038912e-16, 4.6, 0.0], [1.806354028742346e-16, 1.806354028742346e-16, 2.95]], pbc=[True, True, True])
+=sho
 *** Using http://materialsproject.org
 
 The [[http://www.materialsproject.org/][Materials Project]] offers web access to a pretty large number of materials (over 21,000 at the time of this writing), including structure and other computed properties. You must sign up for an account at the website, and then you can access the information. You can search for materials with lots of different criteria including formula, unit cell formula, by elements, by structure, etc... The website allows you to download the VASP files used to create the calculations. They also develop the [[https://github.com/materialsproject/pymatgen/][pymatgen]] project (which requires python 2.7+).
 
 For example, I downloaded this cif file for a RuO$_2$ structure (Material ID 825).
 # C-c C-v t to tangle this out
-#+begin_src text :tangle bulk/Ru2O4_1.cif
+# +begin_src text :tangle bulk/Ru2O4_1.cif
 #\#CIF1.1
 ##########################################################################
 #               Crystallographic Information Format file
@@ -4272,6 +4273,13 @@ plt.savefig('images/Ag-kpt-convergence.png')
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/bulk/Ag-kpts-2 submitted: 1392101.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Ag-kpts-3 submitted: 1392102.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Ag-kpts-4 submitted: 1392103.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Ag-kpts-5 submitted: 1392104.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Ag-kpts-6 submitted: 1392105.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Ag-kpts-8 submitted: 1392106.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Ag-kpts-10 submitted: 1392107.gilgamesh.cheme.cmu.edu
 
 #+attr_latex: :placement [H]
 #+caption: k-point convergence of the total energy of fcc Ag.
@@ -4440,7 +4448,8 @@ print(calc.potential_energy)
 
 #+RESULTS:
 : 11.0
-: /home-research/jkitchin/dft-book-new-vasp/bulk/alloy/cu submitted: 1391880.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/alloy/cu submitted: 1392109.gilgamesh.cheme.cmu.edu
+: None
 
 For this calculation we need at least 6 bands (11/2=5.5 which is rounded up to 6) and we need to include some extra bands. The default rule would only add half a band, which is not enough. We add three additional bands. This system is so small it does not substantially increase the computational cost.
 
@@ -4471,7 +4480,7 @@ print calc
 #+RESULTS:
 #+begin_example
 
-Vasp calculation in /home-research/jkitchin/dft-book-new-vasp/bulk/alloy/cu
+Vasp calculation in /home-research/jkitchin/dft-book/bulk/alloy/cu
 
 INCAR created by Atomic Simulation Environment
  ISIF = 4
@@ -4522,7 +4531,7 @@ print calc
 #+RESULTS:
 #+begin_example
 
-Vasp calculation in /home-research/jkitchin/dft-book-new-vasp/bulk/alloy/cu-setnbands
+Vasp calculation in /home-research/jkitchin/dft-book/bulk/alloy/cu-setnbands
 
 INCAR created by Atomic Simulation Environment
  ISIF = 4
@@ -4607,6 +4616,14 @@ for lc, e in zip(LC, fcc_energies):
 #+END_SRC
 
 #+RESULTS:
+#+tblname: cu-fcc-energies
+| lattice constant ($\AA$) | Total Energy (eV) |
+| 3.5 | -3.66182568 |
+| 3.55 | -3.70817569 |
+| 3.6 | -3.73109713 |
+| 3.65 | -3.73432446 |
+| 3.7 | -3.72094163 |
+| 3.75 | -3.69342783 |
 /home-research/jkitchin/dft-book-new-vasp/bulk/Cu-3.5 submitted: 1391881.gilgamesh.cheme.cmu.edu
 /home-research/jkitchin/dft-book-new-vasp/bulk/Cu-3.55 submitted: 1391882.gilgamesh.cheme.cmu.edu
 /home-research/jkitchin/dft-book-new-vasp/bulk/Cu-3.6 submitted: 1391883.gilgamesh.cheme.cmu.edu
@@ -4668,7 +4685,7 @@ eos.plot('images/Cu-fcc-eos.png')
 : E0 = -3.73528237713 eV
 : B  = 0.862553823078 eV/A^3
 
-src_python{return (12.016 * 4)**(1./3.)} =3.63585568663= =3.63585568663=
+src_python{return (12.016 * 4)**(1./3.)} =3.63585568663= =3.63585568663= =3.63585568663=
 
 #+ATTR_LaTeX: :placement [H]
 #+caption: Total energy vs. volume for fcc Cu with  fitted cubic polynomial equation of state.
@@ -4718,17 +4735,17 @@ for a in LC:
 
 #+RESULTS:
 #+begin_example
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-bcc-2.75 submitted: 1391788.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.75 submitted: 1392110.gilgamesh.cheme.cmu.edu
 None
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-bcc-2.8 submitted: 1391789.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.8 submitted: 1392111.gilgamesh.cheme.cmu.edu
 None
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-bcc-2.85 submitted: 1391790.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.85 submitted: 1392112.gilgamesh.cheme.cmu.edu
 None
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-bcc-2.9 submitted: 1391791.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.9 submitted: 1392113.gilgamesh.cheme.cmu.edu
 None
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-bcc-2.95 submitted: 1391792.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.95 submitted: 1392114.gilgamesh.cheme.cmu.edu
 None
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-bcc-3.0 submitted: 1391793.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Cu-bcc-3.0 submitted: 1392115.gilgamesh.cheme.cmu.edu
 None
 #+end_example
 
@@ -4776,6 +4793,22 @@ for lc, e in zip(bcc_LC, bcc_energies):
 #+END_SRC
 
 #+RESULTS:
+/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.75 Queued: 1392110.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.8 Queued: 1392111.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.85 Queued: 1392112.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.9 Queued: 1392113.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.95 Queued: 1392114.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Cu-bcc-3.0 Queued: 1392115.gilgamesh.cheme.cmu.edu
+#+tblname: bcc-data
+#+caption: Total energy vs. lattice constant for BCC Cu.
+| Lattice constant (\AA$^3$) | Total energy (eV) |
+|-
+| 2.75 | None |
+| 2.8 | None |
+| 2.85 | None |
+| 2.9 | None |
+| 2.95 | None |
+| 3.0 | None |
 /home-research/jkitchin/dft-book-new-vasp/bulk/Cu-bcc-2.75 Queued: 1391788.gilgamesh.cheme.cmu.edu
 /home-research/jkitchin/dft-book-new-vasp/bulk/Cu-bcc-2.8 Queued: 1391789.gilgamesh.cheme.cmu.edu
 /home-research/jkitchin/dft-book-new-vasp/bulk/Cu-bcc-2.85 Queued: 1391790.gilgamesh.cheme.cmu.edu
@@ -4868,6 +4901,33 @@ plt.savefig('images/Ru-covera-scan.png')
 #+END_SRC
 
 #+RESULTS:
+#+begin_example
+/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.40 submitted: 1392116.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.50 submitted: 1392117.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.60 submitted: 1392118.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.70 submitted: 1392119.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.80 submitted: 1392120.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.40 submitted: 1392121.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.50 submitted: 1392122.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.60 submitted: 1392123.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.70 submitted: 1392124.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.80 submitted: 1392125.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.40 submitted: 1392126.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.50 submitted: 1392127.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.60 submitted: 1392128.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.70 submitted: 1392129.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.80 submitted: 1392130.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.40 submitted: 1392131.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.50 submitted: 1392132.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.60 submitted: 1392133.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.70 submitted: 1392134.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.80 submitted: 1392135.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.40 submitted: 1392136.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.50 submitted: 1392137.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.60 submitted: 1392138.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.70 submitted: 1392139.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.80 submitted: 1392140.gilgamesh.cheme.cmu.edu
+#+end_example
 
 # <<ru-e-ca>>
 #+caption: Total energy vs. $c/a$ for different values of $a$. \label{fig:ru-e-ca}
@@ -4909,6 +4969,58 @@ plt.savefig('images/ru-contourf.png')
 plt.show()
 #+END_SRC
 #+RESULTS:
+#+begin_example
+/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.40 Queued: 1392116.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.40 Queued: 1392116.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.50 Queued: 1392117.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.50 Queued: 1392117.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.60 Queued: 1392118.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.60 Queued: 1392118.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.70 Queued: 1392119.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.70 Queued: 1392119.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.80 Queued: 1392120.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.80 Queued: 1392120.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.40 Queued: 1392121.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.40 Queued: 1392121.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.50 Queued: 1392122.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.50 Queued: 1392122.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.60 Queued: 1392123.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.60 Queued: 1392123.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.70 Queued: 1392124.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.70 Queued: 1392124.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.80 Queued: 1392125.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.80 Queued: 1392125.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.40 Queued: 1392126.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.40 Queued: 1392126.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.50 Queued: 1392127.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.50 Queued: 1392127.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.60 Queued: 1392128.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.60 Queued: 1392128.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.70 Queued: 1392129.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.70 Queued: 1392129.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.80 Queued: 1392130.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.80 Queued: 1392130.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.40 Queued: 1392131.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.40 Queued: 1392131.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.50 Queued: 1392132.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.50 Queued: 1392132.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.60 Queued: 1392133.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.60 Queued: 1392133.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.70 Queued: 1392134.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.70 Queued: 1392134.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.80 Queued: 1392135.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.80 Queued: 1392135.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.40 Queued: 1392136.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.40 Queued: 1392136.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.50 Queued: 1392137.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.50 Queued: 1392137.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.60 Queued: 1392138.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.60 Queued: 1392138.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.70 Queued: 1392139.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.70 Queued: 1392139.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.80 Queued: 1392140.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.80 Queued: 1392140.gilgamesh.cheme.cmu.edu
+#+end_example
 
 # <<ru-countourf>>
 #+caption: Contour plot of the total energy of hcp Ru for different values of $a$ and $c/a$. \label{fig:ru-contourf}
@@ -4993,6 +5105,13 @@ plt.show()
 #+END_SRC
 
 #+RESULTS:
+/home-research/jkitchin/dft-book/bulk/tio2/kpts-2 submitted: 1392141.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/kpts-3 submitted: 1392142.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/kpts-4 submitted: 1392143.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/kpts-5 submitted: 1392144.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/kpts-6 submitted: 1392145.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/kpts-7 submitted: 1392146.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/kpts-8 submitted: 1392147.gilgamesh.cheme.cmu.edu
 /home-research/jkitchin/dft-book-new-vasp/bulk/tio2/kpts-2 submitted: 1391607.gilgamesh.cheme.cmu.edu
 /home-research/jkitchin/dft-book-new-vasp/bulk/tio2/kpts-3 submitted: 1391608.gilgamesh.cheme.cmu.edu
 /home-research/jkitchin/dft-book-new-vasp/bulk/tio2/kpts-4 submitted: 1391609.gilgamesh.cheme.cmu.edu
@@ -5080,6 +5199,11 @@ for v, e in zip(volumes, energies):
 #+END_SRC
 
 #+RESULTS:
+/home-research/jkitchin/dft-book/bulk/tio2/step1-0.90 submitted: 1392148.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/step1-0.95 submitted: 1392149.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/step1-1.00 submitted: 1392150.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/step1-1.05 submitted: 1392151.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/step1-1.10 submitted: 1392152.gilgamesh.cheme.cmu.edu
 #+tblname: tio2-vol-ene
 #+caption: Total energy of TiO_{2} vs. volume.
 | Volume ($\AA^3$) | Energy (eV) |
@@ -5145,11 +5269,18 @@ plt.show()
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/bulk/tio2/step2-0.90 submitted: 1391794.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/tio2/step2-0.95 submitted: 1391795.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/tio2/step2-1.00 submitted: 1391796.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/tio2/step2-1.05 submitted: 1391797.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/tio2/step2-1.10 submitted: 1391798.gilgamesh.cheme.cmu.edu
+#+begin_example
+/home-research/jkitchin/dft-book/bulk/tio2/step1-0.90 Queued: 1392148.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/step2-0.90 submitted: 1392153.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/step1-0.95 Queued: 1392149.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/step2-0.95 submitted: 1392154.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/step1-1.00 Queued: 1392150.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/step2-1.00 submitted: 1392156.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/step1-1.05 Queued: 1392151.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/step2-1.05 submitted: 1392157.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/step1-1.10 Queued: 1392152.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/tio2/step2-1.10 submitted: 1392158.gilgamesh.cheme.cmu.edu
+#+end_example
 
 TODO
 # <<step-2>>
@@ -5178,8 +5309,6 @@ print '\nThe spacegroup is {0}'.format(spglib.get_spacegroup(atoms))
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/bulk/tio2/step3 submitted: 1391799.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/tio2/step3 Queued: 1391799.gilgamesh.cheme.cmu.edu
 
 
 This is the final result. You can see that the forces on all the atoms are less than 0.01 eV/\AA, and the stress is also very small. The final volume is close to where we expect it to be based on steps 1 and 2. The space group is still correct. The lattice vectors are close in length to the experimentally known values, and the angles between the vectors has not changed much. Looks good!
@@ -5201,10 +5330,8 @@ print 'ismear=-5:      ', atoms.get_potential_energy()
 #+END_SRC
 
 #+RESULTS:
-: default ismear:  /home-research/jkitchin/dft-book-new-vasp/bulk/tio2/step3 Queued: 1391799.gilgamesh.cheme.cmu.edu
-: None
-: ismear=-5:       /home-research/jkitchin/dft-book-new-vasp/bulk/tio2/step4 submitted: 1391800.gilgamesh.cheme.cmu.edu
-: None
+: default ismear:  -52.81760338
+: ismear=-5:       -52.8004532
 
 The difference here is on the order of a meV. That does not seem significant here. I suspect the recommended practice stems from early days when much smaller ENCUT values were used and changes in the number of basis functions were more significant.
 
@@ -5243,14 +5370,7 @@ print('LDA lattice constant is {0:1.3f} Ang^3'.format((4*v0)**(1./3.)))
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/bulk/Pd-LDA-3.75 submitted: 1391801.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/Pd-LDA-3.8 submitted: 1391802.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/Pd-LDA-3.85 submitted: 1391803.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/Pd-LDA-3.9 submitted: 1391804.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/Pd-LDA-3.95 submitted: 1391805.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/Pd-LDA-4.0 submitted: 1391806.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/Pd-LDA-4.05 submitted: 1391807.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/Pd-LDA-4.1 submitted: 1391808.gilgamesh.cheme.cmu.edu
+: LDA lattice constant is 3.841 Ang^3
 
 For a GGA calculation, it is possible to specify which functional you want via the incar:GGA tag. This tag was designed to use the LDA POTCAR files, but with a GGA functional. We will consider four different functionals here.
 
@@ -5296,48 +5416,10 @@ for key in GGA:
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-PS-3.75 submitted: 1391809.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-PS-3.8 submitted: 1391810.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-PS-3.85 submitted: 1391811.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-PS-3.9 submitted: 1391812.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-PS-3.95 submitted: 1391813.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-PS-4.0 submitted: 1391814.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-PS-4.05 submitted: 1391815.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-PS-4.1 submitted: 1391816.gilgamesh.cheme.cmu.edu
-[None, None, None, None, None, None, None, None] [3.75, 3.8, 3.85, 3.9, 3.95, 4.0, 4.05, 4.1]
-PBEsol is not ready
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-AM-3.75 submitted: 1391817.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-AM-3.8 submitted: 1391818.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-AM-3.85 submitted: 1391819.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-AM-3.9 submitted: 1391820.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-AM-3.95 submitted: 1391821.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-AM-4.0 submitted: 1391822.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-AM-4.05 submitted: 1391823.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-AM-4.1 submitted: 1391824.gilgamesh.cheme.cmu.edu
-[None, None, None, None, None, None, None, None] [3.75, 3.8, 3.85, 3.9, 3.95, 4.0, 4.05, 4.1]
-AM05 is not ready
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-RP-3.75 submitted: 1391825.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-RP-3.8 submitted: 1391826.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-RP-3.85 submitted: 1391827.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-RP-3.9 submitted: 1391828.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-RP-3.95 submitted: 1391829.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-RP-4.0 submitted: 1391830.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-RP-4.05 submitted: 1391831.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-RP-4.1 submitted: 1391832.gilgamesh.cheme.cmu.edu
-[None, None, None, None, None, None, None, None] [3.75, 3.8, 3.85, 3.9, 3.95, 4.0, 4.05, 4.1]
-RPBE is not ready
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-PE-3.75 submitted: 1391833.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-PE-3.8 submitted: 1391834.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-PE-3.85 submitted: 1391835.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-PE-3.9 submitted: 1391836.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-PE-3.95 submitted: 1391837.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-PE-4.0 submitted: 1391838.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-PE-4.05 submitted: 1391839.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Pd-GGA-PE-4.1 submitted: 1391840.gilgamesh.cheme.cmu.edu
-[None, None, None, None, None, None, None, None] [3.75, 3.8, 3.85, 3.9, 3.95, 4.0, 4.05, 4.1]
-PBE is not ready
-#+end_example
+: PBEsol lattice constant is 3.872 Ang^3
+: AM05   lattice constant is 3.868 Ang^3
+: RPBE   lattice constant is 3.978 Ang^3
+: PBE    lattice constant is 3.939 Ang^3
 
 These results compare very favorably to those in cite:mattsson-084714. It is typical that LDA functionals underestimate the lattice constants, and that GGAs tend to overestimate the lattice constants. PBEsol and AM05 were designed specifically for solids, and for Pd, these functionals do an exceptional job of reproducing the lattice constants. RPBE is particularly bad at the lattice constant, but it has been reported to be a superior functional for reactivity cite:hammer1999:improv-pbe.
 
@@ -5363,11 +5445,9 @@ print(calc)
 
 #+RESULTS:
 #+begin_example
-/home-research/jkitchin/dft-book-new-vasp/bulk/Al-lda-vasp submitted: 1391841.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Al-lda-vasp Queued: 1391841.gilgamesh.cheme.cmu.edu
-None
+-10.07430725
 
-Vasp calculation in /home-research/jkitchin/dft-book-new-vasp/bulk/Al-lda-vasp
+Vasp calculation in /home-research/jkitchin/dft-book/bulk/Al-lda-vasp
 
 INCAR created by Atomic Simulation Environment
  ISIF = 7
@@ -5403,6 +5483,8 @@ print [atoms.get_potential_energy() for atoms in calc.traj]
 #+END_SRC
 
 #+RESULTS:
+: [91.124999999999986, 78.034123525818302, 72.328582812881763, 73.422437849114189, 73.368474506164134]
+: [-9.58448747, -10.02992063, -10.07180132, -10.07429962, -10.07430725]
 
 Now, the ASE way.
 TODO
@@ -5445,7 +5527,7 @@ print((np.abs(cellA - cellB) < 0.01).all())
 #+END_SRC
 
 #+RESULTS:
-: True
+: False
 
 This could be handy if you want to use any of the optimizers in mod:ase.optimize in conjunction with mod:ase.constraints, which are more advanced than what is in VASP.
 
@@ -5493,7 +5575,7 @@ print 'The cohesive energy is {0:1.3f} eV'.format(cohesive_energy)
 #+END_SRC
 
 #+RESULTS:
-: The cohesive energy is 6.183 eV
+: /home-research/jkitchin/dft-book/bulk/atomic-rh Queued: 1392161.gilgamesh.cheme.cmu.edu
 
 According to Kittel cite:kittel, the cohesive energy of Rh is 5.75 eV. There are a few reasons we may have discrepancy here:
 
@@ -5532,13 +5614,15 @@ for k, e in zip(kpts, energies):
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/bulk/bulk-rh-kpts-3 submitted: 1391843.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/bulk-rh-kpts-4 submitted: 1391844.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/bulk-rh-kpts-6 submitted: 1391845.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/bulk-rh-kpts-9 submitted: 1391846.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/bulk-rh-kpts-12 submitted: 1391847.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/bulk-rh-kpts-15 submitted: 1391848.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/bulk-rh-kpts-18 submitted: 1391849.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/atomic-rh Queued: 1392161.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/atomic-rh Queued: 1392161.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/bulk-rh-kpts-3 submitted: 1392162.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/bulk-rh-kpts-4 submitted: 1392163.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/bulk-rh-kpts-6 submitted: 1392164.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/bulk-rh-kpts-9 submitted: 1392165.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/bulk-rh-kpts-12 submitted: 1392166.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/bulk-rh-kpts-15 submitted: 1392167.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/bulk-rh-kpts-18 submitted: 1392168.gilgamesh.cheme.cmu.edu
 
 Using only 1 k-point for the bulk energy is a terrible approximation! It takes at least a 6 \times 6 \times 6 grid to get the total energy converged to less than 10 meV. Note we do not need to check the k-point convergence of the atomic state because it is surrounded by vacuum on all sides, and so there should not be any dispersion in the bands.
 
@@ -5584,6 +5668,8 @@ print 'The cohesive energy is {0:1.3f} eV'.format(cohesive_energy)
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/bulk/bulk-rh submitted: 1392169.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/atomic-rh-sp submitted: 1392170.gilgamesh.cheme.cmu.edu
 
 Again, the value in Kittel cite:kittel is 5.75 eV which is very close to this value. Finally, it is also possible there is a lower energy non-spherical atom energy; we did not check that at all (see [[*Estimating%20triplet%20oxygen%20dissociation%20energy%20with%20low%20symmetry][Estimating triplet oxygen dissociation energy with low symmetry]]).
 
@@ -5619,6 +5705,10 @@ print(atoms.get_stress())
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/bulk/Fe-bulk submitted: 1392171.gilgamesh.cheme.cmu.edu
+: None
+: /home-research/jkitchin/dft-book/bulk/Fe-bulk Queued: 1392171.gilgamesh.cheme.cmu.edu
+: [None None None None None None]
 
 
 
@@ -5641,7 +5731,6 @@ calc.update()
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/bulk/Fe-elastic submitted: 1391851.gilgamesh.cheme.cmu.edu
 
 Now, the results are written out to the OUTCAR file. Actually, three sets of moduli are written out 1) the elastic tensor for rigid ions, 2) the contribution from allowing the atoms to relax, and 3) the total elastic modulus, all in kBar.
 
@@ -5706,6 +5795,12 @@ print np.array(EM)
 #+END_SRC
 
 #+RESULTS:
+: [[ 1125.1405  3546.8135  3546.8135     0.         0.         0.    ]
+:  [ 3546.8135  1125.1405  3546.8135     0.         0.         0.    ]
+:  [ 3546.8135  3546.8135  1125.1405     0.         0.         0.    ]
+:  [    0.         0.         0.      1740.2372     0.         0.    ]
+:  [    0.         0.         0.         0.      1740.2372     0.    ]
+:  [    0.         0.         0.         0.         0.      1740.2372]]
 
 
 Fe is in a BCC crystal structure, which is high in symmetry. Consequently, many of the elements in the matrix are equal to zero.
@@ -5733,8 +5828,7 @@ calc.wait()
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/bulk/Al-bulk submitted: 1391852.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/Al-bulk Queued: 1391852.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Al-bulk submitted: 1392172.gilgamesh.cheme.cmu.edu
 
 Ok, now with a relaxed geometry at hand, we proceed with the elastic constants. This is accomplished with IBRION=6 and ISIF ≥ 3 in VASP.
 
@@ -5859,6 +5953,11 @@ for v in volumes:
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/bulk/TiO2/rutile/rutile-28.0 submitted: 1392176.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/TiO2/rutile/rutile-30.0 submitted: 1392177.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/TiO2/rutile/rutile-32.0 submitted: 1392178.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/TiO2/rutile/rutile-34.0 submitted: 1392179.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/TiO2/rutile/rutile-36.0 submitted: 1392180.gilgamesh.cheme.cmu.edu
 
 
 #+BEGIN_SRC python
@@ -5906,6 +6005,11 @@ for v in volumes:
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/bulk/TiO2/anatase/anatase-30.0 submitted: 1392181.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/TiO2/anatase/anatase-33.0 submitted: 1392182.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/TiO2/anatase/anatase-35.0 submitted: 1392183.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/TiO2/anatase/anatase-37.0 submitted: 1392184.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/TiO2/anatase/anatase-39.0 submitted: 1392185.gilgamesh.cheme.cmu.edu
 
 Now we will fit cubic polynomials to the data.
 
@@ -5973,15 +6077,6 @@ plt.savefig('images/rutile-anatase-eos.png')
 #+END_SRC
 
 #+RESULTS:
-: E_anatase(V) = -0.00*V^3 + 0.13*V^2 + -5.23*V + 42.48
-: E_rutile(V) =  -0.00*V^3 + 0.14*V^2 + -5.34*V + 38.62
-: anatase epars: array([ -1.06e-03,   1.30e-01,  -5.23e+00,   4.25e+01])
-: rutile epars: array([ -1.25e-03,   1.43e-01,  -5.34e+00,   3.86e+01])
-: anatase ppars: array([  3.18e-03,  -2.60e-01,   5.23e+00])
-: rutile ppars: array([  3.74e-03,  -2.86e-01,   5.34e+00])
-:
-: P_anatase(V) = 0.00*V^2 + -0.26*V + 5.23
-: P_rutile(V) =  0.00*V^2 + -0.29*V + 5.34
 
 # <<tio2-anatase-rutile>>
 #+ATTR_LaTeX: :placement [H]
@@ -6114,9 +6209,9 @@ print 'Pd energy = {0} eV'.format(pd)
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/bulk/alloy/cu Queued: 1391787.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/alloy/cu Queued: 1391787.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/alloy/pd submitted: 1391855.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/alloy/cu Queued: 1392109.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/alloy/cu Queued: 1392109.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/alloy/pd submitted: 1392186.gilgamesh.cheme.cmu.edu
 : Cu energy = None eV
 : Pd energy = None eV
 
@@ -6170,8 +6265,10 @@ print 'cupd-2 = {0} eV'.format(cupd2)
 #+END_SRC
 
 #+RESULTS:
-: cupd-1 = -9.17667411 eV
-: cupd-2 = -18.08019781 eV
+: /home-research/jkitchin/dft-book/bulk/alloy/cupd-1 submitted: 1392187.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/alloy/cupd-2 submitted: 1392188.gilgamesh.cheme.cmu.edu
+: cupd-1 = None eV
+: cupd-2 = None eV
 
 
 Looking at these energies, you could be tempted to say cupd-2 is more stable than cupd-1 because its energy is much lower. This is wrong, however, because cupd-2 has twice as many atoms as cupd-1. We should compare the normalized total energies, that is the energy normalized per CuPd formula unit, or as an alternative  the number of atoms in the unit cell. It does not matter which, as long as we normalize consistently. It is conventional in alloy calculation to normalize by the number of atoms in the unit cell.
@@ -6192,8 +6289,6 @@ print 'cupd-2: {0} eV/atom'.format(e2)
 #+END_SRC
 
 #+RESULTS:
-: cupd-1: -4.588337055 eV/atom
-: cupd-2: -4.5200494525 eV/atom
 
 After normalizing by number of atoms, we can see that cupd-1 is a more stable structure. However, we are looking at total energies, and we might ask: is cupd-1 more stable than an unreacted mixture of the parent compounds, fcc Cu and Pd? In other words, is the following reaction exothermic:
 
@@ -6412,8 +6507,8 @@ print atoms.get_stress()
 #+END_SRC
 
 #+RESULTS:
-: -27.27717148
-: /home-research/jkitchin/dft-book-new-vasp/bulk/Cu2O submitted: 1391856.gilgamesh.cheme.cmu.edu
+: -27.27469814
+: /home-research/jkitchin/dft-book/bulk/Cu2O submitted: 1392189.gilgamesh.cheme.cmu.edu
 : [None None None None None None]
 
 **** CuO calculation
@@ -6454,7 +6549,8 @@ print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
-: -19.56633482
+: /home-research/jkitchin/dft-book/bulk/CuO submitted: 1392190.gilgamesh.cheme.cmu.edu
+: None
 
 **** TODO Reaction energy calculation
 #+BEGIN_SRC python
@@ -6485,8 +6581,8 @@ print 'Reaction energy = {0} eV'.format(rxn_energy)
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/bulk/Cu2O Queued: 1391856.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/molecules/O2-sp-triplet-400 Queued: 1391745.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Cu2O Queued: 1392189.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/CuO Queued: 1392190.gilgamesh.cheme.cmu.edu
 
 This is the reaction energy for 2 Cu_{2}O $\rightarrow$ 4 CuO. In cite:PhysRevB.73.195107, the experimental reaction is estimated to be  about -3.14 eV.
 
@@ -6710,13 +6806,13 @@ plt.show()
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/bulk/pd-dos-k8-ismear-5 submitted: 1391857.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/pd-dos-k10-ismear-5 submitted: 1391858.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/pd-dos-k12-ismear-5 submitted: 1391859.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/pd-dos-k14-ismear-5 submitted: 1391860.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/pd-dos-k16-ismear-5 submitted: 1391861.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/pd-dos-k18-ismear-5 submitted: 1391862.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/pd-dos-k20-ismear-5 submitted: 1391863.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/pd-dos-k8-ismear-5 submitted: 1392191.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/pd-dos-k10-ismear-5 submitted: 1392192.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/pd-dos-k12-ismear-5 submitted: 1392193.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/pd-dos-k14-ismear-5 submitted: 1392194.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/pd-dos-k16-ismear-5 submitted: 1392195.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/pd-dos-k18-ismear-5 submitted: 1392196.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/pd-dos-k20-ismear-5 submitted: 1392197.gilgamesh.cheme.cmu.edu
 
 # <<dos-k-convergence>>
 #+attr_latex: :placement [H]
@@ -6934,7 +7030,7 @@ calc.run()
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/bulk/Si-selfconsistent submitted: 1391871.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Si-selfconsistent submitted: 1392198.gilgamesh.cheme.cmu.edu
 
 Now, we run a new calculation along the k-point path desired. The standard VASP way of doing this is to modify the INCAR and KPOINTS file and rerun VASP. We will not do that. Doing that results in some lost information if you overwrite the old files. We will copy the old directory to a new directory, using code to ensure this only happens one time.
 
@@ -6961,9 +7057,9 @@ print(calc)
 
 #+RESULTS:
 #+begin_example
-/home-research/jkitchin/dft-book-new-vasp/bulk/Si-bandstructure submitted: 1391872.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Si-bandstructure submitted: 1392199.gilgamesh.cheme.cmu.edu
 
-Vasp calculation in /home-research/jkitchin/dft-book-new-vasp/bulk/Si-bandstructure
+Vasp calculation in /home-research/jkitchin/dft-book/bulk/Si-bandstructure
 
 INCAR created by Atomic Simulation Environment
  ISTART = 0
@@ -6994,28 +7090,12 @@ head -n 20 bulk/Si-bandstructure/EIGENVAL
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-    2    2    1    1
-  0.1956688E+02  0.3810853E-09  0.3810853E-09  0.3810853E-09  0.5000000E-15
-  1.000000000000000E-004
-  CAR
- unknown system
-      8     10      8
-
-  0.1250000E+00  0.1250000E+00  0.1250000E+00  0.3125000E-01
-    1       -5.847720
-    2        4.463820
-    3        5.776645
-    4        5.776645
-    5        8.640866
-    6        9.084609
-    7        9.084609
-    8       10.995577
-
-  0.3750000E+00  0.1250000E+00  0.1250000E+00  0.9375000E-01
-    1       -4.779461
-    2        1.394932
-#+end_example
+:     2    2    1    1
+:   0.1956688E+02  0.3810853E-09  0.3810853E-09  0.3810853E-09  0.5000000E-15
+:   1.000000000000000E-004
+:   CAR
+:  unknown system
+:       8     20      8
 
 We can ignore the first five lines.
 
@@ -7128,8 +7208,7 @@ for i,a in enumerate([4.7, 5.38936, 6.0]):
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/bulk/Si-bs-0 submitted: 1391873.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/bulk/Si-bs-0 Queued: 1391873.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Si-bs-0 submitted: 1392200.gilgamesh.cheme.cmu.edu
 
 #+attr_latex: :placement [H]
 #+caption: Si band structure for a=4.7
@@ -7174,8 +7253,7 @@ print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/bulk/Fe-bcc-fixedmagmom-0.00 submitted: 1391874.gilgamesh.cheme.cmu.edu
-: None
+: -15.34226703
 
 
 #+BEGIN_SRC python
@@ -7212,6 +7290,12 @@ plt.show()
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/bulk/Fe-bcc-fixedmagmom-0.00 submitted: 1392216.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Fe-bcc-fixedmagmom-2.00 submitted: 1392217.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Fe-bcc-fixedmagmom-4.00 Queued: 1392208.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Fe-bcc-fixedmagmom-5.00 Queued: 1392210.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Fe-bcc-fixedmagmom-6.00 Queued: 1392214.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Fe-bcc-fixedmagmom-8.00 submitted: 1392218.gilgamesh.cheme.cmu.edu
 
 #+ATTR_LaTeX: :placement [H]
 #+caption: Total energy vs. total magnetic moment for bcc Fe.
@@ -7252,6 +7336,10 @@ print 'Individual moments are {0} Bohr-magnetons'.format(magmoms)
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/bulk/Fe-bcc-sp-1 submitted: 1392219.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Fe-bcc-sp-1 Queued: 1392219.gilgamesh.cheme.cmu.edu
+: Total magnetic moment is 0.00 Bohr-magnetons
+: Individual moments are [ 0.  0.] Bohr-magnetons
 
 *** Antiferromagnetic spin states
 In an antiferromagnetic material, there are equal numbers of spin up and down electrons that align in a regular pattern, but pointing in opposite directions so that there is no net magnetism. It is possible to model this by setting the magnetic moments on each mod:ase.Atom object. incar:lreal
@@ -7281,6 +7369,10 @@ print 'Total magnetic moment = ', atoms.get_magnetic_moment()
 #+END_SRC
 
 #+RESULTS:
+: Magnetic moments =  /home-research/jkitchin/dft-book/bulk/afm-feo submitted: 1392204.gilgamesh.cheme.cmu.edu
+: [ 0.  0.  0.  0.]
+: Total magnetic moment =  /home-research/jkitchin/dft-book/bulk/afm-feo Queued: 1392204.gilgamesh.cheme.cmu.edu
+: 0.0
 
 You can see that even though the total magnetic moment is 0, there is a spin on both Fe atoms, and they are pointing in opposite directions. Hence, the sum of spins is zero, and this arrangement is called anti-ferromagnetic.
 
@@ -7352,7 +7444,6 @@ write('images/Au-211.png',
 ** TODO Surface calculation parameters
 There is one important parameter that is different for surfaces than for bulk calculations, the k-point grid. Assuming you have followed the convention that the z-axis is normal to the surface, the k-point grids for slab calculations always have the form of $M \times N \times 1$. To illustrate why, consider this example:
 
-
 #+BEGIN_SRC python
 from ase.lattice.surface import fcc111
 from ase.io import write
@@ -7384,8 +7475,7 @@ p.show()
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/surfaces/Al-bandstructure submitted: 1391619.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/surfaces/Al-bandstructure Queued: 1391619.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/surfaces/Al-bandstructure submitted: 1392069.gilgamesh.cheme.cmu.edu
 
 # <<surface-bands>>
 #+attr_latex: :placement [H]
@@ -7414,11 +7504,10 @@ print(atoms.get_forces())
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/surfaces/Al-slab-unrelaxed submitted: 1391620.gilgamesh.cheme.cmu.edu
-: [[None None None]
-:  [None None None]
-:  [None None None]
-:  [None None None]]
+: [[ 0.          0.         -0.01505445]
+:  [ 0.          0.          0.18818605]
+:  [ 0.          0.         -0.18818605]
+:  [ 0.          0.          0.01505445]]
 
 Some points to note. The forces on the atoms have symmetry to them. That is because the slab is centered. Had the slab had an odd number of atoms, it is likely the center atom would have no forces on it. Next we consider the spacing between each layer in the slab. We do this for comparison later.
 
@@ -7479,11 +7568,10 @@ print calc
 
 #+RESULTS:
 #+begin_example
-/home-research/jkitchin/dft-book-new-vasp/surfaces/Al-slab-relaxed submitted: 1391621.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/surfaces/Al-slab-relaxed Queued: 1391621.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/surfaces/Al-slab-relaxed submitted: 1392070.gilgamesh.cheme.cmu.edu
 None
 
-Vasp calculation in /home-research/jkitchin/dft-book-new-vasp/surfaces/Al-slab-relaxed
+Vasp calculation in /home-research/jkitchin/dft-book/surfaces/Al-slab-relaxed
 
 INCAR created by Atomic Simulation Environment
  ISIF = 2
@@ -7491,7 +7579,7 @@ INCAR created by Atomic Simulation Environment
  LCHARG = .FALSE.
  IBRION = 2
  ISMEAR = 1
- LWAVE = .FALSE.
+ LWAVE = .TRUE.
  SIGMA = 0.1
  NSW = 10
 
@@ -7503,10 +7591,10 @@ Al
    4
 Selective dynamics
 Cartesian
-  0.0000000000000000  0.0000000000000000  9.9999999999999982   F   F   F
-  1.4318912319027588  0.8267027881893224 12.3382685902179823   F   F   F
-  0.0000000000000000  1.6534055763786448 14.6765371804359681   T   T   T
-  0.0000000000000000  0.0000000000000000 17.0148057706539504   T   T   T
+  0.0000000000000000  0.0000000000000000  9.9999999999999858   F   F   F
+  1.4318912319027688  0.8267027881893283 12.3382685902179787   F   F   F
+  2.8637824638055074  1.6534055763786391 14.6472175363588981   T   T   T
+  0.0000000000000000  0.0000000000000000 17.0168625541318761   T   T   T
 
 #+end_example
 
@@ -7621,7 +7709,9 @@ print Vasp('surfaces/Au-110',
 #+END_SRC
 
 #+RESULTS:
-: -35.92440066
+: /home-research/jkitchin/dft-book/surfaces/Au-110 submitted: 1392071.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/surfaces/Au-110 Queued: 1392071.gilgamesh.cheme.cmu.edu
+: None
 
 #+ATTR_LaTeX: :placement [H] :width 2in
 #+ATTR_org: :width 300
@@ -7646,17 +7736,20 @@ write('images/Au-110-missing-row.png',
       rotation='-90x',
       show_unit_cell=2)
 
-print Vasp('surfaces/Au-110-missing-row',
+calc = Vasp('surfaces/Au-110-missing-row',
            xc='PBE',
            kpts=(6, 6, 1),
            encut=350,
            ibrion=2,
            isif=2,
            nsw=10,
-           atoms=atoms).potential_energy
+           atoms=atoms)
+
+calc.update()
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/surfaces/Au-110-missing-row submitted: 1392072.gilgamesh.cheme.cmu.edu
 
 #+ATTR_LaTeX: :placement [H] :width 2in
 #+ATTR_org: :width 200
@@ -7683,6 +7776,9 @@ print Vasp('bulk/Au-fcc',
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/bulk/Au-fcc submitted: 1392073.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Au-fcc Queued: 1392073.gilgamesh.cheme.cmu.edu
+: None
 
 **** Analysis of energies
 #+BEGIN_SRC python
@@ -7725,10 +7821,11 @@ calc.update()
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/surfaces/Ag-110 submitted: 1392074.gilgamesh.cheme.cmu.edu
 
 **** Missing row in Ag(110)
 #+BEGIN_SRC python
-from vasp import V
+from vasp import Vasp
 from ase.lattice.surface import fcc110
 from ase.io import write
 from ase.constraints import FixAtoms
@@ -7750,6 +7847,7 @@ Vasp('surfaces/Ag-110-missing-row',
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/surfaces/Ag-110-missing-row submitted: 1392075.gilgamesh.cheme.cmu.edu
 
 **** Bulk Ag
 #+BEGIN_SRC python
@@ -7771,6 +7869,7 @@ Vasp('bulk/Ag-fcc',
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/bulk/Ag-fcc submitted: 1392076.gilgamesh.cheme.cmu.edu
 
 **** Analysis of energies
 #+BEGIN_SRC python
@@ -7819,6 +7918,7 @@ Vasp('surfaces/Cu-110',
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/surfaces/Cu-110 submitted: 1392077.gilgamesh.cheme.cmu.edu
 
 **** Missing row in Cu(110)
 #+BEGIN_SRC python
@@ -7843,6 +7943,7 @@ Vasp('surfaces/Cu-110-missing-row',
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/surfaces/Cu-110-missing-row submitted: 1392078.gilgamesh.cheme.cmu.edu
 
 **** Bulk Cu
 #+BEGIN_SRC python
@@ -7864,6 +7965,7 @@ Vasp('bulk/Cu-fcc',
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/bulk/Cu-fcc submitted: 1392079.gilgamesh.cheme.cmu.edu
 
 **** Analysis
 #+BEGIN_SRC python
@@ -7883,10 +7985,6 @@ print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
 #+END_SRC
 
 #+RESULTS:
-: natoms slab        = 12
-: natoms missing row = 11
-: natoms bulk        = 1
-: dE = -0.011 eV
 
 It is questionable whether we should consider this evidence of a missing row reconstruction because the number is small. That does not mean the reconstruction will not happen, but it could mean it is very easy to lift.
 
@@ -7960,14 +8058,15 @@ plt.savefig('images/Cu-unrelaxed-surface-energy.png')
 #+END_SRC
 
 #+RESULTS:
-: nlayers =  3 sigma = 0.551 eV/atom
-: nlayers =  4 sigma = 0.399 eV/atom
-: nlayers =  5 sigma = 0.590 eV/atom
-: nlayers =  6 sigma = 0.319 eV/atom
-: nlayers =  7 sigma = 0.578 eV/atom
-: nlayers =  8 sigma = 0.322 eV/atom
-: nlayers =  9 sigma = 0.592 eV/atom
-: nlayers = 10 sigma = 0.403 eV/atom
+: /home-research/jkitchin/dft-book/bulk/Cu-layers/3 submitted: 1392082.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Cu-layers/4 submitted: 1392083.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Cu-layers/5 submitted: 1392084.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Cu-layers/6 submitted: 1392085.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Cu-layers/7 submitted: 1392086.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Cu-layers/8 submitted: 1392087.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Cu-layers/9 submitted: 1392088.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Cu-layers/10 submitted: 1392089.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Cu-layers/11 submitted: 1392090.gilgamesh.cheme.cmu.edu
 
 # <<oscillating-surface-energy>>
 #+ATTR_LaTeX: :placement [H]
@@ -7992,7 +8091,7 @@ print 'sigma = {0} J/m^2'.format(sigma / area / (J / m**2))
 #+END_SRC
 
 #+RESULTS:
-: sigma = 1.3628146074 J/m^2
+: sigma = 1.36281400415 J/m^2
 
 *** Advanced topics in surface energy
 The surface energies can be used to estimate the shapes of nanoparticles using a Wulff construction. See citealp:doi.10.1021/jp200950a for an example of computing Mo_{2}C surface energies and particle shapes, and cite:Inoglu2009188 for an example of the influence of adsorbates on surface energies and particle shapes of Cu.
@@ -8019,9 +8118,8 @@ calc = Vasp('surfaces/Al-slab-locpot',
             encut=350,
             lvtot=True,  # write out local potential
             lvhar=True,  # write out only electrostatic potential, not xc pot
-            atoms=atoms) as calc:
-
-
+            atoms=atoms)
+calc.wait()
 ef = calc.get_fermi_level()
 x, y, z, lp = calc.get_local_potential()
 
@@ -8044,7 +8142,8 @@ print ' The workfunction is {0:1.2f} eV'.format(wf)
 #+END_SRC
 
 #+RESULTS:
-:  The workfunction is 4.04 eV
+: /home-research/jkitchin/dft-book/surfaces/Al-slab-locpot Queued: 1392091.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/surfaces/Al-slab-locpot Queued: 1392091.gilgamesh.cheme.cmu.edu
 
 The workfunction of Al is listed as 4.08 at http://hyperphysics.phy-astr.gsu.edu/hbase/tables/photoelec.html.
 
@@ -8108,7 +8207,9 @@ print(Vasp('surfaces/Al-Na-nodip',
 #+END_SRC
 
 #+RESULTS:
-: -22.55264459
+: /home-research/jkitchin/dft-book/surfaces/Al-Na-nodip submitted: 1392092.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/surfaces/Al-Na-nodip Queued: 1392092.gilgamesh.cheme.cmu.edu
+: None
 
 # <<asymmetric-slab>>
 #+attr_latex: :placement [H] :width 2in
@@ -8171,6 +8272,8 @@ print(calc.potential_energy)
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/surfaces/Al-Na-dip submitted: 1392093.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/surfaces/Al-Na-dip Queued: 1392093.gilgamesh.cheme.cmu.edu
 
 *** Comparing no dipole correction with a dipole correction
 
@@ -8219,7 +8322,6 @@ plt.savefig('images/dip-vs-nodip-esp.png')
 #+END_SRC
 
 #+RESULTS:
-: The difference in energy is 0.006397 eV.
 
 #+ATTR_LaTeX: :placement [H]
 #+caption: Comparison of the electrostatic potentials with a dipole correction and without it.
@@ -8269,8 +8371,7 @@ print(Vasp('surfaces/Pt-slab',
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/surfaces/Pt-slab submitted: 1391622.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/surfaces/Pt-slab Queued: 1391622.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/surfaces/Pt-slab submitted: 1392094.gilgamesh.cheme.cmu.edu
 : None
 
 #+attr_latex: :placement [H] :width 2in
@@ -8306,8 +8407,7 @@ print(Vasp('surfaces/Pt-slab-O-fcc',
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/surfaces/Pt-slab-O-fcc submitted: 1391623.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/surfaces/Pt-slab-O-fcc Queued: 1391623.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/surfaces/Pt-slab-O-fcc submitted: 1392095.gilgamesh.cheme.cmu.edu
 : None
 
 #+attr_latex: :placement [H] :width 2in
@@ -8339,8 +8439,7 @@ print(Vasp('surfaces/Pt-slab-O-bridge',
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/surfaces/Pt-slab-O-bridge submitted: 1391624.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/surfaces/Pt-slab-O-bridge Queued: 1391624.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/surfaces/Pt-slab-O-bridge submitted: 1392096.gilgamesh.cheme.cmu.edu
 : None
 
 #+ATTR_LaTeX: :width 203bp :placement [H]
@@ -8374,8 +8473,7 @@ print(Vasp('surfaces/Pt-slab-O-hcp',
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/surfaces/Pt-slab-O-hcp submitted: 1391625.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/surfaces/Pt-slab-O-hcp Queued: 1391625.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/surfaces/Pt-slab-O-hcp submitted: 1392097.gilgamesh.cheme.cmu.edu
 : None
 
 #+attr_latex: :placement [H] :width 2in
@@ -8525,9 +8623,8 @@ print 'Hads (bridge) = {0:1.3f} eV/O'.format(Hads_bridge)
 
 #+RESULTS:
 : Initial O position: [  1.38592929   0.          15.72642611]
-: /home-research/jkitchin/dft-book-new-vasp/surfaces/Pt-slab-O-bridge-xy-constrained submitted: 1391626.gilgamesh.cheme.cmu.edu
-: Final O position  : [  1.38592929   0.          15.72642611]
-: /home-research/jkitchin/dft-book-new-vasp/surfaces/Pt-slab Queued: 1391622.gilgamesh.cheme.cmu.edu
+: Final O position  : [  1.38592929   0.          15.9685262 ]
+: /home-research/jkitchin/dft-book/surfaces/Pt-slab Queued: 1392094.gilgamesh.cheme.cmu.edu
 
 You can see that only the \(z\)-position of the O atom changed. Also, the adsorption energy of O on the bridge site is *much* less favorable than on the fcc or hcp sites.
 
@@ -8569,8 +8666,7 @@ print(Vasp('surfaces/Pt-slab-1x1',
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/surfaces/Pt-slab-1x1 submitted: 1391627.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/surfaces/Pt-slab-1x1 Queued: 1391627.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/surfaces/Pt-slab-1x1 submitted: 1392098.gilgamesh.cheme.cmu.edu
 : None
 
 #+attr_latex: :placement [H] :width 2in
@@ -8606,8 +8702,7 @@ print(Vasp('surfaces/Pt-slab-1x1-O-fcc',
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/surfaces/Pt-slab-1x1-O-fcc submitted: 1391628.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/surfaces/Pt-slab-1x1-O-fcc Queued: 1391628.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/surfaces/Pt-slab-1x1-O-fcc submitted: 1392099.gilgamesh.cheme.cmu.edu
 : None
 
 #+attr_latex: :placement [h] :width 2in
@@ -8631,7 +8726,6 @@ print 'Hads (1ML) = {0:1.3f} eV'.format(hads)
 #+END_SRC
 
 #+RESULTS:
-: Hads (1ML) = -0.163 eV
 
 
 : Hads (1ML) = -0.099 eV
@@ -8749,12 +8843,6 @@ Note that now there are 39 modes, which is 3*N where N=13 atoms in the unit cell
 
 Calculating these results took 39*2 finite differences. It took about a day to get these results on a single CPU. It pays to use constraints to minimize the number of these calculations.
 
-#+BEGIN_SRC python
-print 77000 / 3600.0
-#+END_SRC
-
-#+RESULTS:
-: 21.3888888889
 
 *** Vibrations of the bridge site
 Here we consider the vibrations of an O atom in a bridge site, which we saw earlier is a metastable saddle point.
@@ -8982,9 +9070,9 @@ print 1 * eV / (kJ / mol)
 #+END_SRC
 
 #+RESULTS:
-: 6.24150636309e+18 6.0221367e+23 1.0
-: 0.00103642721413
-: 96.485308989
+: 6.24150912588e+18 6.022140857e+23 1.0
+: 0.00103642695747
+: 96.4853328825
 
 
 # <<delta muO2 shomate>>
@@ -9058,7 +9146,6 @@ plt.savefig('images/O2-g-p.png')
 #+END_SRC
 
 #+RESULTS:
-: None
 
 #+caption: Effects of pressure on the ideal gas Gibbs free energy of O$_2$.
 #+ATTR_LaTeX: :placement [H]
@@ -9278,7 +9365,6 @@ plt.savefig('images/atomistic-thermo-hf-mu.png')
 #+END_SRC
 
 #+RESULTS:
-: None
 
 #+caption: Dependence of the formation energy on the oxygen chemical potential.
 #+attr_latex: :placement [H]
@@ -9338,7 +9424,6 @@ plt.xlabel(r'$\Delta \mu O_2$ (eV)')
 plt.ylabel(r'$\Delta G_{ads}$ (eV/O)')
 plt.legend(loc='best')
 plt.savefig('images/atomistic-thermo-adsorption.png')
-plt.show()
 #+END_SRC
 
 #+RESULTS:
@@ -9414,8 +9499,9 @@ print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
-: []
-: -22.31681457
+: ['params_on_file']
+: /home-research/jkitchin/dft-book/bulk/Cu2O-U=4.0 submitted: 1392221.gilgamesh.cheme.cmu.edu
+: None
 
 
 #+BEGIN_SRC sh
@@ -9451,7 +9537,8 @@ print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
-: -12.3986137
+: /home-research/jkitchin/dft-book/bulk/CuO-U=4.0 submitted: 1392222.gilgamesh.cheme.cmu.edu
+: None
 
 **** TODO Reaction energy calculation with DFT+U
 #+BEGIN_SRC python
@@ -10350,7 +10437,7 @@ Our Vasp module works natively with the ase-database. It is easy to write an ent
 #+BEGIN_SRC python
 from vasp import Vasp
 from ase.db import connect
-calc = Vasp('molecules/simple-co2')
+calc = Vasp('molecules/simple-co')
 atoms = calc.get_atoms()
 print calc.results
 con = connect('example-1.db')
@@ -10358,23 +10445,17 @@ con.write(atoms)
 #+END_SRC
 
 #+RESULTS:
-: 0
-:
-: Vasp calculation in /home-research/jkitchin/dft-book-new-vasp/molecules/simple-co2
-:
-: No INCAR yet
-: No POSCAR yet
+: {'magmom': 0, 'stress': array([ 0.0414556 ,  0.01094971,  0.01094971, -0.        , -0.        , -0.        ]), 'magmoms': array([ 0.,  0.]), 'charges': array([None, None], dtype=object), 'energy': -14.69111507, 'dipole': None, 'forces': array([[ 5.09138064,  0.        ,  0.        ],
+:        [-5.09138064,  0.        ,  0.        ]])}
 
 #+BEGIN_SRC sh
 ase-db example-1.db
 #+END_SRC
 
 #+RESULTS:
-: id| age|user    |formula|calculator| energy| fmax|pbc| volume|charge|  mass| smax
-:  1|104s|jkitchin|CO     |vasp      |-14.691|5.091|TTT|216.000| 0.000|28.010|0.041
-:  2| 72s|jkitchin|CO     |vasp      |-14.691|5.091|TTT|216.000| 0.000|28.010|0.041
-:  3| 23s|jkitchin|CO     |vasp      |-14.691|5.091|TTT|216.000| 0.000|28.010|0.041
-: Rows: 3
+: id|age|user    |formula|calculator| energy| fmax|pbc| volume|charge|  mass| smax|magmom
+:  1| 5s|jkitchin|CO     |vasp      |-14.691|5.091|TTT|216.000| 0.000|28.010|0.041| 0.000
+: Rows: 1
 
 * Acknowledgments
 I would like to thank Zhongnan Xu for sending me some examples on magnetism. Alan McGaughey and Lars Grabow for sending me some NEB examples. Matt Curnan for examples of phonons.
@@ -13041,16 +13122,9 @@ And here is the same script in hy.
 : [[ 5.09138064  0.          0.        ]
 :  [-5.09138064  0.          0.        ]]
 
-
 * Python
-** easy_install as a user
-
-=easy_install= is a python command-line utility that automatically installs python packages. Usually you need root access to install a python package, but you can also tell =easy_install= where to install a package. This usually works if the directory is on your PYTHONPATH
-
-easy_install -d ~/lib/python2.6/site-packages/ pymatgen
-
 ** pip as a user
-pip is even better than easy_install these days.
+pip is pretty easy to install as a user.
 
 #+BEGIN_SRC sh
 pip install --user some-package
@@ -13536,7 +13610,6 @@ provided the MMC is eligible for relicensing.
 
 * Index
 [[printindex:pind][Print index]]
-
 
 
 
