@@ -23,5 +23,6 @@ ase-sort.dat
 CHGCAR
 WAVECAR
 *.o[0-9]*
+*.OU
 DYNMAT
 jobid
