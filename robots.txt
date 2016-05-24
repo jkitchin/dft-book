@@ -1,0 +1,4 @@
+Sitemap: http://kitchingroup.cheme.cmu.edu/dft-book/sitemapindex.xml
+
+User-Agent: *
+Host: kitchingroup.cheme.cmu.edu

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="assets/xml/rss.xsl" media="all"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>DFT blog</title><link>http://kitchingroup.cheme.cmu.edu/dft-book/</link><description>Examples of DFT calculations using vasp.Vasp and Python.</description><atom:link href="http://kitchingroup.cheme.cmu.edu/dft-book/rss.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Tue, 24 May 2016 15:30:36 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>First post on DFT book blog</title><link>http://kitchingroup.cheme.cmu.edu/dft-book/posts/first-post-on-dft-book-blog/</link><dc:creator>John Kitchin</dc:creator><description>&lt;p&gt;
+We have a new rewrite of the vasp Python calculator (&lt;a href="https://github.com/jkitchin/vasp"&gt;https://github.com/jkitchin/vasp&lt;/a&gt;).  Most of &lt;a href="https://github.com/jkitchin/dft-book"&gt;DFT-book&lt;/a&gt; has been re-written with the new library to provide testing and examples. There are a lot of new ideas in it though, so I am creating this new blog for dft-book to try them out, discuss various design choices, and develop advanced methods in running DFT calculations. This is the first post!
+&lt;/p&gt;
+
+&lt;p&gt;
+One of the features it has is better support for things like list comprehensions in DFT calculations. Here is an example of that where we start with a list of bond lengths, create a list of calculators, and get the energy from each one. This one script sets up and runs the calculations.
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+
+&lt;pre class="src src-python"&gt;&lt;span style="color: #0000FF;"&gt;from&lt;/span&gt; vasp &lt;span style="color: #0000FF;"&gt;import&lt;/span&gt; Vasp
+&lt;span style="color: #0000FF;"&gt;from&lt;/span&gt; ase &lt;span style="color: #0000FF;"&gt;import&lt;/span&gt; Atom, Atoms
+&lt;span style="color: #0000FF;"&gt;import&lt;/span&gt; matplotlib.pyplot &lt;span style="color: #0000FF;"&gt;as&lt;/span&gt; plt
+
+&lt;span style="color: #BA36A5;"&gt;bond_lengths&lt;/span&gt; = [1.05, 1.1, 1.15, 1.2, 1.25]
+
+&lt;span style="color: #BA36A5;"&gt;calcs&lt;/span&gt; = [Vasp(&lt;span style="color: #008000;"&gt;'molecules/co-{0}'&lt;/span&gt;.&lt;span style="color: #006FE0;"&gt;format&lt;/span&gt;(d),  &lt;span style="color: #8D8D84;"&gt;# &lt;/span&gt;&lt;span style="color: #8D8D84; font-style: italic;"&gt;output dir&lt;/span&gt;
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   xc=&lt;span style="color: #008000;"&gt;'PBE'&lt;/span&gt;,
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   nbands=6,
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   encut=350,
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   ismear=1,
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   sigma=0.01,
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   atoms=Atoms([Atom(&lt;span style="color: #008000;"&gt;'C'&lt;/span&gt;, [0, 0, 0]),
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;Atom(&lt;span style="color: #008000;"&gt;'O'&lt;/span&gt;, [d, 0, 0])],
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   cell=(6, 6, 6)))
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;&lt;span style="color: #0000FF;"&gt;for&lt;/span&gt; d &lt;span style="color: #0000FF;"&gt;in&lt;/span&gt; bond_lengths]
+
+&lt;span style="color: #BA36A5;"&gt;energies&lt;/span&gt; = [calc.potential_energy &lt;span style="color: #0000FF;"&gt;for&lt;/span&gt; calc &lt;span style="color: #0000FF;"&gt;in&lt;/span&gt; calcs]
+
+&lt;span style="color: #8D8D84;"&gt;# &lt;/span&gt;&lt;span style="color: #8D8D84; font-style: italic;"&gt;Stop here until all calculations are done.&lt;/span&gt;
+calcs[0].stop_if(&lt;span style="color: #D0372D;"&gt;None&lt;/span&gt; &lt;span style="color: #0000FF;"&gt;in&lt;/span&gt; energies)
+
+plt.plot(energies)
+plt.xlabel(&lt;span style="color: #008000;"&gt;'Bond length ($\AA$)'&lt;/span&gt;)
+plt.ylabel(&lt;span style="color: #008000;"&gt;'Energy (eV)'&lt;/span&gt;)
+plt.savefig(&lt;span style="color: #008000;"&gt;'test.png'&lt;/span&gt;)
+&lt;/pre&gt;
+&lt;/div&gt;
+
+
+&lt;div class="figure"&gt;
+&lt;p&gt;&lt;img src="http://kitchingroup.cheme.cmu.edu/dft-book/media/first-post-on-dft-book-blog/test.png" alt="test.png"&gt;
+&lt;/p&gt;
+&lt;p&gt;&lt;span class="figure-number"&gt;Figure 1:&lt;/span&gt; Energy vs. bond-length for the CO molecule.&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;a href="http://kitchingroup.cheme.cmu.edu/dft-book/media/first-post-on-dft-book-blog/first-post-on-dft-book-blog.org"&gt;org-source&lt;/a&gt;</description><category>functional</category><guid>http://kitchingroup.cheme.cmu.edu/dft-book/posts/first-post-on-dft-book-blog/</guid><pubDate>Tue, 24 May 2016 15:15:13 GMT</pubDate></item></channel></rss>

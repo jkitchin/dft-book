@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex
+    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+                        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+ <sitemap>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/categories/cat_molecule.xml</loc>
+  <lastmod>2016-05-24T15:30:00Z</lastmod>
+ </sitemap>
+ <sitemap>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/categories/functional.xml</loc>
+  <lastmod>2016-05-24T15:30:00Z</lastmod>
+ </sitemap>
+ <sitemap>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/galleries/rss.xml</loc>
+  <lastmod>2016-05-24T14:41:00Z</lastmod>
+ </sitemap>
+ <sitemap>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/rss.xml</loc>
+  <lastmod>2016-05-24T15:30:00Z</lastmod>
+ </sitemap>
+ <sitemap>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/sitemap.xml</loc>
+  <lastmod>2016-05-24T15:37:00Z</lastmod>
+ </sitemap>
+</sitemapindex>

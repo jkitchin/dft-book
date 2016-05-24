@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " lang="en">
+<head>
+<meta charset="utf-8">
+<base href="http://kitchingroup.cheme.cmu.edu/dft-book/posts/first-post-on-dft-book-blog/">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>First post on DFT book blog | DFT blog</title>
+<link href="../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<meta content="#5670d4" name="theme-color">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../../rss.xml">
+<link rel="canonical" href="http://kitchingroup.cheme.cmu.edu/dft-book/posts/first-post-on-dft-book-blog/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="John Kitchin">
+<meta property="og:site_name" content="DFT blog">
+<meta property="og:title" content="First post on DFT book blog">
+<meta property="og:url" content="http://kitchingroup.cheme.cmu.edu/dft-book/posts/first-post-on-dft-book-blog/">
+<meta property="og:description" content="We have a new rewrite of the vasp Python calculator (https://github.com/jkitchin/vasp).  Most of DFT-book has been re-written with the new library to provide testing and examples. There are a lot of n">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2016-05-24T11:15:13-04:00">
+<meta property="article:tag" content="functional">
+</head>
+<body>
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+
+<!-- Menubar -->
+
+<nav class="navbar navbar-inverse navbar-static-top"><div class="container">
+<!-- This keeps the margins nice -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar" aria-controls="bs-navbar" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://kitchingroup.cheme.cmu.edu/dft-book/">
+
+                <span id="blog-title">DFT blog</span>
+            </a>
+        </div>
+<!-- /.navbar-header -->
+        <div class="collapse navbar-collapse" id="bs-navbar" aria-expanded="false">
+            <ul class="nav navbar-nav">
+<li>
+<a href="../../archive.html">Archive</a>
+                </li>
+<li>
+<a href="../../categories/">Tags</a>
+                </li>
+<li>
+<a href="../../rss.xml">RSS feed</a>
+
+                
+            </li>
+</ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+    <a href="index.src.html" id="sourcelink">Source</a>
+    </li>
+
+                
+            </ul>
+</div>
+<!-- /.navbar-collapse -->
+    </div>
+<!-- /.container -->
+</nav><!-- End of Menubar --><div class="container" id="content" role="main">
+    <div class="body-content">
+        <!--Body content-->
+        <div class="row">
+            
+            
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">First post on DFT book blog</a></h1>
+
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn">
+                    John Kitchin
+            </span></p>
+            <p class="dateline"><a href="." rel="bookmark"><time class="published dt-published" datetime="2016-05-24T11:15:13-04:00" itemprop="datePublished" title="2016-05-24 11:15">2016-05-24 11:15</time></a></p>
+                <p class="commentline">
+        
+    <a href="#disqus_thread" data-disqus-identifier="cache/posts/first-post-on-dft-book-blog.html">Comments</a>
+
+
+            
+        </p>
+<p class="sourceline"><a href="index.src.html" id="sourcelink">Source</a></p>
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <p>
+We have a new rewrite of the vasp Python calculator (<a href="https://github.com/jkitchin/vasp">https://github.com/jkitchin/vasp</a>).  Most of <a href="https://github.com/jkitchin/dft-book">DFT-book</a> has been re-written with the new library to provide testing and examples. There are a lot of new ideas in it though, so I am creating this new blog for dft-book to try them out, discuss various design choices, and develop advanced methods in running DFT calculations. This is the first post!
+</p>
+
+<p>
+One of the features it has is better support for things like list comprehensions in DFT calculations. Here is an example of that where we start with a list of bond lengths, create a list of calculators, and get the energy from each one. This one script sets up and runs the calculations.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #0000FF;">from</span> vasp <span style="color: #0000FF;">import</span> Vasp
+<span style="color: #0000FF;">from</span> ase <span style="color: #0000FF;">import</span> Atom, Atoms
+<span style="color: #0000FF;">import</span> matplotlib.pyplot <span style="color: #0000FF;">as</span> plt
+
+<span style="color: #BA36A5;">bond_lengths</span> = [1.05, 1.1, 1.15, 1.2, 1.25]
+
+<span style="color: #BA36A5;">calcs</span> = [Vasp(<span style="color: #008000;">'molecules/co-{0}'</span>.<span style="color: #006FE0;">format</span>(d),  <span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">output dir</span>
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   xc=<span style="color: #008000;">'PBE'</span>,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   nbands=6,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   encut=350,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   ismear=1,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   sigma=0.01,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   atoms=Atoms([Atom(<span style="color: #008000;">'C'</span>, [0, 0, 0]),
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>Atom(<span style="color: #008000;">'O'</span>, [d, 0, 0])],
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   cell=(6, 6, 6)))
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span><span style="color: #0000FF;">for</span> d <span style="color: #0000FF;">in</span> bond_lengths]
+
+<span style="color: #BA36A5;">energies</span> = [calc.potential_energy <span style="color: #0000FF;">for</span> calc <span style="color: #0000FF;">in</span> calcs]
+
+<span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">Stop here until all calculations are done.</span>
+calcs[0].stop_if(<span style="color: #D0372D;">None</span> <span style="color: #0000FF;">in</span> energies)
+
+plt.plot(energies)
+plt.xlabel(<span style="color: #008000;">'Bond length ($\AA$)'</span>)
+plt.ylabel(<span style="color: #008000;">'Energy (eV)'</span>)
+plt.savefig(<span style="color: #008000;">'test.png'</span>)
+</pre>
+</div>
+
+
+<div class="figure">
+<p><img src="../../media/first-post-on-dft-book-blog/test.png" alt="test.png"></p>
+<p><span class="figure-number">Figure 1:</span> Energy vs. bond-length for the CO molecule.</p>
+</div>
+
+<a href="../../media/first-post-on-dft-book-blog/first-post-on-dft-book-blog.org">org-source</a>
+    </div>
+    <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
+<li><a class="tag p-category" href="../../categories/functional/" rel="tag">functional</a></li>
+        </ul></nav></aside><section class="comments hidden-print"><h2>Comments</h2>
+        
+        
+        <div id="disqus_thread"></div>
+        <script>
+        var disqus_shortname ="dftbook",
+            disqus_url="http://kitchingroup.cheme.cmu.edu/dft-book/posts/first-post-on-dft-book-blog/",
+        disqus_title="First post on DFT book blog",
+        disqus_identifier="cache/posts/first-post-on-dft-book-blog.html",
+        disqus_config = function () {
+            this.language = "en";
+        };
+        (function() {
+            var dsq = document.createElement('script'); dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script><noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a>
+</noscript>
+    <a href="https://disqus.com" class="dsq-brlink" rel="nofollow">Comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+        </section></article><script>var disqus_shortname="dftbook";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script>
+</div>
+        <!--End of body content-->
+
+        <footer id="footer">
+            Contents © 2016         <a href="mailto:jkitchin@andrew.cmu.edu">John Kitchin</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            
+        </footer>
+</div>
+</div>
+
+
+            <script src="../../assets/js/all-nocdn.js"></script><script>$('a.image-reference:not(.islink) img:not(.islink)').parent().colorbox({rel:"gal",maxWidth:"100%",maxHeight:"100%",scalePhotos:true});</script><!-- fancy dates --><script>
+    moment.locale("en");
+    fancydates(0, "YYYY-MM-DD HH:mm");
+    </script><!-- end fancy dates -->
+</body>
+</html>

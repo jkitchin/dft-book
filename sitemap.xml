@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+                        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+ <url>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/</loc>
+  <lastmod>2016-05-24T14:42:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/2016/</loc>
+  <lastmod>2016-05-24T14:41:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/archive.html</loc>
+  <lastmod>2016-05-24T14:58:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/categories/</loc>
+  <lastmod>2016-05-24T15:30:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/categories/cat_molecule/</loc>
+  <lastmod>2016-05-24T14:41:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/categories/functional/</loc>
+  <lastmod>2016-05-24T14:41:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/galleries/</loc>
+  <lastmod>2016-05-24T14:41:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/listings/</loc>
+  <lastmod>2016-05-24T14:41:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/posts/first-post-on-dft-book-blog/</loc>
+  <lastmod>2016-05-24T14:41:00Z</lastmod>
+ </url>
+</urlset>
