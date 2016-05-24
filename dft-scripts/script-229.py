@@ -1,1 +1,0 @@
-grep -A 5 Solvation molecules/CO-solvated/OUTCAR

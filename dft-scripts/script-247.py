@@ -1,1 +1,0 @@
-e_avg = np.trapz(rho*E,E)/np.trapz(rho,E)

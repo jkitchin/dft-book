@@ -1,1 +1,0 @@
-grep ENMIN $VASP_PP_PATH/potpaw_PBE/O_sv/POTCAR

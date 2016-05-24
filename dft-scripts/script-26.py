@@ -1,1 +1,0 @@
-grep "Elapsed time (sec):" molecules/co-en-*/OUTCAR

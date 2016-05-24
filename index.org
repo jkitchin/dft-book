@@ -1,9 +1,0 @@
-#+TITLE: Welcome to dft-book
-
-
-- [[./dft.pdf][PDF]]
-- [[./dft.html][HTML]]
-
-
-#+ATTR_HTML: width="500px"
-[[./images/cover-page.png]]

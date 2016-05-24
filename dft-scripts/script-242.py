@@ -1,1 +1,0 @@
-pylab.save('pdat.dat',(x,y))
