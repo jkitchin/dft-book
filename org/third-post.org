@@ -1,0 +1,73 @@
+* The third post						    :mathjax:
+  :PROPERTIES:
+  :categories: vasp, dft
+  :END:
+
+\(\int_0^x e^x dx\)
+
+and some test.
+
+#+BEGIN_SRC emacs-lisp
+(nikola-title)
+#+END_SRC
+
+#+RESULTS:
+: The third post
+
+#+BEGIN_SRC emacs-lisp
+(nikola-slug)
+#+END_SRC
+
+#+RESULTS:
+: the-third-post
+
+#+BEGIN_SRC emacs-lisp
+(nikola-date)
+#+END_SRC
+
+#+RESULTS:
+: 2016-05-23 22:10:42
+
+#+BEGIN_SRC emacs-lisp
+(nikola-tags)
+#+END_SRC
+
+#+RESULTS:
+: mathjax
+
+#+BEGIN_SRC emacs-lisp
+(nikola-categories)
+#+END_SRC
+
+#+RESULTS:
+: vasp, dft
+
+#+BEGIN_SRC emacs-lisp
+(nikola-post-filename)
+#+END_SRC
+
+#+RESULTS:
+: /home-research/jkitchin/dft-book/blog/source/posts/the-third-post.html
+
+#+BEGIN_SRC emacs-lisp
+(nikola-body-html)
+#+END_SRC
+
+
+
+#+BEGIN_SRC emacs-lisp
+(nikola-post-html)
+#+END_SRC
+
+
+
+#+BEGIN_SRC emacs-lisp
+(let ((fname (nikola-post-filename))
+	(html (nikola-post-html)))
+    (message-box "%s" fname)
+    (with-temp-file fname
+       (insert html))
+    )
+#+END_SRC
+
+#+RESULTS:

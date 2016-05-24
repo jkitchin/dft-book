@@ -1,0 +1,58 @@
+<!--
+.. title: First post on DFT book blog
+.. slug: first-post-on-dft-book-blog
+.. date: 2016-05-24 11:15:13
+.. tags: functional
+.. category: molecule
+.. link:
+.. description:
+.. type: text
+-->
+
+<p>
+We have a new rewrite of the vasp Python calculator (<a href="https://github.com/jkitchin/vasp">https://github.com/jkitchin/vasp</a>).  Most of <a href="https://github.com/jkitchin/dft-book">DFT-book</a> has been re-written with the new library to provide testing and examples. There are a lot of new ideas in it though, so I am creating this new blog for dft-book to try them out, discuss various design choices, and develop advanced methods in running DFT calculations. This is the first post!
+</p>
+
+<p>
+One of the features it has is better support for things like list comprehensions in DFT calculations. Here is an example of that where we start with a list of bond lengths, create a list of calculators, and get the energy from each one. This one script sets up and runs the calculations.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #0000FF;">from</span> vasp <span style="color: #0000FF;">import</span> Vasp
+<span style="color: #0000FF;">from</span> ase <span style="color: #0000FF;">import</span> Atom, Atoms
+<span style="color: #0000FF;">import</span> matplotlib.pyplot <span style="color: #0000FF;">as</span> plt
+
+<span style="color: #BA36A5;">bond_lengths</span> = [1.05, 1.1, 1.15, 1.2, 1.25]
+
+<span style="color: #BA36A5;">calcs</span> = [Vasp(<span style="color: #008000;">'molecules/co-{0}'</span>.<span style="color: #006FE0;">format</span>(d),  <span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">output dir</span>
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   xc=<span style="color: #008000;">'PBE'</span>,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   nbands=6,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   encut=350,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   ismear=1,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   sigma=0.01,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   atoms=Atoms([Atom(<span style="color: #008000;">'C'</span>, [0, 0, 0]),
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>Atom(<span style="color: #008000;">'O'</span>, [d, 0, 0])],
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   cell=(6, 6, 6)))
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span><span style="color: #0000FF;">for</span> d <span style="color: #0000FF;">in</span> bond_lengths]
+
+<span style="color: #BA36A5;">energies</span> = [calc.potential_energy <span style="color: #0000FF;">for</span> calc <span style="color: #0000FF;">in</span> calcs]
+
+<span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">Stop here until all calculations are done.</span>
+calcs[0].stop_if(<span style="color: #D0372D;">None</span> <span style="color: #0000FF;">in</span> energies)
+
+plt.plot(energies)
+plt.xlabel(<span style="color: #008000;">'Bond length ($\AA$)'</span>)
+plt.ylabel(<span style="color: #008000;">'Energy (eV)'</span>)
+plt.savefig(<span style="color: #008000;">'test.png'</span>)
+</pre>
+</div>
+
+
+<div class="figure">
+<p><img src="/media/first-post-on-dft-book-blog/test.png" alt="test.png" />
+</p>
+<p><span class="figure-number">Figure 1:</span> Energy vs. bond-length for the CO molecule.</p>
+</div>
+
+<a href="/media/first-post-on-dft-book-blog/first-post-on-dft-book-blog.org">org-source</a>

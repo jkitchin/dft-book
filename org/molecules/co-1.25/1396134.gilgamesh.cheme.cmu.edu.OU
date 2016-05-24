@@ -1,0 +1,29 @@
+which: no activate.sh in (/opt/kitchingroup/vasp-5.3.5/vtstscripts-914:/home-research/jkitchin/kitchin-python/ase-jkitchin/tools:/home-research/jkitchin/kitchin-python/vasp/bin:/home-research/jkitchin/bin:/opt/kitchingroup/CANOPY/Canopy_64bit/User/bin:/opt/vtk-canopy/bin:/opt/intel/Compiler/11.1/072/bin/intel64:/opt/intel/impi/4.0.0.028/intel64/bin:/opt/maui/bin:/opt/bin:/usr/local/texlive/2012/bin/x86_64-linux:/bin:/usr/bin)
+/home-research/jkitchin/.bashrc: line 47: source: filename argument required
+source: usage: source filename [arguments]
+xmodmap:  unable to open display ''
+ vasp.5.3.5 31Mar14 (build Aug 04 2015 12:48:45) complex                        
+  
+ POSCAR found :  2 types and       2 ions
+ LDA part: xc-table for Pade appr. of Perdew
+ POSCAR found :  2 types and       2 ions
+ POSCAR, INCAR and KPOINTS ok, starting setup
+ WARNING: small aliasing (wrap around) errors must be expected
+ FFT: planning ...
+ WAVECAR not read
+ entering main loop
+       N       E                     dE             d eps       ncg     rms          rms(c)
+DAV:   1     0.621832509690E+02    0.62183E+02   -0.27907E+03    12   0.851E+02
+DAV:   2    -0.433940462817E+01   -0.66523E+02   -0.66522E+02    18   0.234E+02
+DAV:   3    -0.143992576039E+02   -0.10060E+02   -0.10060E+02    12   0.988E+01
+DAV:   4    -0.149043519760E+02   -0.50509E+00   -0.50509E+00    24   0.172E+01
+DAV:   5    -0.149051845124E+02   -0.83254E-03   -0.83254E-03    12   0.928E-01    0.585E+00
+DAV:   6    -0.145094026838E+02    0.39578E+00   -0.48849E+00    18   0.201E+01    0.364E+00
+DAV:   7    -0.143878902762E+02    0.12151E+00   -0.97736E-01    18   0.867E+00    0.188E+00
+DAV:   8    -0.143524629272E+02    0.35427E-01   -0.11802E-01    12   0.372E+00    0.300E-01
+DAV:   9    -0.143530743249E+02   -0.61140E-03   -0.12275E-02    18   0.103E+00    0.151E-01
+DAV:  10    -0.143538018003E+02   -0.72748E-03   -0.26410E-03    18   0.550E-01    0.430E-02
+DAV:  11    -0.143545750870E+02   -0.77329E-03   -0.69298E-04    12   0.242E-01    0.281E-02
+DAV:  12    -0.143548219561E+02   -0.24687E-03   -0.12821E-04     6   0.122E-01    0.103E-02
+DAV:  13    -0.143548904461E+02   -0.68490E-04   -0.69155E-05     6   0.862E-02
+   1 F= -.14354890E+02 E0= -.14355084E+02  d E =0.579791E-03
