@@ -3,11 +3,11 @@
   CLOSED: [2016-05-24 Tue 11:15]
   :PROPERTIES:
   :categories: molecule
-  :POSTED:   2016-05-24 11:45:45
+  :POSTED:   2016-05-24 11:47:23
   :END:
 We have a new rewrite of the vasp Python calculator (https://github.com/jkitchin/vasp).  Most of [[https://github.com/jkitchin/dft-book][DFT-book]] has been re-written with the new library to provide testing and examples. There are a lot of new ideas in it though, so I am creating this new blog for dft-book to try them out, discuss various design choices, and develop advanced methods in running DFT calculations. This is the first post!
 
-One of the features it has is better support for things like list comprehensions in DFT calculations. Here is an example of that where we start with a list of bond lengths, create a list of calculators, and get the energy from each one. This one script sets up and runs the calculations. You can run it over and over, and it should simple retrieve the results once the calculations are finished.
+One of the features it has is better support for things like list comprehensions in DFT calculations. Here is an example of that where we start with a list of bond lengths, create a list of calculators, and get the energy from each one. This one script sets up and runs the calculations. You can run it over and over, and it should simply retrieve the results once the calculations are finished.
 
 #+BEGIN_SRC python
 from vasp import Vasp
