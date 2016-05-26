@@ -15,11 +15,15 @@
  </url>
  <url>
   <loc>http://kitchingroup.cheme.cmu.edu/dft-book/archive.html</loc>
-  <lastmod>2016-05-24T17:49:00Z</lastmod>
+  <lastmod>2016-05-26T00:04:00Z</lastmod>
  </url>
  <url>
   <loc>http://kitchingroup.cheme.cmu.edu/dft-book/categories/</loc>
-  <lastmod>2016-05-24T15:30:00Z</lastmod>
+  <lastmod>2016-05-26T00:04:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/categories/cat_bulk-magnetism/</loc>
+  <lastmod>2016-05-26T00:04:00Z</lastmod>
  </url>
  <url>
   <loc>http://kitchingroup.cheme.cmu.edu/dft-book/categories/cat_molecule/</loc>
@@ -40,5 +44,9 @@
  <url>
   <loc>http://kitchingroup.cheme.cmu.edu/dft-book/posts/first-post-on-dft-book-blog/</loc>
   <lastmod>2016-05-24T14:41:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/posts/job-control-in-vasp.py/</loc>
+  <lastmod>2016-05-26T00:04:00Z</lastmod>
  </url>
 </urlset>

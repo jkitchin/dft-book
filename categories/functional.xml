@@ -1,5 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>DFT blog (functional)</title><link>http://kitchingroup.cheme.cmu.edu/dft-book/</link><description></description><atom:link href="http://kitchingroup.cheme.cmu.edu/dft-book/categories/functional.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Wed, 25 May 2016 01:43:43 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>First post on DFT book blog</title><link>http://kitchingroup.cheme.cmu.edu/dft-book/posts/first-post-on-dft-book-blog/</link><dc:creator>John Kitchin</dc:creator><description>&lt;p&gt;
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title>DFT blog (functional)</title><link>http://kitchingroup.cheme.cmu.edu/dft-book/</link><description></description><atom:link type="application/rss+xml" rel="self" href="http://kitchingroup.cheme.cmu.edu/dft-book/categories/functional.xml"></atom:link><language>en</language><lastBuildDate>Thu, 26 May 2016 00:04:34 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Job control in vasp.py</title><link>http://kitchingroup.cheme.cmu.edu/dft-book/posts/job-control-in-vasp.py/</link><dc:creator>John Kitchin</dc:creator><description>&lt;div id="table-of-contents"&gt;
+&lt;h2&gt;Table of Contents&lt;/h2&gt;
+&lt;div id="text-table-of-contents"&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://kitchingroup.cheme.cmu.edu/dft-book/posts/job-control-in-vasp.py/#sec-1"&gt;1. Output from first run&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+One of the things we often need to do in DFT calculations is setup a series of calculations, run them all, and then do some analysis. The new vasp.py helps us with this. We can create a list of calculators, and then run each one of them. We run all our jobs asynchronously in a queue system, with no real control over when they start and when they end. A challenge in this is we usually need some kind of way to stop the script after the jobs are started so we can wait for them to finish before proceeding with analysis.
+&lt;/p&gt;
+
+&lt;p&gt;
+We address this challenge by storing a reference to all calculators created on the Vasp class, and defining some class methods that can work on all of them. For example the Vasp.run method will run each calculator (which submits a job for each one to the queue system). The default behavior is then to exit, but we can also tell it to wait, which will cause it to periodically check if the calculations are done before proceeding. 
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+
+&lt;pre class="src src-python"&gt;&lt;span style="color: #0000FF;"&gt;import&lt;/span&gt; vasp
+&lt;span style="color: #006FE0;"&gt;help&lt;/span&gt;(vasp.Vasp.run)
+&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;pre class="example"&gt;
+Help on method run in module vasp.vasp_core:
+
+run(cls, wait=False) method of __builtin__.type instance
+    Convenience function to run calculators.
+    
+    The default behavior is to exit after doing this. If wait is
+    True, iy will cause it to wait with the default args to
+    Vasp.wait.
+    
+    If wait is a dictionary, it will be passed as kwargs to
+    Vasp.wait.
+&lt;/pre&gt;
+
+&lt;p&gt;
+With our typical workflow of scripting in org-mode this is very convenient. We can write one script that sets up the calculations, runs them, and later when they are done, performs the analysis. We have to run this script two times. The first time submits the jobs and exits at the Vasp.run() line (see &lt;a href="http://kitchingroup.cheme.cmu.edu/dft-book/posts/job-control-in-vasp.py/#sec-1"&gt;Output from first run&lt;/a&gt;). After the jobs are done, we run it a second time, and we get the results and make the plot! 
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+
+&lt;pre class="src src-python"&gt;&lt;span style="color: #0000FF;"&gt;from&lt;/span&gt; vasp &lt;span style="color: #0000FF;"&gt;import&lt;/span&gt; Vasp
+&lt;span style="color: #0000FF;"&gt;from&lt;/span&gt; ase.lattice.cubic &lt;span style="color: #0000FF;"&gt;import&lt;/span&gt; BodyCenteredCubic
+
+&lt;span style="color: #BA36A5;"&gt;NUPDOWNS&lt;/span&gt; = [4.0, 4.5, 5.0, 5.5, 6.0]
+
+&lt;span style="color: #8D8D84;"&gt;# &lt;/span&gt;&lt;span style="color: #8D8D84; font-style: italic;"&gt;These are the same for all calculations.&lt;/span&gt;
+&lt;span style="color: #BA36A5;"&gt;fixed_pars&lt;/span&gt; = &lt;span style="color: #006FE0;"&gt;dict&lt;/span&gt;( xc=&lt;span style="color: #008000;"&gt;'PBE'&lt;/span&gt;,
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;  encut=200,
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;  kpts=[4, 4, 4],
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;  ispin=2,
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;  atoms=BodyCenteredCubic(directions=[[1, 0, 0],
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;  [0, 1, 0],
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;  [0, 0, 1]],
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;  size=(1, 1, 1),
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;  symbol=&lt;span style="color: #008000;"&gt;'Fe'&lt;/span&gt;))
+
+&lt;span style="color: #8D8D84;"&gt;# &lt;/span&gt;&lt;span style="color: #8D8D84; font-style: italic;"&gt;Prepare a list of calculators&lt;/span&gt;
+&lt;span style="color: #BA36A5;"&gt;calcs&lt;/span&gt; = [Vasp(&lt;span style="color: #008000;"&gt;'bulk/Fe-bcc-fixedmagmom-{0:1.2f}'&lt;/span&gt;.&lt;span style="color: #006FE0;"&gt;format&lt;/span&gt;(B),
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt; nupdown=B,
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt; **fixed_pars)             
+&lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;   &lt;span style="color: #9B9B9B; background-color: #EDEDED;"&gt; &lt;/span&gt;&lt;span style="color: #0000FF;"&gt;for&lt;/span&gt; B &lt;span style="color: #0000FF;"&gt;in&lt;/span&gt; NUPDOWNS]
+
+&lt;span style="color: #8D8D84;"&gt;# &lt;/span&gt;&lt;span style="color: #8D8D84; font-style: italic;"&gt;This will start each calculation, and if they are not ready abort the script.&lt;/span&gt;
+&lt;span style="color: #8D8D84;"&gt;# &lt;/span&gt;&lt;span style="color: #8D8D84; font-style: italic;"&gt;If they are ready, we will get the energies.&lt;/span&gt;
+&lt;span style="color: #BA36A5;"&gt;energies&lt;/span&gt; = Vasp.run()  
+
+&lt;span style="color: #0000FF;"&gt;import&lt;/span&gt; matplotlib.pyplot &lt;span style="color: #0000FF;"&gt;as&lt;/span&gt; plt
+plt.plot(NUPDOWNS, energies)
+plt.xlabel(&lt;span style="color: #008000;"&gt;'Total Magnetic Moment'&lt;/span&gt;)
+plt.ylabel(&lt;span style="color: #008000;"&gt;'Energy (eV)'&lt;/span&gt;)
+plt.savefig(&lt;span style="color: #008000;"&gt;'Fe-fixedmagmom.png'&lt;/span&gt;)
+&lt;/pre&gt;
+&lt;/div&gt;
+
+
+&lt;div class="figure"&gt;
+&lt;p&gt;&lt;img src="http://kitchingroup.cheme.cmu.edu/dft-book/media/job-control-in-vasp.py/Fe-fixedmagmom.png" alt="Fe-fixedmagmom.png"&gt;
+&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+This style works especially well for our workflow with org-mode.
+&lt;/p&gt;
+
+&lt;div id="outline-container-sec-1" class="outline-2"&gt;
+&lt;h2 id="sec-1"&gt;&lt;a id="ID-c1e70db7-5227-4bc0-bd89-237f36af1637" name="ID-c1e70db7-5227-4bc0-bd89-237f36af1637"&gt;&lt;/a&gt;&lt;span class="section-number-2"&gt;1&lt;/span&gt; Output from first run&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-1"&gt;
+&lt;p&gt;
+Here is the output of the script the first time I ran it. It just tells me that jobs have been submitted and are queued. The output is a bit verbose, because of the way the exception handling system works in vasp.py. Basically, there ends up being multiple calls to self.update before the script exits.
+&lt;/p&gt;
+
+&lt;pre class="example"&gt;
+energy not in {}. Calc required.
+energy not in {}. Calc required.
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-4.00 submitted: 1397190.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-4.00 Queued: 1397190.gilgamesh.cheme.cmu.edu
+energy not in {}. Calc required.
+energy not in {}. Calc required.
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-4.50 submitted: 1397191.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-4.50 Queued: 1397191.gilgamesh.cheme.cmu.edu
+energy not in {}. Calc required.
+energy not in {}. Calc required.
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-5.00 submitted: 1397192.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-5.00 Queued: 1397192.gilgamesh.cheme.cmu.edu
+energy not in {}. Calc required.
+energy not in {}. Calc required.
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-5.50 submitted: 1397193.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-5.50 Queued: 1397193.gilgamesh.cheme.cmu.edu
+energy not in {}. Calc required.
+energy not in {}. Calc required.
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-6.00 submitted: 1397194.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-6.00 Queued: 1397194.gilgamesh.cheme.cmu.edu
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;a href="http://kitchingroup.cheme.cmu.edu/dft-book/media/job-control-in-vasp.py/job-control-in-vasp.py.org"&gt;org-source&lt;/a&gt;</description><category>functional</category><guid>http://kitchingroup.cheme.cmu.edu/dft-book/posts/job-control-in-vasp.py/</guid><pubDate>Thu, 26 May 2016 00:00:57 GMT</pubDate></item><item><title>First post on DFT book blog</title><link>http://kitchingroup.cheme.cmu.edu/dft-book/posts/first-post-on-dft-book-blog/</link><dc:creator>John Kitchin</dc:creator><description>&lt;p&gt;
 We have a new rewrite of the vasp Python calculator (&lt;a href="https://github.com/jkitchin/vasp"&gt;https://github.com/jkitchin/vasp&lt;/a&gt;).  Most of &lt;a href="https://github.com/jkitchin/dft-book"&gt;DFT-book&lt;/a&gt; has been re-written with the new library to provide testing and examples. There are a lot of new ideas in it though, so I am creating this new blog for dft-book to try them out, discuss various design choices, and develop advanced methods in running DFT calculations. This is the first post!
 &lt;/p&gt;
 

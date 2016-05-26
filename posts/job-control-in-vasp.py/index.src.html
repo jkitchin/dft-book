@@ -1,0 +1,132 @@
+<!--
+.. title: Job control in vasp.py
+.. slug: job-control-in-vasp.py
+.. date: 2016-05-25 20:00:57
+.. tags: functional
+.. category: bulk, magnetism
+.. link:
+.. description:
+.. type: text
+-->
+
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Output from first run</a></li>
+</ul>
+</div>
+</div>
+
+<p>
+One of the things we often need to do in DFT calculations is setup a series of calculations, run them all, and then do some analysis. The new vasp.py helps us with this. We can create a list of calculators, and then run each one of them. We run all our jobs asynchronously in a queue system, with no real control over when they start and when they end. A challenge in this is we usually need some kind of way to stop the script after the jobs are started so we can wait for them to finish before proceeding with analysis.
+</p>
+
+<p>
+We address this challenge by storing a reference to all calculators created on the Vasp class, and defining some class methods that can work on all of them. For example the Vasp.run method will run each calculator (which submits a job for each one to the queue system). The default behavior is then to exit, but we can also tell it to wait, which will cause it to periodically check if the calculations are done before proceeding. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #0000FF;">import</span> vasp
+<span style="color: #006FE0;">help</span>(vasp.Vasp.run)
+</pre>
+</div>
+
+<pre class="example">
+Help on method run in module vasp.vasp_core:
+
+run(cls, wait=False) method of __builtin__.type instance
+    Convenience function to run calculators.
+    
+    The default behavior is to exit after doing this. If wait is
+    True, iy will cause it to wait with the default args to
+    Vasp.wait.
+    
+    If wait is a dictionary, it will be passed as kwargs to
+    Vasp.wait.
+</pre>
+
+<p>
+With our typical workflow of scripting in org-mode this is very convenient. We can write one script that sets up the calculations, runs them, and later when they are done, performs the analysis. We have to run this script two times. The first time submits the jobs and exits at the Vasp.run() line (see <a href="#sec-1">Output from first run</a>). After the jobs are done, we run it a second time, and we get the results and make the plot! 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #0000FF;">from</span> vasp <span style="color: #0000FF;">import</span> Vasp
+<span style="color: #0000FF;">from</span> ase.lattice.cubic <span style="color: #0000FF;">import</span> BodyCenteredCubic
+
+<span style="color: #BA36A5;">NUPDOWNS</span> = [4.0, 4.5, 5.0, 5.5, 6.0]
+
+<span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">These are the same for all calculations.</span>
+<span style="color: #BA36A5;">fixed_pars</span> = <span style="color: #006FE0;">dict</span>( xc=<span style="color: #008000;">'PBE'</span>,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>  encut=200,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>  kpts=[4, 4, 4],
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>  ispin=2,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>  atoms=BodyCenteredCubic(directions=[[1, 0, 0],
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>  [0, 1, 0],
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>  [0, 0, 1]],
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>  size=(1, 1, 1),
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>  symbol=<span style="color: #008000;">'Fe'</span>))
+
+<span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">Prepare a list of calculators</span>
+<span style="color: #BA36A5;">calcs</span> = [Vasp(<span style="color: #008000;">'bulk/Fe-bcc-fixedmagmom-{0:1.2f}'</span>.<span style="color: #006FE0;">format</span>(B),
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span> nupdown=B,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span> **fixed_pars)             
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span><span style="color: #0000FF;">for</span> B <span style="color: #0000FF;">in</span> NUPDOWNS]
+
+<span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">This will start each calculation, and if they are not ready abort the script.</span>
+<span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">If they are ready, we will get the energies.</span>
+<span style="color: #BA36A5;">energies</span> = Vasp.run()  
+
+<span style="color: #0000FF;">import</span> matplotlib.pyplot <span style="color: #0000FF;">as</span> plt
+plt.plot(NUPDOWNS, energies)
+plt.xlabel(<span style="color: #008000;">'Total Magnetic Moment'</span>)
+plt.ylabel(<span style="color: #008000;">'Energy (eV)'</span>)
+plt.savefig(<span style="color: #008000;">'Fe-fixedmagmom.png'</span>)
+</pre>
+</div>
+
+
+<div class="figure">
+<p><img src="/media/job-control-in-vasp.py/Fe-fixedmagmom.png" alt="Fe-fixedmagmom.png" />
+</p>
+</div>
+
+<p>
+This style works especially well for our workflow with org-mode.
+</p>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><a id="ID-c1e70db7-5227-4bc0-bd89-237f36af1637" name="ID-c1e70db7-5227-4bc0-bd89-237f36af1637"></a><span class="section-number-2">1</span> Output from first run</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Here is the output of the script the first time I ran it. It just tells me that jobs have been submitted and are queued. The output is a bit verbose, because of the way the exception handling system works in vasp.py. Basically, there ends up being multiple calls to self.update before the script exits.
+</p>
+
+<pre class="example">
+energy not in {}. Calc required.
+energy not in {}. Calc required.
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-4.00 submitted: 1397190.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-4.00 Queued: 1397190.gilgamesh.cheme.cmu.edu
+energy not in {}. Calc required.
+energy not in {}. Calc required.
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-4.50 submitted: 1397191.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-4.50 Queued: 1397191.gilgamesh.cheme.cmu.edu
+energy not in {}. Calc required.
+energy not in {}. Calc required.
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-5.00 submitted: 1397192.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-5.00 Queued: 1397192.gilgamesh.cheme.cmu.edu
+energy not in {}. Calc required.
+energy not in {}. Calc required.
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-5.50 submitted: 1397193.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-5.50 Queued: 1397193.gilgamesh.cheme.cmu.edu
+energy not in {}. Calc required.
+energy not in {}. Calc required.
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-6.00 submitted: 1397194.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-6.00 Queued: 1397194.gilgamesh.cheme.cmu.edu
+</pre>
+</div>
+</div>
+
+<a href="/media/job-control-in-vasp.py/job-control-in-vasp.py.org">org-source</a>

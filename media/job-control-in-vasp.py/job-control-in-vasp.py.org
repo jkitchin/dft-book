@@ -1,0 +1,100 @@
+* Job control in vasp.py					 :functional:
+  :PROPERTIES:
+  :categories: bulk, magnetism
+  :END:
+
+One of the things we often need to do in DFT calculations is setup a series of calculations, run them all, and then do some analysis. The new vasp.py helps us with this. We can create a list of calculators, and then run each one of them. We run all our jobs asynchronously in a queue system, with no real control over when they start and when they end. A challenge in this is we usually need some kind of way to stop the script after the jobs are started so we can wait for them to finish before proceeding with analysis.
+
+We address this challenge by storing a reference to all calculators created on the Vasp class, and defining some class methods that can work on all of them. For example the Vasp.run method will run each calculator (which submits a job for each one to the queue system). The default behavior is then to exit, but we can also tell it to wait, which will cause it to periodically check if the calculations are done before proceeding. 
+
+#+BEGIN_SRC python
+import vasp
+help(vasp.Vasp.run)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Help on method run in module vasp.vasp_core:
+
+run(cls, wait=False) method of __builtin__.type instance
+    Convenience function to run calculators.
+    
+    The default behavior is to exit after doing this. If wait is
+    True, iy will cause it to wait with the default args to
+    Vasp.wait.
+    
+    If wait is a dictionary, it will be passed as kwargs to
+    Vasp.wait.
+
+#+end_example
+
+With our typical workflow of scripting in org-mode this is very convenient. We can write one script that sets up the calculations, runs them, and later when they are done, performs the analysis. We have to run this script two times. The first time submits the jobs and exits at the Vasp.run() line (see [[id:c1e70db7-5227-4bc0-bd89-237f36af1637][Output from first run]]). After the jobs are done, we run it a second time, and we get the results and make the plot! 
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.lattice.cubic import BodyCenteredCubic
+
+NUPDOWNS = [4.0, 4.5, 5.0, 5.5, 6.0]
+
+# These are the same for all calculations.
+fixed_pars = dict( xc='PBE',
+                   encut=200,
+                   kpts=[4, 4, 4],
+                   ispin=2,
+                   atoms=BodyCenteredCubic(directions=[[1, 0, 0],
+                                                       [0, 1, 0],
+                                                       [0, 0, 1]],
+                                           size=(1, 1, 1),
+                                           symbol='Fe'))
+
+# Prepare a list of calculators
+calcs = [Vasp('bulk/Fe-bcc-fixedmagmom-{0:1.2f}'.format(B),
+              nupdown=B,
+              ,**fixed_pars)             
+         for B in NUPDOWNS]
+
+# This will start each calculation, and if they are not ready abort the script.
+# If they are ready, we will get the energies.
+energies = Vasp.run()  
+
+import matplotlib.pyplot as plt
+plt.plot(NUPDOWNS, energies)
+plt.xlabel('Total Magnetic Moment')
+plt.ylabel('Energy (eV)')
+plt.savefig('Fe-fixedmagmom.png')
+#+END_SRC
+
+#+RESULTS:
+
+[[./Fe-fixedmagmom.png]]
+
+This style works especially well for our workflow with org-mode.
+
+** Output from first run
+   :PROPERTIES:
+   :ID:       c1e70db7-5227-4bc0-bd89-237f36af1637
+   :END:
+Here is the output of the script the first time I ran it. It just tells me that jobs have been submitted and are queued. The output is a bit verbose, because of the way the exception handling system works in vasp.py. Basically, there ends up being multiple calls to self.update before the script exits.
+
+#+begin_example
+energy not in {}. Calc required.
+energy not in {}. Calc required.
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-4.00 submitted: 1397190.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-4.00 Queued: 1397190.gilgamesh.cheme.cmu.edu
+energy not in {}. Calc required.
+energy not in {}. Calc required.
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-4.50 submitted: 1397191.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-4.50 Queued: 1397191.gilgamesh.cheme.cmu.edu
+energy not in {}. Calc required.
+energy not in {}. Calc required.
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-5.00 submitted: 1397192.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-5.00 Queued: 1397192.gilgamesh.cheme.cmu.edu
+energy not in {}. Calc required.
+energy not in {}. Calc required.
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-5.50 submitted: 1397193.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-5.50 Queued: 1397193.gilgamesh.cheme.cmu.edu
+energy not in {}. Calc required.
+energy not in {}. Calc required.
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-6.00 submitted: 1397194.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/bulk/Fe-bcc-fixedmagmom-6.00 Queued: 1397194.gilgamesh.cheme.cmu.edu
+#+end_example
