@@ -17,6 +17,7 @@ OUTCAR
 PCDAT
 POSCAR
 POTCAR
+PROCAR
 vasprun.xml
 XDATCAR
 ase-sort.dat
