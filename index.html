@@ -10,7 +10,7 @@
 <meta content="#5670d4" name="theme-color">
 <link rel="alternate" type="application/rss+xml" title="RSS" href="rss.xml">
 <link rel="canonical" href="http://kitchingroup.cheme.cmu.edu/dft-book/">
-<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/job-control-in-vasp.py/" type="text/html">
+<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/managing-queued-jobs-with-vasp.py/" type="text/html">
 </head>
 <body>
 <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
@@ -72,7 +72,546 @@
 
     
 <div class="postindex">
-    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/job-control-in-vasp.py/" class="u-url">Job control in vasp.py</a></h1>
+    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/managing-queued-jobs-with-vasp.py/" class="u-url">Managing queued jobs with vasp.py</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn">
+                John Kitchin
+            </span></p>
+            <p class="dateline"><a href="posts/managing-queued-jobs-with-vasp.py/" rel="bookmark"><time class="published dt-published" datetime="2016-05-26T15:29:29-04:00" title="2016-05-26 15:29">2016-05-26 15:29</time></a></p>
+                <p class="commentline">
+        
+    <a href="posts/managing-queued-jobs-with-vasp.py/#disqus_thread" data-disqus-identifier="cache/posts/managing-queued-jobs-with-vasp.py.html">Comments</a>
+
+
+        </p>
+</div>
+    </header><div class="e-content entry-content">
+    <p>
+One of the reasons we use vasp.py is to make it easy to run a lot of calculations conveniently. vasp.py automatically submits jobs to the queue for us, and provides some job control features to make it wait until they are finished.
+</p>
+
+<p>
+Sometimes things go wrong though, e.g. you realize you used the wrong parameter and suddenly you have a lot of jobs in the queue to stop. Not to worry, vasp.py can help you out. Each calculator stores a jobid on it, and vasp.py provides some support to interact with the queue system (assuming you use Torque or something compatible with it)!
+</p>
+
+<p>
+Here is an example where we setup and run 10 calculations. The first time we run this, 10 jobs get submitted.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #0000FF;">from</span> vasp <span style="color: #0000FF;">import</span> Vasp
+<span style="color: #0000FF;">from</span> ase <span style="color: #0000FF;">import</span> Atom, Atoms
+<span style="color: #0000FF;">import</span> matplotlib.pyplot <span style="color: #0000FF;">as</span> plt
+<span style="color: #0000FF;">import</span> numpy <span style="color: #0000FF;">as</span> np
+
+<span style="color: #BA36A5;">bond_lengths</span> = np.linspace(1.05, 1.3, 10)
+
+<span style="color: #BA36A5;">calcs</span> = [Vasp(<span style="color: #008000;">'molecules/co-n{0:02d}'</span>.<span style="color: #006FE0;">format</span>(i),  <span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">output dir</span>
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   xc=<span style="color: #008000;">'PBE'</span>,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   nbands=6,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   encut=520,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   ismear=1,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   sigma=0.2,
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   atoms=Atoms([Atom(<span style="color: #008000;">'C'</span>, [0, 0, 0]),
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>Atom(<span style="color: #008000;">'O'</span>, [d, 0, 0])],
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   cell=(6, 6, 6)))
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span><span style="color: #0000FF;">for</span> i, d <span style="color: #0000FF;">in</span> <span style="color: #006FE0;">enumerate</span>(bond_lengths)]
+
+<span style="color: #BA36A5;">energies</span> = [calc.potential_energy <span style="color: #0000FF;">for</span> calc <span style="color: #0000FF;">in</span> calcs]
+
+<span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">Here are the jobids</span>
+<span style="color: #0000FF;">print</span>([(c.jobid(), c.in_queue()) <span style="color: #0000FF;">for</span> c <span style="color: #0000FF;">in</span> calcs])
+
+<span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">Stop here until all calculations are done.</span>
+Vasp.stop_if(<span style="color: #D0372D;">None</span> <span style="color: #0000FF;">in</span> energies)
+
+<span style="color: #0000FF;">print</span>(energies)
+</pre>
+</div>
+
+<pre class="example">
+/home-research/jkitchin/dft-book/blog/source/org/molecules/co-n00 submitted: 1397279.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/molecules/co-n01 submitted: 1397280.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/molecules/co-n02 submitted: 1397281.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/molecules/co-n03 submitted: 1397282.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/molecules/co-n04 submitted: 1397283.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/molecules/co-n05 submitted: 1397284.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/molecules/co-n06 submitted: 1397285.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/molecules/co-n07 submitted: 1397286.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/molecules/co-n08 submitted: 1397287.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/blog/source/org/molecules/co-n09 submitted: 1397288.gilgamesh.cheme.cmu.edu
+[(u'1397279.gilgamesh.cheme.cmu.edu', True), (u'1397280.gilgamesh.cheme.cmu.edu', True), (u'1397281.gilgamesh.cheme.cmu.edu', True), (u'1397282.gilgamesh.cheme.cmu.edu', True), (u'1397283.gilgamesh.cheme.cmu.edu', True), (u'1397284.gilgamesh.cheme.cmu.edu', True), (u'1397285.gilgamesh.cheme.cmu.edu', True), (u'1397286.gilgamesh.cheme.cmu.edu', True), (u'1397287.gilgamesh.cheme.cmu.edu', True), (u'1397288.gilgamesh.cheme.cmu.edu', True)]
+</pre>
+
+<p>
+Say we just realize we wanted to delete these jobs, and change a parameter. We just get the calculators, and call qdel on each one like this:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #0000FF;">from</span> vasp <span style="color: #0000FF;">import</span> Vasp
+<span style="color: #0000FF;">import</span> numpy <span style="color: #0000FF;">as</span> np
+
+<span style="color: #BA36A5;">bond_lengths</span> = np.linspace(1.05, 1.3, 10)
+<span style="color: #BA36A5;">calcs</span> = [Vasp(<span style="color: #008000;">'molecules/co-n{0:02d}'</span>.<span style="color: #006FE0;">format</span>(i))
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span><span style="color: #0000FF;">for</span> i, d <span style="color: #0000FF;">in</span> <span style="color: #006FE0;">enumerate</span>(bond_lengths)]
+
+<span style="color: #0000FF;">print</span>([calc.qdel() <span style="color: #0000FF;">for</span> calc <span style="color: #0000FF;">in</span> calcs])
+</pre>
+</div>
+
+<pre class="example">
+[(0, ''), (0, ''), (0, ''), (0, ''), (0, ''), (0, ''), (0, ''), (0, ''), (0, ''), (0, '')]
+</pre>
+
+<p>
+All those 0's just means the job deletion succeeded. Now, we just have to adjust the original parameter set, and rerun the original script! That will resubmit the new jobs for us.
+</p>
+
+<p>
+Here is the output from one of those calculations. Note the path is an org-link, so you can just click on it to open the directory if you run this in Emacs.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #0000FF;">from</span> vasp <span style="color: #0000FF;">import</span> Vasp
+<span style="color: #0000FF;">print</span>(Vasp(<span style="color: #008000;">'molecules/co-n00'</span>))
+</pre>
+</div>
+
+<pre class="example">
+*************** VASP CALCULATION SUMMARY ***************
+Vasp calculation directory:
+---------------------------
+  [[/home-research/jkitchin/dft-book/blog/source/org/molecules/co-n00]]
+
+Unit cell:
+----------
+       x       y       z             |v|
+  v0   6.000   0.000   0.000       6.000 Ang
+  v1   0.000   6.000   0.000       6.000 Ang
+  v2   0.000   0.000   6.000       6.000 Ang
+  a,b,c,alpha,beta,gamma (deg): 6.000 6.000 6.000 90.0 90.0 90.0
+  Total volume:                  216.000 Ang^3
+  Stress:    xx     yy     zz     yz     xz     xy
+         -0.071  0.001  0.001 -0.000 -0.000 -0.000 GPa
+
+  ID  tag     sym    x        y        z    rmsF (eV/A)constraints (F=Frozen)
+  0   0       C      0.000    0.000    0.000   14.97      T T T
+  1   0       O      1.050    0.000    0.000   14.97      T T T
+  Potential energy: -14.1779 eV
+
+INPUT Parameters:
+-----------------
+  lcharg    : False
+  pp        : PBE
+  nbands    : 6
+  xc        : pbe
+  ismear    : 1
+  lwave     : False
+  sigma     : 0.2
+  kpts      : [1, 1, 1]
+  encut     : 520
+
+Pseudopotentials used:
+----------------------
+  C: potpaw_PBE/C/POTCAR (git-hash: ee4d8576584f8e9f32e90853a0cbf9d4a9297330)
+  O: potpaw_PBE/O/POTCAR (git-hash: 592f34096943a6f30db8749d13efca516d75ec55)
+</pre>
+
+<p>
+Here is a summary of the job control functions and queue commands built in to vasp.py.
+</p>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">
+<span class="section-number-2">1</span> vasp.py job control functions</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1">
+<span class="section-number-3">1.1</span> Vasp.run()</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+Runs all stored calculators on the Vasp class.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #0000FF;">from</span> vasp <span style="color: #0000FF;">import</span> Vasp
+<span style="color: #006FE0;">help</span>(Vasp.run)
+</pre>
+</div>
+
+<pre class="example">
+Help on method run in module vasp.vasp_core:
+
+run(cls, wait=False) method of __builtin__.type instance
+    Convenience function to run calculators.
+
+    The default behavior is to exit after doing this. If wait is
+    True, iy will cause it to wait with the default args to
+    Vasp.wait.
+
+    If wait is a dictionary, it will be passed as kwargs to
+    Vasp.wait.
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2">
+<span class="section-number-3">1.2</span> calc.run()</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Runs the instance calculator.
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3">
+<span class="section-number-3">1.3</span> Vasp.all()</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+Returns whether all calculators are ready, e.g. with results.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #0000FF;">from</span> vasp <span style="color: #0000FF;">import</span> Vasp
+<span style="color: #006FE0;">help</span>(Vasp.<span style="color: #006FE0;">all</span>)
+</pre>
+</div>
+
+<pre class="example">
+Help on method all in module vasp.vasp_core:
+
+all(cls) method of __builtin__.type instance
+    Returns if all calculators in the class are ready.
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-1-4" class="outline-3">
+<h3 id="sec-1-4">
+<span class="section-number-3">1.4</span> Vasp.stop_if(condition)</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+Aborts the script if condition is not truthy
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #0000FF;">from</span> vasp <span style="color: #0000FF;">import</span> Vasp
+<span style="color: #006FE0;">help</span>(Vasp.stop_if)
+</pre>
+</div>
+
+<pre class="example">
+Help on method stop_if in module vasp.vasp_core:
+
+stop_if(cls, condition) method of __builtin__.type instance
+    Stops the program if condition is truthy.
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-1-5" class="outline-3">
+<h3 id="sec-1-5">
+<span class="section-number-3">1.5</span> Vasp.abort() and calc.abort()</h3>
+<div class="outline-text-3" id="text-1-5">
+<p>
+Aborts the script.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #0000FF;">from</span> vasp <span style="color: #0000FF;">import</span> Vasp
+<span style="color: #006FE0;">help</span>(Vasp.abort)
+</pre>
+</div>
+
+<pre class="example">
+Help on method abort in module vasp.vasp_core:
+
+abort(cls) method of __builtin__.type instance
+    Abort and exit the program the calculator is running in.
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-1-6" class="outline-3">
+<h3 id="sec-1-6">
+<span class="section-number-3">1.6</span> Vasp.wait() and calc.wait()</h3>
+<div class="outline-text-3" id="text-1-6">
+<p>
+Allows a real time-elapsed wait for jobs to finish. This blocks the script.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #0000FF;">from</span> vasp <span style="color: #0000FF;">import</span> Vasp
+<span style="color: #006FE0;">help</span>(Vasp.wait)
+</pre>
+</div>
+
+<pre class="example">
+Help on method wait in module vasp.vasp_core:
+
+wait(cls, poll_interval=5, timeout=None, abort=False) method of __builtin__.type instance
+    Control function to wait until all calculators are ready.
+
+    if abort is truthy, stop the program.
+
+    Otherwise check the calculators every poll_interval seconds,
+    up to timeout seconds later. If timeout is None, poll forever.
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">
+<span class="section-number-2">2</span> vasp.py queue commands</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1">
+<span class="section-number-3">2.1</span> calc.qstat(*options)</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Gets information about the job.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #0000FF;">from</span> vasp <span style="color: #0000FF;">import</span> Vasp
+<span style="color: #0000FF;">import</span> numpy <span style="color: #0000FF;">as</span> np
+
+<span style="color: #BA36A5;">calc</span> = Vasp(<span style="color: #008000;">'molecules/co-n09'</span>)
+
+calc.qstat()
+</pre>
+</div>
+
+<pre class="example">
+Job id                    Name             User            Time Use S Queue
+------------------------- ---------------- --------------- -------- - -----
+1397268.gilgamesh         .../co-n09       jkitchin               0 R short
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2">
+<span class="section-number-3">2.2</span> calc.qalter(*options)</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+Allows you to alter the queue parameters for a job.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #0000FF;">from</span> vasp <span style="color: #0000FF;">import</span> Vasp
+<span style="color: #0000FF;">import</span> numpy <span style="color: #0000FF;">as</span> np
+
+<span style="color: #BA36A5;">calc</span> = Vasp(<span style="color: #008000;">'molecules/co-n09'</span>)
+
+calc.qalter(<span style="color: #008000;">'-l'</span>, <span style="color: #008000;">'walltime=20:00:00'</span>)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-3" class="outline-3">
+<h3 id="sec-2-3">
+<span class="section-number-3">2.3</span> calc.qdel(*options)</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+Allows you to delete the job
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-2-4" class="outline-3">
+<h3 id="sec-2-4">
+<span class="section-number-3">2.4</span> calc.xterm()</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+This will pop up an xterm window in the directory of the calculation. There you can run commands and see what is going on.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #0000FF;">from</span> vasp <span style="color: #0000FF;">import</span> Vasp
+<span style="color: #0000FF;">import</span> numpy <span style="color: #0000FF;">as</span> np
+
+<span style="color: #BA36A5;">calc</span> = Vasp(<span style="color: #008000;">'molecules/co-n00'</span>)
+
+calc.xterm()
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-2-5" class="outline-3">
+<h3 id="sec-2-5">
+<span class="section-number-3">2.5</span> calc.qoutout()</h3>
+<div class="outline-text-3" id="text-2-5">
+<p>
+Returns contents of the queue output file if it exists. May be useful to debug.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #0000FF;">from</span> vasp <span style="color: #0000FF;">import</span> Vasp
+<span style="color: #0000FF;">import</span> numpy <span style="color: #0000FF;">as</span> np
+
+<span style="color: #BA36A5;">calc</span> = Vasp(<span style="color: #008000;">'molecules/co-n00'</span>)
+
+<span style="color: #0000FF;">print</span>(calc.qoutput())
+</pre>
+</div>
+
+<pre class="example">
+xmodmap:  unable to open display ''
+ vasp.5.3.5 31Mar14 (build Aug 04 2015 12:48:45) complex
+
+ POSCAR found :  2 types and       2 ions
+ LDA part: xc-table for Pade appr. of Perdew
+ POSCAR found :  2 types and       2 ions
+ POSCAR, INCAR and KPOINTS ok, starting setup
+ WARNING: small aliasing (wrap around) errors must be expected
+ FFT: planning ...
+ WAVECAR not read
+ WARNING: random wavefunctions but no delay for mixing, default for NELMDL
+ entering main loop
+       N       E                     dE             d eps       ncg     rms          rms(c)
+DAV:   1     0.693510492725E+02    0.69351E+02   -0.29305E+03    12   0.855E+02
+DAV:   2    -0.556930203939E+01   -0.74920E+02   -0.74931E+02    18   0.248E+02
+DAV:   3    -0.151153850754E+02   -0.95461E+01   -0.95461E+01    12   0.964E+01
+DAV:   4    -0.153607093341E+02   -0.24532E+00   -0.24532E+00    12   0.138E+01
+DAV:   5    -0.153763439194E+02   -0.15635E-01   -0.15635E-01    24   0.343E+00    0.816E+00
+DAV:   6    -0.144168400550E+02    0.95950E+00   -0.26887E+00    12   0.196E+01    0.429E+00
+DAV:   7    -0.142207761391E+02    0.19606E+00   -0.48211E-01    18   0.795E+00    0.186E+00
+DAV:   8    -0.142021024270E+02    0.18674E-01   -0.81621E-02    18   0.376E+00    0.582E-01
+DAV:   9    -0.142016090043E+02    0.49342E-03   -0.11924E-02    12   0.136E+00    0.870E-02
+DAV:  10    -0.142024449557E+02   -0.83595E-03   -0.55763E-04    12   0.268E-01    0.420E-02
+DAV:  11    -0.142040155105E+02   -0.15706E-02   -0.43005E-04    18   0.201E-01    0.267E-02
+DAV:  12    -0.142041222436E+02   -0.10673E-03   -0.11191E-04     6   0.106E-01    0.989E-03
+DAV:  13    -0.142042422801E+02   -0.12004E-03   -0.26082E-05     6   0.587E-02    0.352E-03
+DAV:  14    -0.142042518369E+02   -0.95569E-05   -0.35661E-06     6   0.202E-02
+   1 F= -.14204252E+02 E0= -.14208117E+02  d E =0.115958E-01
+</pre>
+</div>
+</div>
+
+<div id="outline-container-sec-2-6" class="outline-3">
+<h3 id="sec-2-6">
+<span class="section-number-3">2.6</span> Vasp.torque()</h3>
+<div class="outline-text-3" id="text-2-6">
+<p>
+This command prints out an org-mode table with clickable links
+</p>
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #0000FF;">from</span> vasp <span style="color: #0000FF;">import</span> Vasp
+<span style="color: #0000FF;">import</span> numpy <span style="color: #0000FF;">as</span> np
+
+<span style="color: #BA36A5;">bond_lengths</span> = np.linspace(1.05, 1.3, 10)
+<span style="color: #BA36A5;">calcs</span> = [Vasp(<span style="color: #008000;">'molecules/co-n{0:02d}'</span>.<span style="color: #006FE0;">format</span>(i))
+<span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span><span style="color: #0000FF;">for</span> i, d <span style="color: #0000FF;">in</span> <span style="color: #006FE0;">enumerate</span>(bond_lengths)]
+
+<span style="color: #0000FF;">print</span>(Vasp.torque())
+</pre>
+</div>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup>
+<col class="left">
+<col class="left">
+<col class="left">
+</colgroup>
+<tbody>
+<tr>
+<td class="left">
+<a href="posts/managing-queued-jobs-with-vasp.py/xterm%20-e" cd ls>molecules/co-n00</a> <a href="posts/managing-queued-jobs-with-vasp.py/(find-file">dired</a>
+</td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qstat%201397279.gilgamesh.cheme.cmu.edu">1397279.gilgamesh.cheme.cmu.edu</a></td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qdel%201397279.gilgamesh.cheme.cmu.edu">qdel</a></td>
+</tr>
+<tr>
+<td class="left">
+<a href="posts/managing-queued-jobs-with-vasp.py/xterm%20-e" cd ls>molecules/co-n01</a> <a href="posts/managing-queued-jobs-with-vasp.py/(find-file">dired</a>
+</td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qstat%201397280.gilgamesh.cheme.cmu.edu">1397280.gilgamesh.cheme.cmu.edu</a></td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qdel%201397280.gilgamesh.cheme.cmu.edu">qdel</a></td>
+</tr>
+<tr>
+<td class="left">
+<a href="posts/managing-queued-jobs-with-vasp.py/xterm%20-e" cd ls>molecules/co-n02</a> <a href="posts/managing-queued-jobs-with-vasp.py/(find-file">dired</a>
+</td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qstat%201397281.gilgamesh.cheme.cmu.edu">1397281.gilgamesh.cheme.cmu.edu</a></td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qdel%201397281.gilgamesh.cheme.cmu.edu">qdel</a></td>
+</tr>
+<tr>
+<td class="left">
+<a href="posts/managing-queued-jobs-with-vasp.py/xterm%20-e" cd ls>molecules/co-n03</a> <a href="posts/managing-queued-jobs-with-vasp.py/(find-file">dired</a>
+</td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qstat%201397282.gilgamesh.cheme.cmu.edu">1397282.gilgamesh.cheme.cmu.edu</a></td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qdel%201397282.gilgamesh.cheme.cmu.edu">qdel</a></td>
+</tr>
+<tr>
+<td class="left">
+<a href="posts/managing-queued-jobs-with-vasp.py/xterm%20-e" cd ls>molecules/co-n04</a> <a href="posts/managing-queued-jobs-with-vasp.py/(find-file">dired</a>
+</td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qstat%201397283.gilgamesh.cheme.cmu.edu">1397283.gilgamesh.cheme.cmu.edu</a></td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qdel%201397283.gilgamesh.cheme.cmu.edu">qdel</a></td>
+</tr>
+<tr>
+<td class="left">
+<a href="posts/managing-queued-jobs-with-vasp.py/xterm%20-e" cd ls>molecules/co-n05</a> <a href="posts/managing-queued-jobs-with-vasp.py/(find-file">dired</a>
+</td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qstat%201397284.gilgamesh.cheme.cmu.edu">1397284.gilgamesh.cheme.cmu.edu</a></td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qdel%201397284.gilgamesh.cheme.cmu.edu">qdel</a></td>
+</tr>
+<tr>
+<td class="left">
+<a href="posts/managing-queued-jobs-with-vasp.py/xterm%20-e" cd ls>molecules/co-n06</a> <a href="posts/managing-queued-jobs-with-vasp.py/(find-file">dired</a>
+</td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qstat%201397285.gilgamesh.cheme.cmu.edu">1397285.gilgamesh.cheme.cmu.edu</a></td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qdel%201397285.gilgamesh.cheme.cmu.edu">qdel</a></td>
+</tr>
+<tr>
+<td class="left">
+<a href="posts/managing-queued-jobs-with-vasp.py/xterm%20-e" cd ls>molecules/co-n07</a> <a href="posts/managing-queued-jobs-with-vasp.py/(find-file">dired</a>
+</td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qstat%201397286.gilgamesh.cheme.cmu.edu">1397286.gilgamesh.cheme.cmu.edu</a></td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qdel%201397286.gilgamesh.cheme.cmu.edu">qdel</a></td>
+</tr>
+<tr>
+<td class="left">
+<a href="posts/managing-queued-jobs-with-vasp.py/xterm%20-e" cd ls>molecules/co-n08</a> <a href="posts/managing-queued-jobs-with-vasp.py/(find-file">dired</a>
+</td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qstat%201397287.gilgamesh.cheme.cmu.edu">1397287.gilgamesh.cheme.cmu.edu</a></td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qdel%201397287.gilgamesh.cheme.cmu.edu">qdel</a></td>
+</tr>
+<tr>
+<td class="left">
+<a href="posts/managing-queued-jobs-with-vasp.py/xterm%20-e" cd ls>molecules/co-n09</a> <a href="posts/managing-queued-jobs-with-vasp.py/(find-file">dired</a>
+</td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qstat%201397288.gilgamesh.cheme.cmu.edu">1397288.gilgamesh.cheme.cmu.edu</a></td>
+<td class="left"><a href="posts/managing-queued-jobs-with-vasp.py/qdel%201397288.gilgamesh.cheme.cmu.edu">qdel</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<a href="media/managing-queued-jobs-with-vasp.py/managing-queued-jobs-with-vasp.py.org">org-source</a>
+    </div>
+    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/job-control-in-vasp.py/" class="u-url">Job control in vasp.py</a></h1>
         <div class="metadata">
             <p class="byline author vcard"><span class="byline-name fn">
                 John Kitchin
