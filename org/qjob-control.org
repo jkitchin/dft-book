@@ -1,6 +1,8 @@
-* Managing queued jobs with vasp.py
+* DONE Managing queued jobs with vasp.py
+  CLOSED: [2016-05-26 Thu 15:29]
   :PROPERTIES:
   :categories: queue, job management
+  :POSTED:   2016-05-26 15:29:30
   :END:
 #+OPTIONS: toc:nil
 One of the reasons we use vasp.py is to make it easy to run a lot of calculations conveniently. vasp.py automatically submits jobs to the queue for us, and provides some job control features to make it wait until they are finished.

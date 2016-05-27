@@ -1,0 +1,93 @@
+.post-title() {
+	margin: @baseLineHeight/4 0;
+	a {
+		color: inherit;
+
+		&:hover,
+		&:focus {
+			color: inherit;
+		}
+	}
+}
+
+.post-metadata() {
+	.clearfix;
+	color: @grayLight;
+	margin-bottom: @baseLineHeight/2;
+	margin-top: @baseLineHeight/4 * -1;
+
+	.authordate {
+		display: inline-block;
+		.pull-left;
+
+		.transition(color .1s linear);
+
+		&:before {
+			.icon(@time);
+			margin-left: 5px;
+		}
+
+		&:hover {
+			color: @textColor;
+		}
+	}
+
+	.stats {
+		.pull-right;
+		p {
+			margin: 0;
+			padding: 0;
+		}
+		a {
+			color: @grayLight;
+			.transition(color 1s linear);
+
+			&:after {
+				.icon(@comment);
+				margin-left: 5px;
+			}
+
+			&:hover,
+			&:focus,
+			&:active {
+				color: @textColor;
+				text-decoration: none;
+			}
+		}
+	}
+
+	.tags {
+		clear: both;
+		display: block;
+		.opacity(@dimmedOpacity);
+		.transition(opacity .1s linear);
+		
+		&:hover {
+			.opacity(@opaqueOpacity);
+		}
+
+		ul {
+			margin: 0;
+			list-style: none;
+			> li {
+			  display: inline-block;
+			  .ie7-inline-block();
+			  margin-right: 10px;
+			}
+		}
+	}
+}
+
+.post-breadcrumb() {
+	margin-top: @baseLineHeight/4;
+
+	a:after {
+		content: ' /';
+	}
+
+	& + .postbox > h1.title,
+	& + .post > h1.title,
+	& + h1.title {
+		margin-top: 0;
+	}
+}

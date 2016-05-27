@@ -1,0 +1,42 @@
+{#  -*- coding: utf-8 -*- #}
+{% import 'index_helper.tmpl' as helper with context %}
+{% import 'arusahni_helper.tmpl' as arusahni with context %}
+{% import 'comments_helper.tmpl' as comments with context %}
+{% extends 'base.tmpl' %}
+
+{% block extra_head %}
+    {{ super() }}
+    <style>
+    div.input_prompt {
+      display: none;
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {% for post in posts %}
+        <div class="post">
+            <h1 class="title"><a href="{{ post.permalink() }}">{{ post.title() }}</a></h1>
+            <div class="meta">
+                <div class="authordate">
+                    <time class="timeago" datetime="{{ post.date.isoformat() }}">{{ post.formatted_date(date_format) }}</time>
+                </div>
+                <div class="stats">
+                {% if not post.meta('nocomments') %}
+                    {{ comments.comment_link(post.permalink(), post.base_path) }}
+                {% endif %}
+                </div>
+                {{ arusahni.html_tags(post) }}
+            </div>
+            <div class="body">
+            {% if index_teasers %}
+                {{ post.text(teaser_only=True) }}
+            {% else %}
+                {{ post.text(teaser_only=False) }}
+            {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+    {{ helper.html_pager() }}
+    {{ comments.comment_link_script() }}
+{% endblock %}

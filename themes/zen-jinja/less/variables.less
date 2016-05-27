@@ -1,0 +1,97 @@
+// Layout
+//-----------
+@narrowContentWidth: 525px;
+@contentWidth: 890px;
+@contentPadding: @baseLineHeight * 1.75;
+@contentNarrowPadding: @baseLineHeight;
+
+@sidebarPadding: 0px;
+@sidebarNarrowPadding: 4px;
+
+@sidebarWidth: 180px;
+
+// 768 = min two col width
+@sidebarNarrowWidth: 768px - @narrowContentWidth - @sidebarNarrowPadding - @contentNarrowPadding - 5px;
+
+// Colors
+//-----------
+@darkBlue:  rgb(25,32,41);
+
+@black: #000;
+@grayDarker: #222;
+@grayDark: #333;
+@gray: #555;
+@grayLight: #999;
+@grayLighter: #eee;
+@white: #fff;
+
+@blue: #049cdb;
+@blueDark: #0064cd;
+@green: #46a546;
+@red: #9d261d;
+@yellow: #ffc40d;
+@orange: #f89406;
+@pink: #c3325f;
+@purple: #7a43b6;
+
+// Resources
+//----------
+@sidebarBackground: url('../images/blue-mocha-grunge.jpg') @darkBlue;
+@primaryBackground: url('../images/cream-dust.png') @white;
+
+// Typography
+//-----------
+@serifFontFamily: "Bitter","Georgia","Times New Roman",serif;
+@sansFontFamily: "Helvetica Neue", Helvetica, Arial, sans-serif;
+@monoFontFamily: Monaco, Menlo, Consolas, "Courier New", monospace;
+
+@baseFontFamily: @serifFontFamily;
+@baseFontSize: 15px;
+@baseLineHeight: 24px;
+@textColor: @grayDark;
+@altFontFamily: @sansFontFamily;
+
+@headingsFontFamily: inherit; // empty to use BS default, @baseFontFamily
+@headingsFontWeight: bold; // instead of browser default, bold
+@headingsColor: darken(@textColor, 2.0%); // empty to use BS default, @textColor
+
+@linkColor: #08c;
+@linkColorHover: darken(@linkColor, 15%);
+
+@socialLinkColor: @white;
+
+// Component sizing
+// ----------
+@fontSizeLarge: @baseFontSize * 1.25; // ~18px
+@fontSizeSmall: @baseFontSize * 0.85; // ~12px
+@fontSizeMini: @baseFontSize * 0.75; // ~11px
+
+@paddingLarge: 11px 19px; // 44px
+@paddingSmall: 2px 10px; // 26px
+@paddingMini: 0 6px; // 22px
+
+@baseBorderRadius: 4px;
+@borderRadiusLarge: 6px;
+@borderRadiusSmall: 3px;
+
+@horizontalComponentOffset: 180px;
+
+// Pagination
+// -------------------------
+@paginationBackground: #fff;
+@paginationBorder: #ddd;
+@paginationActiveBackground: #f5f5f5;
+
+// Responsive
+// ----------
+@desktopLayout: ~"(min-width: 1048px)";
+@tabletLayout: ~"(min-width: 774px) and (max-width: 1047px)";
+@mobileLayout: ~"(max-width: 773px)";
+
+// Misc
+// -----------
+@dimmedOpacity:	20;
+@opaqueOpacity: 100;
+
+// Bootstrap resets
+@gridGutterWidth:	0;

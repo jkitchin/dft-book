@@ -1,0 +1,22 @@
+@font-face {
+  font-family: 'Bitter';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Bitter-Regular'), url('../fonts/SHIcXhdd5RknatSgOzyEkA.woff') format('woff');
+}
+@font-face {
+  font-family: 'Bitter';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Bitter-Bold'), url('../fonts/evC1haE-MsorTl_A7_uSGT8E0i7KZn-EPnyo3HZu7kw.woff') format('woff');
+}
+@font-face {
+  font-family: 'Bitter';
+  font-style: italic;
+  font-weight: 400;
+  src: local('Bitter-Italic'), url('../fonts/eMS0tViDqryBl0EG1pqFZfesZW2xOQ-xsNqO47m55DA.woff') format('woff');
+}
+
+.addthis_peekaboo_style a {
+  font-family: 'Bitter';
+}

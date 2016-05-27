@@ -1,0 +1,107 @@
+html {
+    min-height: 100%;
+    position: relative;
+}
+
+body {
+    height: 100%;
+    background: @primaryBackground;
+}
+
+section {
+    margin: 0;
+    padding: 0;
+}
+
+.social {
+    float: left;
+    min-height: 100%;
+    background: @sidebarBackground;
+    //-- needed for full sidebar height
+    position: absolute;
+    @media @mobileLayout {
+        position: relative;
+    }
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    width: @sidebarWidth;
+    @media @tabletLayout {
+        width: @sidebarNarrowWidth;
+    }
+    @media @mobileLayout {
+        width: 100%;
+    }
+    //-- end sidebar sizing
+    ul {
+        position: fixed;
+        @media @mobileLayout {
+            position: relative;
+        }
+        margin: 0;
+        top: 50px;
+        display: table;
+        @media @mobileLayout {
+            display: block;
+            top: 0px;
+        }
+        width: @sidebarWidth;
+        @media @tabletLayout {
+            width: @sidebarNarrowWidth;
+        }
+
+        li {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            @media @mobileLayout {
+                padding-top: 5%;
+                padding-left: 3%;
+                text-align: left;
+                display: table-cell;
+            }
+
+            a {
+                display: block;
+
+                .label {
+                    display: none;
+                    @media @mobileLayout {
+                        display: inline;
+                        padding-left: 0.5em;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.page-content {
+    min-height: 100%;
+    padding: @baseLineHeight * 2 0 @baseLineHeight * 2.5 @contentPadding;
+    margin-left: @sidebarWidth + @sidebarPadding;
+    @media @tabletLayout {
+        padding-left: @contentNarrowPadding;
+        margin-left: @sidebarNarrowWidth + @sidebarNarrowPadding;
+    }
+    @media @mobileLayout {
+        margin-left: 0;
+        width: 100%;
+        padding: @baseLineHeight * 1.5 0;
+    }
+
+    &>.content {
+        max-width: @contentWidth;
+        @media @tabletLayout {
+            min-width: @narrowContentWidth;
+        }
+        @media @mobileLayout {
+            min-width: auto;
+            padding-left: 4px;
+            padding-right: 4px;
+            margin-right: auto;
+            margin-left: auto;
+        }
+    }
+}

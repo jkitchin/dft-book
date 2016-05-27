@@ -1,0 +1,51 @@
+.backlink {
+	.post-breadcrumb();
+}
+
+.post {
+
+	h1.title {
+		.post-title();
+	}
+
+	.backlink {
+		.post-breadcrumb();
+	}
+
+	.meta {
+		.post-metadata();
+	}
+
+	.body {
+		margin-bottom: @baseLineHeight * 1.5;
+
+		.figure {
+			.thumbnail;
+			display: table;
+			@media @mobileLayout {
+				display: block;
+				width: 97%;
+			}
+			margin: 0 auto @baseLineHeight;
+
+			& > a,
+			& > a > img {
+				max-width: 100%;
+				height: auto;
+				overflow: hidden;
+				margin-left: auto;
+				margin-right: auto;
+			}
+
+			.caption {
+				.thumbnail .caption;
+				font-style: italic;
+				padding-bottom: 0; // take away the beefiness.
+			}
+		}
+	}
+
+	&+ .post {
+		margin-top: @baseLineHeight * 2;
+	}
+}

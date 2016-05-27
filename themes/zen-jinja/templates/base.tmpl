@@ -1,0 +1,35 @@
+{#  -*- coding: utf-8 -*- #}
+{% import 'arusahni_helper.tmpl' as arusahni with context %}
+{% import 'base_footer.tmpl' as footer with context %}
+{% import 'annotation_helper.tmpl' as annotations with context %}
+{{ set_locale(lang) }}
+{{ arusahni.html_headstart() }}
+{% block extra_head %}
+{#  Leave this block alone. #}
+{% endblock %}
+{{ template_hooks['extra_head']() }}
+</head>
+<body>
+    <section class="social">
+        <ul>
+        {{ arusahni.html_navigation_links() }}
+        </ul>
+    </section>
+    <section class="page-content">
+        <div class="content" rel="main">
+            {% block content %}{% endblock %}
+            {{ footer.html_footer() }}
+        </div>
+    </section>
+    {{ body_end }}
+    {{ template_hooks['body_end']() }}
+    {{ arusahni.late_load_js() }}
+    {% block extra_js %}
+        <script type="text/javascript">
+            $(function(){
+                $('.timeago').timeago();
+            });
+        </script>
+    {% endblock %}
+</body>
+</html>

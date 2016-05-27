@@ -27,3 +27,4 @@ WAVECAR
 *.OU
 DYNMAT
 jobid
+.#*
