@@ -1,0 +1,236 @@
+* Multiprocessing with vasp.py
+  :PROPERTIES:
+  :categories: multiprocessing, threads
+  :END:
+#+options: toc:nil
+
+One of the reasons we use scripting is to setup, run and analyze a lot of calculations. Usually though, our scripts are serial, which means if we want to do ten things, we do them one at a time. We consider here how to use multiprocessing to speed things up. We consider a simple equation of state where we want 10 calculations at lattice constants from ±10% of a base value. This isn't a definitive guide on multiprocessing or threads, just some working examples of what they do.
+
+** The serial case
+We start with the serial case where each result is read one after another. This will give us a base case for how long it takes to read results when they are finished.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+import time
+import numpy as np
+
+t0 = time.time()
+
+factors = np.linspace(0.9, 1.1, 10)
+a = 3.6
+
+calcs = [Vasp('mp/serial-Cu-{}'.format(i),
+              xc='pbe',
+              encut=300,
+              kpts=[6, 6, 6],
+              isym=2,
+              atoms=Atoms([Atom('Cu',(0, 0, 0))],
+                          cell=0.5 * a * f * np.array([[1.0, 1.0, 0.0],
+                                                       [0.0, 1.0, 1.0],
+                                                       [1.0, 0.0, 1.0]])))
+         for i, f in enumerate(factors)]
+
+energies = [calc.potential_energy for calc in calcs]
+print(energies)
+print('Elapsed-time = {0:1.1f} seconds'.format(time.time() - t0))
+#+END_SRC
+
+#+RESULTS:
+: [-2.84280715, -3.21541663, -3.46563573, -3.62036549, -3.69449845, -3.71605521, -3.69440019, -3.64156925, -3.5622029, -3.464047]
+: Elapsed-time = 4.6 seconds
+
+Just under 5 seconds. Doesn't seem like a big deal, but suppose there were 1000 results, or you need to do this over and over. It might make sense to shorten this if possible. One way might be to run these in parallel. Each calculation is independent, so this should be easy.
+
+** Multiprocessing case
+See https://docs.python.org/2/library/multiprocessing.html. The key to multiprocessing is to create a function that does the work, and then create the threads to run the function. There are a couple of examples here. It might seem like more processes would finish faster, but it isn't always the case. It takes some time to create processes/threads. I found that just 2-3 processes gives close to the best performance, and more is not better for this example. This may be specific to this example, since it doesn't seem to take long to get the energy anyway.
+
+*** Pool example
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+import multiprocessing
+
+import time
+import numpy as np
+
+def worker(arg):
+    i, f = arg
+    a = 3.6
+    atoms = Atoms([Atom('Cu',(0, 0, 0))],
+                  cell=0.5 * a * f * np.array([[1.0, 1.0, 0.0],
+                                               [0.0, 1.0, 1.0],
+                                               [1.0, 0.0, 1.0]]))
+    calc = Vasp('mp/mp-pool-Cu-{}'.format(i),
+                xc='pbe',
+                encut=300,
+                kpts=[6, 6, 6],
+                isym=2,
+                atoms=atoms)
+    return calc.potential_energy
+
+if __name__ == '__main__':
+    t0 = time.time()
+
+    factors = np.linspace(0.9, 1.1, 10)
+    from multiprocessing import Pool
+    p = Pool(2)
+
+    energies = p.map(worker, enumerate(factors))
+    print energies
+
+    print('Elapsed-time = {0:1.1f} seconds'.format(time.time() - t0))
+#+END_SRC
+
+#+RESULTS:
+: [-2.84280715, -3.21541663, -3.46563573, -3.62036549, -3.69449845, -3.71605521, -3.69440019, -3.64156925, -3.5622029, -3.464047]
+: Elapsed-time = 2.8 seconds
+
+*** ThreadPool example
+
+This is basically like using threads but with multiprocessing.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+import multiprocessing
+
+import time
+import numpy as np
+
+def worker(i, f):
+    a = 3.6
+    atoms = Atoms([Atom('Cu',(0, 0, 0))],
+                  cell=0.5 * a * f * np.array([[1.0, 1.0, 0.0],
+                                               [0.0, 1.0, 1.0],
+                                               [1.0, 0.0, 1.0]]))
+    calc = Vasp('mp/mp-threadpool-Cu-{}'.format(i),
+                xc='pbe',
+                encut=300,
+                kpts=[6, 6, 6],
+                isym=2,
+                atoms=atoms)
+    return calc.potential_energy
+
+t0 = time.time()
+
+factors = np.linspace(0.9, 1.1, 10)
+
+from multiprocessing.pool import ThreadPool
+pool = ThreadPool(processes=2)
+
+energies = [r.get() for r in [pool.apply_async(worker, (i, f))
+                              for i, f in enumerate(factors)]]
+
+print(energies)
+print('Elapsed-time = {0:1.1f} seconds'.format(time.time() - t0))
+#+END_SRC
+
+#+RESULTS:
+: [-2.84280715, -3.21541663, -3.46563573, -3.62036549, -3.69449845, -3.71605521, -3.69440019, -3.64156925, -3.5622029, -3.464047]
+: Elapsed-time = 3.3 seconds
+
+Interesting, it isn't quite two times faster, but it is reproducibly faster.
+
+** Threading
+Threads are a bit different than multiprocessing. For one, it doesn't come with a nice "pool" feature. We have to roll our own with a queue. I tried a few variations with this, and here is one that worked in the end. Another difference is we have to use a mutable list to capture the results. There is no way to "return" a value!
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+
+import Queue
+import threading
+
+import time
+import numpy as np
+
+class Worker(threading.Thread):
+    def __init__(self, queue):
+        self.queue = queue
+        threading.Thread.__init__(self)
+        self.daemon = True
+    def run(self):
+        while 1:
+            item = self.queue.get()
+            f, energies, index = item
+            a = 3.6
+            atoms = Atoms([Atom('Cu',(0, 0, 0))],
+                          cell=0.5 * a * f * np.array([[1.0, 1.0, 0.0],
+                                                       [0.0, 1.0, 1.0],
+                                                       [1.0, 0.0, 1.0]]))
+            calc = Vasp('mp/queue-Cu-{}'.format(index),
+                        xc='pbe',
+                        encut=300,
+                        kpts=[6, 6, 6],
+                        isym=2,
+                        atoms=atoms)
+
+            energies[index] = calc.potential_energy
+            q.task_done()
+
+t0 = time.time()
+factors = np.linspace(0.9, 1.1, 10)
+
+# Setup our queue
+q = Queue.Queue()
+num_threads = 2
+
+for i in range(num_threads):
+    Worker(q).start()
+
+energies = [None for f in factors]
+for i, f in enumerate(factors):
+    q.put([f, energies, i])
+
+q.join()
+print(energies)
+print('Elapsed-time = {0:1.1f} seconds'.format(time.time() - t0))
+#+END_SRC
+
+#+RESULTS:
+: [-2.84280715, -3.21541663, -3.46563573, -3.62036549, -3.69449845, -3.71605521, -3.69440019, -3.64156925, -3.5622029, -3.464047]
+: Elapsed-time = 3.2 seconds
+
+Again, not notably faster if you add more threads. Your mileage could vary. The ThreadPoolExecutor is a little more convenient to use here, as it allows you to return something from the function. The syntax is a little heavy with the context manager.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+
+import time
+import numpy as np
+from concurrent import futures
+
+def worker(arg):
+    f, index = arg
+    a = 3.6
+    calc = Vasp('mp/futures-Cu-{}'.format(index),
+                xc='pbe',
+                encut=300,
+                kpts=[6, 6, 6],
+                isym=2,
+                atoms=Atoms([Atom('Cu',(0, 0, 0))],
+                            cell=0.5 * a * f * np.array([[1.0, 1.0, 0.0],
+                                                         [0.0, 1.0, 1.0],
+                                                         [1.0, 0.0, 1.0]])))
+
+    return calc.potential_energy
+
+t0 = time.time()
+
+factors = np.linspace(0.9, 1.1, 10)
+
+with futures.ThreadPoolExecutor(max_workers=2) as executor:
+    fs = [executor.submit(worker, (f, i)) for i, f in enumerate(factors)]
+    energies = [f.result() for f in futures.as_completed(fs)]
+
+print(energies)
+print('Elapsed-time = {0:1.1f} seconds'.format(time.time() - t0))
+#+END_SRC
+
+#+RESULTS:
+: [-2.84280715, -3.21541663, -3.46563573, -3.62036549, -3.69449845, -3.71605521, -3.69440019, -3.64156925, -3.464047, -3.5622029]
+: Elapsed-time = 3.3 seconds
+** Summary
+This example didn't show the benefits of threading/multiprocessing very well. It is hard to get even two times faster with this example, and it plateaus out after 2-3 threads. I guess this is a feature of how fast each function evaluation is in the first place. Still, if you have code that is iterative and the iterations are independent and long-running, you might try this to see if you can get a real-time speed up. Take care if you are on a multi-user machine though, the other users might not appreciate you using all the cores and putting a heavy load on them ;)

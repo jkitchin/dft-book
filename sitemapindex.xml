@@ -14,6 +14,10 @@
   <lastmod>2016-05-25T01:43:00Z</lastmod>
  </sitemap>
  <sitemap>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/categories/cat_multiprocessing-threads.xml</loc>
+  <lastmod>2016-05-28T20:10:00Z</lastmod>
+ </sitemap>
+ <sitemap>
   <loc>http://kitchingroup.cheme.cmu.edu/dft-book/categories/cat_queue-job-management.xml</loc>
   <lastmod>2016-05-26T19:34:00Z</lastmod>
  </sitemap>
@@ -27,10 +31,10 @@
  </sitemap>
  <sitemap>
   <loc>http://kitchingroup.cheme.cmu.edu/dft-book/rss.xml</loc>
-  <lastmod>2016-05-27T23:38:00Z</lastmod>
+  <lastmod>2016-05-28T20:10:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://kitchingroup.cheme.cmu.edu/dft-book/sitemap.xml</loc>
-  <lastmod>2016-05-27T23:38:00Z</lastmod>
+  <lastmod>2016-05-28T20:10:00Z</lastmod>
  </sitemap>
 </sitemapindex>
