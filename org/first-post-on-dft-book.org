@@ -44,9 +44,11 @@ plt.savefig('test.png')
 [[./test.png]]
 
 
-* Multiprocessing with vasp.py
+* DONE Multiprocessing with vasp.py
+  CLOSED: [2016-05-28 Sat 16:10]
   :PROPERTIES:
   :categories: multiprocessing, threads
+  :POSTED:   2016-05-28 16:10:20
   :END:
 #+options: toc:nil
 
