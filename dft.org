@@ -4252,7 +4252,7 @@ TE = []
 for k in KPTS:
     calc = Vasp('bulk/Ag-kpts-{0}'.format(k),
                 xc='PBE',
-                kpts=(k, k, k),  # specifies the Monkhorst-Pack grid
+                kpts=[k, k, k],  # specifies the Monkhorst-Pack grid
                 encut=300,
                 atoms=atoms)
     TE.append(atoms.get_potential_energy())
@@ -4273,13 +4273,6 @@ plt.savefig('images/Ag-kpt-convergence.png')
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/Ag-kpts-2 submitted: 1392101.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/Ag-kpts-3 submitted: 1392102.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/Ag-kpts-4 submitted: 1392103.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/Ag-kpts-5 submitted: 1392104.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/Ag-kpts-6 submitted: 1392105.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/Ag-kpts-8 submitted: 1392106.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/Ag-kpts-10 submitted: 1392107.gilgamesh.cheme.cmu.edu
 
 #+attr_latex: :placement [H]
 #+caption: k-point convergence of the total energy of fcc Ag.
@@ -4436,7 +4429,7 @@ atoms = Atoms([Atom('Cu',  [0.000, 0.000, 0.000])],
 calc = Vasp('bulk/alloy/cu',
             xc='PBE',
             encut=350,
-            kpts=(13, 13, 13),
+            kpts=[13, 13, 13],
             nbands=9,
             ibrion=2,
             isif=4,
@@ -4449,7 +4442,7 @@ print(calc.potential_energy)
 
 #+RESULTS:
 : 11.0
-: /home-research/jkitchin/dft-book/bulk/alloy/cu submitted: 1392109.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/alloy/cu submitted: 1398360.gilgamesh.cheme.cmu.edu
 : None
 
 For this calculation we need at least 6 bands (11/2=5.5 which is rounded up to 6) and we need to include some extra bands. The default rule would only add half a band, which is not enough. We add three additional bands. This system is so small it does not substantially increase the computational cost.
@@ -4468,7 +4461,7 @@ atoms = Atoms([Atom('Cu', [0.000, 0.000, 0.000])],
 calc = Vasp('bulk/alloy/cu',
             xc='PBE',
             encut=350,
-            kpts=(13, 13, 13),
+            kpts=[13, 13, 13],
             ibrion=2,
             isif=4,
             nsw=10,
@@ -4481,28 +4474,44 @@ print calc
 #+RESULTS:
 #+begin_example
 
-Vasp calculation in /home-research/jkitchin/dft-book/bulk/alloy/cu
+*************** VASP CALCULATION SUMMARY ***************
+Vasp calculation directory:
+---------------------------
+  [[/home-research/jkitchin/dft-book/bulk/alloy/cu]]
 
-INCAR created by Atomic Simulation Environment
- ISIF = 4
- ENCUT = 350
- LCHARG = .FALSE.
- IBRION = 2
- NBANDS = 13
- ISMEAR = 1
- LWAVE = .TRUE.
- SIGMA = 0.1
- NSW = 10
+Unit cell:
+----------
+       x       y       z             |v|
+  v0   1.818   0.000   1.818       2.571 Ang
+  v1   1.818   1.818   0.000       2.571 Ang
+  v2   0.000   1.818   1.818       2.571 Ang
+  alpha, beta, gamma (deg):  60.0  60.0  60.0
+  Total volume:                   12.017 Ang^3
+  Stress:    xx     yy     zz     yz     xz     xy
+            nan    nan    nan    nan    nan    nan GPa
 
-Cu
- 1.0000000000000000
-     1.8180000000000001    0.0000000000000000    1.8180000000000001
-     1.8180000000000001    1.8180000000000001    0.0000000000000000
-     0.0000000000000000    1.8180000000000001    1.8180000000000001
-   1
-Cartesian
-  0.0000000000000000  0.0000000000000000  0.0000000000000000
+  ID  tag     sym    x         y         z        rmsF (eV/A)
+  0   0       Cu     0.000     0.000     0.000        nan
+  Potential energy: nan eV
 
+INPUT Parameters:
+-----------------
+  pp        : PBE
+  isif      : 4
+  xc        : pbe
+  kpts      : [13, 13, 13]
+  encut     : 350
+  lcharg    : False
+  ibrion    : 2
+  nbands    : 13
+  ismear    : 1
+  lwave     : True
+  sigma     : 0.1
+  nsw       : 10
+
+Pseudopotentials used:
+----------------------
+  Cu: potpaw_PBE/Cu/POTCAR (git-hash: 13fa889d46be8b12a676c1063c5e4faede17e89b)
 #+end_example
 
 Note the defaults that were set.
@@ -4519,7 +4528,7 @@ atoms = Atoms([Atom('Cu', [0.000, 0.000, 0.000])],
 calc = Vasp('bulk/alloy/cu-setnbands',
           xc='PBE',
           encut=350,
-          kpts=(13, 13, 13),
+          kpts=[13, 13, 13],
           ibrion=2,
           isif=4,
           nsw=10,
@@ -4532,28 +4541,44 @@ print calc
 #+RESULTS:
 #+begin_example
 
-Vasp calculation in /home-research/jkitchin/dft-book/bulk/alloy/cu-setnbands
+*************** VASP CALCULATION SUMMARY ***************
+Vasp calculation directory:
+---------------------------
+  [[/home-research/jkitchin/dft-book/bulk/alloy/cu-setnbands]]
 
-INCAR created by Atomic Simulation Environment
- ISIF = 4
- ENCUT = 350
- LCHARG = .FALSE.
- IBRION = 2
- NBANDS = 9
- ISMEAR = 1
- LWAVE = .TRUE.
- SIGMA = 0.1
- NSW = 10
+Unit cell:
+----------
+       x       y       z             |v|
+  v0   1.818   0.000   1.818       2.571 Ang
+  v1   1.818   1.818   0.000       2.571 Ang
+  v2   0.000   1.818   1.818       2.571 Ang
+  alpha, beta, gamma (deg):  60.0  60.0  60.0
+  Total volume:                   12.017 Ang^3
+  Stress:    xx     yy     zz     yz     xz     xy
+            nan    nan    nan    nan    nan    nan GPa
 
-Cu
- 1.0000000000000000
-     1.8180000000000001    0.0000000000000000    1.8180000000000001
-     1.8180000000000001    1.8180000000000001    0.0000000000000000
-     0.0000000000000000    1.8180000000000001    1.8180000000000001
-   1
-Cartesian
-  0.0000000000000000  0.0000000000000000  0.0000000000000000
+  ID  tag     sym    x         y         z        rmsF (eV/A)
+  0   0       Cu     0.000     0.000     0.000        nan
+  Potential energy: nan eV
 
+INPUT Parameters:
+-----------------
+  pp        : PBE
+  isif      : 4
+  xc        : pbe
+  kpts      : [13, 13, 13]
+  encut     : 350
+  lcharg    : False
+  ibrion    : 2
+  nbands    : 9
+  ismear    : 1
+  lwave     : True
+  sigma     : 0.1
+  nsw       : 10
+
+Pseudopotentials used:
+----------------------
+  Cu: potpaw_PBE/Cu/POTCAR (git-hash: 13fa889d46be8b12a676c1063c5e4faede17e89b)
 #+end_example
 
 You are, of course, free to use any formula you want to set the number of bands. Some formulas I have used in the past include:
@@ -4596,7 +4621,7 @@ for a in LC:
     calc = Vasp('bulk/Cu-{0}'.format(a),
                 xc='PBE',
                 encut=350,
-                kpts=(8, 8, 8),
+                kpts=[8, 8, 8],
                 atoms=atoms)
 
     e = atoms.get_potential_energy()
@@ -4619,28 +4644,12 @@ for lc, e in zip(LC, fcc_energies):
 #+RESULTS:
 #+tblname: cu-fcc-energies
 | lattice constant ($\AA$) | Total Energy (eV) |
-| 3.5 | -3.66182568 |
-| 3.55 | -3.70817569 |
-| 3.6 | -3.73109713 |
-| 3.65 | -3.73432446 |
-| 3.7 | -3.72094163 |
-| 3.75 | -3.69342783 |
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-3.5 submitted: 1391881.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-3.55 submitted: 1391882.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-3.6 submitted: 1391883.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-3.65 submitted: 1391884.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-3.7 submitted: 1391885.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-3.75 submitted: 1391886.gilgamesh.cheme.cmu.edu
-
-
-#+tblname: cu-fcc-energies
-| lattice constant ($\AA$) | Total Energy (eV) |
-|                      3.5 |         -3.649238 |
-|                     3.55 |         -3.696204 |
-|                      3.6 |         -3.719946 |
-|                     3.65 |         -3.723951 |
-|                      3.7 |         -3.711284 |
-|                     3.75 |          -3.68426 |
+|                      3.5 |       -3.66182568 |
+|                     3.55 |       -3.70817569 |
+|                      3.6 |       -3.73109713 |
+|                     3.65 |       -3.73432446 |
+|                      3.7 |       -3.72094163 |
+|                     3.75 |       -3.69342783 |
 
 
 #+begin_exercise
@@ -4729,26 +4738,18 @@ for a in LC:
     calc = Vasp('bulk/Cu-bcc-{0}'.format(a),
                 xc='PBE',
                 encut=350,
-                kpts=(8, 8, 8),
+                kpts=[8, 8, 8],
                 atoms=atoms)
     print(calc.potential_energy)
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.75 submitted: 1392110.gilgamesh.cheme.cmu.edu
-None
-/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.8 submitted: 1392111.gilgamesh.cheme.cmu.edu
-None
-/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.85 submitted: 1392112.gilgamesh.cheme.cmu.edu
-None
-/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.9 submitted: 1392113.gilgamesh.cheme.cmu.edu
-None
-/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.95 submitted: 1392114.gilgamesh.cheme.cmu.edu
-None
-/home-research/jkitchin/dft-book/bulk/Cu-bcc-3.0 submitted: 1392115.gilgamesh.cheme.cmu.edu
-None
-#+end_example
+: -3.59937543
+: -3.67930795
+: -3.71927399
+: -3.72637899
+: -3.70697046
+: -3.66645678
 
 Finally, we will compare the two crystal structures.
 
@@ -4887,7 +4888,7 @@ for a in a_list:
                     xc='PBE',
                     # the c-axis is longer than the a-axis, so we use
                     # fewer kpoints.
-                    kpts=(6, 6, 4),
+                    kpts=[6, 6, 4],
                     encut=350,
                     atoms=atoms)
 
@@ -4902,33 +4903,6 @@ plt.savefig('images/Ru-covera-scan.png')
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.40 submitted: 1392116.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.50 submitted: 1392117.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.60 submitted: 1392118.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.70 submitted: 1392119.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.80 submitted: 1392120.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.40 submitted: 1392121.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.50 submitted: 1392122.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.60 submitted: 1392123.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.70 submitted: 1392124.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.80 submitted: 1392125.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.40 submitted: 1392126.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.50 submitted: 1392127.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.60 submitted: 1392128.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.70 submitted: 1392129.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.80 submitted: 1392130.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.40 submitted: 1392131.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.50 submitted: 1392132.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.60 submitted: 1392133.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.70 submitted: 1392134.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.80 submitted: 1392135.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.40 submitted: 1392136.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.50 submitted: 1392137.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.60 submitted: 1392138.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.70 submitted: 1392139.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.80 submitted: 1392140.gilgamesh.cheme.cmu.edu
-#+end_example
 
 # <<ru-e-ca>>
 #+caption: Total energy vs. $c/a$ for different values of $a$. \label{fig:ru-e-ca}
@@ -5053,7 +5027,7 @@ According to the manual, we should use ENCUT = 1.3*400 = 520 eV for good results
 
 Now we consider the k-point convergence. The lattice vectors of the rutile TiO_{2} structure are not all the same length, which means it is not essential that we use the same number of k-points in each direction. For simplicity, however, we do that here.
 
-#+BEGIN_SRC python :results output org raw
+#+BEGIN_SRC python
 # step 1 frozen atoms and shape at different volumes
 from ase import Atom, Atoms
 import numpy as np
@@ -5089,7 +5063,7 @@ ready = True
 for k in KPOINTS:
     calc = Vasp('bulk/tio2/kpts-{0}'.format(k),
                 encut=520,
-                kpts=(k, k, k),
+                kpts=[k, k, k],
                 xc='PBE',
                 sigma=0.05,
                 atoms=atoms)
@@ -5102,25 +5076,7 @@ plt.plot(KPOINTS, energies)
 plt.xlabel('number of k-points in each vector')
 plt.ylabel('Total energy (eV)')
 plt.savefig('images/tio2-kpt-convergence.png')
-plt.show()
 #+END_SRC
-
-#+RESULTS:
-/home-research/jkitchin/dft-book/bulk/tio2/kpts-2 submitted: 1392141.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/tio2/kpts-3 submitted: 1392142.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/tio2/kpts-4 submitted: 1392143.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/tio2/kpts-5 submitted: 1392144.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/tio2/kpts-6 submitted: 1392145.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/tio2/kpts-7 submitted: 1392146.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/tio2/kpts-8 submitted: 1392147.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/tio2/kpts-2 submitted: 1391607.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/tio2/kpts-3 submitted: 1391608.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/tio2/kpts-4 submitted: 1391609.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/tio2/kpts-5 submitted: 1391610.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/tio2/kpts-6 submitted: 1391611.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/tio2/kpts-7 submitted: 1391612.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/tio2/kpts-8 submitted: 1391613.gilgamesh.cheme.cmu.edu
-
 
 
 #+attr_latex: :placement [H]
@@ -5173,7 +5129,7 @@ for f in factors:
 
     calc = Vasp('bulk/tio2/step1-{0:1.2f}'.format(f),
                 encut=520,
-                kpts=(5,5,5),
+                kpts=[5, 5, 5],
                 isif=2, # relax internal degrees of freedom
                 ibrion=1,
                 nsw=50,
@@ -5200,34 +5156,16 @@ for v, e in zip(volumes, energies):
 #+END_SRC
 
 #+RESULTS:
-/home-research/jkitchin/dft-book/bulk/tio2/step1-0.90 submitted: 1392148.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/tio2/step1-0.95 submitted: 1392149.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/tio2/step1-1.00 submitted: 1392150.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/tio2/step1-1.05 submitted: 1392151.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/tio2/step1-1.10 submitted: 1392152.gilgamesh.cheme.cmu.edu
-#+tblname: tio2-vol-ene
-#+caption: Total energy of TiO_{2} vs. volume.
-| Volume ($\AA^3$) | Energy (eV) |
-|-
-| 56.1254185488 | -51.81933784 |
-| 59.2434971663 | -52.46121295 |
-| 62.361576 | -52.76018521 |
-| 65.4796549456 | -52.80049598 |
-| 68.5977335623 | -52.64629678 |
-/home-research/jkitchin/dft-book-new-vasp/bulk/tio2/step1-0.90 submitted: 1391614.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/tio2/step1-0.95 submitted: 1391615.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/tio2/step1-1.00 submitted: 1391616.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/tio2/step1-1.05 submitted: 1391617.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/tio2/step1-1.10 submitted: 1391618.gilgamesh.cheme.cmu.edu
 #+tblname: tio2-vol-ene
 #+caption: Total energy of TiO_{2} vs. volume.
 | Volume ($\AA^3$) |  Energy (eV) |
 |------------------+--------------|
-|    56.1254185488 | -51.81933784 |
-|    59.2434971663 | -52.46121295 |
-|        62.361576 | -52.76018521 |
-|    65.4796549456 | -52.80049598 |
-|    68.5977335623 | -52.64629678 |
+|    56.1254185488 | -51.81932158 |
+|    59.2434971663 | -52.46118036 |
+|        62.361576 | -52.76017908 |
+|    65.4796549456 | -52.80043775 |
+|    68.5977335623 | -52.64628895 |
+
 
 
 # <<step-1>>
@@ -5355,7 +5293,7 @@ for a in LC:
                                            [1.0, 0.0, 1.0]]))
     calc = Vasp('bulk/Pd-LDA-{0}'.format(a),
                 encut=350,
-                kpts=(12, 12, 12),
+                kpts=[12, 12, 12],
                 xc='LDA',
                 atoms=atoms)
 
@@ -5397,7 +5335,7 @@ for key in GGA:
                                                [1.0, 0.0, 1.0]]))
         calc = Vasp('bulk/Pd-GGA-{1}-{0}'.format(a, key),
                     encut=350,
-                    kpts=(12, 12, 12),
+                    kpts=[12, 12, 12],
                     xc='LDA',
                     gga=key,
                     atoms=atoms)
@@ -5417,10 +5355,39 @@ for key in GGA:
 #+END_SRC
 
 #+RESULTS:
-: PBEsol lattice constant is 3.872 Ang^3
-: AM05   lattice constant is 3.868 Ang^3
-: RPBE   lattice constant is 3.978 Ang^3
-: PBE    lattice constant is 3.939 Ang^3
+#+begin_example
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-PS-3.75 submitted: 1398361.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-PS-3.8 submitted: 1398362.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-PS-3.85 submitted: 1398363.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-PS-3.9 submitted: 1398364.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-PS-3.95 submitted: 1398365.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-PS-4.0 submitted: 1398366.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-PS-4.05 submitted: 1398367.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-PS-4.1 submitted: 1398368.gilgamesh.cheme.cmu.edu
+[None, None, None, None, None, None, None, None] [3.75, 3.8, 3.85, 3.9, 3.95, 4.0, 4.05, 4.1]
+PBEsol is not ready
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-AM-3.75 submitted: 1398369.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-AM-3.8 submitted: 1398370.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-AM-3.85 submitted: 1398371.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-AM-3.9 submitted: 1398372.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-AM-3.95 submitted: 1398373.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-AM-4.0 submitted: 1398374.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-AM-4.05 submitted: 1398375.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-AM-4.1 submitted: 1398376.gilgamesh.cheme.cmu.edu
+[None, None, None, None, None, None, None, None] [3.75, 3.8, 3.85, 3.9, 3.95, 4.0, 4.05, 4.1]
+AM05 is not ready
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-RP-3.75 submitted: 1398377.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-RP-3.8 submitted: 1398378.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-RP-3.85 submitted: 1398379.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-RP-3.9 submitted: 1398380.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-RP-3.95 submitted: 1398381.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-RP-4.0 submitted: 1398382.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-RP-4.05 submitted: 1398383.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Pd-GGA-RP-4.1 submitted: 1398384.gilgamesh.cheme.cmu.edu
+[None, None, None, None, None, None, None, None] [3.75, 3.8, 3.85, 3.9, 3.95, 4.0, 4.05, 4.1]
+RPBE is not ready
+PBE    lattice constant is 3.939 Ang^3
+#+end_example
 
 These results compare very favorably to those in cite:mattsson-084714. It is typical that LDA functionals underestimate the lattice constants, and that GGAs tend to overestimate the lattice constants. PBEsol and AM05 were designed specifically for solids, and for Pd, these functionals do an exceptional job of reproducing the lattice constants. RPBE is particularly bad at the lattice constant, but it has been reported to be a superior functional for reactivity cite:hammer1999:improv-pbe.
 
@@ -5551,7 +5518,7 @@ atoms = FaceCenteredCubic(directions=[[0, 1, 1],
 calc = Vasp('bulk/bulk-rh',
             xc='PBE',
             encut=350,
-            kpts=(4, 4, 4),
+            kpts=[4, 4, 4],
             isif=3,
             ibrion=2,
             nsw=10,
@@ -5565,7 +5532,7 @@ atoms = Atoms([Atom('Rh',[5, 5, 5])],
 calc = Vasp('bulk/atomic-rh',
             xc='PBE',
             encut=350,
-            kpts=(1, 1, 1),
+            kpts=[1, 1, 1],
             atoms=atoms)
 atomic_energy = atoms.get_potential_energy()
 
@@ -5576,7 +5543,7 @@ print 'The cohesive energy is {0:1.3f} eV'.format(cohesive_energy)
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/atomic-rh Queued: 1392161.gilgamesh.cheme.cmu.edu
+: The cohesive energy is 6.184 eV
 
 According to Kittel cite:kittel, the cohesive energy of Rh is 5.75 eV. There are a few reasons we may have discrepancy here:
 
@@ -5600,7 +5567,7 @@ kpts = [3, 4, 6, 9, 12, 15, 18]
 calcs = [Vasp('bulk/bulk-rh-kpts-{0}'.format(k),
                 xc='PBE',
                 encut=350,
-                kpts=(k, k, k),
+                kpts=[k, k, k],
                 atoms=atoms)
          for k in kpts]
 
@@ -5615,15 +5582,13 @@ for k, e in zip(kpts, energies):
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/atomic-rh Queued: 1392161.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/atomic-rh Queued: 1392161.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/bulk-rh-kpts-3 submitted: 1392162.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/bulk-rh-kpts-4 submitted: 1392163.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/bulk-rh-kpts-6 submitted: 1392164.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/bulk-rh-kpts-9 submitted: 1392165.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/bulk-rh-kpts-12 submitted: 1392166.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/bulk-rh-kpts-15 submitted: 1392167.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/bulk-rh-kpts-18 submitted: 1392168.gilgamesh.cheme.cmu.edu
+: ( 3,  3,  3): cohesive energy = -4.76129426 eV
+: ( 4,  4,  4): cohesive energy = -6.17915613 eV
+: ( 6,  6,  6): cohesive energy = -6.20654198 eV
+: ( 9,  9,  9): cohesive energy = -6.20118094 eV
+: (12, 12, 12): cohesive energy = -6.20897225 eV
+: (15, 15, 15): cohesive energy = -6.2091123 eV
+: (18, 18, 18): cohesive energy = -6.21007962 eV
 
 Using only 1 k-point for the bulk energy is a terrible approximation! It takes at least a 6 \times 6 \times 6 grid to get the total energy converged to less than 10 meV. Note we do not need to check the k-point convergence of the atomic state because it is surrounded by vacuum on all sides, and so there should not be any dispersion in the bands.
 
@@ -5643,7 +5608,7 @@ atoms = FaceCenteredCubic(directions=[[0, 1, 1],
 calc = Vasp('bulk/bulk-rh',
             xc='PBE',
             encut=350,
-            kpts=(4, 4, 4),
+            kpts=[4, 4, 4],
             isif=3,
             ibrion=2,
             nsw=10,
@@ -5657,7 +5622,7 @@ atoms = Atoms([Atom('Rh',[5, 5, 5], magmom=1)],
 calc = Vasp('bulk/atomic-rh-sp',
             xc='PBE',
             encut=350,
-            kpts=(1, 1, 1),
+            kpts=[1, 1, 1],
             ispin=2,
             atoms=atoms)
 atomic_energy = atoms.get_potential_energy()
@@ -5669,8 +5634,7 @@ print 'The cohesive energy is {0:1.3f} eV'.format(cohesive_energy)
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/bulk-rh submitted: 1392169.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/atomic-rh-sp submitted: 1392170.gilgamesh.cheme.cmu.edu
+: The cohesive energy is 6.127 eV
 
 Again, the value in Kittel cite:kittel is 5.75 eV which is very close to this value. Finally, it is also possible there is a lower energy non-spherical atom energy; we did not check that at all (see [[*Estimating%20triplet%20oxygen%20dissociation%20energy%20with%20low%20symmetry][Estimating triplet oxygen dissociation energy with low symmetry]]).
 
@@ -5693,7 +5657,7 @@ for atom in atoms:
 
 calc = Vasp('bulk/Fe-bulk',
             xc='PBE',
-            kpts=(6, 6, 6),
+            kpts=[6, 6, 6],
             encut=350,
             ispin=2,
             isif=3,
@@ -5706,9 +5670,8 @@ print(atoms.get_stress())
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/Fe-bulk submitted: 1392171.gilgamesh.cheme.cmu.edu
-: None
-: /home-research/jkitchin/dft-book/bulk/Fe-bulk Queued: 1392171.gilgamesh.cheme.cmu.edu
+: -15.53458272
+: /home-research/jkitchin/dft-book/bulk/Fe-bulk submitted: 1398308.gilgamesh.cheme.cmu.edu
 : [None None None None None None]
 
 
@@ -5818,24 +5781,23 @@ atoms = FaceCenteredCubic(symbol='Al')
 
 calc = Vasp('bulk/Al-bulk',
             xc='PBE',
-            kpts=(12, 12, 12),
+            kpts=[12, 12, 12],
             encut=350,
             prec='High',
             isif=3,
             nsw=30,
             ibrion=1,
             atoms=atoms)
-calc.wait()
+print(calc.potential_energy)
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/Al-bulk submitted: 1396552.gilgamesh.cheme.cmu.edu
+: -14.97511793
 
 Ok, now with a relaxed geometry at hand, we proceed with the elastic constants. This is accomplished with IBRION=6 and ISIF ≥ 3 in VASP.
 
 #+BEGIN_SRC python
 from vasp import Vasp
-import vasp.elastic_moduli
 
 calc = Vasp('bulk/Al-bulk')
 calc.clone('bulk/Al-elastic')
@@ -5846,16 +5808,20 @@ calc.set(ibrion=6,    #
          nsw=1,
          nfree=2)
 
+calc.wait(abort=True)
+
 EM = calc.get_elastic_moduli()
+
 print(EM)
 
-c11 = EM[0,0]
-c12 = EM[0,1]
+c11 = EM[0, 0]
+c12 = EM[0, 1]
 B = (c11 + 2 * c12) / 3.0
 print(B)
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/bulk/Al-elastic submitted: 1397950.gilgamesh.cheme.cmu.edu
 
 This example shows the basic mechanics of getting the elastic constants. The C_{44} constant above is too low, and probably we need to check these constants for convergence with respect to kpoints, planewave cutoff, and maybe the value of POTIM.
 
@@ -5879,7 +5845,7 @@ for a in LC:
     calc = Vasp('bulk/Ni-{0}'.format(a),
                 xc='PBE',
                 encut=350,
-                kpts=(12, 12, 12),
+                kpts=[12, 12, 12],
                 ispin=2,
                 atoms=atoms)
     energies.append(calc.potential_energy)
@@ -5895,6 +5861,78 @@ plt.savefig('images/Ni-fcc.png')
 #+END_SRC
 
 #+RESULTS:
+#+begin_example
+/home-research/jkitchin/dft-book/bulk/Ni-3.6 submitted: 1398405.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ni-3.65  number of electron      10.0000000 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.65  number of electron      10.0000000 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.65  number of electron      10.0000000 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.65  number of electron      10.0000000 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.65  number of electron      10.0000000 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.65  number of electron      10.0000070 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.65  number of electron      10.0000090 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.65  number of electron      10.0000081 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.65  number of electron      10.0000082 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.65  number of electron      10.0000082 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.65  number of electron      10.0000082 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.65 submitted: 1398406.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ni-3.7  number of electron      10.0000000 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.7  number of electron      10.0000000 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.7  number of electron      10.0000000 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.7  number of electron      10.0000000 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.7  number of electron      10.0000000 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.7  number of electron       9.9999957 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.7  number of electron       9.9999953 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.7  number of electron       9.9999955 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.7  number of electron       9.9999955 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.7  number of electron       9.9999955 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.7  number of electron       9.9999955 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.7 submitted: 1398407.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Ni-3.75  number of electron      10.0000000 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.75  number of electron      10.0000000 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.75  number of electron      10.0000000 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.75  number of electron      10.0000000 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.75  number of electron      10.0000000 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.75  number of electron       9.9999871 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.75  number of electron       9.9999842 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.75  number of electron       9.9999856 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.75  number of electron       9.9999855 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.75  number of electron       9.9999855 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.75  number of electron       9.9999855 magnetization
+
+/home-research/jkitchin/dft-book/bulk/Ni-3.75 submitted: 1398408.gilgamesh.cheme.cmu.edu
+#+end_example
 
 [[./images/Ni-fcc.png]]
 
@@ -5942,7 +5980,7 @@ for v in volumes:
 
     calc = Vasp('bulk/TiO2/rutile/rutile-{0}'.format(v),
                 encut=350,
-                kpts=(6, 6, 6),
+                kpts=[6, 6, 6],
                 xc='PBE',
                 ismear=0,
                 sigma=0.001,
@@ -5954,11 +5992,6 @@ for v in volumes:
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/TiO2/rutile/rutile-28.0 submitted: 1392176.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/TiO2/rutile/rutile-30.0 submitted: 1392177.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/TiO2/rutile/rutile-32.0 submitted: 1392178.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/TiO2/rutile/rutile-34.0 submitted: 1392179.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/TiO2/rutile/rutile-36.0 submitted: 1392180.gilgamesh.cheme.cmu.edu
 
 
 #+BEGIN_SRC python
@@ -5994,7 +6027,7 @@ for v in volumes:
 
     calc = Vasp('bulk/TiO2/anatase/anatase-{0}'.format(v),
                 encut=350,
-                kpts=(6, 6, 6),
+                kpts=[6, 6, 6],
                 xc='PBE',
                 ismear=0,
                 sigma=0.001,
@@ -6006,11 +6039,6 @@ for v in volumes:
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/TiO2/anatase/anatase-30.0 submitted: 1392181.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/TiO2/anatase/anatase-33.0 submitted: 1392182.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/TiO2/anatase/anatase-35.0 submitted: 1392183.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/TiO2/anatase/anatase-37.0 submitted: 1392184.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/TiO2/anatase/anatase-39.0 submitted: 1392185.gilgamesh.cheme.cmu.edu
 
 Now we will fit cubic polynomials to the data.
 
@@ -6183,7 +6211,7 @@ atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000])],
 cu = Vasp('bulk/alloy/cu',
           xc='PBE',
           encut=350,
-          kpts=(13, 13, 13),
+          kpts=[13, 13, 13],
           nbands=9,
           ibrion=2,
           isif=3,
@@ -6198,7 +6226,7 @@ atoms = Atoms([Atom('Pd',  [0.000,      0.000,      0.000])],
 pd = Vasp('bulk/alloy/pd',
           xc='PBE',
           encut=350,
-          kpts=(13, 13, 13),
+          kpts=[13, 13, 13],
           nbands=9,
           ibrion=2,
           isif=3,
@@ -6210,11 +6238,10 @@ print 'Pd energy = {0} eV'.format(pd)
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/alloy/cu Queued: 1392109.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/alloy/cu Queued: 1392109.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/alloy/pd submitted: 1392186.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/alloy/cu Queued: 1398360.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/alloy/cu Queued: 1398360.gilgamesh.cheme.cmu.edu
 : Cu energy = None eV
-: Pd energy = None eV
+: Pd energy = -5.22003433 eV
 
 Note that the Pd energy is more negative than the Cu energy. This does not mean anything significant. We cannot say Pd is more stable than Cu; it is not like Cu could transmutate into Pd!
 
@@ -6234,7 +6261,7 @@ atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
 calc = Vasp('bulk/alloy/cupd-1',
             xc='PBE',
             encut=350,
-            kpts=(12, 12, 8),
+            kpts=[12, 12, 8],
             nbands=17,
             ibrion=2,
             isif=3,
@@ -6253,7 +6280,7 @@ atoms = Atoms([Atom('Cu',  [-0.049,     0.049,      0.049]),
 calc = Vasp('bulk/alloy/cupd-2',
             xc='PBE',
             encut=350,
-            kpts=(8,8,8),
+            kpts=[8, 8, 8],
             nbands=34,
             ibrion=2,
             isif=3,
@@ -6266,10 +6293,8 @@ print 'cupd-2 = {0} eV'.format(cupd2)
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/alloy/cupd-1 submitted: 1392187.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/alloy/cupd-2 submitted: 1392188.gilgamesh.cheme.cmu.edu
-: cupd-1 = None eV
-: cupd-2 = None eV
+: cupd-1 = -9.17794311 eV
+: cupd-2 = -18.07698067 eV
 
 
 Looking at these energies, you could be tempted to say cupd-2 is more stable than cupd-1 because its energy is much lower. This is wrong, however, because cupd-2 has twice as many atoms as cupd-1. We should compare the normalized total energies, that is the energy normalized per CuPd formula unit, or as an alternative  the number of atoms in the unit cell. It does not matter which, as long as we normalize consistently. It is conventional in alloy calculation to normalize by the number of atoms in the unit cell.
@@ -6370,12 +6395,13 @@ atoms = Atoms([Atom('Cu',  [-3.672,     3.672,      3.672]),
 calc = Vasp('bulk/alloy/cu3pd-1',
             xc='PBE',
             encut=350,
-            kpts=(8, 8, 8),
+            kpts=[8, 8, 8],
             nbands=34,
             ibrion=2,
             isif=3,
             nsw=10,
             atoms=atoms)
+
 e3 = atoms.get_potential_energy()
 for atom in atoms:
     if atom.symbol == 'Cu':
@@ -6442,7 +6468,7 @@ atoms = Atoms([Atom('Cu',  [-1.867,     1.867,      0.000]),
 calc = Vasp('bulk/alloy/cu3pd-2',
             xc='PBE',
             encut=350,
-            kpts=(8, 8, 8),
+            kpts=[8, 8, 8],
             nbands=34,
             ibrion=2,
             isif=3,
@@ -6496,7 +6522,7 @@ atoms.set_cell((a, a, a), scale_atoms=True)
 
 calc = Vasp('bulk/Cu2O',
             encut=400,
-            kpts=(8, 8, 8),
+            kpts=[8, 8, 8],
             ibrion=2,
             isif=3,
             nsw=30,
@@ -6508,9 +6534,8 @@ print atoms.get_stress()
 #+END_SRC
 
 #+RESULTS:
-: -27.27469814
-: /home-research/jkitchin/dft-book/bulk/Cu2O submitted: 1392189.gilgamesh.cheme.cmu.edu
-: [None None None None None None]
+: -27.27469393
+: [ 0.00271993  0.00271993  0.00271993 -0.         -0.         -0.        ]
 
 **** CuO calculation
 #+BEGIN_SRC python
@@ -6540,7 +6565,7 @@ atoms = Atoms([Atom('Cu', 0.5*a2),
 
 calc = Vasp('bulk/CuO',
             encut=400,
-            kpts=(8, 8, 8),
+            kpts=[8, 8, 8],
             ibrion=2,
             isif=3,
             nsw=30,
@@ -6550,8 +6575,7 @@ print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/CuO submitted: 1392190.gilgamesh.cheme.cmu.edu
-: None
+: -19.62493655
 
 **** TODO Reaction energy calculation
 #+BEGIN_SRC python
@@ -6787,7 +6811,7 @@ for k in kpts:
     calc = Vasp('bulk/pd-dos-k{0}-ismear-5'.format(k),
                 encut=300,
                 xc='PBE',
-                kpts=(k, k, k),
+                kpts=[k, k, k],
                 atoms=bulk)
 
     # this runs the calculation
@@ -6856,12 +6880,12 @@ calc = Vasp('bulk/pd-ados',
             encut=300,
             xc='PBE',
             lreal=False,
-            rwigs=[1.5],  # wigner-seitz radii for ados
-            kpts=(8, 8, 8),
+            rwigs={'Pd': 1.5},  # wigner-seitz radii for ados
+            kpts=[8, 8, 8],
             atoms=bulk)
 
 # this runs the calculation
-calc.wait()
+calc.wait(abort=True)
 
 # now get results
 ados = VaspDos(efermi=calc.get_fermi_level())
@@ -6906,6 +6930,7 @@ plt.show()
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/bulk/pd-ados submitted: 1398386.gilgamesh.cheme.cmu.edu
 
 #+ATTR_LaTeX: :placement [H]
 #+caption: Atom projected $d$-band for bulk Pd. The shaded area corresponds to the occupied states below the Fermi level.
@@ -7025,13 +7050,12 @@ calc = Vasp('bulk/Si-selfconsistent',
           istart=0,
           icharg=2,
           ediff=0.1e-03,
-          kpts=(4, 4, 4),
+          kpts=[4, 4, 4],
           atoms=atoms)
 calc.run()
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/Si-selfconsistent submitted: 1392198.gilgamesh.cheme.cmu.edu
 
 Now, we run a new calculation along the k-point path desired. The standard VASP way of doing this is to modify the INCAR and KPOINTS file and rerun VASP. We will not do that. Doing that results in some lost information if you overwrite the old files. We will copy the old directory to a new directory, using code to ensure this only happens one time.
 
@@ -7058,30 +7082,48 @@ print(calc)
 
 #+RESULTS:
 #+begin_example
-/home-research/jkitchin/dft-book/bulk/Si-bandstructure submitted: 1392199.gilgamesh.cheme.cmu.edu
+/home-research/jkitchin/dft-book/bulk/Si-bandstructure submitted: 1398387.gilgamesh.cheme.cmu.edu
 
-Vasp calculation in /home-research/jkitchin/dft-book/bulk/Si-bandstructure
+*************** VASP CALCULATION SUMMARY ***************
+Vasp calculation directory:
+---------------------------
+  [[/home-research/jkitchin/dft-book/bulk/Si-bandstructure]]
 
-INCAR created by Atomic Simulation Environment
- ISTART = 0
- PREC = Medium
- LCHARG = .FALSE.
- ICHARG = 11
- ISMEAR = 1
- EDIFF = 0.0001
- LWAVE = .FALSE.
- SIGMA = 0.1
+Unit cell:
+----------
+       x       y       z             |v|
+  v0   2.695   2.695   0.000       3.811 Ang
+  v1   0.000   2.695   2.695       3.811 Ang
+  v2   2.695   0.000   2.695       3.811 Ang
+  alpha, beta, gamma (deg):  60.0  60.0  60.0
+  Total volume:                   39.134 Ang^3
+  Stress:    xx     yy     zz     yz     xz     xy
+            nan    nan    nan    nan    nan    nan GPa
 
-Si
- 1.0000000000000000
-     2.6946800000000000    2.6946800000000000    0.0000000000000000
-     0.0000000000000000    2.6946800000000000    2.6946800000000000
-     2.6946800000000000    0.0000000000000000    2.6946800000000000
-   2
-Cartesian
-  0.0000000000000000  0.0000000000000000  0.0000000000000000
-  1.3473400000000000  1.3473400000000000  1.3473400000000000
+  ID  tag     sym    x         y         z        rmsF (eV/A)
+  0   0       Si     0.000     0.000     0.000        nan
+  1   0       Si     1.347     1.347     1.347        nan
+  Potential energy: nan eV
 
+INPUT Parameters:
+-----------------
+  pp        : PBE
+  istart    : 0
+  reciprocal: True
+  xc        : pbe
+  kpts      : [[0.5, 0.5, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.5, 0.5, 0.5]]
+  prec      : Medium
+  lcharg    : False
+  icharg    : 11
+  kpts_nintersections: 10
+  ediff     : 0.0001
+  ismear    : 1
+  lwave     : False
+  sigma     : 0.1
+
+Pseudopotentials used:
+----------------------
+  Si: potpaw_PBE/Si/POTCAR (git-hash: e69e8a3044c2885f5fc7d2b1e1c90ba7ffef914a)
 #+end_example
 
 We will learn how to manually parse the EIGENVAL file here to generate the band structure. The structure of the EIGENVAL file looks like this:
@@ -7179,7 +7221,7 @@ import vasp.bandstructure
 
 from ase import Atom, Atoms
 ready = True
-for i,a in enumerate([4.7, 5.38936, 6.0]):
+for i, a in enumerate([4.7, 5.38936, 6.0]):
 
     atoms = Atoms([Atom('Si', [0, 0, 0]),
                    Atom('Si', [0.25, 0.25, 0.25])])
@@ -7194,7 +7236,7 @@ for i,a in enumerate([4.7, 5.38936, 6.0]):
                 istart=0,
                 icharg=2,
                 ediff=0.1e-03,
-                kpts=(4, 4, 4),
+                kpts=[4, 4, 4],
                 atoms=atoms)
 
     n, bands, p  = calc.get_bandstructure(kpts_path=[('L', [0.5,0.5,0.0]),
@@ -7205,11 +7247,12 @@ for i,a in enumerate([4.7, 5.38936, 6.0]):
 
 
     p.savefig('images/Si-bs-{0}.png'.format(i))
-    p.show()
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/Si-bs-0 submitted: 1392200.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Si-bs-0/bandstructure submitted: 1398388.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Si-bs-1 submitted: 1398389.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Si-bs-1 Queued: 1398389.gilgamesh.cheme.cmu.edu
 
 #+attr_latex: :placement [H]
 #+caption: Si band structure for a=4.7
@@ -7330,9 +7373,8 @@ print 'Individual moments are {0} Bohr-magnetons'.format(magmoms)
 #+END_SRC
 
 #+RESULTS:
-: Calculation needed for ['initial_magmoms']
-: /home-research/jkitchin/dft-book/bulk/Fe-bcc-sp-1 submitted: 1396751.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/Fe-bcc-sp-1 Queued: 1396751.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Fe-bcc-sp-1 submitted: 1398390.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Fe-bcc-sp-1 Queued: 1398390.gilgamesh.cheme.cmu.edu
 : Total magnetic moment is 0.00 Bohr-magnetons
 : Individual moments are [ 0.  0.] Bohr-magnetons
 
@@ -7441,7 +7483,6 @@ There is one important parameter that is different for surfaces than for bulk ca
 
 #+BEGIN_SRC python
 from ase.lattice.surface import fcc111
-from ase.io import write
 from vasp import Vasp
 
 slab = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
@@ -7468,6 +7509,7 @@ p.savefig('images/Al-slab-bandstructure.png')
 #+END_SRC
 
 #+RESULTS:
+: done
 
 
 # <<surface-bands>>
@@ -7489,7 +7531,7 @@ atoms = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
 
 calc = Vasp('surfaces/Al-slab-unrelaxed',
             xc='PBE',
-            kpts=(6, 6, 1),
+            kpts=[6, 6, 1],
             encut=350,
             atoms=atoms)
 
@@ -7549,7 +7591,7 @@ atoms.set_constraint(constraint)
 
 calc = Vasp('surfaces/Al-slab-relaxed',
             xc='PBE',
-            kpts=(6, 6, 1),
+            kpts=[6, 6, 1],
             encut=350,
             ibrion=2,
             isif=2,
@@ -7561,34 +7603,48 @@ print calc
 
 #+RESULTS:
 #+begin_example
-/home-research/jkitchin/dft-book/surfaces/Al-slab-relaxed submitted: 1392070.gilgamesh.cheme.cmu.edu
-None
+-14.18341424
 
-Vasp calculation in /home-research/jkitchin/dft-book/surfaces/Al-slab-relaxed
+*************** VASP CALCULATION SUMMARY ***************
+Vasp calculation directory:
+---------------------------
+  [[/home-research/jkitchin/dft-book/surfaces/Al-slab-relaxed]]
 
-INCAR created by Atomic Simulation Environment
- ISIF = 2
- ENCUT = 350
- LCHARG = .FALSE.
- IBRION = 2
- ISMEAR = 1
- LWAVE = .TRUE.
- SIGMA = 0.1
- NSW = 10
+Unit cell:
+----------
+       x       y       z             |v|
+  v0   2.864   0.000   0.000       2.864 Ang
+  v1   1.432   2.480   0.000       2.864 Ang
+  v2   0.000   0.000  27.015      27.015 Ang
+  alpha, beta, gamma (deg):  90.0  90.0  60.0
+  Total volume:                  191.872 Ang^3
+  Stress:    xx     yy     zz     yz     xz     xy
+          0.006  0.006  0.001 -0.000 -0.000 -0.000 GPa
 
-Al
- 1.0000000000000000
-     2.8637824638055176    0.0000000000000000    0.0000000000000000
-     1.4318912319027588    2.4801083645679673    0.0000000000000000
-     0.0000000000000000    0.0000000000000000   27.0148057706539539
-   4
-Selective dynamics
-Cartesian
-  0.0000000000000000  0.0000000000000000  9.9999999999999858   F   F   F
-  1.4318912319027688  0.8267027881893283 12.3382685902179787   F   F   F
-  2.8637824638055074  1.6534055763786391 14.6472175363588981   T   T   T
-  0.0000000000000000  0.0000000000000000 17.0168625541318761   T   T   T
+  ID  tag     sym    x         y         z        rmsF (eV/A)
+  0   0       Al     0.000*    0.000*   10.000*      0.00
+  1   0       Al     1.432*    0.827*   12.338*      0.00
+  2   0       Al     2.864     1.653    14.646       0.03
+  3   0       Al     0.000     0.000    17.003       0.04
+  Potential energy: -14.1834 eV
 
+INPUT Parameters:
+-----------------
+  pp        : PBE
+  isif      : 2
+  xc        : pbe
+  kpts      : [6, 6, 1]
+  encut     : 350
+  lcharg    : False
+  ibrion    : 2
+  ismear    : 1
+  lwave     : True
+  sigma     : 0.1
+  nsw       : 10
+
+Pseudopotentials used:
+----------------------
+  Al: potpaw_PBE/Al/POTCAR (git-hash: ad7c649117f1490637e05717e30ab9a0dd8774f6)
 #+end_example
 
 You can see that atoms 2 and 3 (the ones we relaxed, because the have tags of 1 and 2, which are less than 3) now have very low forces on them and it appears that atoms 0 and 1 have no forces on them. That is because the FixAtoms constraint works by setting the forces on those atoms to zero. We can see in the next example that the z-positions of the relaxed atoms have indeed relaxed and changed, while the position of the frozen atoms did not change.
@@ -7693,7 +7749,7 @@ write('images/Au-110.png', atoms.repeat((2, 2, 1)), rotation='-90x', show_unit_c
 
 print Vasp('surfaces/Au-110',
            xc='PBE',
-           kpts=(6, 6, 1),
+           kpts=[6, 6, 1],
            encut=350,
            ibrion=2,
            isif=2,
@@ -7702,9 +7758,7 @@ print Vasp('surfaces/Au-110',
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/surfaces/Au-110 submitted: 1392071.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/surfaces/Au-110 Queued: 1392071.gilgamesh.cheme.cmu.edu
-: None
+: -35.92440066
 
 #+ATTR_LaTeX: :placement [H] :width 2in
 #+ATTR_org: :width 300
@@ -7731,7 +7785,7 @@ write('images/Au-110-missing-row.png',
 
 calc = Vasp('surfaces/Au-110-missing-row',
            xc='PBE',
-           kpts=(6, 6, 1),
+           kpts=[6, 6, 1],
            encut=350,
            ibrion=2,
            isif=2,
@@ -7742,7 +7796,6 @@ calc.update()
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/surfaces/Au-110-missing-row submitted: 1392072.gilgamesh.cheme.cmu.edu
 
 #+ATTR_LaTeX: :placement [H] :width 2in
 #+ATTR_org: :width 200
@@ -7764,14 +7817,12 @@ atoms = FaceCenteredCubic(directions=[[0, 1, 1],
 print Vasp('bulk/Au-fcc',
            xc='PBE',
            encut=350,
-           kpts=(12, 12, 12),
+           kpts=[12, 12, 12],
            atoms=atoms).potential_energy
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/Au-fcc submitted: 1392073.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/Au-fcc Queued: 1392073.gilgamesh.cheme.cmu.edu
-: None
+: -3.19446244
 
 **** Analysis of energies
 #+BEGIN_SRC python
@@ -7804,7 +7855,7 @@ atoms.set_constraint(constraint)
 
 calc = Vasp('surfaces/Ag-110',
             xc='PBE',
-            kpts=(6, 6, 1),
+            kpts=[6, 6, 1],
             encut=350,
             ibrion=2,
             isif=2,
@@ -7814,7 +7865,6 @@ calc.update()
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/surfaces/Ag-110 submitted: 1392074.gilgamesh.cheme.cmu.edu
 
 **** Missing row in Ag(110)
 #+BEGIN_SRC python
@@ -7831,7 +7881,7 @@ atoms.set_constraint(constraint)
 
 Vasp('surfaces/Ag-110-missing-row',
      xc='PBE',
-     kpts=(6, 6, 1),
+     kpts=[6, 6, 1],
      encut=350,
      ibrion=2,
      isif=2,
@@ -7840,7 +7890,6 @@ Vasp('surfaces/Ag-110-missing-row',
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/surfaces/Ag-110-missing-row submitted: 1392075.gilgamesh.cheme.cmu.edu
 
 **** Bulk Ag
 #+BEGIN_SRC python
@@ -7857,12 +7906,11 @@ atoms = FaceCenteredCubic(directions=[[0, 1, 1],
 Vasp('bulk/Ag-fcc',
      xc='PBE',
      encut=350,
-     kpts=(12, 12, 12),
+     kpts=[12, 12, 12],
      atoms=atoms).update()
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/Ag-fcc submitted: 1392076.gilgamesh.cheme.cmu.edu
 
 **** Analysis of energies
 #+BEGIN_SRC python
@@ -7874,18 +7922,11 @@ emissingrow = Vasp('surfaces/Ag-110-missing-row').potential_energy
 
 ebulk = Vasp('bulk/Ag-fcc').potential_energy
 
-print 'natoms slab        = {0}'.format(len(slab))
-print 'natoms missing row = {0}'.format(len(missingrow))
-print 'natoms bulk        = {0}'.format(len(bulk))
-
 print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
 #+END_SRC
 
 #+RESULTS:
-: natoms slab        = 12
-: natoms missing row = 11
-: natoms bulk        = 1
-: dE = -0.008 eV
+: dE = -0.010 eV
 
 For Ag(110), the missing row formation energy is practically thermoneutral, i.e. not that favorable. This energy is so close to 0eV, that we cannot confidently say whether the reconstruction is favorable or not. Experimentally, the reconstruction is not seen on very clean Ag(110) although it is reported that some adsorbates may induce the reconstruction cite:PhysRevLett.59.2307.
 
@@ -7902,7 +7943,7 @@ atoms.set_constraint(constraint)
 
 Vasp('surfaces/Cu-110',
      xc='PBE',
-     kpts=(6, 6, 1),
+     kpts=[6, 6, 1],
      encut=350,
      ibrion=2,
      isif=2,
@@ -7911,7 +7952,6 @@ Vasp('surfaces/Cu-110',
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/surfaces/Cu-110 submitted: 1392077.gilgamesh.cheme.cmu.edu
 
 **** Missing row in Cu(110)
 #+BEGIN_SRC python
@@ -7927,7 +7967,7 @@ atoms.set_constraint(constraint)
 
 Vasp('surfaces/Cu-110-missing-row',
      xc='PBE',
-     kpts=(6, 6, 1),
+     kpts=[6, 6, 1],
      encut=350,
      ibrion=2,
      isif=2,
@@ -7936,7 +7976,6 @@ Vasp('surfaces/Cu-110-missing-row',
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/surfaces/Cu-110-missing-row submitted: 1392078.gilgamesh.cheme.cmu.edu
 
 **** Bulk Cu
 #+BEGIN_SRC python
@@ -7953,12 +7992,11 @@ atoms = FaceCenteredCubic(directions=[[0, 1, 1],
 Vasp('bulk/Cu-fcc',
      xc='PBE',
      encut=350,
-     kpts=(12, 12, 12),
+     kpts=[12, 12, 12],
      atoms=atoms).update()
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/Cu-fcc submitted: 1392079.gilgamesh.cheme.cmu.edu
 
 **** Analysis
 #+BEGIN_SRC python
@@ -8030,7 +8068,7 @@ for n in Nlayers:
     calc = Vasp('bulk/Cu-layers/{0}'.format(n),
                 xc='PBE',
                 encut=350,
-                kpts=(8, 8, 1),
+                kpts=[8, 8, 1],
                 atoms=slab)
     calc.set_nbands(f=2)  # the default nbands in VASP is too low for Cu
     energies.append(slab.get_potential_energy())
@@ -8051,15 +8089,14 @@ plt.savefig('images/Cu-unrelaxed-surface-energy.png')
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/Cu-layers/3 submitted: 1392082.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/Cu-layers/4 submitted: 1392083.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/Cu-layers/5 submitted: 1392084.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/Cu-layers/6 submitted: 1392085.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/Cu-layers/7 submitted: 1392086.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/Cu-layers/8 submitted: 1392087.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/Cu-layers/9 submitted: 1392088.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/Cu-layers/10 submitted: 1392089.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/Cu-layers/11 submitted: 1392090.gilgamesh.cheme.cmu.edu
+: nlayers =  3 sigma = 0.561 eV/atom
+: nlayers =  4 sigma = 0.398 eV/atom
+: nlayers =  5 sigma = 0.594 eV/atom
+: nlayers =  6 sigma = 0.308 eV/atom
+: nlayers =  7 sigma = 0.590 eV/atom
+: nlayers =  8 sigma = 0.332 eV/atom
+: nlayers =  9 sigma = 0.591 eV/atom
+: nlayers = 10 sigma = 0.392 eV/atom
 
 # <<oscillating-surface-energy>>
 #+ATTR_LaTeX: :placement [H]
@@ -8101,13 +8138,14 @@ To get the work function, we need to have the local potential. This is not writt
 #+BEGIN_SRC python
 from vasp import Vasp
 import matplotlib.pyplot as plt
+import numpy as np
 
 calc = Vasp('surfaces/Al-slab-relaxed')
 atoms = calc.get_atoms()
 
 calc = Vasp('surfaces/Al-slab-locpot',
             xc='PBE',
-            kpts=(6, 6, 1),
+            kpts=[6, 6, 1],
             encut=350,
             lvtot=True,  # write out local potential
             lvhar=True,  # write out only electrostatic potential, not xc pot
@@ -8135,8 +8173,7 @@ print ' The workfunction is {0:1.2f} eV'.format(wf)
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/surfaces/Al-slab-locpot Queued: 1392091.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/surfaces/Al-slab-locpot Queued: 1392091.gilgamesh.cheme.cmu.edu
+:  The workfunction is 4.17 eV
 
 The workfunction of Al is listed as 4.08 at http://hyperphysics.phy-astr.gsu.edu/hbase/tables/photoelec.html.
 
@@ -8192,7 +8229,7 @@ write('images/Na-Al-slab.png', slab, rotation='-90x', show_unit_cell=2)
 print(Vasp('surfaces/Al-Na-nodip',
            xc='PBE',
            encut=340,
-           kpts=(2, 2, 1),
+           kpts=[2, 2, 1],
            lcharg=True,
            lvtot=True,  # write out local potential
            lvhar=True,  # write out only electrostatic potential, not xc pot
@@ -8200,9 +8237,7 @@ print(Vasp('surfaces/Al-Na-nodip',
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/surfaces/Al-Na-nodip submitted: 1392092.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/surfaces/Al-Na-nodip Queued: 1392092.gilgamesh.cheme.cmu.edu
-: None
+: -22.55264459
 
 # <<asymmetric-slab>>
 #+attr_latex: :placement [H] :width 2in
@@ -8210,7 +8245,7 @@ print(Vasp('surfaces/Al-Na-nodip',
 #+caption: Example slab with a Na atom on it for illustrating the effects of dipole corrections.
 [[./images/Na-Al-slab.png]]
 
-*** Slab with a dipole correction
+*** TODO Slab with a dipole correction
     Note this takes a considerably longer time to run than without a dipole correction! In VASP there are several levels of dipole correction to apply. You can use the [[incar:IDIPOL][IDIPOL]] tag to turn it on, and specify which direction to apply it in (1=$x$, 2=$y$, 3=$z$, 4=$(x,y,z)$). This simply corrects the total energy and forces. It does not change the contents of LOCPOT. For that, you have to also set the [[incar:LDIPOL][LDIPOL]] and [[incar:DIPOL][DIPOL]] tags. It is not efficient to set all three at the same time for some reason. The VASP manual recommends you first set IDIPOL to get a converged electronic structure, and then set LDIPOL to True, and set the center of electron density in DIPOL. That makes these calculations a multistep process, because we must run a calculation, analyze the charge density to get the center of charge, and then run a second calculation.
 
 #+BEGIN_SRC python
@@ -8227,7 +8262,7 @@ slab.center()
 calc = Vasp('surfaces/Al-Na-dip',
             xc='PBE',
             encut=340,
-            kpts=(2, 2, 1),
+            kpts=[2, 2, 1],
             lcharg=True,
             idipol=3,   # only along z-axis
             lvtot=True,  # write out local potential
@@ -8265,8 +8300,6 @@ print(calc.potential_energy)
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/surfaces/Al-Na-dip submitted: 1392093.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/surfaces/Al-Na-dip Queued: 1392093.gilgamesh.cheme.cmu.edu
 
 *** Comparing no dipole correction with a dipole correction
 
@@ -8358,14 +8391,13 @@ write('images/Pt-fcc-ori.png', atoms, show_unit_cell=2)
 
 print(Vasp('surfaces/Pt-slab',
            xc='PBE',
-           kpts=(4, 4, 1),
+           kpts=[4, 4, 1],
            encut=350,
            atoms=atoms).potential_energy)
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/surfaces/Pt-slab submitted: 1392094.gilgamesh.cheme.cmu.edu
-: None
+: -68.23616204
 
 #+attr_latex: :placement [H] :width 2in
 #+attr_org: :width 300
@@ -8424,7 +8456,7 @@ atoms.set_constraint(constraint)
 
 print(Vasp('surfaces/Pt-slab-O-bridge',
            xc='PBE',
-           kpts=(4, 4, 1),
+           kpts=[4, 4, 1],
            encut=350,
            ibrion=2,
            nsw=25,
@@ -8432,8 +8464,7 @@ print(Vasp('surfaces/Pt-slab-O-bridge',
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/surfaces/Pt-slab-O-bridge submitted: 1392096.gilgamesh.cheme.cmu.edu
-: None
+: -74.23023073
 
 #+ATTR_LaTeX: :width 203bp :placement [H]
 #+caption: Initial geometry of the bridge site. It is definitely on the bridge.
@@ -8458,7 +8489,7 @@ write('images/Pt-hcp-o-site.png', atoms, show_unit_cell=2)
 
 print(Vasp('surfaces/Pt-slab-O-hcp',
            xc='PBE',
-           kpts=(4, 4, 1),
+           kpts=[4, 4, 1],
            encut=350,
            ibrion=2,
            nsw=25,
@@ -8466,8 +8497,7 @@ print(Vasp('surfaces/Pt-slab-O-hcp',
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/surfaces/Pt-slab-O-hcp submitted: 1392097.gilgamesh.cheme.cmu.edu
-: None
+: -73.76942127
 
 #+attr_latex: :placement [H] :width 2in
 #+attr_org: :width 200
@@ -8587,7 +8617,7 @@ print 'Initial O position: {0}'.format(atoms.positions[-1])
 
 calc = Vasp('surfaces/Pt-slab-O-bridge-xy-constrained',
             xc='PBE',
-            kpts=(4, 4, 1),
+            kpts=[4, 4, 1],
             encut=350,
             ibrion=2,
             nsw=25,
@@ -8616,8 +8646,8 @@ print 'Hads (bridge) = {0:1.3f} eV/O'.format(Hads_bridge)
 
 #+RESULTS:
 : Initial O position: [  1.38592929   0.          15.72642611]
+: /home-research/jkitchin/dft-book/surfaces/Pt-slab-O-bridge-xy-constrained submitted: 1398391.gilgamesh.cheme.cmu.edu
 : Final O position  : [  1.38592929   0.          15.9685262 ]
-: /home-research/jkitchin/dft-book/surfaces/Pt-slab Queued: 1392094.gilgamesh.cheme.cmu.edu
 
 You can see that only the \(z\)-position of the O atom changed. Also, the adsorption energy of O on the bridge site is *much* less favorable than on the fcc or hcp sites.
 
@@ -8653,14 +8683,13 @@ write('images/Pt-fcc-1ML.png', atoms, show_unit_cell=2)
 
 print(Vasp('surfaces/Pt-slab-1x1',
            xc='PBE',
-           kpts=(8, 8, 1),
+           kpts=[8, 8, 1],
            encut=350,
            atoms=atoms).potential_energy)
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/surfaces/Pt-slab-1x1 submitted: 1392098.gilgamesh.cheme.cmu.edu
-: None
+: -17.05903301
 
 #+attr_latex: :placement [H] :width 2in
 #+attr_org: :width 200
@@ -8687,7 +8716,7 @@ write('images/Pt-o-fcc-1ML.png', atoms, show_unit_cell=2)
 
 print(Vasp('surfaces/Pt-slab-1x1-O-fcc',
            xc='PBE',
-           kpts=(8, 8, 1),
+           kpts=[8, 8, 1],
            encut=350,
            ibrion=2,
            nsw=25,
@@ -8695,8 +8724,7 @@ print(Vasp('surfaces/Pt-slab-1x1-O-fcc',
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/surfaces/Pt-slab-1x1-O-fcc submitted: 1392099.gilgamesh.cheme.cmu.edu
-: None
+: -22.13585728
 
 #+attr_latex: :placement [h] :width 2in
 #+attr_org: :width 200
@@ -8996,7 +9024,7 @@ for field in [-0.5, 0.0, 0.5]:
     Vasp('surfaces/Pt-co-field-{0}'.format(field),
          xc='PBE',
          encut=350,
-         kpts=(6, 6, 1),
+         kpts=[6, 6, 1],
          efield=field,  # set the field
          ldipol=True,   # turn dipole correction on
          idipol=3,      # set field in z-direction
@@ -9006,7 +9034,6 @@ for field in [-0.5, 0.0, 0.5]:
 #+END_SRC
 
 #+RESULTS:
-: 0.0: -108.077
 
 These energies are crazy different, and the forces on the atoms with the field on are insanely high. This section is on hold until I figure that out.
 
@@ -9653,7 +9680,7 @@ atoms[0].magmom = 1
 
 calc = Vasp('bulk/Ni-PBE',
             ismear=-5,
-            kpts=(5, 5, 5),
+            kpts=[5, 5, 5],
             xc='PBE',
             ispin=2,
             lorbit=11,
@@ -9704,6 +9731,8 @@ plt.savefig('images/ni-dos-pbe-pbe0-hse06.png')
 #+END_SRC
 
 #+RESULTS:
+: /home-research/jkitchin/dft-book/bulk/Ni-PBE submitted: 1398393.gilgamesh.cheme.cmu.edu
+: ('PBE energy:   ', None)
 
 #+caption: Comparison of DOS from GGA, and two hybrid GGAs (PBE0 ad HSE06).
 #+ATTR_LaTeX: :placement [H]
@@ -9742,14 +9771,16 @@ benzene.center(vacuum=5)
 print(Vasp('molecules/benzene-pbe',
            xc='PBE',
            encut=350,
-           kpts=(1,1,1),
+           kpts=[1, 1, 1],
            ibrion=1,
            nsw=100,
            atoms=benzene).potential_energy)
 #+END_SRC
 
 #+RESULTS:
-: -76.011625
+: /home-research/jkitchin/dft-book/molecules/benzene-pbe submitted: 1398394.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/molecules/benzene-pbe Queued: 1398394.gilgamesh.cheme.cmu.edu
+: None
 
 **** clean slab
 #+BEGIN_SRC python
@@ -9769,14 +9800,16 @@ atoms.set_constraint(c)
 print(Vasp('surfaces/Au-pbe',
            xc='PBE',
            encut=350,
-           kpts=(4,4,1),
+           kpts=[4, 4, 1],
            ibrion=1,
            nsw=100,
            atoms=atoms).potential_energy)
 #+END_SRC
 
 #+RESULTS:
-: -82.419513
+: /home-research/jkitchin/dft-book/surfaces/Au-pbe submitted: 1398395.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/surfaces/Au-pbe Queued: 1398395.gilgamesh.cheme.cmu.edu
+: None
 
 **** benzene on Au(111)
 #+BEGIN_SRC python
@@ -9809,14 +9842,16 @@ atoms.set_constraint(c)
 print(Vasp('surfaces/Au-benzene-pbe',
            xc='PBE',
            encut=350,
-           kpts=(4,4,1),
+           kpts=[4, 4, 1],
            ibrion=1,
            nsw=100,
            atoms=atoms).potential_energy)
 #+END_SRC
 
 #+RESULTS:
-: -158.360082
+: /home-research/jkitchin/dft-book/surfaces/Au-benzene-pbe submitted: 1398396.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/surfaces/Au-benzene-pbe Queued: 1398396.gilgamesh.cheme.cmu.edu
+: None
 
 #+BEGIN_SRC python
 from vasp import Vasp
@@ -9848,7 +9883,7 @@ benzene.center(vacuum=5)
 print(Vasp('molecules/benzene-pbe-d2',
           xc='PBE',
           encut=350,
-          kpts=(1,1,1),
+          kpts=[1, 1, 1],
           ibrion=1,
           nsw=100,
           lvdw=True,
@@ -9856,7 +9891,9 @@ print(Vasp('molecules/benzene-pbe-d2',
 #+END_SRC
 
 #+RESULTS:
-: -76.157947
+: /home-research/jkitchin/dft-book/molecules/benzene-pbe-d2 submitted: 1398397.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/molecules/benzene-pbe-d2 Queued: 1398397.gilgamesh.cheme.cmu.edu
+: None
 
 **** clean slab
 #+BEGIN_SRC python
@@ -9874,7 +9911,7 @@ atoms.set_constraint(c)
 print(Vasp('surfaces/Au-pbe-d2',
           xc='PBE',
           encut=350,
-          kpts=(4, 4, 1),
+          kpts=[4, 4, 1],
           ibrion=1,
           nsw=100,
           lvdw=True,
@@ -9882,7 +9919,9 @@ print(Vasp('surfaces/Au-pbe-d2',
 #+END_SRC
 
 #+RESULTS:
-: -106.34078774
+: /home-research/jkitchin/dft-book/surfaces/Au-pbe-d2 submitted: 1398398.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/surfaces/Au-pbe-d2 Queued: 1398398.gilgamesh.cheme.cmu.edu
+: None
 
 **** benzene on Au(111)
 #+BEGIN_SRC python
@@ -9915,7 +9954,7 @@ atoms.set_constraint(c)
 print(Vasp('surfaces/Au-benzene-pbe-d2',
           xc='PBE',
           encut=350,
-          kpts=(4, 4, 1),
+          kpts=[4, 4, 1],
           ibrion=1,
           nsw=100,
           lvdw=True,
@@ -9923,7 +9962,9 @@ print(Vasp('surfaces/Au-benzene-pbe-d2',
 #+END_SRC
 
 #+RESULTS:
-: -184.07043811
+: /home-research/jkitchin/dft-book/surfaces/Au-benzene-pbe-d2 submitted: 1398399.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/surfaces/Au-benzene-pbe-d2 Queued: 1398399.gilgamesh.cheme.cmu.edu
+: None
 
 
 #+BEGIN_SRC python
@@ -10015,7 +10056,7 @@ print atoms[0]
 calc = Vasp('bulk/Cu-cls-0',
             xc='PBE',
             encut=350,
-            kpts=(4, 4, 4),
+            kpts=[4, 4, 4],
             ibrion=2,
             isif=3,
             nsw=40,
@@ -10025,7 +10066,7 @@ print(atoms.get_potential_energy())
 
 #+RESULTS:
 : Atom('Cu', [0.0, 0.0, 0.0], index=0)
-: bulk/Cu-cls-0 submitted: 1386273.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/Cu-cls-0 submitted: 1398400.gilgamesh.cheme.cmu.edu
 : None
 
 
@@ -10045,7 +10086,7 @@ atoms = atoms.repeat((2, 2, 2))
 calc = Vasp('bulk/CuPd-cls-0',
             xc='PBE',
             encut=350,
-            kpts=(4, 4, 4),
+            kpts=[4, 4, 4],
             ibrion=2,
             isif=3,
             nsw=40,
@@ -10055,7 +10096,7 @@ print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
-: bulk/CuPd-cls-0 submitted: 1386274.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/bulk/CuPd-cls-0 submitted: 1398401.gilgamesh.cheme.cmu.edu
 : None
 
 Next, we have to do the excitation in each structure. For these, we do not relax the structure. We clone the previous results and modify them.
@@ -12302,9 +12343,9 @@ if __name__ == '__main__':
     # setup an atoms object
     a = 3.6
     atoms = Atoms([Atom('Cu',(0, 0, 0))],
-                  cell=0.5 * a*np.array([[1.0, 1.0, 0.0],
-                                         [0.0, 1.0, 1.0],
-                                         [1.0, 0.0, 1.0]]))
+                  cell=0.5 * a * np.array([[1.0, 1.0, 0.0],
+                                           [0.0, 1.0, 1.0],
+                                           [1.0, 0.0, 1.0]]))
     v0 = atoms.get_volume()
 
     # Step 1
@@ -12320,7 +12361,7 @@ if __name__ == '__main__':
         calc = Vasp(label,
                     xc='PBE',
                     encut=350,
-                    kpts=(6,6,6),
+                    kpts=[6, 6, 6],
                     isym=2,
                     atoms=newatoms)
 
@@ -12359,7 +12400,7 @@ if __name__ == '__main__':
         calc = Vasp(label,
                     xc='PBE',
                     encut=350,
-                    kpts=(6,6,6),
+                    kpts=[6, 6, 6],
                     isym=2,
                     atoms=newatoms)
         calculators.append(calc)
@@ -12458,7 +12499,7 @@ if __name__ == '__main__':
         calc = Vasp(label,
                     xc='PBE',
                     encut=350,
-                    kpts=(6,6,6),
+                    kpts=[6, 6, 6],
                     isym=2,
                     debug=logging.DEBUG,
                     atoms=newatoms)
@@ -12498,7 +12539,7 @@ if __name__ == '__main__':
         calc = Vasp(label,
                     xc='PBE',
                     encut=350,
-                    kpts=(6,6,6),
+                    kpts=[6, 6, 6],
                     isym=2,
                     debug=logging.DEBUG,
                     atoms=newatoms)
