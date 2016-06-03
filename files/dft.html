@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2016-06-03 Fri 13:32 -->
+<!-- 2016-06-03 Fri 13:36 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="viewport" content="width=device-width, initial-scale=1" />
 <title>Modeling materials using density functional theory</title>
@@ -185,7 +185,111 @@ A copy of the license is included in the section entitled "GNU
 Free Documentation License".
 </p>
 
-#+TOC: headlines 2
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgheadline1">1. Introduction to this book</a></li>
+<li><a href="#orgheadline2">2. Introduction to DFT</a>
+<ul>
+<li><a href="#orgheadline3">2.1. Background</a></li>
+<li><a href="#orgheadline4">2.2. Exchange correlation functionals</a></li>
+<li><a href="#orgheadline5">2.3. Basis sets</a></li>
+<li><a href="#orgheadline6">2.4. Pseudopotentials</a></li>
+<li><a href="#orgheadline7">2.5. Fermi Temperature and band occupation numbers</a></li>
+<li><a href="#orgheadline8">2.6. Spin polarization and magnetism</a></li>
+<li><a href="#orgheadline9">2.7. Recommended reading</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline10">3. Molecules</a>
+<ul>
+<li><a href="#orgheadline11">3.1. Defining and visualizing molecules</a></li>
+<li><a href="#orgheadline12">3.2. Simple properties</a></li>
+<li><a href="#orgheadline13">3.3. Simple properties that require single computations</a></li>
+<li><a href="#orgheadline14">3.4. Geometry optimization</a></li>
+<li><a href="#orgheadline15">3.5. Vibrational frequencies</a></li>
+<li><a href="#orgheadline16">3.6. Simulated infrared spectra</a></li>
+<li><a href="#orgheadline17">3.7. Thermochemical properties of molecules</a></li>
+<li><a href="#orgheadline18">3.8. Molecular reaction energies</a></li>
+<li><a href="#orgheadline19">3.9. Molecular reaction barriers</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline20">4. Bulk systems</a>
+<ul>
+<li><a href="#orgheadline21">4.1. Defining and visualizing bulk systems</a></li>
+<li><a href="#orgheadline22">4.2. Computational parameters that are important for bulk structures</a></li>
+<li><a href="#orgheadline23">4.3. Determining bulk structures</a></li>
+<li><a href="#orgheadline24">4.4. <span class="todo TODO">TODO</span> Using built-in ase optimization with vasp</a></li>
+<li><a href="#orgheadline25">4.5. Cohesive energy</a></li>
+<li><a href="#orgheadline26">4.6. Elastic properties</a></li>
+<li><a href="#orgheadline27">4.7. Bulk thermodynamics</a></li>
+<li><a href="#orgheadline28">4.8. Effect of pressure on phase stability</a></li>
+<li><a href="#orgheadline29">4.9. Bulk reaction energies</a></li>
+<li><a href="#orgheadline30">4.10. Bulk density of states</a></li>
+<li><a href="#orgheadline31">4.11. Atom projected density of states</a></li>
+<li><a href="#orgheadline32">4.12. Band structures</a></li>
+<li><a href="#orgheadline33">4.13. Magnetism</a></li>
+<li><a href="#orgheadline34">4.14. <span class="todo TODO">TODO</span> phonons</a></li>
+<li><a href="#orgheadline35">4.15. <span class="todo TODO">TODO</span> solid state NEB</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline36">5. Surfaces</a>
+<ul>
+<li><a href="#orgheadline37">5.1. Surface structures</a></li>
+<li><a href="#orgheadline38">5.2. Surface calculation parameters</a></li>
+<li><a href="#orgheadline39">5.3. Surface relaxation</a></li>
+<li><a href="#orgheadline40">5.4. Surface reconstruction</a></li>
+<li><a href="#orgheadline41">5.5. Surface energy</a></li>
+<li><a href="#orgheadline42">5.6. Work function</a></li>
+<li><a href="#orgheadline43">5.7. Dipole correction</a></li>
+<li><a href="#orgheadline44">5.8. Adsorption energies</a></li>
+<li><a href="#orgheadline45">5.9. Adsorbate vibrations</a></li>
+<li><a href="#orgheadline46">5.10. Surface Diffusion barrier</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline47">6. Atomistic thermodynamics</a>
+<ul>
+<li><a href="#orgheadline48">6.1. Bulk phase stability of oxides</a></li>
+<li><a href="#orgheadline49">6.2. Effect on adsorption</a></li>
+<li><a href="#orgheadline50">6.3. Atomistic therodynamics and multiple reactions</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline51">7. Advanced electronic structure methods</a>
+<ul>
+<li><a href="#orgheadline52">7.1. DFT+U</a></li>
+<li><a href="#orgheadline53">7.2. Hybrid functionals</a></li>
+<li><a href="#orgheadline54">7.3. van der Waals forces</a></li>
+<li><a href="#orgheadline55">7.4. Electron localization function</a></li>
+<li><a href="#orgheadline56">7.5. <span class="todo TODO">TODO</span> Charge partitioning schemes</a></li>
+<li><a href="#orgheadline57">7.6. <span class="todo TODO">TODO</span> Modeling Core level shifts</a></li>
+<li><a href="#orgheadline58">7.7. The BEEF functional in Vasp</a></li>
+<li><a href="#orgheadline59">7.8. <span class="todo TODO">TODO</span> Solvation</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline60">8. Databases in molecular simulations</a></li>
+<li><a href="#orgheadline61">9. Acknowledgments</a></li>
+<li><a href="#orgheadline62">10. Appendices</a>
+<ul>
+<li><a href="#orgheadline63">10.1. Recipes</a></li>
+<li><a href="#orgheadline64">10.2. Computational geometry</a></li>
+<li><a href="#orgheadline65">10.3. Equations of State</a></li>
+<li><a href="#orgheadline66">10.4. Miscellaneous vasp/VASP tips</a></li>
+<li><a href="#orgheadline67">10.5. Hy</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline68">11. Python</a>
+<ul>
+<li><a href="#orgheadline69">11.1. pip as a user</a></li>
+<li><a href="#orgheadline70">11.2. Integer division math gotchas</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline71">12. References</a></li>
+<li><a href="#orgheadline72">13. GNU Free Documentation License</a></li>
+<li><a href="#orgheadline73">14. Index</a></li>
+</ul>
+</div>
+</div>
+
 <div id="outline-container-orgheadline1" class="outline-2">
 <h2 id="orgheadline1"><span class="section-number-2">1</span> Introduction to this book</h2>
 <div class="outline-text-2" id="text-1">
@@ -247,8 +351,8 @@ Review all the hyperlinks in this chapter.
 </div>
 </div>
 
-<div id="outline-container-orgheadline9" class="outline-2">
-<h2 id="orgheadline9"><a id="ID-948b9c8b-a583-43d5-aa23-4927aa3633cb"></a><span class="section-number-2">2</span> Introduction to DFT</h2>
+<div id="outline-container-orgheadline2" class="outline-2">
+<h2 id="orgheadline2"><a id="ID-948b9c8b-a583-43d5-aa23-4927aa3633cb"></a><span class="section-number-2">2</span> Introduction to DFT</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 A comprehensive overview of DFT is beyond the scope of this book, as excellent reviews on these subjects are readily found in the literature, and are suggested reading in the following paragraph.  Instead, this chapter is intended to provide a useful starting point for a non-expert to begin learning about and using DFT in the manner used in this book. Much of the information presented here is standard knowledge among experts, but a consequence of this is that it is rarely discussed in current papers in the literature. A secondary goal of this chapter is to provide new users with a path through the extensive literature available and to point out potential difficulties and pitfalls in these calculations.
@@ -268,8 +372,8 @@ One of the most useful sources of information has been the dissertations of othe
 </p>
 </div>
 
-<div id="outline-container-orgheadline2" class="outline-3">
-<h3 id="orgheadline2"><a id="ID-065443d5-59d7-4119-b530-7b63af28349b"></a><span class="section-number-3">2.1</span> Background</h3>
+<div id="outline-container-orgheadline3" class="outline-3">
+<h3 id="orgheadline3"><a id="ID-065443d5-59d7-4119-b530-7b63af28349b"></a><span class="section-number-3">2.1</span> Background</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 In 1926, Erwin Schr&ouml;dinger published the first accounts of his now famous wave equation <a class='org-ref-reference' href="#pauling1963">pauling1963</a>. He later shared the Nobel prize with Paul A. M. Dirac in 1933 for this discovery. Schr&ouml;dinger's wave function seemed extremely promising, as it contains all of the information available about a system. Unfortunately, most practical systems of interest consist of many interacting electrons, and the effort required to find solutions to Schr&ouml;dinger's equation increases exponentially with the number of electrons, limiting this approach to systems with a small number of relevant electrons, \(N \lesssim O(10)\) <a class='org-ref-reference' href="#RevModPhys.71.1253">RevModPhys.71.1253</a>. Even if this rough estimate is off by an order of magnitude, a system with 100 electrons is still very small, for example, two Ru atoms if all the electrons are counted, or perhaps ten Pt atoms if only the valence electrons are counted. Thus, the wave function method, which has been extremely successful in studying the properties of small molecules, is unsuitable for studies of large, extended solids. Interestingly, this difficulty was recognized by Dirac as early as 1929, when he wrote "The underlying physical laws necessary for the mathematical theory of a large part of physics and the whole of chemistry are thus completely known, and the difficulty is only that the application of these laws leads to equations much too complicated to be soluble."  <a class='org-ref-reference' href="#dirac1929:quant-mechan-many-elect-system">dirac1929:quant-mechan-many-elect-system</a>.
@@ -304,8 +408,8 @@ where \(E_{xc}[n(\mathbf{r})]\) is the exchange-correlation energy functional.  
 </div>
 </div>
 
-<div id="outline-container-orgheadline3" class="outline-3">
-<h3 id="orgheadline3"><span class="section-number-3">2.2</span> Exchange correlation functionals</h3>
+<div id="outline-container-orgheadline4" class="outline-3">
+<h3 id="orgheadline4"><span class="section-number-3">2.2</span> Exchange correlation functionals</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
 The two main types of exchange/correlation functionals used in DFT are the local density approximation (LDA) and the generalized gradient approximation (GGA). In the LDA, the exchange-correlation functional is defined for an electron in a uniform electron gas of density \(n\) <a class='org-ref-reference' href="#PhysRev.140.A1133">PhysRev.140.A1133</a>. It is exact for a uniform electron gas, and is anticipated to be a reasonable approximation for slowly varying densities. In molecules and solids, however, the density tends to vary substantially in space. Despite this, the LDA has been very successfully used in many systems. It tends to predict overbonding in both molecular and solid systems <a class='org-ref-reference' href="#fuchs1998:pseud">fuchs1998:pseud</a>, and it tends to make semiconductor systems too metallic (the band gap problem) <a class='org-ref-reference' href="#perdew1982:elect-kohn-sham">perdew1982:elect-kohn-sham</a>.
@@ -321,8 +425,8 @@ Finally, there are increasingly new types of functionals in the literature. The 
 </div>
 </div>
 
-<div id="outline-container-orgheadline4" class="outline-3">
-<h3 id="orgheadline4"><span class="section-number-3">2.3</span> Basis sets</h3>
+<div id="outline-container-orgheadline5" class="outline-3">
+<h3 id="orgheadline5"><span class="section-number-3">2.3</span> Basis sets</h3>
 <div class="outline-text-3" id="text-2-3">
 <p>
 Briefly, VASP utilizes planewaves as the basis set to expand the
@@ -403,8 +507,8 @@ The most common schemes for generating \(\mathbf{k}\) points are the Chadi-Cohen
 </div>
 </div>
 
-<div id="outline-container-orgheadline5" class="outline-3">
-<h3 id="orgheadline5"><span class="section-number-3">2.4</span> Pseudopotentials</h3>
+<div id="outline-container-orgheadline6" class="outline-3">
+<h3 id="orgheadline6"><span class="section-number-3">2.4</span> Pseudopotentials</h3>
 <div class="outline-text-3" id="text-2-4">
 <p>
 The core electrons of an atom are computationally expensive with planewave basis sets because they are highly localized. This means that a very large number of planewaves are required to expand their wave functions. Furthermore, the contributions of the core electrons to bonding compared to those of the valence electrons is usually negligible. In fact, the primary role of the core electron wave functions is to ensure proper orthogonality between the valence electrons and core states.  Consequently, it is desirable to replace the atomic potential due to the core electrons with a pseudopotential that has the same effect on the valence electrons <a class='org-ref-reference' href="#PhysRevB.43.1993">PhysRevB.43.1993</a>. There are essentially two kinds of pseudopotentials, norm-conserving soft pseudopotentials <a class='org-ref-reference' href="#PhysRevB.43.1993">PhysRevB.43.1993</a> and Vanderbilt ultrasoft pseudopotentials <a class='org-ref-reference' href="#PhysRevB.41.7892">PhysRevB.41.7892</a>. In either case, the pseudopotential function is generated from an all-electron calculation of an atom in some reference state. In norm-conserving pseudopotentials, the charge enclosed in the pseudopotential region is the same as that enclosed by the same space in an all-electron calculation. In ultrasoft pseudopotentials, this requirement is relaxed and charge augmentation functions are used to make up the difference. As its name implies, this allows a "softer" pseudopotential to be generated, which means fewer planewaves are required to expand it.
@@ -424,8 +528,8 @@ VASP provides a database of PAW potentials <a class='org-ref-reference' href="#P
 </div>
 </div>
 
-<div id="outline-container-orgheadline6" class="outline-3">
-<h3 id="orgheadline6"><span class="section-number-3">2.5</span> Fermi Temperature and band occupation numbers</h3>
+<div id="outline-container-orgheadline7" class="outline-3">
+<h3 id="orgheadline7"><span class="section-number-3">2.5</span> Fermi Temperature and band occupation numbers</h3>
 <div class="outline-text-3" id="text-2-5">
 <p>
 At absolute zero, the occupancies of the bands of a system are well-defined step functions; all bands up to the Fermi level are occupied, and all bands above the Fermi level are unoccupied.  There is a particular difficulty in the calculation of the electronic structures of metals compared to semiconductors and molecules. In molecules and semiconductors, there is a clear energy gap between the occupied states and unoccupied states. Thus, the occupancies are insensitive to changes in the energy that occur during the self-consistency cycles. In metals, however, the density of states is continuous at the Fermi level, and there are typically a substantial number of states that are close in energy to the Fermi level.  Consequently, small changes in the energy can dramatically change the occupation numbers, resulting in instabilities that make it difficult to converge to the occupation step function. A related problem is that the Brillouin zone integral (which in practice is performed as a sum over a finite number of \(\mathbf{k}\) points) that defines the band energy converges very slowly with the number of \(\mathbf{k}\) points due to the discontinuity in occupancies in a continuous distribution of states for metals <a class='org-ref-reference' href="#gillan1989:calcul">gillan1989:calcul</a>,<a class='org-ref-reference' href="#Kresse199615">Kresse199615</a>.  The difficulty arises because the temperature in most DFT calculations is at absolute zero.  At higher temperatures, the DOS is smeared across the Fermi level, resulting in a continuous occupation function over the distribution of states. A finite-temperature version of DFT was developed <a class='org-ref-reference' href="#PhysRev.137.A1441">PhysRev.137.A1441</a>, which is the foundation on which one solution to this problem is based. In this solution, the step function is replaced by a smoothly varying function such as the Fermi-Dirac function at a small, but non-zero temperature <a class='org-ref-reference' href="#Kresse199615">Kresse199615</a>. The total energy is then extrapolated back to absolute zero.
@@ -433,8 +537,8 @@ At absolute zero, the occupancies of the bands of a system are well-defined step
 </div>
 </div>
 
-<div id="outline-container-orgheadline7" class="outline-3">
-<h3 id="orgheadline7"><span class="section-number-3">2.6</span> Spin polarization and magnetism</h3>
+<div id="outline-container-orgheadline8" class="outline-3">
+<h3 id="orgheadline8"><span class="section-number-3">2.6</span> Spin polarization and magnetism</h3>
 <div class="outline-text-3" id="text-2-6">
 <p>
 There are two final points that need to be discussed about these calculations, spin polarization and dipole corrections. Spin polarization is important for systems that contain net spin. For example, iron, cobalt and nickel are magnetic because they have more electrons with spin "up" than spin "down" (or vice versa).  Spin polarization must also be considered in atoms and molecules with unpaired electrons, such as hydrogen and oxygen atoms, oxygen molecules and radicals. For example, there are two spin configurations for an oxygen molecule, the singlet state with no unpaired electrons, and the triplet state with two unpaired electrons. The oxygen triplet state is lower in energy than the oxygen singlet state, and thus it corresponds to the ground state for an oxygen atom. A classically known problem involving spin polarization is the dissociation of a hydrogen molecule. In this case, the molecule starts with no net spin, but it dissociates into two atoms, each of which has an unpaired electron.  See section 5.3.5 in Reference <a class='org-ref-reference' href="#koch2001">koch2001</a> for more details on this.
@@ -451,8 +555,8 @@ The downside of including spin polarization is that it essentially doubles the c
 </div>
 </div>
 
-<div id="outline-container-orgheadline8" class="outline-3">
-<h3 id="orgheadline8"><span class="section-number-3">2.7</span> Recommended reading</h3>
+<div id="outline-container-orgheadline9" class="outline-3">
+<h3 id="orgheadline9"><span class="section-number-3">2.7</span> Recommended reading</h3>
 <div class="outline-text-3" id="text-2-7">
 <p>
 The original papers on DFT are <a class='org-ref-reference' href="#PhysRev.136.B864">PhysRev.136.B864</a>,<a class='org-ref-reference' href="#PhysRev.140.A1133">PhysRev.140.A1133</a>.
@@ -473,22 +577,22 @@ All calculations in this book were performed using VASP <a class='org-ref-refere
 </div>
 </div>
 
-<div id="outline-container-orgheadline69" class="outline-2">
-<h2 id="orgheadline69"><a id="ID-0ba173be-1449-4c71-b040-02864f3af5a5"></a><span class="section-number-2">3</span> Molecules</h2>
+<div id="outline-container-orgheadline10" class="outline-2">
+<h2 id="orgheadline10"><a id="ID-0ba173be-1449-4c71-b040-02864f3af5a5"></a><span class="section-number-2">3</span> Molecules</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 In this chapter we consider how to construct models of molecules, how to manipulate them, and how to calculate many properties of molecules. For a nice comparison of VASP and Gaussian see <a class='org-ref-reference' href="#paier:234102">paier:234102</a>.
 </p>
 </div>
-<div id="outline-container-orgheadline15" class="outline-3">
-<h3 id="orgheadline15"><span class="section-number-3">3.1</span> Defining and visualizing molecules</h3>
+<div id="outline-container-orgheadline11" class="outline-3">
+<h3 id="orgheadline11"><span class="section-number-3">3.1</span> Defining and visualizing molecules</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
 We start by learning how to define a molecule and visualize it. We will begin with defining molecules from scratch, then reading molecules from data files, and finally using some built-in databases in <code>ase</code>.
 </p>
 </div>
-<div id="outline-container-orgheadline11" class="outline-4">
-<h4 id="orgheadline11"><span class="section-number-4">3.1.1</span> From scratch</h4>
+<div id="outline-container-orgheadline75" class="outline-4">
+<h4 id="orgheadline75"><span class="section-number-4">3.1.1</span> From scratch</h4>
 <div class="outline-text-4" id="text-3-1-1">
 <p>
 When there is no data file for the molecule you want, or no database to get it from, you have to define your atoms geometry by hand. Here is how that is done for a CO molecule (Figure <a href="#fig:co-origin">fig:co-origin</a>). We must define the type and position of each atom, and the unit cell the atoms are in.
@@ -526,7 +630,7 @@ There are two inconvenient features of the simple cubic cell:
 </p>
 
 <ol class="org-ol">
-<li>Since the CO molecule is at the corner, its electron density is spread over the 8 corners of the box, which is not convenient for visualization later (see <a href="#orgheadline10">Visualizing electron density</a>).</li>
+<li>Since the CO molecule is at the corner, its electron density is spread over the 8 corners of the box, which is not convenient for visualization later (see <a href="#orgheadline74">Visualizing electron density</a>).</li>
 
 <li>Due to the geometry of the cube, you need fairly large cubes to make sure the electron density of the molecule does not overlap with that of its images. Electron-electron interactions are repulsive, and the overlap makes the energy increase significantly. Here, the CO molecule has 6 images due to periodic boundary conditions that are 10 &Aring; away. The volume of the unit cell is 1000 &Aring;\(^3\).</li>
 </ol>
@@ -597,8 +701,8 @@ At this point you might ask, "How do you know the distance to the neighboring im
 </div>
 </div>
 
-<div id="outline-container-orgheadline12" class="outline-4">
-<h4 id="orgheadline12"><span class="section-number-4">3.1.2</span> Reading other data formats into a calculation</h4>
+<div id="outline-container-orgheadline76" class="outline-4">
+<h4 id="orgheadline76"><span class="section-number-4">3.1.2</span> Reading other data formats into a calculation</h4>
 <div class="outline-text-4" id="text-3-1-2">
 <p>
 <a href="ase.io.read">ase.io.read</a> supports many different file formats:
@@ -687,8 +791,8 @@ write(<span style="color: #008000;">'images/isobutane-xyz.png'</span>, atoms, sh
 </div>
 </div>
 
-<div id="outline-container-orgheadline13" class="outline-4">
-<h4 id="orgheadline13"><span class="section-number-4">3.1.3</span> Predefined molecules</h4>
+<div id="outline-container-orgheadline77" class="outline-4">
+<h4 id="orgheadline77"><span class="section-number-4">3.1.3</span> Predefined molecules</h4>
 <div class="outline-text-4" id="text-3-1-3">
 <p>
 <a href="ase">ase</a> defines a number of molecular geometries in the
@@ -904,8 +1008,8 @@ Note in this last case the unit cell is oriented differently than the previous e
 </div>
 </div>
 
-<div id="outline-container-orgheadline14" class="outline-4">
-<h4 id="orgheadline14"><span class="section-number-4">3.1.4</span> Combining Atoms objects</h4>
+<div id="outline-container-orgheadline78" class="outline-4">
+<h4 id="orgheadline78"><span class="section-number-4">3.1.4</span> Combining Atoms objects</h4>
 <div class="outline-text-4" id="text-3-1-4">
 <p>
 It is frequently useful to combine two <code>Atoms</code> objects, e.g. for computing reaction barriers, or other types of interactions. In <code>ase</code>, we simply add two <code>Atoms</code> objects together. Here is an example of getting an ammonia and oxygen molecule in the same unit cell. See Figure <a href="#fig:combined-atoms">fig:combined-atoms</a>. We set the <code>Atoms</code> about three &Aring; apart using the <a href="ase.Atoms.translate">ase.Atoms.translate</a> function.
@@ -938,15 +1042,15 @@ write(<span style="color: #008000;">'images/bothatoms.png'</span>, bothatoms, sh
 </div>
 </div>
 
-<div id="outline-container-orgheadline22" class="outline-3">
-<h3 id="orgheadline22"><span class="section-number-3">3.2</span> Simple properties</h3>
+<div id="outline-container-orgheadline12" class="outline-3">
+<h3 id="orgheadline12"><span class="section-number-3">3.2</span> Simple properties</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
 Simple properties do not require a DFT calculation. They are typically only functions of the atom types and geometries.
 </p>
 </div>
-<div id="outline-container-orgheadline16" class="outline-4">
-<h4 id="orgheadline16"><span class="section-number-4">3.2.1</span> Getting cartesian positions</h4>
+<div id="outline-container-orgheadline79" class="outline-4">
+<h4 id="orgheadline79"><span class="section-number-4">3.2.1</span> Getting cartesian positions</h4>
 <div class="outline-text-4" id="text-3-2-1">
 <p>
 If you want the \((x,y,z)\) coordinates of the atoms, use the <a href="ase.Atoms.get_positions">ase.Atoms.get_positions</a>. If you are interested in the fractional coordinates, use <a href="ase.Atoms.get_scaled_positions">ase.Atoms.get_scaled_positions</a>.
@@ -1019,8 +1123,8 @@ If you want the \((x,y,z)\) coordinates of the atoms, use the <a href="ase.Atoms
 </div>
 </div>
 
-<div id="outline-container-orgheadline17" class="outline-4">
-<h4 id="orgheadline17"><span class="section-number-4">3.2.2</span> Molecular weight and molecular formula</h4>
+<div id="outline-container-orgheadline80" class="outline-4">
+<h4 id="orgheadline80"><span class="section-number-4">3.2.2</span> Molecular weight and molecular formula</h4>
 <div class="outline-text-4" id="text-3-2-2">
 <p>
 <a href="molecular weight">molecular weight</a>
@@ -1053,8 +1157,8 @@ Note that the argument <code>reduce=True</code> for <a href="ase.Atoms.get_chemi
 </div>
 </div>
 
-<div id="outline-container-orgheadline18" class="outline-4">
-<h4 id="orgheadline18"><span class="section-number-4">3.2.3</span> Center of mass</h4>
+<div id="outline-container-orgheadline81" class="outline-4">
+<h4 id="orgheadline81"><span class="section-number-4">3.2.3</span> Center of mass</h4>
 <div class="outline-text-4" id="text-3-2-3">
 <p>
 <a href="center of mass">center of mass</a>
@@ -1108,8 +1212,8 @@ You can see see that these centers of mass, which are calculated by different me
 </div>
 </div>
 
-<div id="outline-container-orgheadline19" class="outline-4">
-<h4 id="orgheadline19"><span class="section-number-4">3.2.4</span> Moments of inertia</h4>
+<div id="outline-container-orgheadline82" class="outline-4">
+<h4 id="orgheadline82"><span class="section-number-4">3.2.4</span> Moments of inertia</h4>
 <div class="outline-text-4" id="text-3-2-4">
 <p>
 <a href="moment of inertia">moment of inertia</a>
@@ -1195,8 +1299,8 @@ This shows the first moment is about the z-axis, the second moment is about the 
 </div>
 </div>
 
-<div id="outline-container-orgheadline21" class="outline-4">
-<h4 id="orgheadline21"><span class="section-number-4">3.2.5</span> Computing bond lengths and angles</h4>
+<div id="outline-container-orgheadline84" class="outline-4">
+<h4 id="orgheadline84"><span class="section-number-4">3.2.5</span> Computing bond lengths and angles</h4>
 <div class="outline-text-4" id="text-3-2-5">
 <p>
 A typical question we might ask is, "What is the structure of a molecule?" In other words, what are the bond lengths, angles between bonds, and similar properties. The Atoms object contains an <a href="ase.Atoms.get_distance">ase.Atoms.get_distance</a> method to make this easy. To calculate the distance between two atoms, you have to specify their indices, remembering that the index starts at 0.
@@ -1295,8 +1399,8 @@ theta = 106.334624232 degrees
 </pre>
 </div>
 
-<div id="outline-container-orgheadline20" class="outline-5">
-<h5 id="orgheadline20"><span class="section-number-5">3.2.5.1</span> Dihedral angles</h5>
+<div id="outline-container-orgheadline83" class="outline-5">
+<h5 id="orgheadline83"><span class="section-number-5">3.2.5.1</span> Dihedral angles</h5>
 <div class="outline-text-5" id="text-3-2-5-1">
 <p>
 There is support in ase for computing <a href="http://en.wikipedia.org/wiki/Dihedral_angle">dihedral angles</a>. Let us illustrate that for ethane. We will compute the dihedral angle between atoms 5, 1, 0, and 4. That is a H-C-C-H dihedral angle, and one can visually see (although not here) that these atoms have a dihedral angle of 60<sup>&circ;</sup> (Figure <a href="#fig:ethane-dihedral">fig:ethane-dihedral</a>).
@@ -1343,15 +1447,15 @@ In this section we covered properties that require simple calculations, but not 
 </div>
 </div>
 
-<div id="outline-container-orgheadline36" class="outline-3">
-<h3 id="orgheadline36"><a id="ID-4fff14db-59ee-4e84-bbd2-f4428d1679f9"></a><span class="section-number-3">3.3</span> Simple properties that require single computations</h3>
+<div id="outline-container-orgheadline13" class="outline-3">
+<h3 id="orgheadline13"><a id="ID-4fff14db-59ee-4e84-bbd2-f4428d1679f9"></a><span class="section-number-3">3.3</span> Simple properties that require single computations</h3>
 <div class="outline-text-3" id="text-3-3">
 <p>
 There are many properties that only require a single DFT calculation to obtain the energy, forces, density of states, electron density and electrostatic potential. This section describes some of these calculations and their analysis.
 </p>
 </div>
-<div id="outline-container-orgheadline29" class="outline-4">
-<h4 id="orgheadline29"><span class="section-number-4">3.3.1</span> Energy and forces</h4>
+<div id="outline-container-orgheadline91" class="outline-4">
+<h4 id="orgheadline91"><span class="section-number-4">3.3.1</span> Energy and forces</h4>
 <div class="outline-text-4" id="text-3-3-1">
 <p>
 Two of the most important quantities we are interested in are the total
@@ -1365,7 +1469,7 @@ DFT calculation must be run.
 Here is an example of getting the energy and forces from a CO
 molecule. The forces in this case are very high, indicating that this
 geometry is not close to the ground state geometry. Note that the
-forces are only along the $x$-axis, which is along the molecular axis. We will see how to minimize this force in <a href="#orgheadline23">Manual determination</a> and <a href="#orgheadline24">Automatic geometry optimization with VASP</a>.
+forces are only along the $x$-axis, which is along the molecular axis. We will see how to minimize this force in <a href="#orgheadline85">Manual determination</a> and <a href="#orgheadline86">Automatic geometry optimization with VASP</a>.
 </p>
 
 <div class="note">
@@ -1454,8 +1558,8 @@ cat $VASP_PP_PATH/potpaw_PBE/C/POTCAR $VASP_PP_PATH/potpaw_PBE/O/POTCAR &gt; POT
 </pre>
 </div>
 
-<div id="outline-container-orgheadline25" class="outline-5">
-<h5 id="orgheadline25"><span class="section-number-5">3.3.1.1</span> Running a job in parallel</h5>
+<div id="outline-container-orgheadline87" class="outline-5">
+<h5 id="orgheadline87"><span class="section-number-5">3.3.1.1</span> Running a job in parallel</h5>
 <div class="outline-text-5" id="text-3-3-1-1">
 <div class="org-src-container">
 
@@ -1490,8 +1594,8 @@ energy = -14.69072754 eV
 </div>
 </div>
 
-<div id="outline-container-orgheadline26" class="outline-5">
-<h5 id="orgheadline26"><span class="section-number-5">3.3.1.2</span> Convergence with unit cell size</h5>
+<div id="outline-container-orgheadline88" class="outline-5">
+<h5 id="orgheadline88"><span class="section-number-5">3.3.1.2</span> Convergence with unit cell size</h5>
 <div class="outline-text-5" id="text-3-3-1-2">
 <p>
 There are a number of parameters that affect the energy and forces including the calculation parameters and the unit cell. We will first consider the effect of the unit cell on the total energy and forces. The reason that the unit cell affects the total energy is that it can change the distribution of electrons in the molecule.
@@ -1610,8 +1714,8 @@ plt.savefig(<span style="color: #008000;">'images/ideal-gas-pressure.png'</span>
 </div>
 </div>
 
-<div id="outline-container-orgheadline27" class="outline-5">
-<h5 id="orgheadline27"><span class="section-number-5">3.3.1.3</span> Convergence of ENCUT</h5>
+<div id="outline-container-orgheadline89" class="outline-5">
+<h5 id="orgheadline89"><span class="section-number-5">3.3.1.3</span> Convergence of ENCUT</h5>
 <div class="outline-text-5" id="text-3-3-1-3">
 <p>
 The total energy and forces also depend on the computational parameters, notably <a href=http://cms.mpi.univie.ac.at/wiki/index.php/ENCUT>ENCUT</a>.
@@ -1682,8 +1786,8 @@ molecules/co-en-500/OUTCAR:                         Elapsed time (sec):       11
 </div>
 
 
-<div id="outline-container-orgheadline28" class="outline-5">
-<h5 id="orgheadline28"><span class="section-number-5">3.3.1.4</span> Cloning</h5>
+<div id="outline-container-orgheadline90" class="outline-5">
+<h5 id="orgheadline90"><span class="section-number-5">3.3.1.4</span> Cloning</h5>
 <div class="outline-text-5" id="text-3-3-1-4">
 <p>
 You may want to clone a calculation, so you can change some parameter without losing the previous result. The clone function does this, and changes the calculator over to the new directory.
@@ -1713,8 +1817,8 @@ energy = -14.77117554 eV
 </div>
 </div>
 
-<div id="outline-container-orgheadline10" class="outline-4">
-<h4 id="orgheadline10"><span class="section-number-4">3.3.2</span> Visualizing electron density</h4>
+<div id="outline-container-orgheadline74" class="outline-4">
+<h4 id="orgheadline74"><span class="section-number-4">3.3.2</span> Visualizing electron density</h4>
 <div class="outline-text-4" id="text-3-3-2">
 <p>
 The electron density is a 3\(d\) quantity: for every \((x,y,z)\) point, there is a charge density. That means we need 4 numbers for each point: \((x,y,z)\) and \(\rho(x,y,z)\). Below we show an example (Figure <a href="#fig:cd1">fig:cd1</a>) of plotting the charge density, and we consider some issues we have to consider when visualizing volumetric data in unit cells with periodic boundary conditions. We will use the results from a previous calculation.
@@ -1879,8 +1983,8 @@ TODO: how to make this figure <img src="http://www.zid.tuwien.ac.at/fileadmin/fi
 </div>
 </div>
 
-<div id="outline-container-orgheadline30" class="outline-4">
-<h4 id="orgheadline30"><span class="section-number-4">3.3.3</span> Visualizing electron density differences</h4>
+<div id="outline-container-orgheadline92" class="outline-4">
+<h4 id="orgheadline92"><span class="section-number-4">3.3.3</span> Visualizing electron density differences</h4>
 <div class="outline-text-4" id="text-3-3-3">
 <p>
 Here, we visualize how charge moves in a benzene ring when you substitute an H atom with an electronegative Cl atom.
@@ -2082,8 +2186,8 @@ plt.show()
 </div>
 </div>
 
-<div id="outline-container-orgheadline31" class="outline-4">
-<h4 id="orgheadline31"><span class="section-number-4">3.3.4</span> Dipole moments</h4>
+<div id="outline-container-orgheadline93" class="outline-4">
+<h4 id="orgheadline93"><span class="section-number-4">3.3.4</span> Dipole moments</h4>
 <div class="outline-text-4" id="text-3-3-4">
 <p>
 <a href="dipole moment">dipole moment</a>
@@ -2200,8 +2304,8 @@ The dipole moment is 0.10 Debye
 </div>
 </div>
 
-<div id="outline-container-orgheadline32" class="outline-4">
-<h4 id="orgheadline32"><span class="section-number-4">3.3.5</span> The density of states (DOS)</h4>
+<div id="outline-container-orgheadline94" class="outline-4">
+<h4 id="orgheadline94"><span class="section-number-4">3.3.5</span> The density of states (DOS)</h4>
 <div class="outline-text-4" id="text-3-3-5">
 <p>
 The density of states (DOS) gives you the number of electronic states (i.e., the orbitals) that have a particular energy. We can get this information from the last calculation we just ran without having to run another DFT calculation.
@@ -2235,8 +2339,8 @@ plt.savefig(<span style="color: #008000;">'images/co-dos.png'</span>)
 </div>
 </div>
 
-<div id="outline-container-orgheadline33" class="outline-4">
-<h4 id="orgheadline33"><span class="section-number-4">3.3.6</span> Atom-projected density of states on molecules</h4>
+<div id="outline-container-orgheadline95" class="outline-4">
+<h4 id="orgheadline95"><span class="section-number-4">3.3.6</span> Atom-projected density of states on molecules</h4>
 <div class="outline-text-4" id="text-3-3-6">
 <p>
 Let us consider which states in the density of states belong to which atoms in a molecule. This can only be a qualitative consideration because the orbitals on the atoms often hybridize to form molecular orbitals, e.g. in methane the \(s\) and \(p\) orbitals can form what we call \(sp^3\) orbitals. We can compute atom-projected density of states in VASP, which is done by projecting the wave function onto localized atomic orbitals. Here is an example. We will consider the CO molecule. To get atom-projected density of states, we must set <a href=http://cms.mpi.univie.ac.at/wiki/index.php/RWIGS>RWIGS</a> for each atom. This parameter defines the radius of the sphere around the atom which cuts off the projection. The total density of states and projected density of states information comes from the DOSCAR file.
@@ -2310,8 +2414,8 @@ plt.savefig(<span style="color: #008000;">'images/co-ados.png'</span>)
 </div>
 </div>
 
-<div id="outline-container-orgheadline34" class="outline-4">
-<h4 id="orgheadline34"><span class="section-number-4">3.3.7</span> Electrostatic potential</h4>
+<div id="outline-container-orgheadline96" class="outline-4">
+<h4 id="orgheadline96"><span class="section-number-4">3.3.7</span> Electrostatic potential</h4>
 <div class="outline-text-4" id="text-3-3-7">
 <p>
 This is an example of the so-called &sigma; hole in a <a href="http://pubs.acs.org/cen/science/87/8738sci2.html">halogen bond</a>. The coordinates for the CF<sub>3</sub>Br molecule were found at <a href="http://cccbdb.nist.gov/exp2.asp?casno=75638">http://cccbdb.nist.gov/exp2.asp?casno=75638</a>.
@@ -2397,8 +2501,8 @@ See <a href="http://www.uni-due.de/~hp0058/?file=manual03.html&amp;dir=vmdplugin
 </div>
 </div>
 
-<div id="outline-container-orgheadline35" class="outline-4">
-<h4 id="orgheadline35"><span class="section-number-4">3.3.8</span> Bader analysis</h4>
+<div id="outline-container-orgheadline97" class="outline-4">
+<h4 id="orgheadline97"><span class="section-number-4">3.3.8</span> Bader analysis</h4>
 <div class="outline-text-4" id="text-3-3-8">
 <p>
 <a href="bader">bader</a>
@@ -2473,12 +2577,12 @@ You can see some charge has been "transferred" from H to O.
 </div>
 </div>
 
-<div id="outline-container-orgheadline38" class="outline-3">
-<h3 id="orgheadline38"><a id="ID-af5957a7-116e-42f0-b617-0bf2059fd1e5"></a><span class="section-number-3">3.4</span> Geometry optimization</h3>
+<div id="outline-container-orgheadline14" class="outline-3">
+<h3 id="orgheadline14"><a id="ID-af5957a7-116e-42f0-b617-0bf2059fd1e5"></a><span class="section-number-3">3.4</span> Geometry optimization</h3>
 <div class="outline-text-3" id="text-3-4">
 </div>
-<div id="outline-container-orgheadline23" class="outline-4">
-<h4 id="orgheadline23"><span class="section-number-4">3.4.1</span> Manual determination of a bond length</h4>
+<div id="outline-container-orgheadline85" class="outline-4">
+<h4 id="orgheadline85"><span class="section-number-4">3.4.1</span> Manual determination of a bond length</h4>
 <div class="outline-text-4" id="text-3-4-1">
 <p>
 The equilibrium bond length of a CO molecule is approximately the bond length that minimizes the total energy. We can find that by computing the total energy as a function of bond length, and noting where the minimum is. Here is an example in VASP. There are a few features to point out here. We want to compute 5 bond lengths, and each calculation is independent of all the others. <a href="vasp">vasp</a> is set up to automatically handle jobs for you by submitting them to the queue. It raises a variety of exceptions to let you know what has happened, and you must handle these to control the workflow. We will illustrate this by the following examples.
@@ -2735,8 +2839,8 @@ The minimum energy is -14.8458440947 eV at V = 1.14437582331 Ang^3
 </div>
 </div>
 
-<div id="outline-container-orgheadline24" class="outline-4">
-<h4 id="orgheadline24"><span class="section-number-4">3.4.2</span> Automatic geometry optimization with VASP</h4>
+<div id="outline-container-orgheadline86" class="outline-4">
+<h4 id="orgheadline86"><span class="section-number-4">3.4.2</span> Automatic geometry optimization with VASP</h4>
 <div class="outline-text-4" id="text-3-4-2">
 <p>
 It is generally the case that the equilibrium geometry of a system is the one that minimizes the total energy and forces. Since each atom has three degrees of freedom, you can quickly get a high dimensional optimization problem. Luckily, VASP has built-in geometry optimization using the <a href=http://cms.mpi.univie.ac.at/wiki/index.php/IBRION>IBRION</a> and <a href=http://cms.mpi.univie.ac.at/wiki/index.php/NSW>NSW</a> tags. Here we compute the bond length for a CO molecule, letting VASP do the geometry optimization for us.
@@ -2819,8 +2923,8 @@ Bondlength = 1.14 angstroms
 </div>
 </div>
 
-<div id="outline-container-orgheadline37" class="outline-4">
-<h4 id="orgheadline37"><span class="section-number-4">3.4.3</span> Relaxation of a water molecule</h4>
+<div id="outline-container-orgheadline98" class="outline-4">
+<h4 id="orgheadline98"><span class="section-number-4">3.4.3</span> Relaxation of a water molecule</h4>
 <div class="outline-text-4" id="text-3-4-3">
 <p>
 It is not more complicated to relax more atoms, it just may take longer because there are more electrons and degrees of freedom. Here we relax a water molecule which has three atoms.
@@ -2876,15 +2980,15 @@ view(calc.traj)
 </div>
 </div>
 
-<div id="outline-container-orgheadline42" class="outline-3">
-<h3 id="orgheadline42"><a id="ID-a9c1ebd4-65cd-4818-8ee0-923f3b800e22"></a><span class="section-number-3">3.5</span> Vibrational frequencies</h3>
+<div id="outline-container-orgheadline15" class="outline-3">
+<h3 id="orgheadline15"><a id="ID-a9c1ebd4-65cd-4818-8ee0-923f3b800e22"></a><span class="section-number-3">3.5</span> Vibrational frequencies</h3>
 <div class="outline-text-3" id="text-3-5">
 <p>
 <a href="vibrations">vibrations</a>
 </p>
 </div>
-<div id="outline-container-orgheadline40" class="outline-4">
-<h4 id="orgheadline40"><span class="section-number-4">3.5.1</span> Manual calculation of vibrational frequency</h4>
+<div id="outline-container-orgheadline100" class="outline-4">
+<h4 id="orgheadline100"><span class="section-number-4">3.5.1</span> Manual calculation of vibrational frequency</h4>
 <div class="outline-text-4" id="text-3-5-1">
 <p>
 The principle idea in calculating vibrational frequencies is that we consider a molecular system as masses connected by springs. If the springs are Hookean, e.g. the force is proportional to the displacement, then we can readily solve the equations of motion and find that the vibrational frequencies are related to the force constants and the masses of the atoms. For example, in a simple molecule like CO where there is only one spring, the frequency is:
@@ -2895,7 +2999,7 @@ The principle idea in calculating vibrational frequencies is that we consider a 
 </p>
 
 <p>
-\(k = \frac{\partial^2E}{\partial x^2}\) at the equilibrium bond length. We actually already have the data to do this from <a href="#orgheadline23">Manual determination</a>. We only need to fit an equation to the energy vs. bond-length data, find the minimum energy bond-length, and then evaluate the second derivative of the fitted function at the minimum. We will use a cubic polynomial for demonstration here. Polynomials are numerically convenient because they are easy to fit, and it is trivial to get the roots and derivatives of the polynomials, as well as to evaluate them at other points using <a href="numpy.polyfit">numpy.polyfit</a>, <a href="numpy.polyder">numpy.polyder</a>, and <a href="numpy.polyval">numpy.polyval</a>.
+\(k = \frac{\partial^2E}{\partial x^2}\) at the equilibrium bond length. We actually already have the data to do this from <a href="#orgheadline85">Manual determination</a>. We only need to fit an equation to the energy vs. bond-length data, find the minimum energy bond-length, and then evaluate the second derivative of the fitted function at the minimum. We will use a cubic polynomial for demonstration here. Polynomials are numerically convenient because they are easy to fit, and it is trivial to get the roots and derivatives of the polynomials, as well as to evaluate them at other points using <a href="numpy.polyfit">numpy.polyfit</a>, <a href="numpy.polyder">numpy.polyder</a>, and <a href="numpy.polyval">numpy.polyval</a>.
 </p>
 
 <div class="org-src-container">
@@ -2963,7 +3067,7 @@ The CO vibrational frequency is 2143.95375564 cm^{-1}
 </div>
 
 <p>
-This result is in good agreement with <a href="http://webbook.nist.gov/cgi/cbook.cgi?ID=C630080&amp;Units=SI&amp;Type=IR-SPEC&amp;Index=0#IR-SPEC">experiment</a>. The procedure described above is basically how many vibrational calculations are performed. With more atoms, you have to determine a force constant matrix and diagonalize it. For more details, see <a class='org-ref-reference' href="#wilson1955">wilson1955</a>. In practice, we usually allow a packaged code to automate this, which we cover in <a href="#orgheadline39">Automated vibrational calculations</a>.
+This result is in good agreement with <a href="http://webbook.nist.gov/cgi/cbook.cgi?ID=C630080&amp;Units=SI&amp;Type=IR-SPEC&amp;Index=0#IR-SPEC">experiment</a>. The procedure described above is basically how many vibrational calculations are performed. With more atoms, you have to determine a force constant matrix and diagonalize it. For more details, see <a class='org-ref-reference' href="#wilson1955">wilson1955</a>. In practice, we usually allow a packaged code to automate this, which we cover in <a href="#orgheadline99">Automated vibrational calculations</a>.
 </p>
 
 <p>
@@ -2997,8 +3101,8 @@ A final note is that this analysis is in the "harmonic approximation". The frequ
 </div>
 </div>
 
-<div id="outline-container-orgheadline39" class="outline-4">
-<h4 id="orgheadline39"><span class="section-number-4">3.5.2</span> <span class="todo TODO">TODO</span> Automated vibrational calculations</h4>
+<div id="outline-container-orgheadline99" class="outline-4">
+<h4 id="orgheadline99"><span class="section-number-4">3.5.2</span> <span class="todo TODO">TODO</span> Automated vibrational calculations</h4>
 <div class="outline-text-4" id="text-3-5-2">
 <p>
 VASP has built-in capability for performing vibrational calculations. We access the capability by using a new value for <a href=http://cms.mpi.univie.ac.at/wiki/index.php/IBRION>IBRION</a>. The values of 5 and 6 calculated the Hessian matrix using finite differences. For IBRION=5, all atoms that are not constrained are displaced. For IBRION=6, only symmetry inequivalent displacements are considered, which makes the calculations slightly cheaper. You can specify the number of displacements with <a href=http://cms.mpi.univie.ac.at/wiki/index.php/NFREE>NFREE</a>. The default number of displacements is 2. You can also specify the size of the displacement with <a href=http://cms.mpi.univie.ac.at/wiki/index.php/POTIM>POTIM</a> (the default is 0.015 &Aring;).
@@ -3112,8 +3216,8 @@ See <a href="http://www.gaussian.com/g_whitepap/vib.htm">http://www.gaussian.com
 </p>
 </div>
 
-<div id="outline-container-orgheadline41" class="outline-5">
-<h5 id="orgheadline41"><span class="section-number-5">3.5.2.1</span> Zero-point energy for multiple modes</h5>
+<div id="outline-container-orgheadline101" class="outline-5">
+<h5 id="orgheadline101"><span class="section-number-5">3.5.2.1</span> Zero-point energy for multiple modes</h5>
 <div class="outline-text-5" id="text-3-5-2-1">
 <p>
 For a molecule with lots of vibrational modes the zero-point energy is defined as the sum over all the vibrational modes:
@@ -3163,8 +3267,8 @@ Note the zero-point energy of water is also fairly high (more than 0.5 eV). That
 </div>
 </div>
 
-<div id="outline-container-orgheadline43" class="outline-3">
-<h3 id="orgheadline43"><span class="section-number-3">3.6</span> Simulated infrared spectra</h3>
+<div id="outline-container-orgheadline16" class="outline-3">
+<h3 id="orgheadline16"><span class="section-number-3">3.6</span> Simulated infrared spectra</h3>
 <div class="outline-text-3" id="text-3-6">
 <p>
 <a href="infrared intensity">infrared intensity</a>
@@ -3204,7 +3308,7 @@ Forces
 </pre>
 
 <p>
-Next, we instruct VASP to compute the vibrational modes using <a href="http://cmt.dur.ac.uk/sjc/thesis_prt/node39.html">density functional perturbation theory</a> with IBRION=7. Note, this is different than in <a href="#orgheadline42">3.5</a> where finite differences were used.
+Next, we instruct VASP to compute the vibrational modes using <a href="http://cmt.dur.ac.uk/sjc/thesis_prt/node39.html">density functional perturbation theory</a> with IBRION=7. Note, this is different than in <a href="#orgheadline15">3.5</a> where finite differences were used.
 </p>
 
 <div class="org-src-container">
@@ -3417,8 +3521,8 @@ mode  Relative intensity
 </div>
 </div>
 
-<div id="outline-container-orgheadline44" class="outline-3">
-<h3 id="orgheadline44"><span class="section-number-3">3.7</span> Thermochemical properties of molecules</h3>
+<div id="outline-container-orgheadline17" class="outline-3">
+<h3 id="orgheadline17"><span class="section-number-3">3.7</span> Thermochemical properties of molecules</h3>
 <div class="outline-text-3" id="text-3-7">
 <p>
 <a href="thermochemistry">thermochemistry</a>
@@ -3657,20 +3761,20 @@ This is reasonable agreement for the entropy. You will get different results if 
 </div>
 </div>
 
-<div id="outline-container-orgheadline64" class="outline-3">
-<h3 id="orgheadline64"><a id="ID-5aa65ee8-f47e-4f65-b52a-de9920505350"></a><span class="section-number-3">3.8</span> Molecular reaction energies</h3>
+<div id="outline-container-orgheadline18" class="outline-3">
+<h3 id="orgheadline18"><a id="ID-5aa65ee8-f47e-4f65-b52a-de9920505350"></a><span class="section-number-3">3.8</span> Molecular reaction energies</h3>
 <div class="outline-text-3" id="text-3-8">
 </div>
-<div id="outline-container-orgheadline54" class="outline-4">
-<h4 id="orgheadline54"><span class="section-number-4">3.8.1</span> O<sub>2</sub> dissociation</h4>
+<div id="outline-container-orgheadline111" class="outline-4">
+<h4 id="orgheadline111"><span class="section-number-4">3.8.1</span> O<sub>2</sub> dissociation</h4>
 <div class="outline-text-4" id="text-3-8-1">
 <p>
 The first reaction we consider is a simple dissociation of oxygen molecule into two oxygen atoms: O<sub>2</sub> &rarr; 2O. The dissociation energy is pretty straightforward to define: it is the energy of the products minus the energy of the reactant. \(D = 2*E_O - E_{O_2}\). It would appear that we simply calculate the energy of an oxygen atom, and the energy of an oxygen molecule and evaluate the formula. Let us do that.
 </p>
 </div>
 
-<div id="outline-container-orgheadline45" class="outline-5">
-<h5 id="orgheadline45"><span class="section-number-5">3.8.1.1</span> Simple estimate of O<sub>2</sub> dissociation energy</h5>
+<div id="outline-container-orgheadline102" class="outline-5">
+<h5 id="orgheadline102"><span class="section-number-5">3.8.1.1</span> Simple estimate of O<sub>2</sub> dissociation energy</h5>
 <div class="outline-text-5" id="text-3-8-1-1">
 <div class="org-src-container">
 
@@ -3722,8 +3826,8 @@ We implicitly neglected spin-polarization in the example above. That could be a 
 </div>
 </div>
 
-<div id="outline-container-orgheadline47" class="outline-5">
-<h5 id="orgheadline47"><span class="section-number-5">3.8.1.2</span> Estimating O<sub>2</sub> dissociation energy with spin polarization in triplet ground states</h5>
+<div id="outline-container-orgheadline104" class="outline-5">
+<h5 id="orgheadline104"><span class="section-number-5">3.8.1.2</span> Estimating O<sub>2</sub> dissociation energy with spin polarization in triplet ground states</h5>
 <div class="outline-text-5" id="text-3-8-1-2">
 <p>
 To tell VASP to use spin-polarization we use <a href=http://cms.mpi.univie.ac.at/wiki/index.php/ISPIN>ISPIN</a>=2, and we set initial guesses for magnetic moments on the atoms with the magmom keyword. In a triplet state there are two electrons with spins of the same sign.
@@ -3786,8 +3890,8 @@ This is much closer to accepted literature values for the DFT-GGA O\(_2\) dissoc
 </div>
 
 
-<div id="outline-container-orgheadline46" class="outline-6">
-<h6 id="orgheadline46"><span class="section-number-6">3.8.1.2.1</span> Looking at the two spin densities</h6>
+<div id="outline-container-orgheadline103" class="outline-6">
+<h6 id="orgheadline103"><span class="section-number-6">3.8.1.2.1</span> Looking at the two spin densities</h6>
 <div class="outline-text-6" id="text-3-8-1-2-1">
 <p>
 In a spin-polarized calculation there are actually two electron densities: one for spin-up and one for spin-down. We will look at the differences in these two through the density of states.
@@ -3839,8 +3943,8 @@ You can see in Figure <a href="#fig:o2-sp-dos">fig:o2-sp-dos</a> that there are 
 </div>
 </div>
 
-<div id="outline-container-orgheadline48" class="outline-5">
-<h5 id="orgheadline48"><span class="section-number-5">3.8.1.3</span> Convergence study of the O<sub>2</sub> dissociation energy</h5>
+<div id="outline-container-orgheadline105" class="outline-5">
+<h5 id="orgheadline105"><span class="section-number-5">3.8.1.3</span> Convergence study of the O<sub>2</sub> dissociation energy</h5>
 <div class="outline-text-5" id="text-3-8-1-3">
 <p>
 <a href="convergence!ENCUT">convergence!ENCUT</a>
@@ -3953,8 +4057,8 @@ encut (eV)            Total CPU time
 </div>
 </div>
 
-<div id="outline-container-orgheadline49" class="outline-5">
-<h5 id="orgheadline49"><span class="section-number-5">3.8.1.4</span> Illustration of the effect of SIGMA</h5>
+<div id="outline-container-orgheadline106" class="outline-5">
+<h5 id="orgheadline106"><span class="section-number-5">3.8.1.4</span> Illustration of the effect of SIGMA</h5>
 <div class="outline-text-5" id="text-3-8-1-4">
 <p>
 The methodology for extrapolation of the total energy to absolute zero is
@@ -4050,8 +4154,8 @@ Clearly SIGMA has an effect, but it does not move the dissociation energy closer
 </div>
 </div>
 
-<div id="outline-container-orgheadline50" class="outline-5">
-<h5 id="orgheadline50"><span class="section-number-5">3.8.1.5</span> Estimating singlet oxygen dissociation energy</h5>
+<div id="outline-container-orgheadline107" class="outline-5">
+<h5 id="orgheadline107"><span class="section-number-5">3.8.1.5</span> Estimating singlet oxygen dissociation energy</h5>
 <div class="outline-text-5" id="text-3-8-1-5">
 <p>
 Finally, let us consider the case where each species is in the singlet state.
@@ -4136,8 +4240,8 @@ You can see here the triplet state has an energy that is 1 eV more stable than t
 </div>
 </div>
 
-<div id="outline-container-orgheadline51" class="outline-5">
-<h5 id="orgheadline51"><span class="section-number-5">3.8.1.6</span> Estimating triplet oxygen dissociation energy with low symmetry</h5>
+<div id="outline-container-orgheadline108" class="outline-5">
+<h5 id="orgheadline108"><span class="section-number-5">3.8.1.6</span> Estimating triplet oxygen dissociation energy with low symmetry</h5>
 <div class="outline-text-5" id="text-3-8-1-6">
 <p>
 It has been suggested that breaking spherical symmetry of the atom can result in lower energy of the atom. The symmetry is broken by putting the atom off-center in a box. We will examine the total energy of an oxygen atom in a few geometries. First, let us consider variations of a square box.
@@ -4309,8 +4413,8 @@ This actually agrees within 30-50 meV of reported literature values, although st
 </div>
 </div>
 
-<div id="outline-container-orgheadline52" class="outline-5">
-<h5 id="orgheadline52"><span class="section-number-5">3.8.1.7</span> Verifying the magnetic moments on each atom</h5>
+<div id="outline-container-orgheadline109" class="outline-5">
+<h5 id="orgheadline109"><span class="section-number-5">3.8.1.7</span> Verifying the magnetic moments on each atom</h5>
 <div class="outline-text-5" id="text-3-8-1-7">
 <p>
 It is one thing to see the total magnetic moment of a singlet state, and another to ask what are the magnetic moments on each atom. In VASP you must use <a href=http://cms.mpi.univie.ac.at/wiki/index.php/LORBIT>LORBIT</a> = 11 to get the magnetic moments of the atoms written out.
@@ -4365,8 +4469,8 @@ Note the atomic magnetic moments do not add up to the total magnetic moment. The
 </div>
 </div>
 
-<div id="outline-container-orgheadline53" class="outline-5">
-<h5 id="orgheadline53"><span class="section-number-5">3.8.1.8</span> Using a different potential</h5>
+<div id="outline-container-orgheadline110" class="outline-5">
+<h5 id="orgheadline110"><span class="section-number-5">3.8.1.8</span> Using a different potential</h5>
 <div class="outline-text-5" id="text-3-8-1-8">
 <p>
 It is possible we need a higher quality potential to get the 6.02 eV value quoted by many in the literature. Here we try the O_sv potential, which treats the 1s electrons as valence electrons. Note however, the ENMIN in the POTCAR is very high!
@@ -4467,8 +4571,8 @@ This result is close to other reported values. It is possibly not converged, sin
 </div>
 </div>
 
-<div id="outline-container-orgheadline57" class="outline-4">
-<h4 id="orgheadline57"><span class="section-number-4">3.8.2</span> Water gas shift example</h4>
+<div id="outline-container-orgheadline114" class="outline-4">
+<h4 id="orgheadline114"><span class="section-number-4">3.8.2</span> Water gas shift example</h4>
 <div class="outline-text-4" id="text-3-8-2">
 <p>
 We consider calculating the reaction energy of the water-gas shift reaction in this example.
@@ -4587,11 +4691,11 @@ It is a good idea to verify your calculations and structures are what you expect
 </pre>
 </div>
 </div>
-<div id="outline-container-orgheadline56" class="outline-5">
-<h5 id="orgheadline56"><span class="section-number-5">3.8.2.1</span> Calculation summaries</h5>
+<div id="outline-container-orgheadline113" class="outline-5">
+<h5 id="orgheadline113"><span class="section-number-5">3.8.2.1</span> Calculation summaries</h5>
 <div class="outline-text-5" id="text-3-8-2-1">
-</div><div id="outline-container-orgheadline55" class="outline-6">
-<h6 id="orgheadline55"><span class="section-number-6">3.8.2.1.1</span> CO</h6>
+</div><div id="outline-container-orgheadline112" class="outline-6">
+<h6 id="orgheadline112"><span class="section-number-6">3.8.2.1.1</span> CO</h6>
 <div class="outline-text-6" id="text-3-8-2-1-1">
 <pre class="example">
 Vasp calculation in /home-research/jkitchin/dft-book-new-vasp/molecules/wgs/H2O
@@ -4621,16 +4725,16 @@ Cartesian
 </div>
 </div>
 
-<div id="outline-container-orgheadline63" class="outline-4">
-<h4 id="orgheadline63"><span class="section-number-4">3.8.3</span> Temperature dependent water gas shift equilibrium constant</h4>
+<div id="outline-container-orgheadline120" class="outline-4">
+<h4 id="orgheadline120"><span class="section-number-4">3.8.3</span> Temperature dependent water gas shift equilibrium constant</h4>
 <div class="outline-text-4" id="text-3-8-3">
 <p>
 To correct the reaction energy for temperature effects, we must compute the vibrational frequencies of each species, and estimate the temperature dependent contributions to vibrational energy and entropy. We will break these calculations into several pieces. First we do each vibrational calculation. After those are done, we can get the data and construct the thermochemistry objects we need to estimate the reaction energy as a function of temperature (at constant pressure).
 </p>
 </div>
 
-<div id="outline-container-orgheadline58" class="outline-5">
-<h5 id="orgheadline58"><span class="section-number-5">3.8.3.1</span> CO vibrations</h5>
+<div id="outline-container-orgheadline115" class="outline-5">
+<h5 id="orgheadline115"><span class="section-number-5">3.8.3.1</span> CO vibrations</h5>
 <div class="outline-text-5" id="text-3-8-3-1">
 <div class="org-src-container">
 
@@ -4672,8 +4776,8 @@ CO has only one vibrational mode (3N-5 = 6 - 5 = 1). The other 5 modes are 3 tra
 </div>
 </div>
 
-<div id="outline-container-orgheadline59" class="outline-5">
-<h5 id="orgheadline59"><span class="section-number-5">3.8.3.2</span> CO<sub>2</sub> vibrations</h5>
+<div id="outline-container-orgheadline116" class="outline-5">
+<h5 id="orgheadline116"><span class="section-number-5">3.8.3.2</span> CO<sub>2</sub> vibrations</h5>
 <div class="outline-text-5" id="text-3-8-3-2">
 <div class="org-src-container">
 
@@ -4718,8 +4822,8 @@ CO\(_2\) is a linear molecule with 3N-5 = 4 vibrational modes. They are the firs
 </div>
 </div>
 
-<div id="outline-container-orgheadline60" class="outline-5">
-<h5 id="orgheadline60"><span class="section-number-5">3.8.3.3</span> H<sub>2</sub> vibrations</h5>
+<div id="outline-container-orgheadline117" class="outline-5">
+<h5 id="orgheadline117"><span class="section-number-5">3.8.3.3</span> H<sub>2</sub> vibrations</h5>
 <div class="outline-text-5" id="text-3-8-3-3">
 <div class="org-src-container">
 
@@ -4760,8 +4864,8 @@ There is only one frequency of importance (the one at 4281 cm\(^{-1}\)) for the 
 </div>
 </div>
 
-<div id="outline-container-orgheadline61" class="outline-5">
-<h5 id="orgheadline61"><span class="section-number-5">3.8.3.4</span> H<sub>2</sub>O vibrations</h5>
+<div id="outline-container-orgheadline118" class="outline-5">
+<h5 id="orgheadline118"><span class="section-number-5">3.8.3.4</span> H<sub>2</sub>O vibrations</h5>
 <div class="outline-text-5" id="text-3-8-3-4">
 <div class="org-src-container">
 
@@ -4805,8 +4909,8 @@ Water has 3N-6 = 3 vibrational modes.
 </div>
 </div>
 
-<div id="outline-container-orgheadline62" class="outline-5">
-<h5 id="orgheadline62"><span class="section-number-5">3.8.3.5</span> Thermochemistry</h5>
+<div id="outline-container-orgheadline119" class="outline-5">
+<h5 id="orgheadline119"><span class="section-number-5">3.8.3.5</span> Thermochemistry</h5>
 <div class="outline-text-5" id="text-3-8-3-5">
 <p>
 Now we are ready. We have the electronic energies and vibrational frequencies of each species in the reaction.
@@ -4929,16 +5033,16 @@ You can see a few things here. One is that at near 298K, the Gibbs free energy i
 </div>
 </div>
 
-<div id="outline-container-orgheadline68" class="outline-3">
-<h3 id="orgheadline68"><a id="ID-79BC5433-AE0D-4392-B5B0-A11FFF2D3B13"></a><span class="section-number-3">3.9</span> Molecular reaction barriers</h3>
+<div id="outline-container-orgheadline19" class="outline-3">
+<h3 id="orgheadline19"><a id="ID-79BC5433-AE0D-4392-B5B0-A11FFF2D3B13"></a><span class="section-number-3">3.9</span> Molecular reaction barriers</h3>
 <div class="outline-text-3" id="text-3-9">
 <p>
 We will consider a simple example of the barrier for NH<sub>3</sub> inversion. We have to create an NH<sub>3</sub> molecule in the initial and inverted state (these have exactly the same energy), and then interpolate a band of images. Then, we use the NEB method <a class='org-ref-reference' href="#sheppard:134106">sheppard:134106</a> to compute the barrier to inversion. The NEB class of methods are pretty standard, but other algorithms for finding barriers (saddle-points) exist that may be relevant <a class='org-ref-reference' href="#olsen:9776">olsen:9776</a>.
 </p>
 </div>
 
-<div id="outline-container-orgheadline65" class="outline-4">
-<h4 id="orgheadline65"><span class="section-number-4">3.9.1</span> Get initial and final states</h4>
+<div id="outline-container-orgheadline121" class="outline-4">
+<h4 id="orgheadline121"><span class="section-number-4">3.9.1</span> Get initial and final states</h4>
 <div class="outline-text-4" id="text-3-9-1">
 <div class="org-src-container">
 
@@ -4991,8 +5095,8 @@ atoms2.translate([5, 5, 5])
 </div>
 </div>
 
-<div id="outline-container-orgheadline66" class="outline-4">
-<h4 id="orgheadline66"><span class="section-number-4">3.9.2</span> Run band calculation</h4>
+<div id="outline-container-orgheadline122" class="outline-4">
+<h4 id="orgheadline122"><span class="section-number-4">3.9.2</span> Run band calculation</h4>
 <div class="outline-text-4" id="text-3-9-2">
 <p>
 Now we do the band calculation. <a href="nudged elastic band">nudged elastic band</a>
@@ -5067,8 +5171,8 @@ calc.view()
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline67" class="outline-4">
-<h4 id="orgheadline67"><span class="section-number-4">3.9.3</span> Make a movie of the animation</h4>
+<div id="outline-container-orgheadline123" class="outline-4">
+<h4 id="orgheadline123"><span class="section-number-4">3.9.3</span> Make a movie of the animation</h4>
 <div class="outline-text-4" id="text-3-9-3">
 <p>
 <a href="animation">animation</a>
@@ -5113,19 +5217,19 @@ os.system(<span style="color: #008000;">'png2swf -o images/nh3-neb.swf images/00
 </div>
 </div>
 
-<div id="outline-container-orgheadline111" class="outline-2">
-<h2 id="orgheadline111"><a id="ID-5bdc53ba-774c-4c7a-acd1-1cddf7d15a95"></a><span class="section-number-2">4</span> Bulk systems</h2>
+<div id="outline-container-orgheadline20" class="outline-2">
+<h2 id="orgheadline20"><a id="ID-5bdc53ba-774c-4c7a-acd1-1cddf7d15a95"></a><span class="section-number-2">4</span> Bulk systems</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 See <a href="http://arxiv.org/pdf/1204.2733.pdf">http://arxiv.org/pdf/1204.2733.pdf</a> for a very informative comparison of DFT codes for computing different bulk properties.
 </p>
 </div>
 
-<div id="outline-container-orgheadline73" class="outline-3">
-<h3 id="orgheadline73"><span class="section-number-3">4.1</span> Defining and visualizing bulk systems</h3>
+<div id="outline-container-orgheadline21" class="outline-3">
+<h3 id="orgheadline21"><span class="section-number-3">4.1</span> Defining and visualizing bulk systems</h3>
 <div class="outline-text-3" id="text-4-1">
-</div><div id="outline-container-orgheadline71" class="outline-4">
-<h4 id="orgheadline71"><span class="section-number-4">4.1.1</span> Built-in functions in ase</h4>
+</div><div id="outline-container-orgheadline125" class="outline-4">
+<h4 id="orgheadline125"><span class="section-number-4">4.1.1</span> Built-in functions in ase</h4>
 <div class="outline-text-4" id="text-4-1-1">
 <p>
 As with molecules, <a href="ase">ase</a> provides several helper functions to create bulk structures. We highlight a few of them here. Particularly common ones are:
@@ -5307,8 +5411,8 @@ write(<span style="color: #008000;">'images/NaCl.png'</span>, atoms, show_unit_c
 </div>
 
 
-<div id="outline-container-orgheadline70" class="outline-5">
-<h5 id="orgheadline70"><span class="section-number-5">4.1.1.1</span> <a href="ase.spacegroup">ase.spacegroup</a></h5>
+<div id="outline-container-orgheadline124" class="outline-5">
+<h5 id="orgheadline124"><span class="section-number-5">4.1.1.1</span> <a href="ase.spacegroup">ase.spacegroup</a></h5>
 <div class="outline-text-5" id="text-4-1-1-1">
 <p>
 A final alternative to setting up bulk structures is <a href="ase.spacegroup">ase.spacegroup</a>. This is a concise way to setup structures if you know the following properties of the crystal structure:
@@ -5360,8 +5464,8 @@ Here is rutile TiO<sub>2</sub>.
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline72" class="outline-4">
-<h4 id="orgheadline72"><span class="section-number-4">4.1.2</span> Using <a href="http://materialsproject.org/">http://materialsproject.org/</a></h4>
+<div id="outline-container-orgheadline126" class="outline-4">
+<h4 id="orgheadline126"><span class="section-number-4">4.1.2</span> Using <a href="http://materialsproject.org/">http://materialsproject.org/</a></h4>
 <div class="outline-text-4" id="text-4-1-2">
 <p>
 The <a href="http://www.materialsproject.org/">Materials Project</a> offers web access to a pretty large number of materials (over 21,000 at the time of this writing), including structure and other computed properties. You must sign up for an account at the website, and then you can access the information. You can search for materials with lots of different criteria including formula, unit cell formula, by elements, by structure, etc&#x2026; The website allows you to download the VASP files used to create the calculations. They also develop the <a href="https://github.com/materialsproject/pymatgen/">pymatgen</a> project (which requires python 2.7+).
@@ -5446,11 +5550,11 @@ write(<span style="color: #008000;">'images/Ru2O4.png'</span>, atoms, show_unit_
 </div>
 
 
-<div id="outline-container-orgheadline78" class="outline-3">
-<h3 id="orgheadline78"><span class="section-number-3">4.2</span> Computational parameters that are important for bulk structures</h3>
+<div id="outline-container-orgheadline22" class="outline-3">
+<h3 id="orgheadline22"><span class="section-number-3">4.2</span> Computational parameters that are important for bulk structures</h3>
 <div class="outline-text-3" id="text-4-2">
-</div><div id="outline-container-orgheadline74" class="outline-4">
-<h4 id="orgheadline74"><span class="section-number-4">4.2.1</span> k-point convergence</h4>
+</div><div id="outline-container-orgheadline127" class="outline-4">
+<h4 id="orgheadline127"><span class="section-number-4">4.2.1</span> k-point convergence</h4>
 <div class="outline-text-4" id="text-4-2-1">
 <p>
 In the section on molecules, we learned that the total energy is a function of the planewave cutoff energy (ENCUT) used. In bulk systems that is true also. There is also another calculation parameter you must consider, the k-point grid. The k-point grid is a computational tool used to approximate integrals of some property, e.g. the electron density, over the entire unit cell. The integration is performed in reciprocal space (i.e. in the Brillouin zone) for convenience and efficiency, and the k-point grid is where the property is sampled for the integration. The higher the number of sampled points, the more accurately the integrals are approximated.
@@ -5521,8 +5625,8 @@ In the k-point convergence example above, we used a \(6 \times 6 \times 6\) k-po
 </div>
 </div>
 
-<div id="outline-container-orgheadline75" class="outline-4">
-<h4 id="orgheadline75"><span class="section-number-4">4.2.2</span> <span class="todo TODO">TODO</span> Effect of <a href=http://cms.mpi.univie.ac.at/wiki/index.php/SIGMA>SIGMA</a></h4>
+<div id="outline-container-orgheadline128" class="outline-4">
+<h4 id="orgheadline128"><span class="section-number-4">4.2.2</span> <span class="todo TODO">TODO</span> Effect of <a href=http://cms.mpi.univie.ac.at/wiki/index.php/SIGMA>SIGMA</a></h4>
 <div class="outline-text-4" id="text-4-2-2">
 <p>
 <a href="ISMEAR">ISMEAR</a>
@@ -5617,8 +5721,8 @@ plt.savefig(<span style="color: #008000;">'images/occ-sigma.png'</span>)
 </div>
 </div>
 
-<div id="outline-container-orgheadline77" class="outline-4">
-<h4 id="orgheadline77"><span class="section-number-4">4.2.3</span> The number of bands</h4>
+<div id="outline-container-orgheadline130" class="outline-4">
+<h4 id="orgheadline130"><span class="section-number-4">4.2.3</span> The number of bands</h4>
 <div class="outline-text-4" id="text-4-2-3">
 <p>
 In the last figure, it is evident that due to the smearing of the electronic states you need to have extra bands to accommodate the electrons above the Fermi level, and the higher the <a href=http://cms.mpi.univie.ac.at/wiki/index.php/SIGMA>SIGMA</a> value is, the more bands you need. You need enough bands so that the highest energy bands are unoccupied, and VASP will give you a warning that looks like this:
@@ -5703,7 +5807,7 @@ These do not always work, especially for small molecular systems where NIONS/2 m
 </p>
 
 <p>
-To figure out how many bands you need, it is necessary to know how many electrons are in your calculation. The <a href="Vasp.get_valence_electrons">Vasp.get_valence_electrons</a> provides this for you. Alternatively, you can look in the <a href="#orgheadline76">Appendix</a> for a table listing the number of valence electrons for each POTCAR file. Armed with this information you can set NBANDS the way you want.
+To figure out how many bands you need, it is necessary to know how many electrons are in your calculation. The <a href="Vasp.get_valence_electrons">Vasp.get_valence_electrons</a> provides this for you. Alternatively, you can look in the <a href="#orgheadline129">Appendix</a> for a table listing the number of valence electrons for each POTCAR file. Armed with this information you can set NBANDS the way you want.
 </p>
 
 <div class="org-src-container">
@@ -5891,8 +5995,8 @@ You are, of course, free to use any formula you want to set the number of bands.
 </div>
 </div>
 
-<div id="outline-container-orgheadline84" class="outline-3">
-<h3 id="orgheadline84"><a id="ID-82305f4d-66ec-4971-9504-fd44ff75bb6e"></a><span class="section-number-3">4.3</span> Determining bulk structures</h3>
+<div id="outline-container-orgheadline23" class="outline-3">
+<h3 id="orgheadline23"><a id="ID-82305f4d-66ec-4971-9504-fd44ff75bb6e"></a><span class="section-number-3">4.3</span> Determining bulk structures</h3>
 <div class="outline-text-3" id="text-4-3">
 <p>
 What we typically mean by determining bulk structures includes the following:
@@ -5909,8 +6013,8 @@ All of these questions can often be addressed by finding the volume, shape and a
 </p>
 </div>
 
-<div id="outline-container-orgheadline80" class="outline-4">
-<h4 id="orgheadline80"><span class="section-number-4">4.3.1</span> fcc/bcc crystal structures</h4>
+<div id="outline-container-orgheadline131" class="outline-4">
+<h4 id="orgheadline131"><span class="section-number-4">4.3.1</span> fcc/bcc crystal structures</h4>
 <div class="outline-text-4" id="text-4-3-1">
 <p>
 The fcc and bcc structures are simple. They only have one degree of freedom: the lattice constant. In this section we show how to calculate the equilibrium volume of each structure, and determine which one is more stable. We start with the fcc crystal structure of Cu. We will manually define the crystal structure based on the definitions in Kittel <a class='org-ref-reference' href="#kittel">kittel</a> (Chapter 1).
@@ -6018,7 +6122,7 @@ Use the data in the table above to plot the total energy as a function of the la
 </div>
 
 <p>
-If you want to know the lattice constant that gives the lowest energy, you would fit an <a href="#orgheadline79">equation of state</a> to the data. Here is an example using <a href="ase.utils.eos">ase.utils.eos</a>.  See also the appendix <a href="#orgheadline79">equations of state</a>.
+If you want to know the lattice constant that gives the lowest energy, you would fit an <a href="#orgheadline65">equation of state</a> to the data. Here is an example using <a href="ase.utils.eos">ase.utils.eos</a>.  See also the appendix <a href="#orgheadline65">equations of state</a>.
 </p>
 
 <div class="org-src-container">
@@ -6365,8 +6469,8 @@ What can we say about the relative stability of fcc to hcp? Nothing, until we ca
 </div>
 
 
-<div id="outline-container-orgheadline81" class="outline-4">
-<h4 id="orgheadline81"><span class="section-number-4">4.3.2</span> Optimizing the hcp lattice constant</h4>
+<div id="outline-container-orgheadline132" class="outline-4">
+<h4 id="orgheadline132"><span class="section-number-4">4.3.2</span> Optimizing the hcp lattice constant</h4>
 <div class="outline-text-4" id="text-4-3-2">
 <p>
 The hcp lattice is more complicated than the fcc/bcc lattices because there are two lattice parameters: \(a\) and \(c\) or equivalently: \(a\) and \(c/a\). We will start by making a grid of values and find the set of parameters that minimizes the energy. See Figure <a href="#fig:ru-e-ca">fig:ru-e-ca</a>.
@@ -6522,8 +6626,8 @@ plt.show()
 </div>
 
 
-<div id="outline-container-orgheadline82" class="outline-4">
-<h4 id="orgheadline82"><span class="section-number-4">4.3.3</span> Complex structures with internal degrees of freedom</h4>
+<div id="outline-container-orgheadline133" class="outline-4">
+<h4 id="orgheadline133"><span class="section-number-4">4.3.3</span> Complex structures with internal degrees of freedom</h4>
 <div class="outline-text-4" id="text-4-3-3">
 <p>
 A unit cell has six degrees of freedom: the lengths of each unit cell vector, and the angle between each vector. There may additionally be internal degrees of freedom for the atoms. It is impractical to try the approach used for the hcp Ru on anything complicated. Instead, we rely again on algorithms to optimize the unit cell shape, volume and internal degrees of freedom. It is usually not efficient to make a wild guess of the geometry and then turn VASP loose on to optimize it. Instead, the following algorithm works pretty well.
@@ -6929,8 +7033,8 @@ The difference here is on the order of a meV. That does not seem significant her
 </div>
 </div>
 
-<div id="outline-container-orgheadline83" class="outline-4">
-<h4 id="orgheadline83"><span class="section-number-4">4.3.4</span> Effect of XC on bulk properties</h4>
+<div id="outline-container-orgheadline134" class="outline-4">
+<h4 id="orgheadline134"><span class="section-number-4">4.3.4</span> Effect of XC on bulk properties</h4>
 <div class="outline-text-4" id="text-4-3-4">
 <p>
 The exchange correlation functional can significantly affect computed bulk properties. Here, we examine the effect on the bulk lattice constant of Pd (exp. 3.881). An excellent review of this can be found in <a class='org-ref-reference' href="#mattsson-084714">mattsson-084714</a>. We examine several functionals. The <code>xc</code> keyword in <code>Vasp</code> is used to select the POTCARs.  Let us consider the LDA functional first.
@@ -7034,8 +7138,8 @@ These results compare very favorably to those in <a class='org-ref-reference' hr
 </div>
 </div>
 
-<div id="outline-container-orgheadline85" class="outline-3">
-<h3 id="orgheadline85"><span class="section-number-3">4.4</span> <span class="todo TODO">TODO</span> Using built-in ase optimization with vasp</h3>
+<div id="outline-container-orgheadline24" class="outline-3">
+<h3 id="orgheadline24"><span class="section-number-3">4.4</span> <span class="todo TODO">TODO</span> Using built-in ase optimization with vasp</h3>
 <div class="outline-text-3" id="text-4-4">
 <p>
 ASE has some nice optimization tools built into it. We can use them in vasp too. This example is adapted from this test: <a href="https://trac.fysik.dtu.dk/projects/ase/browser/trunk/ase/test/vasp/vasp_Al_volrelax.py">https://trac.fysik.dtu.dk/projects/ase/browser/trunk/ase/test/vasp/vasp_Al_volrelax.py</a>
@@ -7161,8 +7265,8 @@ This could be handy if you want to use any of the optimizers in <a href="ase.opt
 </div>
 </div>
 
-<div id="outline-container-orgheadline86" class="outline-3">
-<h3 id="orgheadline86"><span class="section-number-3">4.5</span> Cohesive energy</h3>
+<div id="outline-container-orgheadline25" class="outline-3">
+<h3 id="orgheadline25"><span class="section-number-3">4.5</span> Cohesive energy</h3>
 <div class="outline-text-3" id="text-4-5">
 <p>
 <a href="cohesive energy">cohesive energy</a>
@@ -7322,13 +7426,13 @@ The cohesive energy is 6.127 eV
 </pre>
 
 <p>
-Again, the value in Kittel <a class='org-ref-reference' href="#kittel">kittel</a> is 5.75 eV which is very close to this value. Finally, it is also possible there is a lower energy non-spherical atom energy; we did not check that at all (see <a href="#orgheadline51">Estimating triplet oxygen dissociation energy with low symmetry</a>).
+Again, the value in Kittel <a class='org-ref-reference' href="#kittel">kittel</a> is 5.75 eV which is very close to this value. Finally, it is also possible there is a lower energy non-spherical atom energy; we did not check that at all (see <a href="#orgheadline108">Estimating triplet oxygen dissociation energy with low symmetry</a>).
 </p>
 </div>
 </div>
 
-<div id="outline-container-orgheadline89" class="outline-3">
-<h3 id="orgheadline89"><span class="section-number-3">4.6</span> Elastic properties</h3>
+<div id="outline-container-orgheadline26" class="outline-3">
+<h3 id="orgheadline26"><span class="section-number-3">4.6</span> Elastic properties</h3>
 <div class="outline-text-3" id="text-4-6">
 <p>
 See this reference <a class='org-ref-reference' href="#PhysRevB.65.104104">PhysRevB.65.104104</a>.
@@ -7339,8 +7443,8 @@ We seek the elastic constant tensor that relates stress (&sigma;) and strain (&e
 </p>
 </div>
 
-<div id="outline-container-orgheadline87" class="outline-4">
-<h4 id="orgheadline87"><span class="section-number-4">4.6.1</span> Fe elastic properties</h4>
+<div id="outline-container-orgheadline135" class="outline-4">
+<h4 id="orgheadline135"><span class="section-number-4">4.6.1</span> Fe elastic properties</h4>
 <div class="outline-text-4" id="text-4-6-1">
 <p>
 As with molecular vibrations, we need a groundstate geometry. Let us get one for BCC Fe.
@@ -7498,8 +7602,8 @@ see <a href="http://www.nist.gov/data/PDFfiles/jpcrd34.pdf">http://www.nist.gov/
 </div>
 </div>
 
-<div id="outline-container-orgheadline88" class="outline-4">
-<h4 id="orgheadline88"><span class="section-number-4">4.6.2</span> <span class="todo TODO">TODO</span> Al elastic properties</h4>
+<div id="outline-container-orgheadline136" class="outline-4">
+<h4 id="orgheadline136"><span class="section-number-4">4.6.2</span> <span class="todo TODO">TODO</span> Al elastic properties</h4>
 <div class="outline-text-4" id="text-4-6-2">
 <p>
 First, the relaxed geometry.
@@ -7576,8 +7680,8 @@ This example shows the basic mechanics of getting the elastic constants. The C<s
 </div>
 </div>
 
-<div id="outline-container-orgheadline90" class="outline-3">
-<h3 id="orgheadline90"><span class="section-number-3">4.7</span> Bulk thermodynamics</h3>
+<div id="outline-container-orgheadline27" class="outline-3">
+<h3 id="orgheadline27"><span class="section-number-3">4.7</span> Bulk thermodynamics</h3>
 <div class="outline-text-3" id="text-4-7">
 <p>
 We can predict temperature dependent thermodynamic properties of bulk materials without too much effort. As with the thermochemical properties of ideal gases, we must use some simple models that we parameterize by DFT. Here we follow the example in Reference <a class='org-ref-reference' href="#Shang20101040">Shang20101040</a> for computing the thermal coefficient of expansion, heat capacity, enthalpy and entropy for Ni as a function of temperature.
@@ -7627,8 +7731,8 @@ plt.savefig(<span style="color: #008000;">'images/Ni-fcc.png'</span>)
 </div>
 </div>
 
-<div id="outline-container-orgheadline91" class="outline-3">
-<h3 id="orgheadline91"><span class="section-number-3">4.8</span> Effect of pressure on phase stability</h3>
+<div id="outline-container-orgheadline28" class="outline-3">
+<h3 id="orgheadline28"><span class="section-number-3">4.8</span> Effect of pressure on phase stability</h3>
 <div class="outline-text-3" id="text-4-8">
 <p>
 So far we have only considered relative stability at a pressure of 0 Pa. We now consider the relative stability of two phases under pressure. We will consider TiO\(_2\) in the rutile and anatase phases.
@@ -7906,12 +8010,12 @@ there is some controversy about the most stable phase. add discussion here.
 </div>
 </div>
 
-<div id="outline-container-orgheadline99" class="outline-3">
-<h3 id="orgheadline99"><a id="ID-15961dbc-5a10-42b6-8a3c-ca1d73b390f9"></a><span class="section-number-3">4.9</span> Bulk reaction energies</h3>
+<div id="outline-container-orgheadline29" class="outline-3">
+<h3 id="orgheadline29"><a id="ID-15961dbc-5a10-42b6-8a3c-ca1d73b390f9"></a><span class="section-number-3">4.9</span> Bulk reaction energies</h3>
 <div class="outline-text-3" id="text-4-9">
 </div>
-<div id="outline-container-orgheadline93" class="outline-4">
-<h4 id="orgheadline93"><span class="section-number-4">4.9.1</span> Alloy formation energies</h4>
+<div id="outline-container-orgheadline138" class="outline-4">
+<h4 id="orgheadline138"><span class="section-number-4">4.9.1</span> Alloy formation energies</h4>
 <div class="outline-text-4" id="text-4-9-1">
 <p>
 In this section we will consider how to calculate the formation energy of an fcc Cu-Pd alloy and how to use that information to discuss relative stabilities. The kinds of questions we can easily answer are:
@@ -7928,8 +8032,8 @@ Each of these questions is answered by calculating the formation energy of the a
 </p>
 </div>
 
-<div id="outline-container-orgheadline92" class="outline-5">
-<h5 id="orgheadline92"><span class="section-number-5">4.9.1.1</span> Basic alloy formation energy</h5>
+<div id="outline-container-orgheadline137" class="outline-5">
+<h5 id="orgheadline137"><span class="section-number-5">4.9.1.1</span> Basic alloy formation energy</h5>
 <div class="outline-text-5" id="text-4-9-1-1">
 <div class="org-src-container">
 
@@ -8273,8 +8377,8 @@ The construction of alloy phase diagrams is difficult. You are always faced with
 </div>
 </div>
 
-<div id="outline-container-orgheadline98" class="outline-4">
-<h4 id="orgheadline98"><span class="section-number-4">4.9.2</span> Metal oxide oxidation energies</h4>
+<div id="outline-container-orgheadline142" class="outline-4">
+<h4 id="orgheadline142"><span class="section-number-4">4.9.2</span> Metal oxide oxidation energies</h4>
 <div class="outline-text-4" id="text-4-9-2">
 <p>
 We will consider here the reaction 2 Cu<sub>2</sub>O + O<sub>2</sub> \(\rightleftharpoons\) 4 CuO. The reaction energy is:
@@ -8285,8 +8389,8 @@ We will consider here the reaction 2 Cu<sub>2</sub>O + O<sub>2</sub> \(\rightlef
 </p>
 </div>
 
-<div id="outline-container-orgheadline94" class="outline-5">
-<h5 id="orgheadline94"><span class="section-number-5">4.9.2.1</span> Cu<sub>2</sub>O calculation</h5>
+<div id="outline-container-orgheadline139" class="outline-5">
+<h5 id="orgheadline139"><span class="section-number-5">4.9.2.1</span> Cu<sub>2</sub>O calculation</h5>
 <div class="outline-text-5" id="text-4-9-2-1">
 <div class="org-src-container">
 
@@ -8327,8 +8431,8 @@ atoms.set_cell((a, a, a), scale_atoms=<span style="color: #D0372D;">True</span>)
 </div>
 </div>
 
-<div id="outline-container-orgheadline95" class="outline-5">
-<h5 id="orgheadline95"><span class="section-number-5">4.9.2.2</span> CuO calculation</h5>
+<div id="outline-container-orgheadline140" class="outline-5">
+<h5 id="orgheadline140"><span class="section-number-5">4.9.2.2</span> CuO calculation</h5>
 <div class="outline-text-5" id="text-4-9-2-2">
 <div class="org-src-container">
 
@@ -8374,8 +8478,8 @@ atoms.set_cell((a, a, a), scale_atoms=<span style="color: #D0372D;">True</span>)
 </div>
 </div>
 
-<div id="outline-container-orgheadline97" class="outline-5">
-<h5 id="orgheadline97"><span class="section-number-5">4.9.2.3</span> <span class="todo TODO">TODO</span> Reaction energy calculation</h5>
+<div id="outline-container-orgheadline141" class="outline-5">
+<h5 id="orgheadline141"><span class="section-number-5">4.9.2.3</span> <span class="todo TODO">TODO</span> Reaction energy calculation</h5>
 <div class="outline-text-5" id="text-4-9-2-3">
 <div class="org-src-container">
 
@@ -8416,7 +8520,7 @@ This is the reaction energy for 2 Cu<sub>2</sub>O \(\rightarrow\) 4 CuO. In <a c
 </p>
 
 <p>
-There are a few reasons why our number does not agree with the experimental reaction energy. One reason is related to errors in the O<sub>2</sub> dissociation energy, and another reason is related to localization of electrons in the Cu 3\(d\) orbitals <a class='org-ref-reference' href="#PhysRevB.73.195107">PhysRevB.73.195107</a>. The first error of incorrect O<sub>2</sub> dissociation error is a systematic error that can be corrected empirically <a class='org-ref-reference' href="#PhysRevB.73.195107">PhysRevB.73.195107</a>. Fixing the second error requires the application of DFT+U (see <a href="#orgheadline96">DFT+U</a>).
+There are a few reasons why our number does not agree with the experimental reaction energy. One reason is related to errors in the O<sub>2</sub> dissociation energy, and another reason is related to localization of electrons in the Cu 3\(d\) orbitals <a class='org-ref-reference' href="#PhysRevB.73.195107">PhysRevB.73.195107</a>. The first error of incorrect O<sub>2</sub> dissociation error is a systematic error that can be corrected empirically <a class='org-ref-reference' href="#PhysRevB.73.195107">PhysRevB.73.195107</a>. Fixing the second error requires the application of DFT+U (see <a href="#orgheadline52">DFT+U</a>).
 </p>
 
 <p>
@@ -8446,8 +8550,8 @@ This is pretty close to the value in <a class='org-ref-reference' href="#PhysRev
 </div>
 </div>
 
-<div id="outline-container-orgheadline100" class="outline-3">
-<h3 id="orgheadline100"><a id="ID-cdf40b4f-f686-48b4-a458-c885f62b8bbf"></a><span class="section-number-3">4.10</span> Bulk density of states</h3>
+<div id="outline-container-orgheadline30" class="outline-3">
+<h3 id="orgheadline30"><a id="ID-cdf40b4f-f686-48b4-a458-c885f62b8bbf"></a><span class="section-number-3">4.10</span> Bulk density of states</h3>
 <div class="outline-text-3" id="text-4-10">
 <p>
 The density of states refers to the number of electronic states in a particular energy range.
@@ -8705,8 +8809,8 @@ got here
 </div>
 </div>
 
-<div id="outline-container-orgheadline102" class="outline-3">
-<h3 id="orgheadline102"><span class="section-number-3">4.11</span> Atom projected density of states</h3>
+<div id="outline-container-orgheadline31" class="outline-3">
+<h3 id="orgheadline31"><span class="section-number-3">4.11</span> Atom projected density of states</h3>
 <div class="outline-text-3" id="text-4-11">
 <p>
 One major disadvantage of a planewave basis set is that it is difficult to relate the completely delocalized planewaves to localized phenomena such as bonding. Much insight into bonding has been gained by atomic/molecular orbital theory, which has carried over to the solid-state arena <a class='org-ref-reference' href="#RevModPhys.60.601">RevModPhys.60.601</a>. Consequently, several schemes have been developed to project the one-electron Kohn-Sham wave functions onto atomic wave functions <a class='org-ref-reference' href="#sanchez-portal1995:projec">sanchez-portal1995:projec</a>,<a class='org-ref-reference' href="#segall1996:popul">segall1996:popul</a>,<a class='org-ref-reference' href="#segall1996:popul-mp">segall1996:popul-mp</a>.  In VASP, the one electron wave functions can be projected onto spherical harmonic orbitals. The radial component of the atomic orbitals extends to infinity. In a solid, this means that the projection on one atom may overlap with the projection on a neighboring atom, resulting in double counting of electrons.  Consequently, a cutoff radius was introduced, beyond which no contributions are included.  It is not obvious what the best cutoff radius is. If the radius is too small, it might not capture all of the electrons associated with the atom. However, if it is too large, it may include electrons from neighboring atoms.  One might want to use different cutoff radii for different atoms, which have different sizes.  Furthermore, the ideal cutoff radius for an atom may change in different environments, thus it would require an iterative procedure to determine it.  This difficulty arises because the orbital-band occupations are not observable, thus how the electrons are divided up between atoms is arbitrary and, as will be seen later, is sensitive to the cutoff radius (and in other DFT implementations, the basis set).  However, Mulliken orbital populations have been used successfully for many years to examine the qualitative differences between similar systems, and that is precisely what these quantities are used for here.  Thus, a discussion of the analysis and results is warranted.
@@ -8816,8 +8920,8 @@ d-band width  = 2.71 eV
 </div>
 </div>
 
-<div id="outline-container-orgheadline101" class="outline-4">
-<h4 id="orgheadline101"><span class="section-number-4">4.11.1</span> Effect of RWIGS on ADOS</h4>
+<div id="outline-container-orgheadline143" class="outline-4">
+<h4 id="orgheadline143"><span class="section-number-4">4.11.1</span> Effect of RWIGS on ADOS</h4>
 <div class="outline-text-4" id="text-4-11-1">
 <p>
 Here we examine the effect of changing RWIGS on the number of counted electrons, and properties of the d-band moments.
@@ -8918,8 +9022,8 @@ The d-band center and width also change.
 </div>
 </div>
 
-<div id="outline-container-orgheadline104" class="outline-3">
-<h3 id="orgheadline104"><span class="section-number-3">4.12</span> Band structures</h3>
+<div id="outline-container-orgheadline32" class="outline-3">
+<h3 id="orgheadline32"><span class="section-number-3">4.12</span> Band structures</h3>
 <div class="outline-text-3" id="text-4-12">
 <p>
 <a href="band structure">band structure</a>
@@ -9102,8 +9206,8 @@ p.savefig(<span style="color: #008000;">'images/tio2-bandstructure-dos.png'</spa
 </div>
 </div>
 
-<div id="outline-container-orgheadline103" class="outline-4">
-<h4 id="orgheadline103"><span class="section-number-4">4.12.1</span> create example showing band dispersion with change in lattice constant</h4>
+<div id="outline-container-orgheadline144" class="outline-4">
+<h4 id="orgheadline144"><span class="section-number-4">4.12.1</span> create example showing band dispersion with change in lattice constant</h4>
 <div class="outline-text-4" id="text-4-12-1">
 <p>
 In this section, we examine the effect of the lattice constant on the band structure. Since the lattice constant affects the overlap of neighboring atoms, we expect that smaller lattice constants will show more dispersion, i.e. broader bands. Larger lattice constants, in contrast, should show narrower bands. We examine this in silicon.
@@ -9184,12 +9288,12 @@ You can see the band structure for a=6.0 is notably sharper than the band struct
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline108" class="outline-3">
-<h3 id="orgheadline108"><a id="ID-9aba409a-1d3b-4bbb-96df-6cd58a787991"></a><span class="section-number-3">4.13</span> Magnetism</h3>
+<div id="outline-container-orgheadline33" class="outline-3">
+<h3 id="orgheadline33"><a id="ID-9aba409a-1d3b-4bbb-96df-6cd58a787991"></a><span class="section-number-3">4.13</span> Magnetism</h3>
 <div class="outline-text-3" id="text-4-13">
 </div>
-<div id="outline-container-orgheadline105" class="outline-4">
-<h4 id="orgheadline105"><span class="section-number-4">4.13.1</span> Determining if a magnetic solution is energetically favorable</h4>
+<div id="outline-container-orgheadline145" class="outline-4">
+<h4 id="orgheadline145"><span class="section-number-4">4.13.1</span> Determining if a magnetic solution is energetically favorable</h4>
 <div class="outline-text-4" id="text-4-13-1">
 <p>
 We can force a total magnetic moment onto a unit cell and compute the total energy as function of the total magnetic moment. If there is a minimum in the energy, then we know there is a lower energy magnetic solution than a non-magnetic solution. We use <a href=http://cms.mpi.univie.ac.at/wiki/index.php/NUPDOWN>NUPDOWN</a> to enforce the magnetic moment in the cell. Note that NUPDOWN can only be an integer. You cannot set it to be an arbitrary float.
@@ -9312,8 +9416,8 @@ Individual moments are [-0.013 -0.013] Bohr-magnetons
 </div>
 </div>
 
-<div id="outline-container-orgheadline106" class="outline-4">
-<h4 id="orgheadline106"><span class="section-number-4">4.13.2</span> Antiferromagnetic spin states</h4>
+<div id="outline-container-orgheadline146" class="outline-4">
+<h4 id="orgheadline146"><span class="section-number-4">4.13.2</span> Antiferromagnetic spin states</h4>
 <div class="outline-text-4" id="text-4-13-2">
 <p>
 In an antiferromagnetic material, there are equal numbers of spin up and down electrons that align in a regular pattern, but pointing in opposite directions so that there is no net magnetism. It is possible to model this by setting the magnetic moments on each <a href="ase.Atom">ase.Atom</a> object. <a href=http://cms.mpi.univie.ac.at/wiki/index.php/lreal>lreal</a>
@@ -9356,12 +9460,12 @@ You can see that even though the total magnetic moment is 0, there is a spin on 
 </div>
 </div>
 
-<div id="outline-container-orgheadline107" class="outline-4">
-<h4 id="orgheadline107"><span class="section-number-4">4.13.3</span> <span class="todo TODO">TODO</span> NiO-FeO formation energies with magnetism</h4>
+<div id="outline-container-orgheadline147" class="outline-4">
+<h4 id="orgheadline147"><span class="section-number-4">4.13.3</span> <span class="todo TODO">TODO</span> NiO-FeO formation energies with magnetism</h4>
 </div>
 </div>
-<div id="outline-container-orgheadline109" class="outline-3">
-<h3 id="orgheadline109"><span class="section-number-3">4.14</span> <span class="todo TODO">TODO</span> phonons</h3>
+<div id="outline-container-orgheadline34" class="outline-3">
+<h3 id="orgheadline34"><span class="section-number-3">4.14</span> <span class="todo TODO">TODO</span> phonons</h3>
 <div class="outline-text-3" id="text-4-14">
 <p>
 <a class='org-ref-reference' href="#RevModPhys.73.515">RevModPhys.73.515</a>
@@ -9372,8 +9476,8 @@ phonopy
 </p>
 </div>
 </div>
-<div id="outline-container-orgheadline110" class="outline-3">
-<h3 id="orgheadline110"><span class="section-number-3">4.15</span> <span class="todo TODO">TODO</span> solid state NEB</h3>
+<div id="outline-container-orgheadline35" class="outline-3">
+<h3 id="orgheadline35"><span class="section-number-3">4.15</span> <span class="todo TODO">TODO</span> solid state NEB</h3>
 <div class="outline-text-3" id="text-4-15">
 <p>
 <a class='org-ref-reference' href="#Caspersen10052005">Caspersen10052005</a> Carter paper
@@ -9387,19 +9491,19 @@ phonopy
 </div>
 </div>
 
-<div id="outline-container-orgheadline161" class="outline-2">
-<h2 id="orgheadline161"><a id="ID-af4a3f54-6572-49ac-b938-e62401bc35b9"></a><span class="section-number-2">5</span> Surfaces</h2>
+<div id="outline-container-orgheadline36" class="outline-2">
+<h2 id="orgheadline36"><a id="ID-af4a3f54-6572-49ac-b938-e62401bc35b9"></a><span class="section-number-2">5</span> Surfaces</h2>
 <div class="outline-text-2" id="text-5">
 </div>
-<div id="outline-container-orgheadline114" class="outline-3">
-<h3 id="orgheadline114"><span class="section-number-3">5.1</span> Surface structures</h3>
+<div id="outline-container-orgheadline37" class="outline-3">
+<h3 id="orgheadline37"><span class="section-number-3">5.1</span> Surface structures</h3>
 <div class="outline-text-3" id="text-5-1">
 <p>
 As with molecules and bulk systems <a href="ase">ase</a> provides several convenience functions for making surfaces.
 </p>
 </div>
-<div id="outline-container-orgheadline112" class="outline-4">
-<h4 id="orgheadline112"><span class="section-number-4">5.1.1</span> Simple surfaces</h4>
+<div id="outline-container-orgheadline148" class="outline-4">
+<h4 id="orgheadline148"><span class="section-number-4">5.1.1</span> Simple surfaces</h4>
 <div class="outline-text-4" id="text-5-1-1">
 <p>
 ase provides many <a href="https://wiki.fysik.dtu.dk/ase/ase/surface.html#module-ase.lattice.surface">utility functions</a> to setup surfaces. Here is a simple example of an fcc111 Al surface. There are built in functions for fcc111, bcc110, bcc111, hcp001 and diamond111.
@@ -9430,8 +9534,8 @@ write(<span style="color: #008000;">'images/Al-slab.png'</span>, slab, rotation=
 </div>
 </div>
 
-<div id="outline-container-orgheadline113" class="outline-4">
-<h4 id="orgheadline113"><span class="section-number-4">5.1.2</span> Vicinal surfaces</h4>
+<div id="outline-container-orgheadline149" class="outline-4">
+<h4 id="orgheadline149"><span class="section-number-4">5.1.2</span> Vicinal surfaces</h4>
 <div class="outline-text-4" id="text-5-1-2">
 <p>
 The vast majority of surface calculations are performed on flat surfaces. This is partially because these surfaces tend to have the lowest surface energies, and thus are likely to be experimentally observed. The flat surfaces, also known as low Miller index surfaces, also have small unit cells, which tends to make them computationally affordable. There are, however, many reasons to model the properties of surfaces that are not flat. You may be interested in the reactivity of a step edge, for example, or you may use the lower cooridnation of steps as a proxy for nanoparticle reactivity.  Many stepped surfaces are not that difficult to make now. The main idea in generating them is described <a href="https://wiki.fysik.dtu.dk/ase/_downloads/general_surface.pdf">here</a>. <a href="ase">ase</a> provides a general function for making vicinal surfaces. Here is an example of a (211) surface.
@@ -9463,8 +9567,8 @@ write(<span style="color: #008000;">'images/Au-211.png'</span>,
 </div>
 </div>
 
-<div id="outline-container-orgheadline115" class="outline-3">
-<h3 id="orgheadline115"><span class="section-number-3">5.2</span> Surface calculation parameters</h3>
+<div id="outline-container-orgheadline38" class="outline-3">
+<h3 id="orgheadline38"><span class="section-number-3">5.2</span> Surface calculation parameters</h3>
 <div class="outline-text-3" id="text-5-2">
 <p>
 There is one important parameter that is different for surfaces than for bulk calculations, the k-point grid. Assuming you have followed the convention that the z-axis is normal to the surface, the k-point grids for slab calculations always have the form of \(M \times N \times 1\). To illustrate why, consider this example:
@@ -9513,8 +9617,8 @@ done
 </div>
 </div>
 
-<div id="outline-container-orgheadline116" class="outline-3">
-<h3 id="orgheadline116"><a id="ID-10d1486b-97d1-48a4-83dd-d71097668d18"></a><span class="section-number-3">5.3</span> Surface relaxation</h3>
+<div id="outline-container-orgheadline39" class="outline-3">
+<h3 id="orgheadline39"><a id="ID-10d1486b-97d1-48a4-83dd-d71097668d18"></a><span class="section-number-3">5.3</span> Surface relaxation</h3>
 <div class="outline-text-3" id="text-5-3">
 <p>
 When a surface is created, the bulk symmetry is broken and consequently there will be forces on the surface atoms. We will examine some consequences of this with a simple Al slab. First, we show there are forces on the slab atoms.
@@ -9727,8 +9831,8 @@ Depending on the layer there is either slight contraction or expansion. These qu
 </div>
 </div>
 
-<div id="outline-container-orgheadline132" class="outline-3">
-<h3 id="orgheadline132"><span class="section-number-3">5.4</span> Surface reconstruction</h3>
+<div id="outline-container-orgheadline40" class="outline-3">
+<h3 id="orgheadline40"><span class="section-number-3">5.4</span> Surface reconstruction</h3>
 <div class="outline-text-3" id="text-5-4">
 <p>
 <a href="reconstruction">reconstruction</a>
@@ -9755,15 +9859,15 @@ Thus, if this change in energy: \(E_{bulk} + E_{slab_{missing row}} - E_{slab_{1
 </p>
 </div>
 
-<div id="outline-container-orgheadline121" class="outline-4">
-<h4 id="orgheadline121"><span class="section-number-4">5.4.1</span> Au(110) missing row reconstruction</h4>
+<div id="outline-container-orgheadline154" class="outline-4">
+<h4 id="orgheadline154"><span class="section-number-4">5.4.1</span> Au(110) missing row reconstruction</h4>
 <div class="outline-text-4" id="text-5-4-1">
 <p>
 We first consider the Au(110) case, where the reconstruction is known to be favorable.
 </p>
 </div>
-<div id="outline-container-orgheadline117" class="outline-5">
-<h5 id="orgheadline117"><span class="section-number-5">5.4.1.1</span> Clean Au(110) slab</h5>
+<div id="outline-container-orgheadline150" class="outline-5">
+<h5 id="orgheadline150"><span class="section-number-5">5.4.1.1</span> Clean Au(110) slab</h5>
 <div class="outline-text-5" id="text-5-4-1-1">
 <div class="org-src-container">
 
@@ -9816,8 +9920,8 @@ write(<span style="color: #008000;">'images/Au-110.png'</span>, atoms.repeat((2,
 </div>
 </div>
 
-<div id="outline-container-orgheadline118" class="outline-5">
-<h5 id="orgheadline118"><span class="section-number-5">5.4.1.2</span> Missing row in Au(110)</h5>
+<div id="outline-container-orgheadline151" class="outline-5">
+<h5 id="orgheadline151"><span class="section-number-5">5.4.1.2</span> Missing row in Au(110)</h5>
 <div class="outline-text-5" id="text-5-4-1-2">
 <div class="org-src-container">
 
@@ -9859,8 +9963,8 @@ calc.update()
 </div>
 </div>
 
-<div id="outline-container-orgheadline119" class="outline-5">
-<h5 id="orgheadline119"><span class="section-number-5">5.4.1.3</span> Bulk Au</h5>
+<div id="outline-container-orgheadline152" class="outline-5">
+<h5 id="orgheadline152"><span class="section-number-5">5.4.1.3</span> Bulk Au</h5>
 <div class="outline-text-5" id="text-5-4-1-3">
 <div class="org-src-container">
 
@@ -9888,8 +9992,8 @@ calc.update()
 </div>
 </div>
 
-<div id="outline-container-orgheadline120" class="outline-5">
-<h5 id="orgheadline120"><span class="section-number-5">5.4.1.4</span> Analysis of energies</h5>
+<div id="outline-container-orgheadline153" class="outline-5">
+<h5 id="orgheadline153"><span class="section-number-5">5.4.1.4</span> Analysis of energies</h5>
 <div class="outline-text-5" id="text-5-4-1-4">
 <div class="org-src-container">
 
@@ -9915,11 +10019,11 @@ The missing row formation energy is slightly negative. The magnitude of the form
 </div>
 </div>
 
-<div id="outline-container-orgheadline126" class="outline-4">
-<h4 id="orgheadline126"><span class="section-number-4">5.4.2</span> Ag(110) missing row reconstruction</h4>
+<div id="outline-container-orgheadline159" class="outline-4">
+<h4 id="orgheadline159"><span class="section-number-4">5.4.2</span> Ag(110) missing row reconstruction</h4>
 <div class="outline-text-4" id="text-5-4-2">
-</div><div id="outline-container-orgheadline122" class="outline-5">
-<h5 id="orgheadline122"><span class="section-number-5">5.4.2.1</span> Clean Ag(110) slab</h5>
+</div><div id="outline-container-orgheadline155" class="outline-5">
+<h5 id="orgheadline155"><span class="section-number-5">5.4.2.1</span> Clean Ag(110) slab</h5>
 <div class="outline-text-5" id="text-5-4-2-1">
 <div class="org-src-container">
 
@@ -9946,8 +10050,8 @@ calc.update()
 </div>
 </div>
 
-<div id="outline-container-orgheadline123" class="outline-5">
-<h5 id="orgheadline123"><span class="section-number-5">5.4.2.2</span> Missing row in Ag(110)</h5>
+<div id="outline-container-orgheadline156" class="outline-5">
+<h5 id="orgheadline156"><span class="section-number-5">5.4.2.2</span> Missing row in Ag(110)</h5>
 <div class="outline-text-5" id="text-5-4-2-2">
 <div class="org-src-container">
 
@@ -9975,8 +10079,8 @@ Vasp(<span style="color: #008000;">'surfaces/Ag-110-missing-row'</span>,
 </div>
 </div>
 
-<div id="outline-container-orgheadline124" class="outline-5">
-<h5 id="orgheadline124"><span class="section-number-5">5.4.2.3</span> Bulk Ag</h5>
+<div id="outline-container-orgheadline157" class="outline-5">
+<h5 id="orgheadline157"><span class="section-number-5">5.4.2.3</span> Bulk Ag</h5>
 <div class="outline-text-5" id="text-5-4-2-3">
 <div class="org-src-container">
 
@@ -10000,8 +10104,8 @@ Vasp(<span style="color: #008000;">'bulk/Ag-fcc'</span>,
 </div>
 </div>
 
-<div id="outline-container-orgheadline125" class="outline-5">
-<h5 id="orgheadline125"><span class="section-number-5">5.4.2.4</span> Analysis of energies</h5>
+<div id="outline-container-orgheadline158" class="outline-5">
+<h5 id="orgheadline158"><span class="section-number-5">5.4.2.4</span> Analysis of energies</h5>
 <div class="outline-text-5" id="text-5-4-2-4">
 <div class="org-src-container">
 
@@ -10028,11 +10132,11 @@ For Ag(110), the missing row formation energy is practically thermoneutral, i.e.
 </div>
 </div>
 
-<div id="outline-container-orgheadline131" class="outline-4">
-<h4 id="orgheadline131"><span class="section-number-4">5.4.3</span> Cu(110) missing row reconstruction</h4>
+<div id="outline-container-orgheadline164" class="outline-4">
+<h4 id="orgheadline164"><span class="section-number-4">5.4.3</span> Cu(110) missing row reconstruction</h4>
 <div class="outline-text-4" id="text-5-4-3">
-</div><div id="outline-container-orgheadline127" class="outline-5">
-<h5 id="orgheadline127"><span class="section-number-5">5.4.3.1</span> Clean Cu(110) slab</h5>
+</div><div id="outline-container-orgheadline160" class="outline-5">
+<h5 id="orgheadline160"><span class="section-number-5">5.4.3.1</span> Clean Cu(110) slab</h5>
 <div class="outline-text-5" id="text-5-4-3-1">
 <div class="org-src-container">
 
@@ -10057,8 +10161,8 @@ Vasp(<span style="color: #008000;">'surfaces/Cu-110'</span>,
 </div>
 </div>
 
-<div id="outline-container-orgheadline128" class="outline-5">
-<h5 id="orgheadline128"><span class="section-number-5">5.4.3.2</span> Missing row in Cu(110)</h5>
+<div id="outline-container-orgheadline161" class="outline-5">
+<h5 id="orgheadline161"><span class="section-number-5">5.4.3.2</span> Missing row in Cu(110)</h5>
 <div class="outline-text-5" id="text-5-4-3-2">
 <div class="org-src-container">
 
@@ -10085,8 +10189,8 @@ Vasp(<span style="color: #008000;">'surfaces/Cu-110-missing-row'</span>,
 </div>
 </div>
 
-<div id="outline-container-orgheadline129" class="outline-5">
-<h5 id="orgheadline129"><span class="section-number-5">5.4.3.3</span> Bulk Cu</h5>
+<div id="outline-container-orgheadline162" class="outline-5">
+<h5 id="orgheadline162"><span class="section-number-5">5.4.3.3</span> Bulk Cu</h5>
 <div class="outline-text-5" id="text-5-4-3-3">
 <div class="org-src-container">
 
@@ -10110,8 +10214,8 @@ Vasp(<span style="color: #008000;">'bulk/Cu-fcc'</span>,
 </div>
 </div>
 
-<div id="outline-container-orgheadline130" class="outline-5">
-<h5 id="orgheadline130"><span class="section-number-5">5.4.3.4</span> Analysis</h5>
+<div id="outline-container-orgheadline163" class="outline-5">
+<h5 id="orgheadline163"><span class="section-number-5">5.4.3.4</span> Analysis</h5>
 <div class="outline-text-5" id="text-5-4-3-4">
 <div class="org-src-container">
 
@@ -10139,8 +10243,8 @@ It is questionable whether we should consider this evidence of a missing row rec
 </div>
 </div>
 
-<div id="outline-container-orgheadline134" class="outline-3">
-<h3 id="orgheadline134"><span class="section-number-3">5.5</span> Surface energy</h3>
+<div id="outline-container-orgheadline41" class="outline-3">
+<h3 id="orgheadline41"><span class="section-number-3">5.5</span> Surface energy</h3>
 <div class="outline-text-3" id="text-5-5">
 <p>
 The easiest way to calculate surface energies is from this equation:
@@ -10281,8 +10385,8 @@ sigma = 1.36281400415 J/m^2
 </pre>
 </div>
 
-<div id="outline-container-orgheadline133" class="outline-4">
-<h4 id="orgheadline133"><span class="section-number-4">5.5.1</span> Advanced topics in surface energy</h4>
+<div id="outline-container-orgheadline165" class="outline-4">
+<h4 id="orgheadline165"><span class="section-number-4">5.5.1</span> Advanced topics in surface energy</h4>
 <div class="outline-text-4" id="text-5-5-1">
 <p>
 The surface energies can be used to estimate the shapes of nanoparticles using a Wulff construction. See <a class='org-ref-reference' href="#doi.10.1021/jp200950a">doi.10.1021/jp200950a</a> for an example of computing Mo<sub>2</sub>C surface energies and particle shapes, and <a class='org-ref-reference' href="#Inoglu2009188">Inoglu2009188</a> for an example of the influence of adsorbates on surface energies and particle shapes of Cu.
@@ -10295,8 +10399,8 @@ For a classic paper on trends in surface energies see <a class='org-ref-referenc
 </div>
 </div>
 
-<div id="outline-container-orgheadline135" class="outline-3">
-<h3 id="orgheadline135"><a id="ID-6fb2a790-5fc8-47f7-b379-bf6eb65bd3f5"></a><span class="section-number-3">5.6</span> Work function</h3>
+<div id="outline-container-orgheadline42" class="outline-3">
+<h3 id="orgheadline42"><a id="ID-6fb2a790-5fc8-47f7-b379-bf6eb65bd3f5"></a><span class="section-number-3">5.6</span> Work function</h3>
 <div class="outline-text-3" id="text-5-6">
 <p>
 <a href="work function">work function</a>
@@ -10359,8 +10463,8 @@ The workfunction of Al is listed as 4.08 at <a href="http://hyperphysics.phy-ast
 </div>
 </div>
 
-<div id="outline-container-orgheadline139" class="outline-3">
-<h3 id="orgheadline139"><span class="section-number-3">5.7</span> Dipole correction</h3>
+<div id="outline-container-orgheadline43" class="outline-3">
+<h3 id="orgheadline43"><span class="section-number-3">5.7</span> Dipole correction</h3>
 <div class="outline-text-3" id="text-5-7">
 <p>
 <a href="dipole correction">dipole correction</a>
@@ -10398,8 +10502,8 @@ Here we will just illustrate the effect.
 </p>
 </div>
 
-<div id="outline-container-orgheadline136" class="outline-4">
-<h4 id="orgheadline136"><span class="section-number-4">5.7.1</span> Slab with no dipole correction</h4>
+<div id="outline-container-orgheadline166" class="outline-4">
+<h4 id="orgheadline166"><span class="section-number-4">5.7.1</span> Slab with no dipole correction</h4>
 <div class="outline-text-4" id="text-5-7-1">
 <p>
 We simply run the calculation here, and compare the results later.
@@ -10443,8 +10547,8 @@ write(<span style="color: #008000;">'images/Na-Al-slab.png'</span>, slab, rotati
 </div>
 </div>
 
-<div id="outline-container-orgheadline137" class="outline-4">
-<h4 id="orgheadline137"><span class="section-number-4">5.7.2</span> <span class="todo TODO">TODO</span> Slab with a dipole correction</h4>
+<div id="outline-container-orgheadline167" class="outline-4">
+<h4 id="orgheadline167"><span class="section-number-4">5.7.2</span> <span class="todo TODO">TODO</span> Slab with a dipole correction</h4>
 <div class="outline-text-4" id="text-5-7-2">
 <p>
 Note this takes a considerably longer time to run than without a dipole correction! In VASP there are several levels of dipole correction to apply. You can use the <a href=http://cms.mpi.univie.ac.at/wiki/index.php/IDIPOL>IDIPOL</a> tag to turn it on, and specify which direction to apply it in (1=\(x\), 2=\(y\), 3=\(z\), 4=\((x,y,z)\)). This simply corrects the total energy and forces. It does not change the contents of LOCPOT. For that, you have to also set the <a href=http://cms.mpi.univie.ac.at/wiki/index.php/LDIPOL>LDIPOL</a> and <a href=http://cms.mpi.univie.ac.at/wiki/index.php/DIPOL>DIPOL</a> tags. It is not efficient to set all three at the same time for some reason. The VASP manual recommends you first set IDIPOL to get a converged electronic structure, and then set LDIPOL to True, and set the center of electron density in DIPOL. That makes these calculations a multistep process, because we must run a calculation, analyze the charge density to get the center of charge, and then run a second calculation.
@@ -10505,8 +10609,8 @@ calc.<span style="color: #006FE0;">set</span>(ldipol=<span style="color: #D0372D
 </div>
 </div>
 
-<div id="outline-container-orgheadline138" class="outline-4">
-<h4 id="orgheadline138"><span class="section-number-4">5.7.3</span> Comparing no dipole correction with a dipole correction</h4>
+<div id="outline-container-orgheadline168" class="outline-4">
+<h4 id="orgheadline168"><span class="section-number-4">5.7.3</span> Comparing no dipole correction with a dipole correction</h4>
 <div class="outline-text-4" id="text-5-7-3">
 <p>
 To see the difference in what the dipole correction does, we now plot the potentials from each calculation.
@@ -10577,15 +10681,15 @@ The key points to notice in this figure are:
 </div>
 </div>
 
-<div id="outline-container-orgheadline154" class="outline-3">
-<h3 id="orgheadline154"><span class="section-number-3">5.8</span> Adsorption energies</h3>
+<div id="outline-container-orgheadline44" class="outline-3">
+<h3 id="orgheadline44"><span class="section-number-3">5.8</span> Adsorption energies</h3>
 <div class="outline-text-3" id="text-5-8">
 <p>
 <a href="adsorption energy">adsorption energy</a>
 </p>
 </div>
-<div id="outline-container-orgheadline148" class="outline-4">
-<h4 id="orgheadline148"><span class="section-number-4">5.8.1</span> Simple estimate of the adsorption energy</h4>
+<div id="outline-container-orgheadline177" class="outline-4">
+<h4 id="orgheadline177"><span class="section-number-4">5.8.1</span> Simple estimate of the adsorption energy</h4>
 <div class="outline-text-4" id="text-5-8-1">
 <p>
 Calculating an adsorption energy amounts to computing the energy of the following kind of reaction:
@@ -10610,11 +10714,11 @@ There are many variations of this idea. The slab may already have some adsorbate
 \( \Delta H_{ads} (eV/O) = E_{slab+O} - E_{slab} - 0.5*E_{O_2} \)
 </p>
 </div>
-<div id="outline-container-orgheadline144" class="outline-5">
-<h5 id="orgheadline144"><span class="section-number-5">5.8.1.1</span> Calculations</h5>
+<div id="outline-container-orgheadline173" class="outline-5">
+<h5 id="orgheadline173"><span class="section-number-5">5.8.1.1</span> Calculations</h5>
 <div class="outline-text-5" id="text-5-8-1-1">
-</div><div id="outline-container-orgheadline140" class="outline-6">
-<h6 id="orgheadline140"><span class="section-number-6">5.8.1.1.1</span> clean slab calculation</h6>
+</div><div id="outline-container-orgheadline169" class="outline-6">
+<h6 id="orgheadline169"><span class="section-number-6">5.8.1.1.1</span> clean slab calculation</h6>
 <div class="outline-text-6" id="text-5-8-1-1-1">
 <div class="org-src-container">
 
@@ -10650,8 +10754,8 @@ write(<span style="color: #008000;">'images/Pt-fcc-ori.png'</span>, atoms, show_
 </div>
 </div>
 
-<div id="outline-container-orgheadline141" class="outline-6">
-<h6 id="orgheadline141"><span class="section-number-6">5.8.1.1.2</span> fcc site</h6>
+<div id="outline-container-orgheadline170" class="outline-6">
+<h6 id="orgheadline170"><span class="section-number-6">5.8.1.1.2</span> fcc site</h6>
 <div class="outline-text-6" id="text-5-8-1-1-2">
 <div class="org-src-container">
 
@@ -10694,8 +10798,8 @@ write(<span style="color: #008000;">'images/Pt-fcc-site.png'</span>, atoms, show
 </div>
 </div>
 
-<div id="outline-container-orgheadline142" class="outline-6">
-<h6 id="orgheadline142"><span class="section-number-6">5.8.1.1.3</span> O atom on the bridge site</h6>
+<div id="outline-container-orgheadline171" class="outline-6">
+<h6 id="orgheadline171"><span class="section-number-6">5.8.1.1.3</span> O atom on the bridge site</h6>
 <div class="outline-text-6" id="text-5-8-1-1-3">
 <div class="org-src-container">
 
@@ -10734,8 +10838,8 @@ atoms.set_constraint(constraint)
 </div>
 </div>
 
-<div id="outline-container-orgheadline143" class="outline-6">
-<h6 id="orgheadline143"><span class="section-number-6">5.8.1.1.4</span> hcp site</h6>
+<div id="outline-container-orgheadline172" class="outline-6">
+<h6 id="orgheadline172"><span class="section-number-6">5.8.1.1.4</span> hcp site</h6>
 <div class="outline-text-6" id="text-5-8-1-1-4">
 <div class="org-src-container">
 
@@ -10778,8 +10882,8 @@ write(<span style="color: #008000;">'images/Pt-hcp-o-site.png'</span>, atoms, sh
 </div>
 </div>
 
-<div id="outline-container-orgheadline146" class="outline-5">
-<h5 id="orgheadline146"><span class="section-number-5">5.8.1.2</span> Analysis of adsorption energies</h5>
+<div id="outline-container-orgheadline175" class="outline-5">
+<h5 id="orgheadline175"><span class="section-number-5">5.8.1.2</span> Analysis of adsorption energies</h5>
 <div class="outline-text-5" id="text-5-8-1-2">
 <div class="org-src-container">
 
@@ -10892,13 +10996,13 @@ Some final notes:
 <li>The slabs were pretty thin. It is typical these days to see slabs that are 4-5 or more layers thick.</li>
 <li>We did not consider how well converged the calculations were with respect to $k$-points or <a href=http://cms.mpi.univie.ac.at/wiki/index.php/ENCUT>ENCUT</a>.</li>
 <li>We did not consider the effect of the error in O\(_2\) dissociation energy on the adsorption energies.</li>
-<li>We did not consider coverage effects (see <a href="#orgheadline145">Coverage dependence</a>).</li>
+<li>We did not consider coverage effects (see <a href="#orgheadline174">Coverage dependence</a>).</li>
 </ol>
 </div>
 </div>
 
-<div id="outline-container-orgheadline147" class="outline-5">
-<h5 id="orgheadline147"><span class="section-number-5">5.8.1.3</span> Adsorption on bridge site with constraints</h5>
+<div id="outline-container-orgheadline176" class="outline-5">
+<h5 id="orgheadline176"><span class="section-number-5">5.8.1.3</span> Adsorption on bridge site with constraints</h5>
 <div class="outline-text-5" id="text-5-8-1-3">
 <p>
 To prevent the oxygen atom from sliding down into the fcc site, we have to constrain it so that it only moves in the $z$-direction. This is an artificial constraint; the bridge site is only metastable. But there are lots of reasons you might want to do this anyway. One is the bridge site is a transition state for diffusion between the fcc and hcp sites. Another is to understand the role of coordination in the adsorption energies. We use a <a href="ase.constraints.FixScaled">ase.constraints.FixScaled</a> constraint in ase to constrain the O atom so it can only move in the $z$-direction (actually so it can only move in the direction of the third unit cell vector, which only has a $z$-component).
@@ -10982,8 +11086,8 @@ You can see that only the \(z\)-position of the O atom changed. Also, the adsorp
 </div>
 </div>
 
-<div id="outline-container-orgheadline145" class="outline-4">
-<h4 id="orgheadline145"><span class="section-number-4">5.8.2</span> Coverage dependence</h4>
+<div id="outline-container-orgheadline174" class="outline-4">
+<h4 id="orgheadline174"><span class="section-number-4">5.8.2</span> Coverage dependence</h4>
 <div class="outline-text-4" id="text-5-8-2">
 <p>
 The adsorbates on the surface can interact with each other which results in coverage dependent adsorption energies <a class='org-ref-reference' href="#PhysRevB.82.045414">PhysRevB.82.045414</a>. Coverage dependence is not difficult to model; we simply compute adsorption energies in different size unit cells, and/or with different adsorbate configurations. Here we consider dissociative oxygen adsorption at 1ML on Pt(111) in an fcc site, which is one oxygen atom in a \(1 \times 1\) unit cell.
@@ -11000,8 +11104,8 @@ For additional reading, see these references from our work:
 </ul>
 </div>
 
-<div id="outline-container-orgheadline149" class="outline-5">
-<h5 id="orgheadline149"><span class="section-number-5">5.8.2.1</span> clean slab calculation</h5>
+<div id="outline-container-orgheadline178" class="outline-5">
+<h5 id="orgheadline178"><span class="section-number-5">5.8.2.1</span> clean slab calculation</h5>
 <div class="outline-text-5" id="text-5-8-2-1">
 <div class="org-src-container">
 
@@ -11037,8 +11141,8 @@ write(<span style="color: #008000;">'images/Pt-fcc-1ML.png'</span>, atoms, show_
 </div>
 </div>
 
-<div id="outline-container-orgheadline150" class="outline-5">
-<h5 id="orgheadline150"><span class="section-number-5">5.8.2.2</span> fcc site at 1 ML coverage</h5>
+<div id="outline-container-orgheadline179" class="outline-5">
+<h5 id="orgheadline179"><span class="section-number-5">5.8.2.2</span> fcc site at 1 ML coverage</h5>
 <div class="outline-text-5" id="text-5-8-2-2">
 <div class="org-src-container">
 
@@ -11081,8 +11185,8 @@ write(<span style="color: #008000;">'images/Pt-o-fcc-1ML.png'</span>, atoms, sho
 </div>
 </div>
 
-<div id="outline-container-orgheadline152" class="outline-5">
-<h5 id="orgheadline152"><span class="section-number-5">5.8.2.3</span> Adsorption energy at 1ML</h5>
+<div id="outline-container-orgheadline180" class="outline-5">
+<h5 id="orgheadline180"><span class="section-number-5">5.8.2.3</span> Adsorption energy at 1ML</h5>
 <div class="outline-text-5" id="text-5-8-2-3">
 <div class="org-src-container">
 
@@ -11105,14 +11209,14 @@ Hads (1ML) = -0.099 eV
 </pre>
 
 <p>
-The adsorption energy is <b>much</b> less favorable at 1ML coverage than at 0.25 ML coverage! We will return what this means in <a href="#orgheadline151">Atomistic thermodynamics effect on adsorption</a>.
+The adsorption energy is <b>much</b> less favorable at 1ML coverage than at 0.25 ML coverage! We will return what this means in <a href="#orgheadline49">Atomistic thermodynamics effect on adsorption</a>.
 </p>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgheadline153" class="outline-4">
-<h4 id="orgheadline153"><span class="section-number-4">5.8.3</span> Effect of adsorption on the surface energy</h4>
+<div id="outline-container-orgheadline181" class="outline-4">
+<h4 id="orgheadline181"><span class="section-number-4">5.8.3</span> Effect of adsorption on the surface energy</h4>
 <div class="outline-text-4" id="text-5-8-3">
 <p>
 There is a small point to make here about what adsorption does to surface energies. Let us define a general surface formation energy scheme like this:
@@ -11166,8 +11270,8 @@ Some final notes about the equations above:
 </div>
 </div>
 
-<div id="outline-container-orgheadline156" class="outline-3">
-<h3 id="orgheadline156"><span class="section-number-3">5.9</span> Adsorbate vibrations</h3>
+<div id="outline-container-orgheadline45" class="outline-3">
+<h3 id="orgheadline45"><span class="section-number-3">5.9</span> Adsorbate vibrations</h3>
 <div class="outline-text-3" id="text-5-9">
 <p>
 Adsorbates also have vibrational modes. Unlike a free molecule, the translational and rotational modes of an adsorbate may actually have real frequencies. Sometimes they are called frustrated translations or rotations. For metal surfaces with adsorbates, it is common to only compute vibrational modes of the adsorbate on a frozen metal slab. The rationale is that the metal atoms are so much heavier than the adsorbate that there will be little coupling between the surface and adsorbates. You can limit the number of modes calculated with constraints (<a href="ase.constraints.FixAtoms">ase.constraints.FixAtoms</a> or <a href="ase.constraints.FixScaled">ase.constraints.FixScaled</a>) if you use <a href=http://cms.mpi.univie.ac.at/wiki/index.php/IBRION>IBRION</a>=5. The other IBRION settings (6, 7, 8) do not respect the selective dynamics constraints. Below we consider the vibrational modes of an oxygen atom in an fcc site on Pt(111).
@@ -11261,8 +11365,8 @@ Calculating these results took 39*2 finite differences. It took about a day to g
 </div>
 
 
-<div id="outline-container-orgheadline155" class="outline-4">
-<h4 id="orgheadline155"><span class="section-number-4">5.9.1</span> Vibrations of the bridge site</h4>
+<div id="outline-container-orgheadline182" class="outline-4">
+<h4 id="orgheadline182"><span class="section-number-4">5.9.1</span> Vibrations of the bridge site</h4>
 <div class="outline-text-4" id="text-5-9-1">
 <p>
 Here we consider the vibrations of an O atom in a bridge site, which we saw earlier is a metastable saddle point.
@@ -11317,16 +11421,16 @@ Note that we have one imaginary mode. This corresponds to the motion of the O at
 </div>
 </div>
 
-<div id="outline-container-orgheadline160" class="outline-3">
-<h3 id="orgheadline160"><span class="section-number-3">5.10</span> Surface Diffusion barrier</h3>
+<div id="outline-container-orgheadline46" class="outline-3">
+<h3 id="orgheadline46"><span class="section-number-3">5.10</span> Surface Diffusion barrier</h3>
 <div class="outline-text-3" id="text-5-10">
 <p>
 See this review <a class='org-ref-reference' href="#ANIE.ANIE200602223">ANIE.ANIE200602223</a> of diffusion on transition metal surfaces.
 </p>
 </div>
 
-<div id="outline-container-orgheadline157" class="outline-4">
-<h4 id="orgheadline157"><span class="section-number-4">5.10.1</span> Standard nudged elastic band method</h4>
+<div id="outline-container-orgheadline183" class="outline-4">
+<h4 id="orgheadline183"><span class="section-number-4">5.10.1</span> Standard nudged elastic band method</h4>
 <div class="outline-text-4" id="text-5-10-1">
 <p>
 Here we illustrate a standard NEB method. You need an initial and final state to start with. We will use the results from previous calculations of oxygen atoms in an fcc and hcp site. then we will construct a band of images connecting these two sites. Finally, we let VASP optimize the band and analyze the results to get the barrier.
@@ -11401,8 +11505,8 @@ We should compare this barrier to what we could estimate from the simple adsorpt
 </div>
 </div>
 
-<div id="outline-container-orgheadline158" class="outline-4">
-<h4 id="orgheadline158"><span class="section-number-4">5.10.2</span> Climbing image NEB</h4>
+<div id="outline-container-orgheadline184" class="outline-4">
+<h4 id="orgheadline184"><span class="section-number-4">5.10.2</span> Climbing image NEB</h4>
 <div class="outline-text-4" id="text-5-10-2">
 <p>
 One issue with the standard NEB method is there is no image that is exactly at the transition state. That means there is some uncertainty of the true energy of the transition state, and there is no way to verify the transition state by vibrational analysis. The climbing image NEB method <a class='org-ref-reference' href="#henkelman:9901">henkelman:9901</a> solves that problem by making one image climb to the top. You set <a href=http://cms.mpi.univie.ac.at/wiki/index.php/LCLIMB>LCLIMB</a>==True= in <code>Vasp</code> to turn on the climbing image method. Here we use the previous calculation as a starting point and turn on the climbing image method.
@@ -11435,19 +11539,19 @@ Sorry, your browser does not support SVG.</object>
 </div>
 </div>
 
-<div id="outline-container-orgheadline159" class="outline-4">
-<h4 id="orgheadline159"><span class="section-number-4">5.10.3</span> Using vibrations to confirm a transition state</h4>
+<div id="outline-container-orgheadline185" class="outline-4">
+<h4 id="orgheadline185"><span class="section-number-4">5.10.3</span> Using vibrations to confirm a transition state</h4>
 <div class="outline-text-4" id="text-5-10-3">
 <p>
-A transition state should have exactly one imaginary degree of freedom which corresponds to the mode that takes reactants to products. See <a href="#orgheadline155">Vibrations of the bridge site</a> for an example.
+A transition state should have exactly one imaginary degree of freedom which corresponds to the mode that takes reactants to products. See <a href="#orgheadline182">Vibrations of the bridge site</a> for an example.
 </p>
 </div>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgheadline164" class="outline-2">
-<h2 id="orgheadline164"><a id="ID-b0b88efb-138d-4a22-bbc9-4b763b69b264"></a><span class="section-number-2">6</span> Atomistic thermodynamics</h2>
+<div id="outline-container-orgheadline47" class="outline-2">
+<h2 id="orgheadline47"><a id="ID-b0b88efb-138d-4a22-bbc9-4b763b69b264"></a><span class="section-number-2">6</span> Atomistic thermodynamics</h2>
 <div class="outline-text-2" id="text-6">
 <p>
 <a href="atomistic thermodynamics">atomistic thermodynamics</a>
@@ -11571,8 +11675,8 @@ We can use \(\mu_{O_2}\) in place of \(E_{O_2}\) everywhere to include the effec
 </p>
 </div>
 
-<div id="outline-container-orgheadline162" class="outline-3">
-<h3 id="orgheadline162"><span class="section-number-3">6.1</span> Bulk phase stability of oxides</h3>
+<div id="outline-container-orgheadline48" class="outline-3">
+<h3 id="orgheadline48"><span class="section-number-3">6.1</span> Bulk phase stability of oxides</h3>
 <div class="outline-text-3" id="text-6-1">
 <p>
 We will consider the effects of oxygen pressure and temperature on the formation energy of Ag<sub>2</sub>O and Cu<sub>2</sub>O. For now, we neglect the effect of pressure and temperature on the solid phases. Neglecting pressure is pretty reasonable, as the solids are not that compressible, and we do not expect the energy to change for small pressures. For neglecting the temperature, we assume that the temperature dependence of the oxide is similar to the temperature dependence of the metal, and that these dependencies practically cancel each other in the calculations. That is an assumption, and it may not be correct.
@@ -11617,7 +11721,7 @@ with \(\Delta \mu_{O_2}(P,T) = \Delta \mu (T) + kT \ln(P/P_0)\). We get \(\Delta
 </ul>
 
 <p>
-You will recognize in this equation the standard formation energy we calculated in <a href="#orgheadline98">Metal oxide oxidation energies </a>plus a correction for the non standard state pressure and temperature (\(\Delta \mu_{O_2}(P,T) = 0\) at standard state).
+You will recognize in this equation the standard formation energy we calculated in <a href="#orgheadline142">Metal oxide oxidation energies </a>plus a correction for the non standard state pressure and temperature (\(\Delta \mu_{O_2}(P,T) = 0\) at standard state).
 </p>
 
 
@@ -11838,8 +11942,8 @@ About 500K at 1\(\times 10^{-10}\) atm, 600K at 1\(\times 10^{-5}\) atm, 900K at
 </div>
 </div>
 
-<div id="outline-container-orgheadline151" class="outline-3">
-<h3 id="orgheadline151"><a id="ID-6b509064-8e9d-44a0-ad86-f1302988c875"></a><span class="section-number-3">6.2</span> Effect on adsorption</h3>
+<div id="outline-container-orgheadline49" class="outline-3">
+<h3 id="orgheadline49"><a id="ID-6b509064-8e9d-44a0-ad86-f1302988c875"></a><span class="section-number-3">6.2</span> Effect on adsorption</h3>
 <div class="outline-text-3" id="text-6-2">
 <p>
 We now consider the question: Given a pressure and temperature, what coverage would you expect on a surface? We saw earlier that adsorption energies depend on the site and coverage. We lso know the coverage depends on the pressure and temperature. Above some temperature, desorption occurs, and below some pressure adsorption will not be favorable. We seek to develop a quantitative method to determine those conditions.
@@ -11948,8 +12052,8 @@ plt.savefig(<span style="color: #008000;">'images/atomistic-thermo-adsorption.pn
 </div>
 </div>
 
-<div id="outline-container-orgheadline163" class="outline-3">
-<h3 id="orgheadline163"><span class="section-number-3">6.3</span> Atomistic therodynamics and multiple reactions</h3>
+<div id="outline-container-orgheadline50" class="outline-3">
+<h3 id="orgheadline50"><span class="section-number-3">6.3</span> Atomistic therodynamics and multiple reactions</h3>
 <div class="outline-text-3" id="text-6-3">
 <p>
 In <a class='org-ref-reference' href="#Inoglu2009188">Inoglu2009188</a> we considered multiple reactions in an atomistic thermodynamic framework. Let us consider these three reactions of dissociative adsorption of hydrogen and hydrogen disulfide, and consider how to compute the reaction energy for the third reaction.
@@ -11998,12 +12102,12 @@ Thus, the chemical potentials of all these three adsorbed species depend on the 
 </div>
 </div>
 
-<div id="outline-container-orgheadline186" class="outline-2">
-<h2 id="orgheadline186"><a id="ID-b003ab44-e1f3-4ccb-9ecc-baa8a67c62d5"></a><span class="section-number-2">7</span> Advanced electronic structure methods</h2>
+<div id="outline-container-orgheadline51" class="outline-2">
+<h2 id="orgheadline51"><a id="ID-b003ab44-e1f3-4ccb-9ecc-baa8a67c62d5"></a><span class="section-number-2">7</span> Advanced electronic structure methods</h2>
 <div class="outline-text-2" id="text-7">
 </div>
-<div id="outline-container-orgheadline96" class="outline-3">
-<h3 id="orgheadline96"><a id="ID-d4b89c02-f7a3-4233-bf70-1fd35169d01d"></a><span class="section-number-3">7.1</span> DFT+U</h3>
+<div id="outline-container-orgheadline52" class="outline-3">
+<h3 id="orgheadline52"><a id="ID-d4b89c02-f7a3-4233-bf70-1fd35169d01d"></a><span class="section-number-3">7.1</span> DFT+U</h3>
 <div class="outline-text-3" id="text-7-1">
 <p>
 <a href="DFT+U">DFT+U</a>
@@ -12018,16 +12122,16 @@ It can be difficult to find the lowest energy solutions with DFT+U. Some strateg
 </p>
 </div>
 
-<div id="outline-container-orgheadline169" class="outline-4">
-<h4 id="orgheadline169"><span class="section-number-4">7.1.1</span> Metal oxide oxidation energies with DFT+U</h4>
+<div id="outline-container-orgheadline190" class="outline-4">
+<h4 id="orgheadline190"><span class="section-number-4">7.1.1</span> Metal oxide oxidation energies with DFT+U</h4>
 <div class="outline-text-4" id="text-7-1-1">
 <p>
-We will reconsider here the reaction (see <a href="#orgheadline98">Metal oxide oxidation energies</a>) 2 Cu<sub>2</sub>O + O<sub>2</sub> \(\rightleftharpoons\) 4 CuO. We need to compute the energy of each species, now with DFT+U. In <a class='org-ref-reference' href="#PhysRevB.73.195107">PhysRevB.73.195107</a> they use a U parameter of 4 eV for Cu which gave the best agreement with the experimental value. We will also try that.
+We will reconsider here the reaction (see <a href="#orgheadline142">Metal oxide oxidation energies</a>) 2 Cu<sub>2</sub>O + O<sub>2</sub> \(\rightleftharpoons\) 4 CuO. We need to compute the energy of each species, now with DFT+U. In <a class='org-ref-reference' href="#PhysRevB.73.195107">PhysRevB.73.195107</a> they use a U parameter of 4 eV for Cu which gave the best agreement with the experimental value. We will also try that.
 </p>
 </div>
 
-<div id="outline-container-orgheadline165" class="outline-5">
-<h5 id="orgheadline165"><span class="section-number-5">7.1.1.1</span> Cu<sub>2</sub>O calculation with U=4.0</h5>
+<div id="outline-container-orgheadline186" class="outline-5">
+<h5 id="orgheadline186"><span class="section-number-5">7.1.1.1</span> Cu<sub>2</sub>O calculation with U=4.0</h5>
 <div class="outline-text-5" id="text-7-1-1-1">
 <div class="org-src-container">
 
@@ -12074,8 +12178,8 @@ LDA+U is selected, type is set to LDAUTYPE =  2
 
 
 
-<div id="outline-container-orgheadline166" class="outline-5">
-<h5 id="orgheadline166"><span class="section-number-5">7.1.1.2</span> CuO calculation with U=4.0</h5>
+<div id="outline-container-orgheadline187" class="outline-5">
+<h5 id="orgheadline187"><span class="section-number-5">7.1.1.2</span> CuO calculation with U=4.0</h5>
 <div class="outline-text-5" id="text-7-1-1-2">
 <div class="org-src-container">
 
@@ -12104,8 +12208,8 @@ calc.<span style="color: #006FE0;">set</span>(ldau=<span style="color: #D0372D;"
 </div>
 </div>
 
-<div id="outline-container-orgheadline167" class="outline-5">
-<h5 id="orgheadline167"><span class="section-number-5">7.1.1.3</span> <span class="todo TODO">TODO</span> Reaction energy calculation with DFT+U</h5>
+<div id="outline-container-orgheadline188" class="outline-5">
+<h5 id="orgheadline188"><span class="section-number-5">7.1.1.3</span> <span class="todo TODO">TODO</span> Reaction energy calculation with DFT+U</h5>
 <div class="outline-text-5" id="text-7-1-1-3">
 <div class="org-src-container">
 
@@ -12147,8 +12251,8 @@ This is still not in quantitative agreement with the result in <a class='org-ref
 </div>
 </div>
 
-<div id="outline-container-orgheadline168" class="outline-5">
-<h5 id="orgheadline168"><span class="section-number-5">7.1.1.4</span> How much does U affect the reaction energy?</h5>
+<div id="outline-container-orgheadline189" class="outline-5">
+<h5 id="orgheadline189"><span class="section-number-5">7.1.1.4</span> How much does U affect the reaction energy?</h5>
 <div class="outline-text-5" id="text-7-1-1-4">
 <p>
 It is reasonable to consider how sensitive our results are to the U parameter. We do that here.
@@ -12234,11 +12338,11 @@ In any case, you should be careful to use well converged results to avoid compen
 </div>
 
 
-<div id="outline-container-orgheadline171" class="outline-3">
-<h3 id="orgheadline171"><span class="section-number-3">7.2</span> Hybrid functionals</h3>
+<div id="outline-container-orgheadline53" class="outline-3">
+<h3 id="orgheadline53"><span class="section-number-3">7.2</span> Hybrid functionals</h3>
 <div class="outline-text-3" id="text-7-2">
-</div><div id="outline-container-orgheadline170" class="outline-4">
-<h4 id="orgheadline170"><span class="section-number-4">7.2.1</span> FCC Ni DOS</h4>
+</div><div id="outline-container-orgheadline191" class="outline-4">
+<h4 id="orgheadline191"><span class="section-number-4">7.2.1</span> FCC Ni DOS</h4>
 <div class="outline-text-4" id="text-7-2-1">
 <p>
 This example is adapted from <a href="http://cms.mpi.univie.ac.at/wiki/index.php/FccNi_DOS">http://cms.mpi.univie.ac.at/wiki/index.php/FccNi_DOS</a>
@@ -12320,8 +12424,8 @@ plt.savefig(<span style="color: #008000;">'images/ni-dos-pbe-pbe0-hse06.png'</sp
 </div>
 </div>
 
-<div id="outline-container-orgheadline180" class="outline-3">
-<h3 id="orgheadline180"><span class="section-number-3">7.3</span> van der Waals forces</h3>
+<div id="outline-container-orgheadline54" class="outline-3">
+<h3 id="orgheadline54"><span class="section-number-3">7.3</span> van der Waals forces</h3>
 <div class="outline-text-3" id="text-7-3">
 <p>
 Older versions (5.2.11+) implement DFT+D2 <a class='org-ref-reference' href="#JCC-JCC20495">JCC-JCC20495</a> with the <a href=http://cms.mpi.univie.ac.at/wiki/index.php/LVDW>LVDW</a> tag.
@@ -12392,11 +12496,11 @@ Van der Waal forces can play a considerable role in binding of aromatic molecule
 </div>
 
 
-<div id="outline-container-orgheadline175" class="outline-4">
-<h4 id="orgheadline175"><span class="section-number-4">7.3.1</span> PBE</h4>
+<div id="outline-container-orgheadline195" class="outline-4">
+<h4 id="orgheadline195"><span class="section-number-4">7.3.1</span> PBE</h4>
 <div class="outline-text-4" id="text-7-3-1">
-</div><div id="outline-container-orgheadline172" class="outline-5">
-<h5 id="orgheadline172"><span class="section-number-5">7.3.1.1</span> gas-phase benzene</h5>
+</div><div id="outline-container-orgheadline192" class="outline-5">
+<h5 id="orgheadline192"><span class="section-number-5">7.3.1.1</span> gas-phase benzene</h5>
 <div class="outline-text-5" id="text-7-3-1-1">
 <div class="org-src-container">
 
@@ -12422,8 +12526,8 @@ benzene.center(vacuum=5)
 </div>
 </div>
 
-<div id="outline-container-orgheadline173" class="outline-5">
-<h5 id="orgheadline173"><span class="section-number-5">7.3.1.2</span> clean slab</h5>
+<div id="outline-container-orgheadline193" class="outline-5">
+<h5 id="orgheadline193"><span class="section-number-5">7.3.1.2</span> clean slab</h5>
 <div class="outline-text-5" id="text-7-3-1-2">
 <div class="org-src-container">
 
@@ -12456,8 +12560,8 @@ atoms.set_constraint(c)
 </div>
 </div>
 
-<div id="outline-container-orgheadline174" class="outline-5">
-<h5 id="orgheadline174"><span class="section-number-5">7.3.1.3</span> benzene on Au(111)</h5>
+<div id="outline-container-orgheadline194" class="outline-5">
+<h5 id="orgheadline194"><span class="section-number-5">7.3.1.3</span> benzene on Au(111)</h5>
 <div class="outline-text-5" id="text-7-3-1-3">
 <div class="org-src-container">
 
@@ -12535,15 +12639,15 @@ This is a very weak energy. It is similar to the result in the reference (0.15 e
 </div>
 </div>
 
-<div id="outline-container-orgheadline179" class="outline-4">
-<h4 id="orgheadline179"><span class="section-number-4">7.3.2</span> DFT-D2</h4>
+<div id="outline-container-orgheadline199" class="outline-4">
+<h4 id="orgheadline199"><span class="section-number-4">7.3.2</span> DFT-D2</h4>
 <div class="outline-text-4" id="text-7-3-2">
 <p>
 To turn on the van der Waals corrections <a class='org-ref-reference' href="#JCC-JCC20495">JCC-JCC20495</a> we set <a href=http://cms.mpi.univie.ac.at/wiki/index.php/LVDW>LVDW</a> to <code>True</code>.
 </p>
 </div>
-<div id="outline-container-orgheadline176" class="outline-5">
-<h5 id="orgheadline176"><span class="section-number-5">7.3.2.1</span> gas-phase benzene</h5>
+<div id="outline-container-orgheadline196" class="outline-5">
+<h5 id="orgheadline196"><span class="section-number-5">7.3.2.1</span> gas-phase benzene</h5>
 <div class="outline-text-5" id="text-7-3-2-1">
 <div class="org-src-container">
 
@@ -12572,8 +12676,8 @@ None
 </div>
 </div>
 
-<div id="outline-container-orgheadline177" class="outline-5">
-<h5 id="orgheadline177"><span class="section-number-5">7.3.2.2</span> clean slab</h5>
+<div id="outline-container-orgheadline197" class="outline-5">
+<h5 id="orgheadline197"><span class="section-number-5">7.3.2.2</span> clean slab</h5>
 <div class="outline-text-5" id="text-7-3-2-2">
 <div class="org-src-container">
 
@@ -12605,8 +12709,8 @@ atoms.set_constraint(c)
 </div>
 </div>
 
-<div id="outline-container-orgheadline178" class="outline-5">
-<h5 id="orgheadline178"><span class="section-number-5">7.3.2.3</span> benzene on Au(111)</h5>
+<div id="outline-container-orgheadline198" class="outline-5">
+<h5 id="orgheadline198"><span class="section-number-5">7.3.2.3</span> benzene on Au(111)</h5>
 <div class="outline-text-5" id="text-7-3-2-3">
 <div class="org-src-container">
 
@@ -12678,8 +12782,8 @@ That is significantly more favorable. This is much higher than this <a href="htt
 </div>
 
 
-<div id="outline-container-orgheadline181" class="outline-3">
-<h3 id="orgheadline181"><span class="section-number-3">7.4</span> Electron localization function</h3>
+<div id="outline-container-orgheadline55" class="outline-3">
+<h3 id="orgheadline55"><span class="section-number-3">7.4</span> Electron localization function</h3>
 <div class="outline-text-3" id="text-7-4">
 <p>
 The electron localization function (ELF) can be used to characterize chemical bonds, e.g. their ionicity/covalency <a class='org-ref-reference' href="#silvi1994">silvi1994</a>. Here we reproduce an example from Ref. <a class='org-ref-reference' href="#silvi1994">silvi1994</a>. We compute and plot the ELF for tetrafluoromethane. The <a href=http://cms.mpi.univie.ac.at/wiki/index.php/LELF>LELF</a> tag turns this on.
@@ -12739,11 +12843,11 @@ These images (Figure <a href="#fig:elf1">fig:elf1</a> and <a href="#fig:elf2">fi
 </div>
 </div>
 
-<div id="outline-container-orgheadline182" class="outline-3">
-<h3 id="orgheadline182"><span class="section-number-3">7.5</span> <span class="todo TODO">TODO</span> Charge partitioning schemes</h3>
+<div id="outline-container-orgheadline56" class="outline-3">
+<h3 id="orgheadline56"><span class="section-number-3">7.5</span> <span class="todo TODO">TODO</span> Charge partitioning schemes</h3>
 </div>
-<div id="outline-container-orgheadline183" class="outline-3">
-<h3 id="orgheadline183"><span class="section-number-3">7.6</span> <span class="todo TODO">TODO</span> Modeling Core level shifts</h3>
+<div id="outline-container-orgheadline57" class="outline-3">
+<h3 id="orgheadline57"><span class="section-number-3">7.6</span> <span class="todo TODO">TODO</span> Modeling Core level shifts</h3>
 <div class="outline-text-3" id="text-7-6">
 <p>
 We need to setup four calculations. First, we setup the bulk Cu and bulk alloy calculations and let them relax. We use similar unit cells for each one to maximize cancellation of errors.
@@ -12901,8 +13005,8 @@ This is a little negative compared to the literature but that could be due to th
 </div>
 </div>
 
-<div id="outline-container-orgheadline184" class="outline-3">
-<h3 id="orgheadline184"><span class="section-number-3">7.7</span> The BEEF functional in Vasp</h3>
+<div id="outline-container-orgheadline58" class="outline-3">
+<h3 id="orgheadline58"><span class="section-number-3">7.7</span> The BEEF functional in Vasp</h3>
 <div class="outline-text-3" id="text-7-7">
 <p>
 In Vasp 5.3.5 it is possible to use the BEEF functional <a class='org-ref-reference' href="#wellendorff-2012-densit">wellendorff-2012-densit</a>.
@@ -13039,8 +13143,8 @@ You can see the mean is nearly zero, suggesting the deviations are symmetrically
 
 
 
-<div id="outline-container-orgheadline185" class="outline-3">
-<h3 id="orgheadline185"><span class="section-number-3">7.8</span> <span class="todo TODO">TODO</span> Solvation</h3>
+<div id="outline-container-orgheadline59" class="outline-3">
+<h3 id="orgheadline59"><span class="section-number-3">7.8</span> <span class="todo TODO">TODO</span> Solvation</h3>
 <div class="outline-text-3" id="text-7-8">
 <p>
 See <a href="http://vaspsol.mse.ufl.edu/download/">http://vaspsol.mse.ufl.edu/download/</a>, <a class='org-ref-reference' href="#fishman-2013-accur">fishman-2013-accur</a>,<a class='org-ref-reference' href="#mathew-2014-implic">mathew-2014-implic</a>
@@ -13257,8 +13361,8 @@ Here is the evidence that we actually ran a calculation with solvation:
 </div>
 </div>
 
-<div id="outline-container-orgheadline187" class="outline-2">
-<h2 id="orgheadline187"><span class="section-number-2">8</span> Databases in molecular simulations</h2>
+<div id="outline-container-orgheadline60" class="outline-2">
+<h2 id="orgheadline60"><span class="section-number-2">8</span> Databases in molecular simulations</h2>
 <div class="outline-text-2" id="text-8">
 <p>
 The continued increase in computing power has enabled us to create massive amounts of computational data. Some of this data is accessible in papers, or at websites, e.g. <a href="https://cmr.fysik.dtu.dk/">https://cmr.fysik.dtu.dk/</a>.
@@ -13298,8 +13402,8 @@ Rows: 1
 </div>
 </div>
 
-<div id="outline-container-orgheadline188" class="outline-2">
-<h2 id="orgheadline188"><span class="section-number-2">9</span> Acknowledgments</h2>
+<div id="outline-container-orgheadline61" class="outline-2">
+<h2 id="orgheadline61"><span class="section-number-2">9</span> Acknowledgments</h2>
 <div class="outline-text-2" id="text-9">
 <p>
 I would like to thank Zhongnan Xu for sending me some examples on magnetism. Alan McGaughey and Lars Grabow for sending me some NEB examples. Matt Curnan for examples of phonons.
@@ -13310,14 +13414,14 @@ Many thanks to students in my class who have pointed out typos, places of confus
 </p>
 </div>
 </div>
-<div id="outline-container-orgheadline233" class="outline-2">
-<h2 id="orgheadline233"><span class="section-number-2">10</span> Appendices</h2>
+<div id="outline-container-orgheadline62" class="outline-2">
+<h2 id="orgheadline62"><span class="section-number-2">10</span> Appendices</h2>
 <div class="outline-text-2" id="text-10">
-</div><div id="outline-container-orgheadline215" class="outline-3">
-<h3 id="orgheadline215"><span class="section-number-3">10.1</span> Recipes</h3>
+</div><div id="outline-container-orgheadline63" class="outline-3">
+<h3 id="orgheadline63"><span class="section-number-3">10.1</span> Recipes</h3>
 <div class="outline-text-3" id="text-10-1">
-</div><div id="outline-container-orgheadline189" class="outline-4">
-<h4 id="orgheadline189"><span class="section-number-4">10.1.1</span> Modifying Atoms by deleting atoms</h4>
+</div><div id="outline-container-orgheadline200" class="outline-4">
+<h4 id="orgheadline200"><span class="section-number-4">10.1.1</span> Modifying Atoms by deleting atoms</h4>
 <div class="outline-text-4" id="text-10-1-1">
 <p>
 Sometimes it is convenient to create an Atoms object by deleting atoms from an existing object. Here is a recipe to delete all the hydrogen atoms in a molecule. The idea is to make a list of indices of which atoms to delete using list comprehension, then use list deletion to delete those indices.
@@ -13350,8 +13454,8 @@ Atoms(symbols='C2O', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False, False, Fal
 </div>
 </div>
 
-<div id="outline-container-orgheadline190" class="outline-4">
-<h4 id="orgheadline190"><span class="section-number-4">10.1.2</span> Advanced tagging</h4>
+<div id="outline-container-orgheadline201" class="outline-4">
+<h4 id="orgheadline201"><span class="section-number-4">10.1.2</span> Advanced tagging</h4>
 <div class="outline-text-4" id="text-10-1-2">
 <p>
 We can label atoms with integer tags to help identify them later, e.g. which atoms are adsorbates, or surface atoms, or near an adsorbate, etc&#x2026; We might want to refer to those atoms later for electronic structure, geometry analysis, etc&#x2026;
@@ -13459,8 +13563,8 @@ write(<span style="color: #008000;">'images/tagged-bcc111.png'</span>, slab, rot
 </div>
 </div>
 </div>
-<div id="outline-container-orgheadline191" class="outline-4">
-<h4 id="orgheadline191"><span class="section-number-4">10.1.3</span> Using units in ase</h4>
+<div id="outline-container-orgheadline202" class="outline-4">
+<h4 id="orgheadline202"><span class="section-number-4">10.1.3</span> Using units in ase</h4>
 <div class="outline-text-4" id="text-10-1-3">
 <p>
 <a href="ase">ase</a> uses a base set of atomic units.These are eV for energy, \(\AA\) for distance, seconds for time, and amu for mass. Other units are defined in terms of those units, and you can easily convert to alternative units by dividing your quantity in atomic units by the units you want.
@@ -13512,8 +13616,8 @@ It is not that hard to define your own derived units though. Note these  are onl
 </div>
 </div>
 
-<div id="outline-container-orgheadline192" class="outline-4">
-<h4 id="orgheadline192"><span class="section-number-4">10.1.4</span> Extracting parts of an array</h4>
+<div id="outline-container-orgheadline203" class="outline-4">
+<h4 id="orgheadline203"><span class="section-number-4">10.1.4</span> Extracting parts of an array</h4>
 <div class="outline-text-4" id="text-10-1-4">
 <p>
 See <a href="http://www.scipy.org/Cookbook/BuildingArrays">http://www.scipy.org/Cookbook/BuildingArrays</a> for examples of making numpy arrays.
@@ -13565,11 +13669,11 @@ The expression \(x>2\) returns an array of booleans (True where the element of \
 </div>
 </div>
 
-<div id="outline-container-orgheadline194" class="outline-4">
-<h4 id="orgheadline194"><span class="section-number-4">10.1.5</span> Statistics</h4>
+<div id="outline-container-orgheadline205" class="outline-4">
+<h4 id="orgheadline205"><span class="section-number-4">10.1.5</span> Statistics</h4>
 <div class="outline-text-4" id="text-10-1-5">
-</div><div id="outline-container-orgheadline193" class="outline-5">
-<h5 id="orgheadline193"><span class="section-number-5">10.1.5.1</span> Confidence intervals</h5>
+</div><div id="outline-container-orgheadline204" class="outline-5">
+<h5 id="orgheadline204"><span class="section-number-5">10.1.5.1</span> Confidence intervals</h5>
 <div class="outline-text-5" id="text-10-1-5-1">
 <p>
 <a href="scipy">scipy</a> has a statistical package available for getting statistical distributions. This is useful for computing confidence intervals using the student-t tables. Here is an example of computing a 95% confidence interval on an average.
@@ -13603,11 +13707,11 @@ We are 95% confident the next measurement will be between 16.076 and 16.124
 </div>
 </div>
 
-<div id="outline-container-orgheadline196" class="outline-4">
-<h4 id="orgheadline196"><span class="section-number-4">10.1.6</span> Curve fitting</h4>
+<div id="outline-container-orgheadline207" class="outline-4">
+<h4 id="orgheadline207"><span class="section-number-4">10.1.6</span> Curve fitting</h4>
 <div class="outline-text-4" id="text-10-1-6">
-</div><div id="outline-container-orgheadline195" class="outline-5">
-<h5 id="orgheadline195"><span class="section-number-5">10.1.6.1</span> Linear fitting</h5>
+</div><div id="outline-container-orgheadline206" class="outline-5">
+<h5 id="orgheadline206"><span class="section-number-5">10.1.6.1</span> Linear fitting</h5>
 <div class="outline-text-5" id="text-10-1-6-1">
 <div class="org-src-container">
 
@@ -13675,8 +13779,8 @@ pars from linear algebra: [ 0.04861111  0.63440476  0.61365079 -0.08928571]
 </div>
 </div>
 
-<div id="outline-container-orgheadline197" class="outline-4">
-<h4 id="orgheadline197"><span class="section-number-4">10.1.7</span> Nonlinear curve fitting</h4>
+<div id="outline-container-orgheadline208" class="outline-4">
+<h4 id="orgheadline208"><span class="section-number-4">10.1.7</span> Nonlinear curve fitting</h4>
 <div class="outline-text-4" id="text-10-1-7">
 <div class="org-src-container">
 
@@ -13742,8 +13846,8 @@ See additional examples at \url{http://docs.scipy.org/doc/scipy/reference/tutori
 </div>
 </div>
 
-<div id="outline-container-orgheadline198" class="outline-4">
-<h4 id="orgheadline198"><span class="section-number-4">10.1.8</span> Nonlinear curve fitting by direct least squares minimization</h4>
+<div id="outline-container-orgheadline209" class="outline-4">
+<h4 id="orgheadline209"><span class="section-number-4">10.1.8</span> Nonlinear curve fitting by direct least squares minimization</h4>
 <div class="outline-text-4" id="text-10-1-8">
 <div class="org-src-container">
 
@@ -13808,8 +13912,8 @@ parameters = [-56.46932645   0.59141447   1.9044796   16.59341303]
 </div>
 </div>
 
-<div id="outline-container-orgheadline199" class="outline-4">
-<h4 id="orgheadline199"><span class="section-number-4">10.1.9</span> Nonlinear curve fitting with confidence intervals</h4>
+<div id="outline-container-orgheadline210" class="outline-4">
+<h4 id="orgheadline210"><span class="section-number-4">10.1.9</span> Nonlinear curve fitting with confidence intervals</h4>
 <div class="outline-text-4" id="text-10-1-9">
 <div class="org-src-container">
 
@@ -13888,8 +13992,8 @@ c1: 2.10995112628 [1.76711622067  2.45278603188]
 </div>
 </div>
 
-<div id="outline-container-orgheadline200" class="outline-4">
-<h4 id="orgheadline200"><span class="section-number-4">10.1.10</span> Interpolation with splines</h4>
+<div id="outline-container-orgheadline211" class="outline-4">
+<h4 id="orgheadline211"><span class="section-number-4">10.1.10</span> Interpolation with splines</h4>
 <div class="outline-text-4" id="text-10-1-10">
 <p>
 When you do not know the functional form of data to fit an equation, you can still fit/interpolate with splines.
@@ -13940,8 +14044,8 @@ There are other good examples at <a href="http://docs.scipy.org/doc/scipy/refere
 </div>
 </div>
 
-<div id="outline-container-orgheadline201" class="outline-4">
-<h4 id="orgheadline201"><span class="section-number-4">10.1.11</span> Interpolation in 3D</h4>
+<div id="outline-container-orgheadline212" class="outline-4">
+<h4 id="orgheadline212"><span class="section-number-4">10.1.11</span> Interpolation in 3D</h4>
 <div class="outline-text-4" id="text-10-1-11">
 <p>
 You might ask, why would I need to interpolate in 3D? Suppose you want to plot the charge density along a line through a unit cell that does not correspond to grid points. What are you to do? Interpolate. In contrast to an abundance of methods for 1D and 2D interpolation, I could not find any standard library methods for 3D interpolation.
@@ -14193,11 +14297,11 @@ show()
 </div>
 </div>
 
-<div id="outline-container-orgheadline204" class="outline-4">
-<h4 id="orgheadline204"><span class="section-number-4">10.1.12</span> Reading and writing data</h4>
+<div id="outline-container-orgheadline215" class="outline-4">
+<h4 id="orgheadline215"><span class="section-number-4">10.1.12</span> Reading and writing data</h4>
 <div class="outline-text-4" id="text-10-1-12">
-</div><div id="outline-container-orgheadline202" class="outline-5">
-<h5 id="orgheadline202"><span class="section-number-5">10.1.12.1</span> Built-in io modules</h5>
+</div><div id="outline-container-orgheadline213" class="outline-5">
+<h5 id="orgheadline213"><span class="section-number-5">10.1.12.1</span> Built-in io modules</h5>
 <div class="outline-text-5" id="text-10-1-12-1">
 <p>
 <code>pylab</code> has two convenient and powerful functions for saving and
@@ -14231,8 +14335,8 @@ See <a href="http://www.scipy.org/Cookbook/InputOutput">http://www.scipy.org/Coo
 </div>
 </div>
 
-<div id="outline-container-orgheadline203" class="outline-5">
-<h5 id="orgheadline203"><span class="section-number-5">10.1.12.2</span> From scratch</h5>
+<div id="outline-container-orgheadline214" class="outline-5">
+<h5 id="orgheadline214"><span class="section-number-5">10.1.12.2</span> From scratch</h5>
 <div class="outline-text-5" id="text-10-1-12-2">
 <p>
 You can save data in many ways from scratch. Basically, just open a
@@ -14308,8 +14412,8 @@ possible you should use the built-in methods of <a href="numpy">numpy</a> or <a 
 </div>
 </div>
 
-<div id="outline-container-orgheadline205" class="outline-4">
-<h4 id="orgheadline205"><span class="section-number-4">10.1.13</span> Integration</h4>
+<div id="outline-container-orgheadline216" class="outline-4">
+<h4 id="orgheadline216"><span class="section-number-4">10.1.13</span> Integration</h4>
 <div class="outline-text-4" id="text-10-1-13">
 <p>
 Numerical integrations is easy with the numpy.trapz() method. Use it like this: <a href="numpy.trapz">numpy.trapz</a>(y,x). Note that y comes first. y and x must be the same length.
@@ -14380,16 +14484,16 @@ To get the second moment of the density of states in python, we use::
 </div>
 </div>
 
-<div id="outline-container-orgheadline208" class="outline-4">
-<h4 id="orgheadline208"><span class="section-number-4">10.1.14</span> Numerical differentiation</h4>
+<div id="outline-container-orgheadline219" class="outline-4">
+<h4 id="orgheadline219"><span class="section-number-4">10.1.14</span> Numerical differentiation</h4>
 <div class="outline-text-4" id="text-10-1-14">
 <p>
 numpy has a function called <a href="numpy.diff">numpy.diff</a> that is similar to the one found in Matlab. It calculates the differences between the elements in your list, and returns a list that is one element shorter, which makes it unsuitable for plotting the derivative of a function.
 </p>
 </div>
 
-<div id="outline-container-orgheadline206" class="outline-5">
-<h5 id="orgheadline206"><span class="section-number-5">10.1.14.1</span> Simple loops to define finite difference derivatives</h5>
+<div id="outline-container-orgheadline217" class="outline-5">
+<h5 id="orgheadline217"><span class="section-number-5">10.1.14.1</span> Simple loops to define finite difference derivatives</h5>
 <div class="outline-text-5" id="text-10-1-14-1">
 <p>
 Loops in python are pretty slow (relatively speaking) but they are usually trivial to understand. In this script we show some simple ways to construct derivative vectors using loops. It is implied in these formulas that the data points are equally spaced.
@@ -14592,8 +14696,8 @@ The derivative is still noisy, but the four-point derivative is a little better 
 </div>
 </div>
 
-<div id="outline-container-orgheadline207" class="outline-5">
-<h5 id="orgheadline207"><span class="section-number-5">10.1.14.2</span> FFT derivatives</h5>
+<div id="outline-container-orgheadline218" class="outline-5">
+<h5 id="orgheadline218"><span class="section-number-5">10.1.14.2</span> FFT derivatives</h5>
 <div class="outline-text-5" id="text-10-1-14-2">
 <p>
 It is possible to perform derivatives using fast fourier transforms (FFT):
@@ -14650,8 +14754,8 @@ This example does not show any major advantage in the quality of the derivative,
 </div>
 </div>
 
-<div id="outline-container-orgheadline209" class="outline-4">
-<h4 id="orgheadline209"><span class="section-number-4">10.1.15</span> NetCDF files</h4>
+<div id="outline-container-orgheadline220" class="outline-4">
+<h4 id="orgheadline220"><span class="section-number-4">10.1.15</span> NetCDF files</h4>
 <div class="outline-text-4" id="text-10-1-15">
 <p>
 <a href="http://www.unidata.ucar.edu/software/netcdf">NetCDF</a> is a binary,
@@ -14679,8 +14783,8 @@ bug-free (I have problems with character variables)
 </div>
 </div>
 
-<div id="outline-container-orgheadline210" class="outline-4">
-<h4 id="orgheadline210"><span class="section-number-4">10.1.16</span> Python modules</h4>
+<div id="outline-container-orgheadline221" class="outline-4">
+<h4 id="orgheadline221"><span class="section-number-4">10.1.16</span> Python modules</h4>
 <div class="outline-text-4" id="text-10-1-16">
 <p>
 The comma separated values (<a href="csv">csv</a>) module in python allows you to
@@ -14739,11 +14843,11 @@ data storage functionality. Check them out some day too.
 </div>
 </div>
 
-<div id="outline-container-orgheadline213" class="outline-4">
-<h4 id="orgheadline213"><span class="section-number-4">10.1.17</span> Writing and reading Excel files</h4>
+<div id="outline-container-orgheadline224" class="outline-4">
+<h4 id="orgheadline224"><span class="section-number-4">10.1.17</span> Writing and reading Excel files</h4>
 <div class="outline-text-4" id="text-10-1-17">
-</div><div id="outline-container-orgheadline211" class="outline-5">
-<h5 id="orgheadline211"><span class="section-number-5">10.1.17.1</span> Writing Excel files</h5>
+</div><div id="outline-container-orgheadline222" class="outline-5">
+<h5 id="orgheadline222"><span class="section-number-5">10.1.17.1</span> Writing Excel files</h5>
 <div class="outline-text-5" id="text-10-1-17-1">
 <p>
 It is sometimes convenient to do some analysis in Excel. We can create Excel files in python with <a href="xlwt">xlwt</a>. Google this module if you need to do this a lot.
@@ -14770,8 +14874,8 @@ wbk.save(<span style="color: #008000;">'images/test-write.xls'</span>)
 </div>
 </div>
 
-<div id="outline-container-orgheadline212" class="outline-5">
-<h5 id="orgheadline212"><span class="section-number-5">10.1.17.2</span> Reading Excel files</h5>
+<div id="outline-container-orgheadline223" class="outline-5">
+<h5 id="orgheadline223"><span class="section-number-5">10.1.17.2</span> Reading Excel files</h5>
 <div class="outline-text-5" id="text-10-1-17-2">
 <p>
 We can also read Excel files (even on Linux!) with <a href="xlrd">xlrd</a>. Let us read in the data we just wrote. We wrote 5 volumes to column 0, and 5 energies to column 1.
@@ -14795,8 +14899,8 @@ We can also read Excel files (even on Linux!) with <a href="xlrd">xlrd</a>. Let 
 </div>
 </div>
 
-<div id="outline-container-orgheadline214" class="outline-4">
-<h4 id="orgheadline214"><span class="section-number-4">10.1.18</span> <span class="todo TODO">TODO</span> making movies</h4>
+<div id="outline-container-orgheadline225" class="outline-4">
+<h4 id="orgheadline225"><span class="section-number-4">10.1.18</span> <span class="todo TODO">TODO</span> making movies</h4>
 <div class="outline-text-4" id="text-10-1-18">
 <ol class="org-ol">
 <li>using animate</li>
@@ -14809,11 +14913,11 @@ We can also read Excel files (even on Linux!) with <a href="xlrd">xlrd</a>. Let 
 </div>
 </div>
 
-<div id="outline-container-orgheadline220" class="outline-3">
-<h3 id="orgheadline220"><span class="section-number-3">10.2</span> Computational geometry</h3>
+<div id="outline-container-orgheadline64" class="outline-3">
+<h3 id="orgheadline64"><span class="section-number-3">10.2</span> Computational geometry</h3>
 <div class="outline-text-3" id="text-10-2">
-</div><div id="outline-container-orgheadline216" class="outline-4">
-<h4 id="orgheadline216"><span class="section-number-4">10.2.1</span> Changing coordinate systems</h4>
+</div><div id="outline-container-orgheadline226" class="outline-4">
+<h4 id="orgheadline226"><span class="section-number-4">10.2.1</span> Changing coordinate systems</h4>
 <div class="outline-text-4" id="text-10-2-1">
 <p>
 Let A, B, C be the unit cell vectors
@@ -15008,8 +15112,8 @@ unit cell in terms of the primitive basis
 </div>
 </div>
 
-<div id="outline-container-orgheadline217" class="outline-4">
-<h4 id="orgheadline217"><span class="section-number-4">10.2.2</span> Simple distances, angles</h4>
+<div id="outline-container-orgheadline227" class="outline-4">
+<h4 id="orgheadline227"><span class="section-number-4">10.2.2</span> Simple distances, angles</h4>
 <div class="outline-text-4" id="text-10-2-2">
 <p>
 <code>Scientific.Geometry</code> contains several useful functions for
@@ -15055,8 +15159,8 @@ performing vector algebra including computing lengths and angles.
 </div>
 </div>
 
-<div id="outline-container-orgheadline218" class="outline-4">
-<h4 id="orgheadline218"><span class="section-number-4">10.2.3</span> Unit cell properties</h4>
+<div id="outline-container-orgheadline228" class="outline-4">
+<h4 id="orgheadline228"><span class="section-number-4">10.2.3</span> Unit cell properties</h4>
 <div class="outline-text-4" id="text-10-2-3">
 <p>
 The volume of a unit cell can be calculated from \(V = (a_1 \times a_2)
@@ -15112,8 +15216,8 @@ V = 20.0 ang^3 from get_volume
 </div>
 </div>
 
-<div id="outline-container-orgheadline219" class="outline-4">
-<h4 id="orgheadline219"><span class="section-number-4">10.2.4</span> d-spacing</h4>
+<div id="outline-container-orgheadline229" class="outline-4">
+<h4 id="orgheadline229"><span class="section-number-4">10.2.4</span> d-spacing</h4>
 <div class="outline-text-4" id="text-10-2-4">
 <p>
 If you like to set up the vacuum in your slab calculations in terms of
@@ -15233,8 +15337,8 @@ d_111 spacing (method 3) = 2.30940107676
 </div>
 </div>
 
-<div id="outline-container-orgheadline79" class="outline-3">
-<h3 id="orgheadline79"><span class="section-number-3">10.3</span> Equations of State</h3>
+<div id="outline-container-orgheadline65" class="outline-3">
+<h3 id="orgheadline65"><span class="section-number-3">10.3</span> Equations of State</h3>
 <div class="outline-text-3" id="text-10-3">
 <p>
 The module <a href="ase.utils.eos">ase.utils.eos</a> uses a simple polynomial equation of
@@ -15245,8 +15349,8 @@ references to the relevant literature. In each of these cases we show equations 
 </p>
 </div>
 
-<div id="outline-container-orgheadline221" class="outline-4">
-<h4 id="orgheadline221"><span class="section-number-4">10.3.1</span> Birch-Murnaghan</h4>
+<div id="outline-container-orgheadline230" class="outline-4">
+<h4 id="orgheadline230"><span class="section-number-4">10.3.1</span> Birch-Murnaghan</h4>
 <div class="outline-text-4" id="text-10-3-1">
 <p>
 This is probably the most common equation of state used most often,
@@ -15293,8 +15397,8 @@ with \(\varrho=-3 \ln(\eta)\).
 </div>
 </div>
 
-<div id="outline-container-orgheadline222" class="outline-4">
-<h4 id="orgheadline222"><span class="section-number-4">10.3.2</span> Murnaghan</h4>
+<div id="outline-container-orgheadline231" class="outline-4">
+<h4 id="orgheadline231"><span class="section-number-4">10.3.2</span> Murnaghan</h4>
 <div class="outline-text-4" id="text-10-3-2">
 <p>
 The equation most often used in the Murnaghan  <a class='org-ref-reference' href="#Murnaghan1944">Murnaghan1944</a>
@@ -15316,8 +15420,8 @@ guess of 2-4 for \(B'_0\) is usually a good start.
 </div>
 </div>
 
-<div id="outline-container-orgheadline223" class="outline-4">
-<h4 id="orgheadline223"><span class="section-number-4">10.3.3</span> Birch</h4>
+<div id="outline-container-orgheadline232" class="outline-4">
+<h4 id="orgheadline232"><span class="section-number-4">10.3.3</span> Birch</h4>
 <div class="outline-text-4" id="text-10-3-3">
 <p>
 The original Birch equation <a class='org-ref-reference' href="#Birch">Birch</a> is:
@@ -15330,8 +15434,8 @@ The original Birch equation <a class='org-ref-reference' href="#Birch">Birch</a>
 </div>
 </div>
 
-<div id="outline-container-orgheadline224" class="outline-4">
-<h4 id="orgheadline224"><span class="section-number-4">10.3.4</span> The Anton-Schmidt Equation of state <a class='org-ref-reference' href="#Mayer200323">Mayer200323</a></h4>
+<div id="outline-container-orgheadline233" class="outline-4">
+<h4 id="orgheadline233"><span class="section-number-4">10.3.4</span> The Anton-Schmidt Equation of state <a class='org-ref-reference' href="#Mayer200323">Mayer200323</a></h4>
 <div class="outline-text-4" id="text-10-3-4">
 <p>
 \(E(V) = E_\infty + \frac{B V_0}{n+1}\left(\frac{V}{V_0}\right)^{n+1} \left( \ln{\frac{V}{V_0}} - \frac{1}{n+1}\right)\)
@@ -15346,8 +15450,8 @@ cohesive energy. \(n\) is typically about -2.
 </div>
 </div>
 
-<div id="outline-container-orgheadline225" class="outline-4">
-<h4 id="orgheadline225"><span class="section-number-4">10.3.5</span> Fitting data to these equations of state</h4>
+<div id="outline-container-orgheadline234" class="outline-4">
+<h4 id="orgheadline234"><span class="section-number-4">10.3.5</span> Fitting data to these equations of state</h4>
 <div class="outline-text-4" id="text-10-3-5">
 <p>
 To use these equations of state to find the equilibrium cell volume
@@ -15490,11 +15594,11 @@ does not converge.
 </div>
 </div>
 
-<div id="outline-container-orgheadline231" class="outline-3">
-<h3 id="orgheadline231"><span class="section-number-3">10.4</span> Miscellaneous vasp/VASP tips</h3>
+<div id="outline-container-orgheadline66" class="outline-3">
+<h3 id="orgheadline66"><span class="section-number-3">10.4</span> Miscellaneous vasp/VASP tips</h3>
 <div class="outline-text-3" id="text-10-4">
-</div><div id="outline-container-orgheadline226" class="outline-4">
-<h4 id="orgheadline226"><span class="section-number-4">10.4.1</span> Using a special setup</h4>
+</div><div id="outline-container-orgheadline235" class="outline-4">
+<h4 id="orgheadline235"><span class="section-number-4">10.4.1</span> Using a special setup</h4>
 <div class="outline-text-4" id="text-10-4-1">
 <p>
 VASP provides <a href="http://cms.mpi.univie.ac.at/vasp/vasp/PAW_potentials.html">special setups</a> for some elements. The following guidelines tell you what is in a potential:
@@ -15605,8 +15709,8 @@ This shows we indeed used the O_sv setup.
 </div>
 </div>
 
-<div id="outline-container-orgheadline227" class="outline-4">
-<h4 id="orgheadline227"><span class="section-number-4">10.4.2</span> <span class="todo TODO">TODO</span> Running vasp in parallel</h4>
+<div id="outline-container-orgheadline236" class="outline-4">
+<h4 id="orgheadline236"><span class="section-number-4">10.4.2</span> <span class="todo TODO">TODO</span> Running vasp in parallel</h4>
 <div class="outline-text-4" id="text-10-4-2">
 <p>
 vasp is smart. If you ask for more than one node, it will automatically try to run in parallel. On our cluster you have to use cores, i.e. (processor per node) not nodes due to a limitation in how vasp is compiled.
@@ -15658,8 +15762,8 @@ How do you know it ran on four nodes?
 </div>
 </div>
 
-<div id="outline-container-orgheadline228" class="outline-4">
-<h4 id="orgheadline228"><span class="section-number-4">10.4.3</span> Running multiple instances of vasp in parallel</h4>
+<div id="outline-container-orgheadline237" class="outline-4">
+<h4 id="orgheadline237"><span class="section-number-4">10.4.3</span> Running multiple instances of vasp in parallel</h4>
 <div class="outline-text-4" id="text-10-4-3">
 <p>
 <a href="vasp">vasp</a> was designed to enable asynchronous, parallel running processes through a queuing system. This is ideal for submitting large numbers of independent calculations in one script. The design uses exceptions to exit the script if the results are not available for subsequent analysis. The design expects that you run the script often, and the results are analyzed only when they are finally available.
@@ -15949,16 +16053,16 @@ step2: v2 = 12.0216189798
 </div>
 </div>
 
-<div id="outline-container-orgheadline230" class="outline-4">
-<h4 id="orgheadline230"><span class="section-number-4">10.4.4</span> Exporting data json, xml, python, sqlite</h4>
+<div id="outline-container-orgheadline239" class="outline-4">
+<h4 id="orgheadline239"><span class="section-number-4">10.4.4</span> Exporting data json, xml, python, sqlite</h4>
 <div class="outline-text-4" id="text-10-4-4">
 <p>
 Vasp has some capability for representing a calculation result in an archival format.
 </p>
 </div>
 
-<div id="outline-container-orgheadline229" class="outline-5">
-<h5 id="orgheadline229"><span class="section-number-5">10.4.4.1</span> json</h5>
+<div id="outline-container-orgheadline238" class="outline-5">
+<h5 id="orgheadline238"><span class="section-number-5">10.4.4.1</span> json</h5>
 <div class="outline-text-5" id="text-10-4-4-1">
 <div class="org-src-container">
 
@@ -15998,8 +16102,8 @@ Vasp has some capability for representing a calculation result in an archival fo
 
 
 
-<div id="outline-container-orgheadline76" class="outline-4">
-<h4 id="orgheadline76"><span class="section-number-4">10.4.5</span> Recommended values for ENCUT and valence electrons for different POTCAR files</h4>
+<div id="outline-container-orgheadline129" class="outline-4">
+<h4 id="orgheadline129"><span class="section-number-4">10.4.5</span> Recommended values for ENCUT and valence electrons for different POTCAR files</h4>
 <div class="outline-text-4" id="text-10-4-5">
 <p>
 The <a href=http://cms.mpi.univie.ac.at/wiki/index.php/ENCUT>ENCUT</a> tag and <a href=http://cms.mpi.univie.ac.at/wiki/index.php/PREC>PREC</a> tag affect the accuracy/convergence of your calculations.
@@ -19520,8 +19624,8 @@ chemical_symbols.sort()
 </div>
 </div>
 
-<div id="outline-container-orgheadline232" class="outline-3">
-<h3 id="orgheadline232"><span class="section-number-3">10.5</span> Hy</h3>
+<div id="outline-container-orgheadline67" class="outline-3">
+<h3 id="orgheadline67"><span class="section-number-3">10.5</span> Hy</h3>
 <div class="outline-text-3" id="text-10-5">
 <p>
 Here is our prototypical python script.
@@ -19609,11 +19713,11 @@ energy = -14.69111507 eV
 </div>
 </div>
 
-<div id="outline-container-orgheadline236" class="outline-2">
-<h2 id="orgheadline236"><span class="section-number-2">11</span> Python</h2>
+<div id="outline-container-orgheadline68" class="outline-2">
+<h2 id="orgheadline68"><span class="section-number-2">11</span> Python</h2>
 <div class="outline-text-2" id="text-11">
-</div><div id="outline-container-orgheadline234" class="outline-3">
-<h3 id="orgheadline234"><span class="section-number-3">11.1</span> pip as a user</h3>
+</div><div id="outline-container-orgheadline69" class="outline-3">
+<h3 id="orgheadline69"><span class="section-number-3">11.1</span> pip as a user</h3>
 <div class="outline-text-3" id="text-11-1">
 <p>
 pip is pretty easy to install as a user.
@@ -19639,8 +19743,8 @@ That may or may not be on your Python path.
 </div>
 </div>
 
-<div id="outline-container-orgheadline235" class="outline-3">
-<h3 id="orgheadline235"><span class="section-number-3">11.2</span> Integer division math gotchas</h3>
+<div id="outline-container-orgheadline70" class="outline-3">
+<h3 id="orgheadline70"><span class="section-number-3">11.2</span> Integer division math gotchas</h3>
 <div class="outline-text-3" id="text-11-2">
 <p>
 It pays to be careful when dividing by integers because you can get unexpected results if you do not know the integer division rules. In python 2.6, if you divide two integers, you get an integer! This is usually not a problem if there is no emainder in the division, e.g. 6/3=2. But, if there is a remainder, and that remainder is important, you will lose it. Here is an example of calculating the mole fraction of a species from integer numbers of atoms in the unit cell. If you are not careful, you get the wrong answer! You can convert (also called casting) a number to a float using the float command.
@@ -19703,8 +19807,8 @@ x_cu = 0.555555555556
 </div>
 </div>
 
-<div id="outline-container-orgheadline237" class="outline-2">
-<h2 id="orgheadline237"><span class="section-number-2">12</span> References</h2>
+<div id="outline-container-orgheadline71" class="outline-2">
+<h2 id="orgheadline71"><span class="section-number-2">12</span> References</h2>
 <div class="outline-text-2" id="text-12">
 <p>
 
@@ -19892,8 +19996,8 @@ x_cu = 0.555555555556
 </div>
 </div>
 
-<div id="outline-container-orgheadline238" class="outline-2">
-<h2 id="orgheadline238"><span class="section-number-2">13</span> GNU Free Documentation License</h2>
+<div id="outline-container-orgheadline72" class="outline-2">
+<h2 id="orgheadline72"><span class="section-number-2">13</span> GNU Free Documentation License</h2>
 <div class="outline-text-2" id="text-13">
 <pre class="example">
                 GNU Free Documentation License
@@ -20320,8 +20424,8 @@ provided the MMC is eligible for relicensing.
 </div>
 </div>
 
-<div id="outline-container-orgheadline239" class="outline-2">
-<h2 id="orgheadline239"><span class="section-number-2">14</span> Index</h2>
+<div id="outline-container-orgheadline73" class="outline-2">
+<h2 id="orgheadline73"><span class="section-number-2">14</span> Index</h2>
 <div class="outline-text-2" id="text-14">
 <p>
 <a href="pind">Print index</a>
@@ -20332,7 +20436,7 @@ provided the MMC is eligible for relicensing.
 <div id="postamble" class="status">
 <p class="date">Date: 2012-07-11 Wed</p>
 <p class="author">Author: John Kitchin</p>
-<p class="date">Created: 2016-06-03 Fri 13:32</p>
+<p class="date">Created: 2016-06-03 Fri 13:36</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
