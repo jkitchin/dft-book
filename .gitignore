@@ -31,3 +31,7 @@ ltxpng
 auto
 /topics-to-discuss.org
 /.DS_Store
+blog
+devel
+tests
+dft.html
