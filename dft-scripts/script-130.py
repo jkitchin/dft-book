@@ -1,33 +1,38 @@
-from jasp import *
+# run the rutile calculations
+from vasp import Vasp
 from ase import Atom, Atoms
-# parent metals
-with jasp('bulk/alloy/cu') as calc:
-    atoms = calc.get_atoms()
-    cu = atoms.get_potential_energy()/len(atoms)
-with jasp('bulk/alloy/pd') as calc:
-    atoms = calc.get_atoms()
-    pd = atoms.get_potential_energy()/len(atoms)
-atoms = Atoms([Atom('Cu',  [-3.672,     3.672,      3.672]),
-               Atom('Cu',  [0.000,     0.000,      0.000]),
-               Atom('Cu',  [-10.821,   10.821,     10.821]),
-               Atom('Pd',  [-7.246,     7.246,      7.246])],
-               cell=[[-5.464,  3.565,  5.464],
-                     [-3.565,  5.464,  5.464],
-                     [-5.464,  5.464,  3.565]])
-with jasp('bulk/alloy/cu3pd-1',
-          xc='PBE',
-          encut=350,
-          kpts=(8, 8, 8),
-          nbands=34,
-          ibrion=2,
-          isif=3,
-          nsw=10,
-          atoms=atoms) as calc:
-    e3 = atoms.get_potential_energy()
-    for atom in atoms:
-        if atom.symbol == 'Cu':
-            e3 -= cu
-        else:
-            e3 -= pd
-    e3 /= len(atoms)
-print 'Delta Hf cu3pd-1 = {0:1.2f} eV/atom'.format(e3)
+import numpy as np
+B = 'Ti'; X = 'O'; a = 4.59; c = 2.958; u = 0.305;
+'''
+create a rutile structure from the lattice vectors at
+http://cst-www.nrl.navy.mil/lattice/struk/c4.html
+spacegroup: 136 P4_2/mnm
+'''
+a1 = a * np.array([1.0, 0.0, 0.0])
+a2 = a * np.array([0.0, 1.0, 0.0])
+a3 = c * np.array([0.0, 0.0, 1.0])
+atoms = Atoms([Atom(B, [0., 0., 0.]),
+               Atom(B, 0.5*a1 + 0.5*a2 + 0.5*a3),
+               Atom(X,  u*a1 + u*a2),
+               Atom(X, -u*a1 - u*a2),
+               Atom(X, (0.5+u)*a1 + (0.5-u)*a2 + 0.5*a3),
+               Atom(X, (0.5-u)*a1 + (0.5+u)*a2 + 0.5*a3)],
+              cell=[a1, a2, a3])
+nTiO2 = len(atoms) / 3.
+v0 = atoms.get_volume()
+cell0 = atoms.get_cell()
+volumes = [28., 30., 32., 34., 36.]  #vol of one TiO2
+for v in volumes:
+    atoms.set_cell(cell0 * ((nTiO2 * v / v0)**(1. / 3.)),
+                   scale_atoms=True)
+    calc = Vasp('bulk/TiO2/rutile/rutile-{0}'.format(v),
+                encut=350,
+                kpts=[6, 6, 6],
+                xc='PBE',
+                ismear=0,
+                sigma=0.001,
+                isif=2,
+                ibrion=2,
+                nsw=20,
+                atoms=atoms)
+    calc.update()

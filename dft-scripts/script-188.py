@@ -1,13 +1,37 @@
-from jasp import *
-with jasp('surfaces/Pt-slab-1x1-O-fcc') as calc:
-    atoms = calc.get_atoms()
-    e_slab_o = atoms.get_potential_energy()
-# clean slab
-with jasp('surfaces/Pt-slab-1x1') as calc:
-    atoms = calc.get_atoms()
-    e_slab = atoms.get_potential_energy()
-with jasp('molecules/O2-sp-triplet-350') as calc:
-    atoms = calc.get_atoms()
-    e_O2 = atoms.get_potential_energy()
-hads = e_slab_o - e_slab - 0.5 * e_O2
-print 'Hads (1ML) = {0:1.3f} eV'.format(hads)
+# compute local potential with dipole calculation on
+from ase.lattice.surface import fcc111, add_adsorbate
+from vasp import Vasp
+import numpy as np
+slab = fcc111('Al', size=(2, 2, 2), vacuum=10.0)
+add_adsorbate(slab, 'Na', height=1.2, position='fcc')
+slab.center()
+calc = Vasp('surfaces/Al-Na-dip',
+            xc='PBE',
+            encut=340,
+            kpts=[2, 2, 1],
+            lcharg=True,
+            idipol=3,   # only along z-axis
+            lvtot=True,  # write out local potential
+            lvhar=True,  # write out only electrostatic potential, not xc pot
+            atoms=slab)
+calc.stop_if(calc.potential_energy is None)
+x, y, z, cd = calc.get_charge_density()
+n0, n1, n2 = cd.shape
+nelements = n0 * n1 * n2
+voxel_volume = slab.get_volume() / nelements
+total_electron_charge = cd.sum() * voxel_volume
+electron_density_center = np.array([(cd * x).sum(),
+                                    (cd * y).sum(),
+                                    (cd * z).sum()])
+electron_density_center *= voxel_volume
+electron_density_center /= total_electron_charge
+print 'electron-density center = {0}'.format(electron_density_center)
+uc = slab.get_cell()
+# get scaled electron charge density center
+sedc = np.dot(np.linalg.inv(uc.T), electron_density_center.T).T
+# we only write 4 decimal places out to the INCAR file, so we round here.
+sedc = np.round(sedc, 4)
+calc.clone('surfaces/Al-Na-dip-step2')
+# now run step 2 with dipole set at scaled electron charge density center
+calc.set(ldipol=True, dipol=sedc)
+print(calc.potential_energy)

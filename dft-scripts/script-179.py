@@ -1,14 +1,5 @@
-from jasp import *
-from ase.lattice.surface import fcc111
-from ase.constraints import FixAtoms
-atoms = fcc111('Pt', size=(2, 2, 3), vacuum=10.0)
-constraint = FixAtoms(mask=[True for atom in atoms])
-atoms.set_constraint(constraint)
-from ase.io import write
-write('images/Pt-fcc-ori.png', atoms, show_unit_cell=2)
-with jasp('surfaces/Pt-slab',
-          xc='PBE',
-          kpts=(4, 4, 1),
-          encut=350,
-          atoms=atoms) as calc:
-    print atoms.get_potential_energy()
+from vasp import Vasp
+eslab = Vasp('surfaces/Ag-110').potential_energy
+emissingrow = Vasp('surfaces/Ag-110-missing-row').potential_energy
+ebulk = Vasp('bulk/Ag-fcc').potential_energy
+print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)

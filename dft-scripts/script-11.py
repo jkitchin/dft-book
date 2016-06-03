@@ -1,8 +1,8 @@
 from ase.structure import molecule
-from ase.io import write
-atoms1 = molecule('NH3')
-atoms2 = molecule('O2')
-atoms2.translate([3, 0, 0])
-bothatoms = atoms1 + atoms2
-bothatoms.center(5)
-write('images/bothatoms.png', bothatoms, show_unit_cell=2, rotation='90x')
+atoms = molecule('C6H6')
+masses = atoms.get_masses()
+molecular_weight = masses.sum()
+molecular_formula = atoms.get_chemical_formula(mode='reduce')
+# note use of two lines to keep length of line reasonable
+s = 'The molecular weight of {0} is {1:1.2f} gm/mol'
+print(s.format(molecular_formula, molecular_weight))

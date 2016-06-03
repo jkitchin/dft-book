@@ -1,19 +1,7 @@
-from ase import Atoms, Atom
-from jasp import *
-JASPRC['queue.ppn'] = 4
-atoms = Atoms([Atom('H', [0.5960812, -0.7677068, 0.0000000]),
-               Atom('O', [0.0000000,  0.0000000, 0.0000000]),
-               Atom('H', [0.5960812,  0.7677068, 0.0000000])],
-              cell=(8, 8, 8))
-atoms.center()
-with jasp('molecules/h2o-relax-centered',
-          xc='PBE', debug=logging.DEBUG,
-          encut=400,
-          ismear=0,  # Gaussian smearing
-          ibrion=2,
-          ediff=1e-8,
-          nsw=10,
-          atoms=atoms) as calc:
-    print("forces")
-    print('=======')
-    print(atoms.get_forces())
+from vasp import Vasp
+from ase.db import connect
+bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
+calcs = [Vasp('molecules/co-{0}'.format(d)) for d in bond_lengths]
+con = connect('co-database.db', append=False)
+for atoms in [calc.get_atoms() for calc in calcs]:
+    con.write(atoms)

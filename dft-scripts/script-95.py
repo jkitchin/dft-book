@@ -1,32 +1,23 @@
-from jasp import *
-from ase import Atom, Atoms
-# fcc
-LC = [3.5, 3.55, 3.6, 3.65, 3.7, 3.75]
-fcc_energies = []
-ready = True
-for a in LC:
-    atoms = Atoms([Atom('Cu', (0, 0, 0))],
-              cell=0.5 * a * np.array([[1.0, 1.0, 0.0],
-                                       [0.0, 1.0, 1.0],
-                                       [1.0, 0.0, 1.0]]))
-    with jasp('bulk/Cu-{0}'.format(a),
-              xc='PBE',
-              encut=350,
-              kpts=(8, 8, 8),
-              atoms=atoms) as calc:
-        try:
-            e = atoms.get_potential_energy()
-            fcc_energies.append(e)
-        except (VaspSubmitted, VaspQueued):
-            ready = False
-if not ready:
-    import sys; sys.exit()
+from ase.lattice.cubic import FaceCenteredCubic
+from vasp import Vasp
+import numpy as np
+atoms = FaceCenteredCubic('Ag')
+KPTS = [2, 3, 4, 5, 6, 8, 10]
+TE = []
+for k in KPTS:
+    calc = Vasp('bulk/Ag-kpts-{0}'.format(k),
+                xc='PBE',
+                kpts=[k, k, k],  # specifies the Monkhorst-Pack grid
+                encut=300,
+                atoms=atoms)
+    TE.append(atoms.get_potential_energy())
+if None in TE:
+    calc.abort()
 import matplotlib.pyplot as plt
-plt.plot(LC, fcc_energies)
-plt.xlabel('Lattice constant ($\AA$)')
-plt.ylabel('Total energy (eV)')
-plt.savefig('images/Cu-fcc.png')
-print '#+tblname: cu-fcc-energies'
-print r'| lattice constant ($\AA$) | Total Energy (eV) |'
-for lc, e in zip(LC, fcc_energies):
-    print '| {0} | {1} |'.format(lc, e)
+# consider the change in energy from lowest energy state
+TE = np.array(TE)
+TE -= TE.min()
+plt.plot(KPTS, TE)
+plt.xlabel('number of k-points in each dimension')
+plt.ylabel('Total Energy (eV)')
+plt.savefig('images/Ag-kpt-convergence.png')

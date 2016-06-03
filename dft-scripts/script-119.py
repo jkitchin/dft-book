@@ -1,14 +1,14 @@
-from jasp import *
-from ase.lattice.cubic import FaceCenteredCubic
-atoms = FaceCenteredCubic(symbol='Al')
-with jasp('bulk/Al-bulk',
-          xc='PBE',
-          kpts=(12, 12, 12),
-          encut=350,
-          prec='High',
-          isif=3,
-          nsw=30,
-          ibrion=1,
-          atoms=atoms) as calc:
-    print atoms.get_potential_energy()
-    print atoms.get_stress()
+from vasp import Vasp
+from ase.lattice import bulk
+from ase.optimize import BFGS as QuasiNewton
+Al = bulk('Al', 'fcc', a=4.5, cubic=True)
+calc = Vasp('bulk/Al-lda-ase',
+            xc='LDA',
+            atoms=Al)
+from ase.constraints import StrainFilter
+sf = StrainFilter(Al)
+qn = QuasiNewton(sf, logfile='relaxation.log')
+qn.run(fmax=0.1, steps=5)
+print('Stress:\n', calc.stress)
+print('Al post ASE volume relaxation\n', calc.get_atoms().get_cell())
+print(calc)

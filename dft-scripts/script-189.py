@@ -1,22 +1,29 @@
-from jasp import *
-with jasp('surfaces/Pt-slab-O-fcc') as calc:
-    calc.clone('surfaces/Pt-slab-O-fcc-vib')
-with jasp('surfaces/Pt-slab-O-fcc-vib') as calc:
-    calc.set(ibrion=5,     # finite differences with selective dynamics
-             nfree=2,      # central differences (default)
-             potim=0.015,  # default as well
-             ediff=1e-8,
-             nsw=1)
-    atoms = calc.get_atoms()
-    f, v = calc.get_vibrational_modes(0)
-    print 'Elapsed time = {0} seconds'.format(calc.get_elapsed_time())
-    allfreq = calc.get_vibrational_modes()[0]
-from ase.units import meV
-c = 3e10  # cm/s
-h = 4.135667516e-15  # eV*s
-print 'vibrational energy = {0} eV'.format(f)
-print 'vibrational energy = {0} meV'.format(f/meV)
-print 'vibrational freq   = {0} 1/s'.format(f/h)
-print 'vibrational freq   = {0} cm^{{-1}}'.format(f/(h*c))
-print
-print 'All energies = ', allfreq
+from vasp import Vasp
+import matplotlib.pyplot as plt
+calc = Vasp('surfaces/Al-Na-nodip')
+atoms = calc.get_atoms()
+x, y, z, lp = calc.get_local_potential()
+nx, ny, nz = lp.shape
+axy_1 = [np.average(lp[:, :, z]) for z in range(nz)]
+# setup the x-axis in realspace
+uc = atoms.get_cell()
+xaxis_1 = np.linspace(0, uc[2][2], nz)
+e1 = atoms.get_potential_energy()
+calc = Vasp('surfaces/Al-Na-dip-step2')
+atoms = calc.get_atoms()
+x, y, z, lp = calc.get_local_potential()
+nx, ny, nz = lp.shape
+axy_2 = [np.average(lp[:, :, z]) for z in range(nz)]
+# setup the x-axis in realspace
+uc = atoms.get_cell()
+xaxis_2 = np.linspace(0, uc[2][2], nz)
+ef2 = calc.get_fermi_level()
+e2 = atoms.get_potential_energy()
+print 'The difference in energy is {0} eV.'.format(e2-e1)
+plt.plot(xaxis_1, axy_1, label='no dipole correction')
+plt.plot(xaxis_2, axy_2, label='dipole correction')
+plt.plot([min(xaxis_2), max(xaxis_2)], [ef2, ef2], 'k:', label='Fermi level')
+plt.xlabel('z ($\AA$)')
+plt.ylabel('xy-averaged electrostatic potential')
+plt.legend(loc='best')
+plt.savefig('images/dip-vs-nodip-esp.png')

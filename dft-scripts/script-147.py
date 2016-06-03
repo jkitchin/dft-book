@@ -1,10 +1,15 @@
-from jasp import *
-from jasp.jasp_bandstructure import *
-with jasp('bulk/tio2/step3') as calc:
-    n, bands, p = calc.get_bandstructure(kpts_path=[('$\Gamma$', [0.0, 0.0, 0.0]),
-                                                  ('X', [0.5, 0.5, 0.0]),
-                                                  ('X', [0.5, 0.5, 0.0]),
-                                                  ('M', [0.0, 0.5, 0.5]),
-                                                  ('M', [0.0, 0.5, 0.5]),
-                                                  ('$\Gamma$', [0.0, 0.0, 0.0])])
-p.savefig('images/tio2-bandstructure-dos.png')
+from vasp import Vasp
+from ase.dft import DOS
+calc = Vasp('bulk/pd-dos')
+calc.clone('bulk/pd-dos-ismear-5')
+bulk = calc.get_atoms()
+calc.set(ismear=-5)
+bulk.get_potential_energy()
+dos = DOS(calc, width=0.2)
+d = dos.get_dos()
+e = dos.get_energies()
+import pylab as plt
+plt.plot(e, d)
+plt.xlabel('energy [eV]')
+plt.ylabel('DOS')
+plt.savefig('images/pd-dos-ismear-5.png')

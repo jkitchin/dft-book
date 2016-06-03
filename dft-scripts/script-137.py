@@ -1,27 +1,30 @@
-from jasp import *
-npoints = 200
-width = 0.5
-def gaussian(energies, eik):
-    x = ((energies - eik) / width)
-    return np.exp(-x**2) / np.sqrt(np.pi) / width
-with jasp('bulk/pd-dos') as calc:
-    # kpt weights
-    wk = calc.get_k_point_weights()
-    # for each k-point there are a series of eigenvalues
-    # here we get all the eigenvalues for each k-point
-    e_kn = []
-    for i, k in enumerate(wk):
-        e_kn.append(calc.get_eigenvalues(kpt=i))
-    e_kn = np.array(e_kn) - calc.get_fermi_level()
-    # these are the energies we want to evaluate the dos at
-    energies = np.linspace(e_kn.min(), e_kn.max(), npoints)
-    # this is where we build up the dos
-    dos = np.zeros(npoints)
-    for j in range(npoints):
-        for k in range(len(wk)): # loop over all kpoints
-            for i in range(len(e_kn[k])): # loop over eigenvalues in each k
-                dos[j] += wk[k] * gaussian(energies[j], e_kn[k][i])
-import matplotlib.pyplot as plt
-plt.plot(energies, dos)
-plt.savefig('images/manual-dos.png')
-plt.show()
+from vasp import Vasp
+# bulk energy 1
+calc = Vasp('bulk/alloy/cu')
+atoms = calc.get_atoms()
+cu = atoms.get_potential_energy()/len(atoms)
+# bulk energy 2
+calc = Vasp('bulk/alloy/pd')
+atoms = calc.get_atoms()
+pd = atoms.get_potential_energy()/len(atoms)
+calc = Vasp('bulk/alloy/cupd-1')
+atoms = calc.get_atoms()
+e1 = atoms.get_potential_energy()
+# subtract bulk energies off of each atom in cell
+for atom in atoms:
+    if atom.symbol == 'Cu':
+        e1 -= cu
+    else:
+        e1 -= pd
+e1 /= len(atoms)  # normalize by number of atoms in cell
+calc = Vasp('bulk/alloy/cupd-2')
+atoms = calc.get_atoms()
+e2 = atoms.get_potential_energy()
+for atom in atoms:
+    if atom.symbol == 'Cu':
+        e2 -= cu
+    else:
+        e2 -= pd
+e2 /= len(atoms)
+print 'Delta Hf cupd-1 = {0:1.2f} eV/atom'.format(e1)
+print 'Delta Hf cupd-2 = {0:1.2f} eV/atom'.format(e2)

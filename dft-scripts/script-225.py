@@ -1,13 +1,6 @@
-from jasp import *
-with jasp('molecules/H-beef') as calc:
-    ensH = calc.get_beefens()
-with jasp('molecules/H2-beef') as calc:
-    ensH2 = calc.get_beefens()
-ensD = 2 * ensH - ensH2
-print('mean = {} eV'.format(ensD.mean()))
-print('std = {} eV'.format(ensD.std()))
-import matplotlib.pyplot as plt
-plt.hist(ensD, 20)
-plt.xlabel('Deviation')
-plt.ylabel('frequency')
-plt.savefig('images/beef-ens.png')
+from vasp import Vasp
+e1, e2, e3 = [Vasp(wd).potential_energy
+              for wd in ['surfaces/Au-benzene-pbe-d2',
+                         'surfaces/Au-pbe-d2',
+                         'molecules/benzene-pbe-d2']]
+print('Adsorption energy = {0:1.2f} eV'.format(e1 - e2 - e3))

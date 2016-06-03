@@ -1,14 +1,16 @@
-from jasp import *
-from ase.visualize import view
-from ase.lattice.cubic import FaceCenteredCubic
-atoms = FaceCenteredCubic(directions=[[0, 1, 1],
-                                      [1, 0, 1],
-                                      [1, 1, 0]],
-                                      size=(1, 1, 1),
-                                      symbol='Ag')
-with jasp('bulk/Ag-fcc',
-          xc='PBE',
-          encut=350,
-          kpts=(12, 12, 12),
-          atoms=atoms) as calc:
-    calc.calculate()
+from vasp import Vasp
+from ase.lattice.surface import fcc111
+from ase.constraints import FixAtoms
+atoms = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
+constraint = FixAtoms(mask=[atom.tag >= 3 for atom in atoms])
+atoms.set_constraint(constraint)
+calc = Vasp('surfaces/Al-slab-relaxed',
+            xc='PBE',
+            kpts=[6, 6, 1],
+            encut=350,
+            ibrion=2,
+            isif=2,
+            nsw=10,
+            atoms=atoms)
+print calc.potential_energy
+print calc

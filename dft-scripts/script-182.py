@@ -1,18 +1,13 @@
-from jasp import *
-from ase.lattice.surface import fcc111, add_adsorbate
-from ase.constraints import FixAtoms
-atoms = fcc111('Pt', size=(2, 2, 3), vacuum=10.0)
-# note this function only works when atoms are created by the surface module.
-add_adsorbate(atoms, 'O', height=1.2, position='hcp')
-constraint = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
-atoms.set_constraint(constraint)
-from ase.io import write
-write('images/Pt-hcp-o-site.png', atoms, show_unit_cell=2)
-with jasp('surfaces/Pt-slab-O-hcp',
-          xc='PBE',
-          kpts=(4, 4, 1),
-          encut=350,
-          ibrion=2,
-          nsw=25,
-          atoms=atoms) as calc:
-    calc.calculate()
+from vasp import Vasp
+from ase.visualize import view
+from ase.lattice.cubic import FaceCenteredCubic
+atoms = FaceCenteredCubic(directions=[[0, 1, 1],
+                                      [1, 0, 1],
+                                      [1, 1, 0]],
+                                     size=(1, 1, 1),
+                                     symbol='Cu')
+Vasp('bulk/Cu-fcc',
+     xc='PBE',
+     encut=350,
+     kpts=[12, 12, 12],
+     atoms=atoms).update()

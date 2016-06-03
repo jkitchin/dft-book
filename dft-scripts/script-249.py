@@ -1,46 +1,42 @@
+# Nonlinear curve fit with confidence interval
 import numpy as np
+from scipy.optimize import curve_fit
+from scipy.stats.distributions import  t
+'''
+fit this equation to data
+y = c1 exp(-x) + c2*x
+this is actually a linear regression problem, but it is convenient to
+use the nonlinear fitting routine because it makes it easy to get
+confidence intervals. The downside is you need an initial guess.
+from Matlab
+b =
+    4.9671
+    2.1100
+bint =
+    4.6267    5.3075
+    1.7671    2.4528
+'''
+x = np.array([ 0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9,  1. ])
+y = np.array([ 4.70192769,  4.46826356,  4.57021389,  4.29240134,  3.88155125,
+            3.78382253,  3.65454727,  3.86379487,  4.16428541,  4.06079909])
+# this is the function we want to fit to our data
+def func(x,c0, c1):
+    return c0 * np.exp(-x) + c1*x
+pars, pcov = curve_fit(func, x, y, p0=[4.96, 2.11])
+alpha = 0.05 # 95% confidence interval
+n = len(y)    # number of data points
+p = len(pars) # number of parameters
+dof = max(0, n-p) # number of degrees of freedom
+tval = t.ppf(1.0-alpha/2., dof) # student-t value for the dof and confidence level
+for i, p,var in zip(range(n), pars, np.diag(pcov)):
+    sigma = var**0.5
+    print('c{0}: {1} [{2}  {3}]'.format(i, p,
+                                  p - sigma*tval,
+                                  p + sigma*tval))
 import matplotlib.pyplot as plt
-import time
-'''
-These are the brainless way to calculate numerical derivatives. They
-work well for very smooth data. they are surprisingly fast even up to
-10000 points in the vector.
-'''
-x = np.linspace(0.78, 0.79, 100) # 100 points between 0.78 and 0.79
-y = np.sin(x)
-dy_analytical = np.cos(x)
-'''
-let us use a forward difference method:
-that works up until the last point, where there is not
-a forward difference to use. there, we use a backward difference.
-'''
-tf1 = time.time()
-dyf = [0.0]*len(x)
-for i in range(len(y)-1):
-    dyf[i] = (y[i+1] - y[i])/(x[i+1]-x[i])
-# set last element by backwards difference
-dyf[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
-print(' Forward difference took {0:1.1f} seconds'.format(time.time() - tf1))
-# and now a backwards difference
-tb1 = time.time()
-dyb = [0.0]*len(x)
-# set first element by forward difference
-dyb[0] = (y[0] - y[1])/(x[0] - x[1])
-for i in range(1,len(y)):
-    dyb[i] = (y[i] - y[i-1])/(x[i]-x[i-1])
-print(' Backward difference took {0:1.1f} seconds'.format(time.time() - tb1))
-# and now, a centered formula
-tc1 = time.time()
-dyc = [0.0]*len(x)
-dyc[0] = (y[0] - y[1])/(x[0] - x[1])
-for i in range(1,len(y)-1):
-    dyc[i] = (y[i+1] - y[i-1])/(x[i+1]-x[i-1])
-dyc[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
-print(' Centered difference took {0:1.1f} seconds'.format(time.time() - tc1))
-# the centered formula is the most accurate formula here
-plt.plot(x,dy_analytical, label='analytical derivative')
-plt.plot(x,dyf,'--', label='forward')
-plt.plot(x,dyb,'--', label='backward')
-plt.plot(x,dyc,'--', label='centered')
-plt.legend(loc='lower left')
-plt.savefig('images/simple-diffs.png')
+plt.plot(x,y,'bo ')
+xfit = np.linspace(0,1)
+yfit = func(xfit, pars[0], pars[1])
+plt.plot(xfit,yfit,'b-')
+plt.legend(['data','fit'],loc='best')
+plt.savefig('images/nonlin-fit-ci.png')

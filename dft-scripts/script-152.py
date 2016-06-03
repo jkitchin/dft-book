@@ -1,9 +1,17 @@
-from ase.lattice.surface import fcc111
-from ase.io import write
+from vasp import Vasp
+from ase import Atom, Atoms
 from ase.visualize import view
-slab = fcc111('Al', size=(2, 2, 3), vacuum=10.0)
-from ase.constraints import FixAtoms
-constraint = FixAtoms(mask=[atom.tag >= 2 for atom in slab])
-slab.set_constraint(constraint)
-view(slab)
-write('images/Al-slab.png', slab, rotation='90x', show_unit_cell=2)
+a = 5.38936
+atoms = Atoms([Atom('Si', [0, 0, 0]),
+               Atom('Si', [0.25, 0.25, 0.25])])
+atoms.set_cell([[a / 2., a / 2., 0.0],
+                [0.0,  a / 2., a / 2.],
+                [a / 2., 0.0, a / 2.]], scale_atoms=True)
+calc = Vasp('bulk/Si-selfconsistent',
+            xc='PBE',
+            prec='Medium',
+            lcharg=True,
+            lwave=True,
+            kpts=[4, 4, 4],
+            atoms=atoms)
+calc.run()

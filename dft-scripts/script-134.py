@@ -1,30 +1,34 @@
-# run CuO calculation
-from jasp import *
+# get bulk Cu and Pd energies. <<pure-metal-components>>
+from vasp import Vasp
 from ase import Atom, Atoms
-# CuO
-# http://cst-www.nrl.navy.mil/lattice/struk/b26.html
-# http://www.springermaterials.com/docs/info/10681727_51.html
-a = 4.6837
-b = 3.4226
-c = 5.1288
-beta = 99.54/180*np.pi
-y = 0.5819
-a1 = np.array([0.5*a, -0.5*b, 0.0])
-a2 = np.array([0.5*a, 0.5*b, 0.0])
-a3 = np.array([c*np.cos(beta), 0.0, c*np.sin(beta)])
-atoms = Atoms([Atom('Cu', 0.5*a2),
-               Atom('Cu', 0.5*a1 + 0.5*a3),
-               Atom('O', -y*a1 + y*a2 + 0.25*a3),
-               Atom('O',  y*a1 - y*a2 - 0.25*a3)],
-               cell=(a1, a2, a3))
-with jasp('bulk/CuO',
-          encut=400,
-          kpts=(8, 8, 8),
+# Vasp.log.setLevel(10)
+Vasp.vasprc(mode=None)
+atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000])],
+              cell=  [[ 1.818,  0.000,  1.818],
+                      [ 1.818,  1.818,  0.000],
+                      [ 0.000,  1.818,  1.818]])
+cuc = Vasp('bulk/alloy/cu',
+          xc='PBE',
+          encut=350,
+          kpts=[13, 13, 13],
+          nbands=9,
           ibrion=2,
           isif=3,
-          nsw=30,
+          nsw=10,
+          atoms=atoms)
+cu = cuc.potential_energy
+atoms = Atoms([Atom('Pd',  [0.000,      0.000,      0.000])],
+              cell=[[ 1.978,  0.000,  1.978],
+                    [ 1.978,  1.978,  0.000],
+                    [0.000,  1.978,  1.978]])
+pd = Vasp('bulk/alloy/pd',
           xc='PBE',
-          atoms=atoms) as calc:
-    calc.set_nbands()
-    calc.calculate()
-    print calc
+          encut=350,
+          kpts=[13, 13, 13],
+          nbands=9,
+          ibrion=2,
+          isif=3,
+          nsw=10,
+          atoms=atoms).potential_energy
+print 'Cu energy = {0} eV'.format(cu)
+print 'Pd energy = {0} eV'.format(pd)

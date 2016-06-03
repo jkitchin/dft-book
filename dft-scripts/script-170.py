@@ -1,15 +1,8 @@
-from jasp import *
-from ase.lattice.surface import fcc110
-from ase.constraints import FixAtoms
-atoms = fcc110('Cu', size=(2, 1, 6), vacuum=10.0)
-constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
-atoms.set_constraint(constraint)
-with jasp('surfaces/Cu-110',
-          xc='PBE',
-          kpts=(6, 6, 1),
-          encut=350,
-          ibrion=2,
-          isif=2,
-          nsw=10,
-          atoms=atoms) as calc:
-    calc.calculate()
+from vasp import Vasp
+from ase.lattice.surface import fcc111
+calc = Vasp('surfaces/Al-slab-relaxed')
+atoms = calc.get_atoms()
+print 'Total energy: {0:1.3f}'.format(atoms.get_potential_energy())
+for i in range(1, len(atoms)):
+    print 'd_({0},{1}) = {2:1.3f} angstroms'.format(i, i-1,
+                                                    atoms[i].z - atoms[i-1].z)

@@ -1,8 +1,4 @@
-from ase.lattice.surface import fcc111
-from ase.units import J, m
-import numpy as np
-slab = fcc111('Cu', size=(1, 1, 3), vacuum=10.0)
-cell = slab.get_cell()
-area = np.linalg.norm(np.cross(cell[0], cell[1]))  # area per atom
-sigma = 0.48  # eV/atom
-print 'sigma = {0} J/m^2'.format(sigma / area / (J / m**2))
+from vasp import Vasp
+print 'dE = {0:1.3f} eV'.format(Vasp('surfaces/Au-110-missing-row').potential_energy
+                                + Vasp('bulk/Au-fcc').potential_energy
+                                - Vasp('surfaces/Au-110').potential_energy)

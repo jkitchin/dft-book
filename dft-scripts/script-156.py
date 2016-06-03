@@ -1,6 +1,11 @@
-from jasp import *
-with jasp('surfaces/Al-slab-unrelaxed') as calc:
-    atoms = calc.get_atoms()
-    print 'Total energy: {0:1.3f} eV'.format(atoms.get_potential_energy())
-    for i in range(1, len(atoms)):
-        print '{0}  deltaz = {1:1.3f} angstroms'.format(i, atoms[i].z - atoms[i-1].z)
+from vasp import Vasp
+calc = Vasp('bulk/tio2/step3')
+print calc.get_fermi_level()
+calc.abort()
+n, bands, p = calc.get_bandstructure(kpts_path=[('$\Gamma$', [0.0, 0.0, 0.0]),
+                                                ('X', [0.5, 0.5, 0.0]),
+                                                ('X', [0.5, 0.5, 0.0]),
+                                                ('M', [0.0, 0.5, 0.5]),
+                                                ('M', [0.0, 0.5, 0.5]),
+                                                ('$\Gamma$', [0.0, 0.0, 0.0])])
+p.savefig('images/tio2-bandstructure-dos.png')

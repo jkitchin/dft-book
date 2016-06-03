@@ -1,23 +1,35 @@
-# run Cu2O calculation
-from jasp import *
-from ase import Atom, Atoms
-# http://phycomp.technion.ac.il/~ira/types.html#Cu2O
-a = 4.27
-atoms = Atoms([Atom('Cu', [0, 0, 0]),
-               Atom('Cu', [0.5, 0.5, 0.0]),
-               Atom('Cu', [0.5, 0.0, 0.5]),
-               Atom('Cu', [0.0, 0.5, 0.5]),
-               Atom('O', [0.25, 0.25, 0.25]),
-               Atom('O', [0.75, 0.75, 0.75])])
-atoms.set_cell((a, a, a), scale_atoms=True)
-with jasp('bulk/Cu2O',
-          encut=400,
-          kpts=(8, 8, 8),
-          ibrion=2,
-          isif=3,
-          nsw=30,
-          xc='PBE',
-          atoms=atoms) as calc:
-    calc.set_nbands()
-    calc.calculate()
-    print calc
+from ase.units import GPa
+from numpy import array, linspace, polyval
+# copied from polynomial fit above
+anatase_epars = array([-1.06049246e-03,   1.30279404e-01,  -5.23520055e+00,
+         4.25202869e+01])
+rutile_epars = array([-1.24680208e-03,   1.42966536e-01,  -5.33239733e+00,
+         3.85903670e+01])
+# polynomial fits for pressures
+anatase_ppars = array([3.18147737e-03,  -2.60558808e-01,   5.23520055e+00])
+rutile_ppars = array([3.74040625e-03,  -2.85933071e-01,   5.33239733e+00])
+def func(V):
+    V1 = V[0] # rutile volume
+    V2 = V[1] # anatase volume
+    E_rutile = polyval(rutile_epars, V1)
+    E_anatase = polyval(anatase_epars, V2)
+    P_rutile =  polyval(rutile_ppars, V1)
+    P_anatase = polyval(anatase_ppars, V2)
+    return [(E_anatase - E_rutile) / (V1 - V2) - P_anatase,
+            (E_anatase - E_rutile) / (V1 - V2) - P_rutile]
+from scipy.optimize import fsolve
+x0 = fsolve(func, [28, 34])
+print 'The solutions are at V = {0}'.format(x0)
+print 'Anatase pressure: {0} GPa'.format(polyval(anatase_ppars, x0[1]) / GPa)
+print 'Rutile  pressure: {0} GPa'.format(polyval(rutile_ppars, x0[0]) / GPa)
+# illustrate the common tangent
+import matplotlib.pyplot as plt
+vfit = linspace(28, 40)
+plt.plot(vfit, polyval(anatase_epars,vfit), label='anatase')
+plt.plot(vfit, polyval(rutile_epars,vfit), label='rutile')
+plt.plot(x0, [polyval(rutile_epars,x0[0]),
+              polyval(anatase_epars,x0[1])], 'ko-', label='common tangent')
+plt.legend()
+plt.xlabel('Volume ($\AA^3$/f.u.)')
+plt.ylabel('Total energy (eV/f.u.)')
+plt.savefig('images/eos-common-tangent.png')

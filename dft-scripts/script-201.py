@@ -1,17 +1,22 @@
-import numpy as np
-import matplotlib.pyplot as plt
-fcc25 = -1.04
-hcp25 = -0.60
-bridge25 = -0.49
-fcc1 = -0.10
-Dmu = np.linspace(-4, 2)
-plt.plot(Dmu, np.zeros(Dmu.shape), label='Pt(111)')
-plt.plot(Dmu, 0.25 * (fcc25 - 0.5*Dmu), label='fcc - 0.25 ML')
-plt.plot(Dmu, 0.25 * (hcp25 - 0.5*Dmu), label='hcp - 0.25 ML')
-plt.plot(Dmu, 0.25 * (bridge25 - 0.5*Dmu), label='bridge - 0.25 ML')
-plt.plot(Dmu, 1.0 * (fcc1 - 0.5*Dmu), label='fcc - 1.0 ML')
-plt.xlabel(r'$\Delta \mu O_2$ (eV)')
-plt.ylabel(r'$\Delta G_{ads}$ (eV/O)')
-plt.legend(loc='best')
-plt.savefig('images/atomistic-thermo-adsorption.png')
-plt.show()
+from vasp import Vasp
+calc = Vasp('surfaces/Pt-slab-O-fcc')
+calc.clone('Pt-slab-O-fcc-vib-ibrion=6')
+calc.set(ibrion=6,  # finite differences with symmetry
+         nfree=2,  # central differences (default)
+         potim=0.015,  # default as well
+         ediff=1e-8,
+         nsw=1)
+calc.update()
+print 'Elapsed time = {0} seconds'.format(calc.get_elapsed_time())
+f, m = calc.get_vibrational_modes(0)
+allfreq = calc.get_vibrational_modes()[0]
+from ase.units import meV
+c = 3e10  # cm/s
+h = 4.135667516e-15  # eV*s
+print 'For mode 0:'
+print 'vibrational energy = {0} eV'.format(f)
+print 'vibrational energy = {0} meV'.format(f / meV)
+print 'vibrational freq   = {0} 1/s'.format(f / h)
+print 'vibrational freq   = {0} cm^{{-1}}'.format(f / (h * c))
+print
+print 'All energies = ', allfreq

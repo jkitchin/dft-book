@@ -1,14 +1,21 @@
-from jasp import *
-with jasp('surfaces/Cu-110') as calc:
-    slab = calc.get_atoms()
-    eslab = slab.get_potential_energy()
-with jasp('surfaces/Cu-110-missing-row') as calc:
-    missingrow = calc.get_atoms()
-    emissingrow = missingrow.get_potential_energy()
-with jasp('bulk/Cu-fcc') as calc:
-    bulk = calc.get_atoms()
-    ebulk = bulk.get_potential_energy()
-print 'natoms slab        = {0}'.format(len(slab))
-print 'natoms missing row = {0}'.format(len(missingrow))
-print 'natoms bulk        = {0}'.format(len(bulk))
-print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
+from vasp import Vasp
+from ase.lattice.surface import fcc110
+from ase.io import write
+from ase.constraints import FixAtoms
+atoms = fcc110('Au', size=(2, 1, 6), vacuum=10.0)
+del atoms[11]  # delete surface row
+constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms.set_constraint(constraint)
+write('images/Au-110-missing-row.png',
+      atoms.repeat((2, 2, 1)),
+      rotation='-90x',
+      show_unit_cell=2)
+calc = Vasp('surfaces/Au-110-missing-row',
+           xc='PBE',
+           kpts=[6, 6, 1],
+           encut=350,
+           ibrion=2,
+           isif=2,
+           nsw=10,
+           atoms=atoms)
+calc.update()

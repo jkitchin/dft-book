@@ -1,13 +1,30 @@
-#!/bin/bash
-# reformat intensities, just normal modes: 3N -> (3N-6)
-printf "..reformatting and normalizing intensities"
-cd intensities/results/
-nlns=`wc -l exact.res.txt | awk '{print $1}' `; let bodylns=nlns-6
-head -n $bodylns exact.res.txt > temp.reform.res.txt
-max=`awk '(NR==1){max=$3} $3>=max {max=$3} END {print max}' temp.reform.res.txt`
-awk -v max="$max" '{print $1,$2,$3/max}' temp.reform.res.txt > exact.reform.res.txt
-awk -v max="$max" '{printf "%03u %6.1f %5.3f\n",$1,$2,$3/max}' temp.reform.res.txt > reform.res.txt
-printf " ..done\n..normal modes:\n"
-rm temp.reform.res.txt
-cat reform.res.txt
-cd ../..
+# <<water-vib>>
+# adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
+from ase import Atoms, Atom
+from vasp import Vasp
+import ase.units
+atoms = Atoms([Atom('H', [0.5960812,  -0.7677068,   0.0000000]),
+               Atom('O', [0.0000000,   0.0000000,   0.0000000]),
+               Atom('H', [0.5960812,   0.7677068,   0.0000000])],
+               cell=(8, 8, 8))
+atoms.center()
+calc = Vasp('molecules/h2o_vib',
+            xc='PBE',
+            encut=400,
+            ismear=0,     # Gaussian smearing
+            ibrion=6,     # finite differences with symmetry
+            nfree=2,      # central differences (default)
+            potim=0.015,  # default as well
+            ediff=1e-8,   # for vibrations you need precise energies
+            nsw=1,        # Set to 1 for vibrational calculation
+            atoms=atoms)
+print('Forces')
+print('======')
+print(atoms.get_forces())
+print('')
+calc.stop_if(calc.potential_energy is None)
+# vibrational energies are in eV
+energies, modes = calc.get_vibrational_modes()
+print('energies\n========')
+for i, e in enumerate(energies):
+    print('{0:02d}: {1} eV'.format(i, e))

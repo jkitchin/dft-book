@@ -1,13 +1,13 @@
-import matplotlib.pyplot as plt
-import numpy as np
-from ase.units import *
-atm = 101325 * Pascal #atm is not defined in units
-K = 1 # Kelvin
-# examine range over 10^-10 to 10^10 atm
-P = np.logspace(-10, 10) * atm
-plt.semilogx(P / atm, kB * (300 * K) * np.log(P / (1 * atm)), label='300K')
-plt.semilogx(P / atm, kB * (600 * K) * np.log(P / (1 * atm)), label='600K')
-plt.xlabel('Pressure (atm)')
-plt.ylabel(r'$\Delta G$ (eV)')
-plt.legend(loc='best')
-plt.savefig('images/O2-g-p.png')
+from vasp import Vasp
+from ase.io import write
+from ase.lattice.surface import fcc111
+from ase.constraints import FixAtoms
+atoms = fcc111('Pt', size=(1, 1, 3), vacuum=10.0)
+constraint = FixAtoms(mask=[True for atom in atoms])
+atoms.set_constraint(constraint)
+write('images/Pt-fcc-1ML.png', atoms, show_unit_cell=2)
+print(Vasp('surfaces/Pt-slab-1x1',
+           xc='PBE',
+           kpts=[8, 8, 1],
+           encut=350,
+           atoms=atoms).potential_energy)

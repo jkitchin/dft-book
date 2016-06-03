@@ -1,5 +1,5 @@
-from ase.units import *
-K = 1.0
-print J, mol, K
-print 0.100 * kJ / mol / K
-print 1 * eV / (kJ / mol)
+from ase.io import read, write
+atoms = read('surfaces/Pt-slab-O-bridge/POSCAR')
+write('images/Pt-o-brige-ori.png', atoms, show_unit_cell=2)
+atoms = read('surfaces/Pt-slab-O-bridge/CONTCAR')
+write('images/Pt-o-brige-final.png', atoms, show_unit_cell=2)

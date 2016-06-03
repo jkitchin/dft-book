@@ -1,23 +1,23 @@
+# use splines to fit and interpolate data
+from scipy.interpolate import interp1d
+from scipy.optimize import fmin
 import numpy as np
 import matplotlib.pyplot as plt
-x = np.linspace(0,2*np.pi,100)
-y = np.sin(x)
-dy_analytical = np.cos(x)
-# we need to specify the size of dy ahead because diff returns
-#an array of n-1 elements
-dy = np.zeros(y.shape,np.float) #we know it will be this size
-dy[0:-1] = np.diff(y)/np.diff(x)
-dy[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
-'''
-calculate dy by center differencing using array slices
-'''
-dy2 = np.zeros(y.shape,np.float) #we know it will be this size
-dy2[1:-1] = (y[2:] - y[0:-2])/(x[2:] - x[0:-2])
-dy2[0] = (y[1]-y[0])/(x[1]-x[0])
-dy2[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
-plt.plot(x,y)
-plt.plot(x,dy_analytical,label='analytical derivative')
-plt.plot(x,dy,label='forward diff')
-plt.plot(x,dy2,'k--',lw=2,label='centered diff')
-plt.legend(loc='lower left')
-plt.savefig('images/vectorized-diffs.png')
+x = np.array([ 0,      1,      2,      3,      4    ])
+y = np.array([ 0.,     0.308,  0.55,   0.546,  0.44 ])
+# create the interpolating function
+f = interp1d(x, y, kind='cubic', bounds_error=False)
+# to find the maximum, we minimize the negative of the function. We
+# cannot just multiply f by -1, so we create a new function here.
+f2 = interp1d(x, -y, kind='cubic')
+xmax = fmin(f2, 2.5)
+xfit = np.linspace(0,4)
+plt.plot(x,y,'bo')
+plt.plot(xfit, f(xfit),'r-')
+plt.plot(xmax, f(xmax),'g*')
+plt.legend(['data','fit','max'], loc='best', numpoints=1)
+plt.xlabel('x data')
+plt.ylabel('y data')
+plt.title('Max point = ({0:1.2f}, {1:1.2f})'.format(float(xmax),
+                                                    float(f(xmax))))
+plt.savefig('images/splinefit.png')

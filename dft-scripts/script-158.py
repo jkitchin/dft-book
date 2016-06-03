@@ -1,16 +1,15 @@
-from jasp import *
-from ase.lattice.surface import fcc111
-from ase.constraints import FixAtoms
-atoms = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
-constraint = FixAtoms(mask=[atom.tag >= 3 for atom in atoms])
-atoms.set_constraint(constraint)
-with jasp('surfaces/Al-slab-relaxed',
-          xc='PBE',
-          kpts=(6, 6, 1),
-          encut=350,
-          ibrion=2,
-          isif=2,
-          nsw=10,
-          atoms=atoms) as calc:
-    calc.calculate()
-    print calc
+from vasp import Vasp
+from ase.lattice.cubic import BodyCenteredCubic
+atoms = BodyCenteredCubic(directions=[[1, 0, 0],
+                                      [0, 1, 0],
+                                      [0, 0, 1]],
+                                      size=(1, 1, 1),
+                                      symbol='Fe')
+calc = Vasp('bulk/Fe-bcc-fixedmagmom-{0:1.2f}'.format(0.0),
+            xc='PBE',
+            encut=300,
+            kpts=[4, 4, 4],
+            ispin=2,
+            nupdown=0,
+            atoms=atoms)
+print(atoms.get_potential_energy())

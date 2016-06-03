@@ -1,9 +1,8 @@
 from ase.structure import molecule
 from ase.io import write
-atoms = molecule('CH3CN')
-atoms.center(vacuum=6)
-print('unit cell')
-print('---------')
-print(atoms.get_cell())
-write('images/ch3cn-rotated.png', atoms,
-      show_unit_cell=2, rotation='45x,45y,0z')
+atoms1 = molecule('NH3')
+atoms2 = molecule('O2')
+atoms2.translate([3, 0, 0])
+bothatoms = atoms1 + atoms2
+bothatoms.center(5)
+write('images/bothatoms.png', bothatoms, show_unit_cell=2, rotation='90x')

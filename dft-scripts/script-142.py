@@ -1,57 +1,29 @@
-from ase import Atoms, Atom
-from jasp import *
-from ase.calculators.vasp import VaspDos
-import sys
-import matplotlib.pyplot as plt
+# run CuO calculation
+from vasp import Vasp
+from ase import Atom, Atoms
 import numpy as np
-a = 3.9  # approximate lattice constant
-b = a / 2.
-bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
-             cell=[(0, b, b),
-                   (b, 0, b),
-                   (b, b, 0)])
-RWIGS = [1.0, 1.1, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0 ]
-ED, WD, N = [], [], []
-for rwigs in RWIGS:
-    with jasp('bulk/pd-ados') as calc:
-        calc.clone('bulk/pd-ados-rwigs-{0}'.format(rwigs))
-    with jasp('bulk/pd-ados-rwigs-{0}'.format(rwigs)) as calc:
-        calc.set(rwigs=[rwigs])
-        try:
-            calc.calculate()
-        except (VaspSubmitted, VaspQueued):
-            continue
-        # now get results
-        ados = VaspDos(efermi=calc.get_fermi_level())
-        energies = ados.energy
-        dos = ados.site_dos(0, 'd')
-        #we will select energies in the range of -10, 5
-        ind = (energies < 5) & (energies > -10)
-        energies = energies[ind]
-        dos = dos[ind]
-        Nstates = np.trapz(dos, energies)
-        occupied = energies <= 0.0
-        N_occupied_states = np.trapz(dos[occupied], energies[occupied])
-        ed = np.trapz(energies * dos, energies) / np.trapz(dos, energies)
-        wd2 = np.trapz(energies**2 * dos, energies) / np.trapz(dos, energies)
-        N.append(N_occupied_states)
-        ED.append(ed)
-        WD.append(wd2**0.5)
-plt.plot(RWIGS, N, 'bo', label='N. occupied states')
-plt.legend(loc='best')
-plt.xlabel('RWIGS ($\AA$)')
-plt.ylabel('# occupied states')
-plt.savefig('images/ados-rwigs-occupation.png')
-fig, ax1 = plt.subplots()
-ax1.plot(RWIGS, ED, 'bo', label='d-band center (eV)')
-ax1.set_xlabel('RWIGS ($\AA$)')
-ax1.set_ylabel('d-band center (eV)', color='b')
-for tl in ax1.get_yticklabels():
-    tl.set_color('b')
-ax2 = ax1.twinx()
-ax2.plot(RWIGS, WD, 'gs', label='d-band width (eV)')
-ax2.set_ylabel('d-band width (eV)', color='g')
-for tl in ax2.get_yticklabels():
-    tl.set_color('g')
-plt.savefig('images/ados-rwigs-moments.png')
-plt.show()
+# CuO
+# http://cst-www.nrl.navy.mil/lattice/struk/b26.html
+# http://www.springermaterials.com/docs/info/10681727_51.html
+a = 4.6837
+b = 3.4226
+c = 5.1288
+beta = 99.54/180*np.pi
+y = 0.5819
+a1 = np.array([0.5*a, -0.5*b, 0.0])
+a2 = np.array([0.5*a, 0.5*b, 0.0])
+a3 = np.array([c*np.cos(beta), 0.0, c*np.sin(beta)])
+atoms = Atoms([Atom('Cu', 0.5*a2),
+               Atom('Cu', 0.5*a1 + 0.5*a3),
+               Atom('O', -y*a1 + y*a2 + 0.25*a3),
+               Atom('O',  y*a1 - y*a2 - 0.25*a3)],
+               cell=(a1, a2, a3))
+calc = Vasp('bulk/CuO',
+            encut=400,
+            kpts=[8, 8, 8],
+            ibrion=2,
+            isif=3,
+            nsw=30,
+            xc='PBE',
+            atoms=atoms)
+print(atoms.get_potential_energy())

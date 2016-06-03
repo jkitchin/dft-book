@@ -1,8 +1,13 @@
 from ase import Atoms, Atom
-from ase.io import write
-# define an Atoms object
+import numpy as np
+b = 7.1
 atoms = Atoms([Atom('C', [0., 0., 0.]),
                Atom('O', [1.1, 0., 0.])],
-              cell=(10, 10, 10))
-print('V = {0:1.0f} Angstrom^3'.format(atoms.get_volume()))
-write('images/simple-cubic-cell.png', atoms, show_unit_cell=2)
+              cell=[[b, b, 0.],
+                    [b, 0., b],
+                    [0., b, b]])
+# get unit cell vectors and their lengths
+(a1, a2, a3) = atoms.get_cell()
+print('|a1| = {0:1.2f} Ang'.format(np.sum(a1**2)**0.5))
+print('|a2| = {0:1.2f} Ang'.format(np.linalg.norm(a2)))
+print('|a3| = {0:1.2f} Ang'.format(np.sum(a3**2)**0.5))

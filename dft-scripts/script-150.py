@@ -1,25 +1,46 @@
-from jasp import *
-from ase.lattice.cubic import BodyCenteredCubic
-atoms = BodyCenteredCubic(directions=[[1, 0, 0],
-                                      [0, 1, 0],
-                                      [0, 0, 1]],
-                                      size=(1, 1, 1),
-                                      symbol='Fe')
-# set magnetic moments on each atom
-for atom in atoms:
-    atom.magmom = 2.5
-with jasp('bulk/Fe-bcc-sp-1',
-          xc='PBE',
-          encut=300,
-          kpts=(4, 4, 4),
-          ispin=2,
-          lorbit=11, # you need this for individual magnetic moments
-          atoms=atoms) as calc:
-        try:
-            e = atoms.get_potential_energy()
-            B = atoms.get_magnetic_moment()
-            magmoms = atoms.get_magnetic_moments()
-        except (VaspSubmitted, VaspQueued):
-            pass
-print 'Total magnetic moment is {0:1.2f} Bohr-magnetons'.format(B)
-print 'Individual moments are {0} Bohr-magnetons'.format(magmoms)
+from ase import Atoms, Atom
+from vasp import Vasp
+import matplotlib.pyplot as plt
+import numpy as np
+a = 3.9  # approximate lattice constant
+b = a / 2.
+bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
+             cell=[(0, b, b),
+                   (b, 0, b),
+                   (b, b, 0)])
+calc = Vasp('bulk/pd-ados',
+            encut=300,
+            xc='PBE',
+            lreal=False,
+            rwigs={'Pd': 1.5},  # wigner-seitz radii for ados
+            kpts=[8, 8, 8],
+            atoms=bulk)
+# this runs the calculation
+calc.wait(abort=True)
+# now get results
+energies, ados = calc.get_ados(0, 'd')
+# we will select energies in the range of -10, 5
+ind = (energies < 5) & (energies > -10)
+energies = energies[ind]
+dos = ados[ind]
+Nstates = np.trapz(dos, energies)
+occupied = energies <= 0.0
+N_occupied_states = np.trapz(dos[occupied], energies[occupied])
+# first moment
+ed = np.trapz(energies * dos, energies) / Nstates
+# second moment
+wd2 = np.trapz(energies**2 * dos, energies) / Nstates
+print 'Total # states = {0:1.2f}'.format(Nstates)
+print 'number of occupied states = {0:1.2f}'.format(N_occupied_states)
+print 'd-band center = {0:1.2f} eV'.format(ed)
+print 'd-band width  = {0:1.2f} eV'.format(np.sqrt(wd2))
+# plot the d-band
+plt.plot(energies, dos, label='$d$-orbitals')
+# plot the occupied states in shaded gray
+plt.fill_between(x=energies[occupied],
+                 y1=dos[occupied],
+                 y2=np.zeros(dos[occupied].shape),
+                 color='gray', alpha=0.25)
+plt.xlabel('$E - E_f$ (eV)')
+plt.ylabel('DOS (arbitrary units)')
+plt.savefig('images/pd-ados.png')

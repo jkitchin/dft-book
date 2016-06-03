@@ -1,9 +1,15 @@
-from jasp import *
-with jasp('bulk/alloy/cupd-1') as calc:
-    atoms = calc.get_atoms()
-    e1 = atoms.get_potential_energy()/len(atoms)
-with jasp('bulk/alloy/cupd-2') as calc:
-    atoms = calc.get_atoms()
-    e2 = atoms.get_potential_energy()/len(atoms)
-print 'cupd-1: {0} eV/atom'.format(e1)
-print 'cupd-2: {0} eV/atom'.format(e2)
+from vasp import Vasp
+calc = Vasp('bulk/Al-bulk')
+calc.clone('bulk/Al-elastic')
+calc.set(ibrion=6,    #
+         isif=3,      # gets elastic constants
+         potim=0.015,  # displacements
+         nsw=1,
+         nfree=2)
+calc.wait(abort=True)
+EM = calc.get_elastic_moduli()
+print(EM)
+c11 = EM[0, 0]
+c12 = EM[0, 1]
+B = (c11 + 2 * c12) / 3.0
+print(B)

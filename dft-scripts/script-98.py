@@ -1,14 +1,17 @@
-from jasp import *
+from vasp import Vasp
 from ase import Atom, Atoms
-LC = [2.75, 2.8, 2.85, 2.9, 2.95, 3.0]
-for a in LC:
-    atoms = Atoms([Atom('Cu', [0, 0, 0])],
-                  cell=0.5 * a * np.array([[ 1.0,  1.0, -1.0],
-                                           [-1.0,  1.0,  1.0],
-                                           [ 1.0, -1.0,  1.0]]))
-    with jasp('bulk/Cu-bcc-{0}'.format(a),
-              xc='PBE',
-              encut=350,
-              kpts=(8, 8, 8),
-              atoms=atoms) as calc:
-        calc.calculate()
+atoms = Atoms([Atom('Cu',  [0.000, 0.000, 0.000])],
+              cell= [[1.818, 0.000, 1.818],
+                     [1.818, 1.818, 0.000],
+                     [0.000, 1.818, 1.818]])
+calc = Vasp('bulk/alloy/cu',
+            xc='PBE',
+            encut=350,
+            kpts=[13, 13, 13],
+            nbands=9,
+            ibrion=2,
+            isif=4,
+            nsw=10,
+            atoms=atoms)
+print(calc.get_valence_electrons())
+print(calc.potential_energy)

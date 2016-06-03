@@ -1,30 +1,67 @@
+from vasp import Vasp
 import numpy as np
+calc = Vasp('molecules/co-centered')
+atoms = calc.get_atoms()
+x, y, z, cd = calc.get_charge_density()
+def interp3d(x,y,z,cd,xi,yi,zi):
+    '''
+    interpolate a cubic 3D grid defined by x,y,z,cd at the point
+    (xi,yi,zi)
+    '''
+    def get_index(value,vector):
+        '''
+        assumes vector ordered decreasing to increasing. A bisection
+        search would be faster.
+        '''
+        for i,val in enumerate(vector):
+            if val > value:
+                return i-1
+        return None
+    xv = x[:,0,0]
+    yv = y[0,:,0]
+    zv = z[0,0,:]
+    a,b,c = xi, yi, zi
+    i = get_index(a,xv)
+    j = get_index(b,yv)
+    k = get_index(c,zv)
+    x1 = x[i,j,k]
+    x2 = x[i+1,j,k]
+    y1 = y[i,j,k]
+    y2 = y[i,j+1,k]
+    z1 = z[i,j,k]
+    z2 = z[i,j,k+1]
+    u1 = cd[i, j, k]
+    u2 = cd[i+1, j, k]
+    u3 = cd[i, j+1, k]
+    u4 = cd[i+1, j+1, k]
+    u5 = cd[i, j, k+1]
+    u6 = cd[i+1, j, k+1]
+    u7 = cd[i, j+1, k+1]
+    u8 = cd[i+1, j+1, k+1]
+    w1 = u2 + (u2-u1)/(x2-x1)*(a-x2)
+    w2 = u4 + (u4-u3)/(x2-x1)*(a-x2)
+    w3 = w2 + (w2-w1)/(y2-y1)*(b-y2)
+    w4 = u5 + (u6-u5)/(x2-x1)*(a-x1)
+    w5 = u7 + (u8-u7)/(x2-x1)*(a-x1)
+    w6 = w4 + (w5-w4)/(y2-y1)*(b-y1)
+    w7 = w3 + (w6-w3)/(z2-z1)*(c-z1)
+    u = w7
+    return u
+pos = atoms.get_positions()
+P1 = np.array([0.0, 5.0, 5.0])
+P2 = np.array([9.0, 5.0, 5.0])
+npoints = 60
+points = [P1 + n*(P2-P1)/npoints for n in range(npoints)]
+R = [np.linalg.norm(p-P1) for p in points]
+# interpolated line
+icd = [interp3d(x,y,z,cd,p[0],p[1],p[2]) for p in points]
 import matplotlib.pyplot as plt
-x = np.linspace(0,2*np.pi,100)
-y = np.sin(x) + 0.1*np.random.random(size=x.shape)
-dy_analytical = np.cos(x)
-#2-point formula
-dyf = [0.0]*len(x)
-for i in range(len(y)-1):
-    dyf[i] = (y[i+1] - y[i])/(x[i+1]-x[i])
-#set last element by backwards difference
-dyf[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
-'''
-calculate dy by 4-point center differencing using array slices
-\frac{y[i-2] - 8y[i-1] + 8[i+1] - y[i+2]}{12h}
-y[0] and y[1] must be defined by lower order methods
-and y[-1] and y[-2] must be defined by lower order methods
-'''
-dy = np.zeros(y.shape,np.float) #we know it will be this size
-h = x[1]-x[0] #this assumes the points are evenely spaced!
-dy[2:-2] = (y[0:-4] - 8*y[1:-3] + 8*y[3:-1] - y[4:])/(12.*h)
-dy[0] = (y[1]-y[0])/(x[1]-x[0])
-dy[1] = (y[2]-y[1])/(x[2]-x[1])
-dy[-2] = (y[-2] - y[-3])/(x[-2] - x[-3])
-dy[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
-plt.plot(x,y)
-plt.plot(x,dy_analytical,label='analytical derivative')
-plt.plot(x,dyf,'r-',label='2pt-forward diff')
-plt.plot(x,dy,'k--',lw=2,label='4pt-centered diff')
-plt.legend(loc='lower left')
-plt.savefig('images/multipt-diff.png')
+plt.plot(R, icd)
+cR = np.linalg.norm(pos[0] - P1)
+oR = np.linalg.norm(pos[1] - P1)
+plt.plot([cR, cR], [0, 2], 'r-') #markers for where the nuclei are
+plt.plot([oR, oR], [0, 8], 'r-')
+plt.xlabel('|R| ($\AA$)')
+plt.ylabel('Charge density (e/$\AA^3$)')
+plt.savefig('images/CO-charge-density.png')
+plt.show()

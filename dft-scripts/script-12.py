@@ -1,23 +1,16 @@
 from ase.structure import molecule
-atoms = molecule('C6H6')  # benzene
-# access properties on each atom
-print(' #  sym   p_x     p_y     p_z')
-print('------------------------------')
-for i, atom in enumerate(atoms):
-   print('{0:3d}{1:^4s}{2:-8.2f}{3:-8.2f}{4:-8.2f}'.format(i,
-                                                           atom.symbol,
-                                                           atom.x,
-                                                           atom.y,
-                                                           atom.z))
-# get all properties in arrays
-sym = atoms.get_chemical_symbols()
-pos = atoms.get_positions()
-num = atoms.get_atomic_numbers()
-atom_indices = range(len(atoms))
-print()
-print('  # sym    at#    p_x     p_y     p_z')
-print('-------------------------------------')
-for i, s, n, p in zip(atom_indices, sym, num, pos):
-    px, py, pz = p
-    print('{0:3d}{1:>3s}{2:8d}{3:-8.2f}{4:-8.2f}{5:-8.2f}'.format(i, s, n,
-                                                                  px, py, pz))
+import numpy as np
+# ammonia
+atoms = molecule('NH3')
+  # cartesian coordinates
+print('COM1 = {0}'.format(atoms.get_center_of_mass()))
+# compute the center of mass by hand
+pos = atoms.positions
+masses = atoms.get_masses()
+COM = np.array([0., 0., 0.])
+for m, p in zip(masses, pos):
+    COM += m*p
+COM /= masses.sum()
+print('COM2 = {0}'.format(COM))
+# one-line linear algebra definition of COM
+print('COM3 = {0}'.format(np.dot(masses, pos) / np.sum(masses)))

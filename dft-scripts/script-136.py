@@ -1,5 +1,9 @@
-from ase import Atoms
-atoms = Atoms('Cu2O')
-MW = atoms.get_masses().sum()
-H = 1.  # kJ/g
-print 'rxn energy = {0:1.1f} eV'.format(-2 * H * MW / 96.4)  # convert to eV
+from vasp import Vasp
+calc = Vasp('bulk/alloy/cupd-1')
+atoms = calc.get_atoms()
+e1 = atoms.get_potential_energy()/len(atoms)
+calc = Vasp('bulk/alloy/cupd-2')
+atoms = calc.get_atoms()
+e2 = atoms.get_potential_energy()/len(atoms)
+print 'cupd-1: {0} eV/atom'.format(e1)
+print 'cupd-2: {0} eV/atom'.format(e2)

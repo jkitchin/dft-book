@@ -1,24 +1,29 @@
-from jasp import *
+from vasp import Vasp
+from ase import Atom, Atoms
+import numpy as np
+# fcc
+LC = [3.5, 3.55, 3.6, 3.65, 3.7, 3.75]
+fcc_energies = []
+ready = True
+for a in LC:
+    atoms = Atoms([Atom('Cu', (0, 0, 0))],
+                  cell=0.5 * a * np.array([[1.0, 1.0, 0.0],
+                                           [0.0, 1.0, 1.0],
+                                           [1.0, 0.0, 1.0]]))
+    calc = Vasp('bulk/Cu-{0}'.format(a),
+                xc='PBE',
+                encut=350,
+                kpts=[8, 8, 8],
+                atoms=atoms)
+    e = atoms.get_potential_energy()
+    fcc_energies.append(e)
+calc.stop_if(None in fcc_energies)
 import matplotlib.pyplot as plt
-x = [2.5, 2.6, 2.7, 2.8, 2.9]
-y = [1.4, 1.5, 1.6, 1.7, 1.8]
-X,Y = np.meshgrid(x, y)
-Z = np.zeros(X.shape)
-for i,a in enumerate(x):
-    for j,covera in enumerate(y):
-        wd = 'bulk/Ru/{0:1.2f}-{1:1.2f}'.format(a,covera)
-        with jasp(wd) as calc:
-            atoms = calc.get_atoms()
-            try:
-                Z[i][j] = atoms.get_potential_energy()
-            except (VaspSubmitted, VaspQueued):
-                pass
-cf = plt.contourf(X, Y, Z, 20,
-                  cmap=plt.cm.jet)
-cbar = plt.colorbar(cf)
-cbar.ax.set_ylabel('Energy (eV)')
-plt.xlabel('$a$ ($\AA$)')
-plt.ylabel('$c/a$')
-plt.legend()
-plt.savefig('images/ru-contourf.png')
-plt.show()
+plt.plot(LC, fcc_energies)
+plt.xlabel('Lattice constant ($\AA$)')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/Cu-fcc.png')
+print '#+tblname: cu-fcc-energies'
+print r'| lattice constant ($\AA$) | Total Energy (eV) |'
+for lc, e in zip(LC, fcc_energies):
+    print '| {0} | {1} |'.format(lc, e)
