@@ -7,7 +7,7 @@
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <url>
   <loc>http://kitchingroup.cheme.cmu.edu/dft-book/</loc>
-  <lastmod>2016-05-24T14:42:00Z</lastmod>
+  <lastmod>2016-06-03T16:56:00Z</lastmod>
  </url>
  <url>
   <loc>http://kitchingroup.cheme.cmu.edu/dft-book/2016/</loc>
@@ -15,7 +15,7 @@
  </url>
  <url>
   <loc>http://kitchingroup.cheme.cmu.edu/dft-book/archive.html</loc>
-  <lastmod>2016-05-28T21:47:00Z</lastmod>
+  <lastmod>2016-06-03T16:59:00Z</lastmod>
  </url>
  <url>
   <loc>http://kitchingroup.cheme.cmu.edu/dft-book/categories/</loc>
@@ -40,6 +40,10 @@
  <url>
   <loc>http://kitchingroup.cheme.cmu.edu/dft-book/categories/functional/</loc>
   <lastmod>2016-05-24T14:41:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://kitchingroup.cheme.cmu.edu/dft-book/dft.html</loc>
+  <lastmod>2016-06-03T16:55:00Z</lastmod>
  </url>
  <url>
   <loc>http://kitchingroup.cheme.cmu.edu/dft-book/galleries/</loc>
