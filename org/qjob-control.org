@@ -78,6 +78,44 @@ Here is the output from one of those calculations. Note the path is an org-link,
 
 #+BEGIN_SRC python
 from vasp import Vasp
+c= Vasp('molecules/co-n00')
+c.describe()
+c.view()
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+encut = 520:
+  Planewave cutoff in eV. (float)
+
+ismear = 1:
+  ISMEAR determines how the partial occupancies are set (int).
+
+kpts = [1, 1, 1]:
+  Sets k-points. Not a Vasp keyword. (list)
+
+lcharg = False:
+  LCHARG determines whether CHGCAR and CHG are written. (boolean)
+
+lwave = False:
+  LWAVE determines whether the WAVECAR is written. (Boolean)
+
+nbands = 6:
+  NBANDS determines the actual number of bands in the calculation. (int)
+
+pp = PBE:
+  Determines where POTCARS are retrieved from. (string)
+
+sigma = 0.2:
+  SIGMA determines the width of the smearing in eV. (float)
+
+xc = pbe:
+  Set exchange-correlation functional. (string)
+
+#+end_example
+
+#+BEGIN_SRC python
+from vasp import Vasp
 print(Vasp('molecules/co-n00'))
 #+END_SRC
 
@@ -267,7 +305,7 @@ calc.xterm()
 
 #+RESULTS:
 
-*** calc.qoutout()
+*** calc.qoutput()
 Returns contents of the queue output file if it exists. May be useful to debug.
 
 #+BEGIN_SRC python
