@@ -1,5 +1,13 @@
 from vasp import Vasp
-eslab = Vasp('surfaces/Ag-110').potential_energy
-emissingrow = Vasp('surfaces/Ag-110-missing-row').potential_energy
-ebulk = Vasp('bulk/Ag-fcc').potential_energy
-print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
+from ase.visualize import view
+from ase.lattice.cubic import FaceCenteredCubic
+atoms = FaceCenteredCubic(directions=[[0, 1, 1],
+                                      [1, 0, 1],
+                                      [1, 1, 0]],
+                                      size=(1, 1, 1),
+                                      symbol='Ag')
+Vasp('bulk/Ag-fcc',
+     xc='PBE',
+     encut=350,
+     kpts=[12, 12, 12],
+     atoms=atoms).update()

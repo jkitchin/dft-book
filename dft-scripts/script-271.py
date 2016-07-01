@@ -1,10 +1,16 @@
 import numpy as np
-a1 = [2, 0, 0]
-a2 = [1, 1, 0]
-a3 = [0, 0, 10]
-uc = np.array([a1, a2, a3])
-print('V = {0} ang^3 from dot/cross'.format(np.dot(np.cross(a1,a2),a3)))
-print('V = {0} ang^3 from det'.format(np.linalg.det(uc)))
-from ase import Atoms
-atoms = Atoms([],cell=uc) #empty list of atoms
-print('V = {0} ang^3 from get_volume'.format(atoms.get_volume()))
+from Scientific.Geometry import Vector
+A = Vector([1, 1, 1])   # Scientfic
+a = np.array([1, 1, 1])  # numpy
+B = Vector([0.0, 1.0, 0.0])
+print('|A| = ', A.length())        # Scientific Python way
+print('|a| = ', np.sum(a**2)**0.5)  # numpy way
+print('|a| = ', np.linalg.norm(a))  # numpy way 2
+print('ScientificPython angle = ', A.angle(B))  # in radians
+print ('numpy angle = {}',
+       np.arccos(np.dot(a / np.linalg.norm(a),
+                        B / np.linalg.norm(B))))
+# cross products
+print('Scientific A .cross. B = ', A.cross(B))
+# you can use Vectors in numpy
+print('numpy A .cross. B      = ', np.cross(A,B))

@@ -1,36 +1,32 @@
+# get bulk Cu and Pd energies. <<pure-metal-components>>
 from vasp import Vasp
 from ase import Atom, Atoms
-atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
-               Atom('Pd',  [-1.652,     0.000,      2.039])],
-              cell=  [[0.000, -2.039,  2.039],
-                      [0.000,  2.039,  2.039],
-                      [-3.303,  0.000,  0.000]])
-calc = Vasp('bulk/alloy/cupd-1',
-            xc='PBE',
-            encut=350,
-            kpts=[12, 12, 8],
-            nbands=17,
-            ibrion=2,
-            isif=3,
-            nsw=10,
-            atoms=atoms)
-cupd1 = atoms.get_potential_energy()
-atoms = Atoms([Atom('Cu',  [-0.049,     0.049,      0.049]),
-               Atom('Cu',  [-11.170,   11.170,     11.170]),
-               Atom('Pd',  [-7.415,     7.415,      7.415]),
-               Atom('Pd',  [-3.804 ,    3.804,      3.804])],
-              cell=[[-5.629,  3.701,  5.629 ],
-                    [-3.701,  5.629,  5.629 ],
-                    [-5.629,  5.629,  3.701 ]])
-calc = Vasp('bulk/alloy/cupd-2',
-            xc='PBE',
-            encut=350,
-            kpts=[8, 8, 8],
-            nbands=34,
-            ibrion=2,
-            isif=3,
-            nsw=10,
-            atoms=atoms)
-cupd2 = atoms.get_potential_energy()
-print 'cupd-1 = {0} eV'.format(cupd1)
-print 'cupd-2 = {0} eV'.format(cupd2)
+atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000])],
+              cell=  [[ 1.818,  0.000,  1.818],
+                      [ 1.818,  1.818,  0.000],
+                      [ 0.000,  1.818,  1.818]])
+cuc = Vasp('bulk/alloy/cu',
+          xc='PBE',
+          encut=350,
+          kpts=[13, 13, 13],
+          nbands=9,
+          ibrion=2,
+          isif=3,
+          nsw=10,
+          atoms=atoms)
+cu = cuc.potential_energy
+atoms = Atoms([Atom('Pd',  [0.000,      0.000,      0.000])],
+              cell=[[ 1.978,  0.000,  1.978],
+                    [ 1.978,  1.978,  0.000],
+                    [0.000,  1.978,  1.978]])
+pd = Vasp('bulk/alloy/pd',
+          xc='PBE',
+          encut=350,
+          kpts=[13, 13, 13],
+          nbands=9,
+          ibrion=2,
+          isif=3,
+          nsw=10,
+          atoms=atoms).potential_energy
+print 'Cu energy = {0} eV'.format(cu)
+print 'Pd energy = {0} eV'.format(pd)

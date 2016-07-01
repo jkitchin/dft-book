@@ -1,29 +1,37 @@
+# compute local potential with dipole calculation on
+from ase.lattice.surface import fcc111, add_adsorbate
 from vasp import Vasp
-import matplotlib.pyplot as plt
-calc = Vasp('surfaces/Al-Na-nodip')
-atoms = calc.get_atoms()
-x, y, z, lp = calc.get_local_potential()
-nx, ny, nz = lp.shape
-axy_1 = [np.average(lp[:, :, z]) for z in range(nz)]
-# setup the x-axis in realspace
-uc = atoms.get_cell()
-xaxis_1 = np.linspace(0, uc[2][2], nz)
-e1 = atoms.get_potential_energy()
-calc = Vasp('surfaces/Al-Na-dip-step2')
-atoms = calc.get_atoms()
-x, y, z, lp = calc.get_local_potential()
-nx, ny, nz = lp.shape
-axy_2 = [np.average(lp[:, :, z]) for z in range(nz)]
-# setup the x-axis in realspace
-uc = atoms.get_cell()
-xaxis_2 = np.linspace(0, uc[2][2], nz)
-ef2 = calc.get_fermi_level()
-e2 = atoms.get_potential_energy()
-print 'The difference in energy is {0} eV.'.format(e2-e1)
-plt.plot(xaxis_1, axy_1, label='no dipole correction')
-plt.plot(xaxis_2, axy_2, label='dipole correction')
-plt.plot([min(xaxis_2), max(xaxis_2)], [ef2, ef2], 'k:', label='Fermi level')
-plt.xlabel('z ($\AA$)')
-plt.ylabel('xy-averaged electrostatic potential')
-plt.legend(loc='best')
-plt.savefig('images/dip-vs-nodip-esp.png')
+import numpy as np
+slab = fcc111('Al', size=(2, 2, 2), vacuum=10.0)
+add_adsorbate(slab, 'Na', height=1.2, position='fcc')
+slab.center()
+calc = Vasp('surfaces/Al-Na-dip',
+            xc='PBE',
+            encut=340,
+            kpts=[2, 2, 1],
+            lcharg=True,
+            idipol=3,   # only along z-axis
+            lvtot=True,  # write out local potential
+            lvhar=True,  # write out only electrostatic potential, not xc pot
+            atoms=slab)
+calc.stop_if(calc.potential_energy is None)
+x, y, z, cd = calc.get_charge_density()
+n0, n1, n2 = cd.shape
+nelements = n0 * n1 * n2
+voxel_volume = slab.get_volume() / nelements
+total_electron_charge = cd.sum() * voxel_volume
+electron_density_center = np.array([(cd * x).sum(),
+                                    (cd * y).sum(),
+                                    (cd * z).sum()])
+electron_density_center *= voxel_volume
+electron_density_center /= total_electron_charge
+print 'electron-density center = {0}'.format(electron_density_center)
+uc = slab.get_cell()
+# get scaled electron charge density center
+sedc = np.dot(np.linalg.inv(uc.T), electron_density_center.T).T
+# we only write 4 decimal places out to the INCAR file, so we round here.
+sedc = np.round(sedc, 4)
+calc.clone('surfaces/Al-Na-dip-step2')
+# now run step 2 with dipole set at scaled electron charge density center
+calc.set(ldipol=True, dipol=sedc)
+print(calc.potential_energy)

@@ -1,34 +1,24 @@
-#!/usr/bin/env python
 import multiprocessing
 from vasp import Vasp
-from vasp.vasprc import VASPRC
 from ase import Atom, Atoms
 from ase.utils.eos import EquationOfState
 import numpy as np
-VASPRC['queue.nodes'] = 1
-# Here we will be able to run three MPI jobs on 2 cores at a time.
-VASPRC['queue.ppn'] = 6
-VASPRC['multiprocessing.cores_per_process'] = 2
-# to submit this script, save it as cu-mp.py
-# qsub -l nodes=1:ppn=6,walltime=10:00:00 cu-mp.py
-import os
-if 'PBS_O_WORKDIR' in os.environ:
-    os.chdir(os.environ['PBS_O_WORKDIR'])
 # this is the function that runs a calculation
 def do_calculation(calc):
-    'function to run a calculation through multiprocessing'
+    """function to run a calculation through multiprocessing."""
     atoms = calc.get_atoms()
     e = atoms.get_potential_energy()
     v = atoms.get_volume()
     return v, e
 # this only runs in the main script, not in processes on other cores
 if __name__ == '__main__':
+    NCORES = 6  # number of cores to run processes on
     # setup an atoms object
     a = 3.6
     atoms = Atoms([Atom('Cu',(0, 0, 0))],
-                  cell=0.5 * a*np.array([[1.0, 1.0, 0.0],
-                                         [0.0, 1.0, 1.0],
-                                         [1.0, 0.0, 1.0]]))
+                  cell=0.5 * a * np.array([[1.0, 1.0, 0.0],
+                                           [0.0, 1.0, 1.0],
+                                           [1.0, 0.0, 1.0]]))
     v0 = atoms.get_volume()
     # Step 1
     COUNTER = 0
@@ -37,18 +27,17 @@ if __name__ == '__main__':
     for f in factors:
         newatoms = atoms.copy()
         newatoms.set_volume(v0*(1 + f))
-        label = 'bulk/cu-mp2/step1-{0}'.format(COUNTER)
+        label = 'bulk/cu-mp/step1-{0}'.format(COUNTER)
         COUNTER += 1
         calc = Vasp(label,
                     xc='PBE',
                     encut=350,
                     kpts=[6, 6, 6],
                     isym=2,
-                    debug=logging.DEBUG,
                     atoms=newatoms)
         calculators.append(calc)
     # now we set up the Pool of processes
-    pool = multiprocessing.Pool(processes=3) # ask for 6 cores but run MPI on 2 cores
+    pool = multiprocessing.Pool(processes=NCORES)
     # get the output from running each calculation
     out = pool.map(do_calculation, calculators)
     pool.close()
@@ -69,17 +58,16 @@ if __name__ == '__main__':
     for f in factors:
         newatoms = atoms.copy()
         newatoms.set_volume(v1*(1 + f))
-        label = 'bulk/cu-mp2/step2-{0}'.format(COUNTER)
+        label = 'bulk/cu-mp/step2-{0}'.format(COUNTER)
         COUNTER += 1
         calc = Vasp(label,
                     xc='PBE',
                     encut=350,
                     kpts=[6, 6, 6],
                     isym=2,
-                    debug=logging.DEBUG,
                     atoms=newatoms)
         calculators.append(calc)
-    pool = multiprocessing.Pool(processes=3)
+    pool = multiprocessing.Pool(processes=NCORES)
     out = pool.map(do_calculation, calculators)
     pool.close()
     pool.join() # wait here for calculations to finish
@@ -94,4 +82,4 @@ if __name__ == '__main__':
     eos = EquationOfState(V[ind], E[ind])
     v2, e2, B = eos.fit()
     print('step2: v2 = {v2}'.format(**locals()))
-    eos.plot('images/cu-mp2-eos.png',show=True)
+    eos.plot('images/cu-mp-eos.png')

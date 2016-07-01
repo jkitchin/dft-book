@@ -1,66 +1,69 @@
-'''Example of fitting the Birch-Murnaghan EOS to data'''
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.optimize import leastsq
-# raw data from 2.2.3-al-analyze-eos.py
-v = np.array([13.72, 14.83, 16.0, 17.23, 18.52])
-e = np.array([-56.29, -56.41, -56.46, -56.46, -56.42])
-#make a vector to evaluate fits on with a lot of points so it looks smooth
-vfit = np.linspace(min(v),max(v),100)
-### fit a parabola to the data
-# y = ax^2 + bx + c
-a,b,c = np.polyfit(v,e,2) #this is from pylab
+from ase.lattice.cubic import FaceCenteredCubic
+ag = FaceCenteredCubic(directions=[[1, 0, 0],
+                                   [0, 1, 0],
+                                   [0, 0, 1]],
+                       size=(1, 1, 1),
+                       symbol='Ag',
+                       latticeconstant=4.0)
+# these are the reciprocal lattice vectors
+b1, b2, b3 = np.linalg.inv(ag.get_cell())
 '''
-the parabola does not fit the data very well, but we can use it to get
-some analytical guesses for other parameters.
-V0 = minimum energy volume, or where dE/dV=0
-E = aV^2 + bV + c
-dE/dV = 2aV + b = 0
-V0 = -b/2a
-E0 is the minimum energy, which is:
-E0 = aV0^2 + bV0 + c
-B is equal to V0*d^2E/dV^2, which is just 2a*V0
-and from experience we know Bprime_0 is usually a small number like 4
+g(111) = 1*b1 + 1*b2 + 1*b3
+and |g(111)| = 1/d_111
 '''
-#now here are our initial guesses.
-v0 = -b/(2*a)
-e0 = a*v0**2 + b*v0 + c
-b0 = 2*a*v0
-bP = 4
-#now we have to create the equation of state function
-def Murnaghan(parameters,vol):
-    '''
-    given a vector of parameters and volumes, return a vector of energies.
-    equation From PRB 28,5480 (1983)
-    '''
-    E0 = parameters[0]
-    B0 = parameters[1]
-    BP = parameters[2]
-    V0 = parameters[3]
-    E = E0 + B0*vol/BP*(((V0/vol)**BP)/(BP-1)+1) - V0*B0/(BP-1.)
-    return E
-# and we define an objective function that will be minimized
-def objective(pars,y,x):
-    #we will minimize this function
-    err =  y - Murnaghan(pars,x)
-    return err
-x0 = [e0, b0, bP, v0] #initial guesses in the same order used in the Murnaghan function
-murnpars, ier = leastsq(objective, x0, args=(e,v)) #this is from scipy
-#now we make a figure summarizing the results
-plt.plot(v,e,'ro')
-plt.plot(vfit, a*vfit**2 + b*vfit + c,'--',label='parabolic fit')
-plt.plot(vfit, Murnaghan(murnpars,vfit), label='Murnaghan fit')
-plt.xlabel('Volume ($\AA^3$)')
-plt.ylabel('Energy (eV)')
-plt.legend(loc='best')
-#add some text to the figure in figure coordinates
-ax = plt.gca()
-plt.text(0.4, 0.5, 'Min volume = {0:1.2f} $\AA^3$'.format(murnpars[3]),
-     transform = ax.transAxes)
-plt.text(0.4, 0.4, 'Bulk modulus = {0:1.2f} eV/$\AA^3$ = {1:1.2f} GPa'.format(murnpars[1],
-                                                                          murnpars[1]*160.21773),
-     transform = ax.transAxes)
-plt.savefig('images/a-eos.png')
-np.set_printoptions(precision=3)
-print('initial guesses  : ', np.array(x0))  # array for easy printing
-print('fitted parameters: ', murnpars)
+h,k,l = (1, 1, 1)
+d = 1./np.linalg.norm(h*b1 + k*b2 + l*b3)
+print('d_111 spacing (method 1) = {0:1.3f} Angstroms'.format(d))
+# method #2
+hkl = np.array([h, k, l])
+G = np.array([b1, b2, b3])  # reciprocal unit cell
+'''
+Gstar is usually defined as this matrix of dot products:
+Gstar = np.array([[dot(b1,b1), dot(b1,b2), dot(b1,b3)],
+                  [dot(b1,b2), dot(b2,b2), dot(b2,b3)],
+                  [dot(b1,b3), dot(b2,b3), dot(b3,b3)]])
+but I prefer the notationally more compact:
+Gstar = G .dot. transpose(G)
+then, 1/d_hkl^2 = hkl .dot. Gstar .dot. hkl
+'''
+Gstar = np.dot(G, G.T)
+id2 = np.dot(hkl, np.dot(Gstar, hkl))
+print('d_111 spacing (method 2) =',np.sqrt(1 / id2))
+# http://books.google.com/books?id=nJHSqEseuIUC&lpg=PA118&ots=YA9TBldoVH
+# &dq=reciprocal%20metric%20tensor&pg=PA119#v=onepage
+# &q=reciprocal%20metric%20tensor&f=false
+'''Finally, many text books on crystallography use long algebraic
+formulas for computing the d-spacing with sin and cos, vector lengths,
+and angles. Below we compute these and use them in the general
+triclinic structure formula which applies to all the structures.
+'''
+from Scientific.Geometry import Vector
+import math
+unitcell = ag.get_cell()
+A = Vector(unitcell[0])
+B = Vector(unitcell[1])
+C = Vector(unitcell[2])
+# lengths of the vectors
+a = A.length()#*angstroms2bohr
+b = B.length()#*angstroms2bohr
+c = C.length()#*angstroms2bohr
+# angles between the vectors in radians
+alpha = B.angle(C)
+beta = A.angle(C)
+gamma = A.angle(B)
+print('')
+print('a   b   c   alpha beta gamma')
+print('{0:1.3f} {1:1.3f} {2:1.3f} {3:1.3f} {4:1.3f} {5:1.3f}\n'.format(a,b,c,                                                                alpha,beta,gamma))
+h, k, l = (1, 1, 1)
+from math import sin, cos
+id2 = ((h**2 / a**2 * sin(alpha)**2
+       + k**2 / b**2 * sin(beta)**2
+       + l**2 / c**2 * sin(gamma)**2
+       + 2 * k * l / b / c * (cos(beta) * cos(gamma) - cos(alpha))
+       + 2 * h * l / a / c * (cos(alpha) * cos(gamma) - cos(beta))
+       + 2 * h * k / a / b * (cos(alpha) * cos(beta) - cos(gamma)))
+       / (1 - cos(alpha)**2 - cos(beta)**2 - cos(gamma)**2
+         + 2 * cos(alpha) * cos(beta) * cos(gamma)))
+d = 1 / math.sqrt(id2)
+print('d_111 spacing (method 3) = {0}'.format(d))

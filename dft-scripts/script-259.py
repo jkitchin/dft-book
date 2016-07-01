@@ -1,2 +1,1 @@
-n = 2
-mom_2 = np.trapz(rho*E**n,E)/np.trapz(rho,E)
+e_avg = np.trapz(rho*E,E)/np.trapz(rho,E)

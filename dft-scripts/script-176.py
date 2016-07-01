@@ -1,16 +1,4 @@
 from vasp import Vasp
-from ase.lattice.surface import fcc110
-from ase.io import write
-from ase.constraints import FixAtoms
-atoms = fcc110('Ag', size=(2, 1, 6), vacuum=10.0)
-constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
-atoms.set_constraint(constraint)
-calc = Vasp('surfaces/Ag-110',
-            xc='PBE',
-            kpts=[6, 6, 1],
-            encut=350,
-            ibrion=2,
-            isif=2,
-            nsw=10,
-            atoms=atoms)
-calc.update()
+print 'dE = {0:1.3f} eV'.format(Vasp('surfaces/Au-110-missing-row').potential_energy
+                                + Vasp('bulk/Au-fcc').potential_energy
+                                - Vasp('surfaces/Au-110').potential_energy)

@@ -3136,11 +3136,10 @@ if None not in (E_O, E_O2):
 
 #+RESULTS:
 : Magnetic moment on O = 0.0001638 Bohr magnetons
-: /home-research/jkitchin/dft-book-new-vasp/molecules/O2-sp-singlet Queued: 1391919.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/molecules/O2-sp-singlet Queued: 1391919.gilgamesh.cheme.cmu.edu
 : ('O2 molecule magnetic moment = ', 0.0)
+: O2 -> 2O  D = 8.619 eV
 
-Interestingly, VASP still found a triplet spin state on the oxygen atom, even though we guessed an initial magnetic moment of 0. This highlights a difficulty in computing magnetic moments: you provide an initial guess and a solution is found. The magnetic moment of a singlet state is zero, so the  molecule is correct. Also interesting is that the dissociation energy is almost equal to the experimental value. This is probably a coincidence, and may reflect the fact that the singlet oxygen state is less stable than the triplet state. Let us directly compare their total energies:
+ Let us directly compare their total energies:
 
 #+BEGIN_SRC python
 from vasp import Vasp
@@ -3153,10 +3152,8 @@ print('triplet: {0} eV'.format(calc.potential_energy))
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book-new-vasp/molecules/O2-sp-singlet Queued: 1391900.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book-new-vasp/molecules/O2-sp-singlet Queued: 1391900.gilgamesh.cheme.cmu.edu
-: singlet: None eV
-: triplet: -9.84832377 eV
+: singlet: -8.77378302 eV
+: triplet: -9.84832389 eV
 
 You can see here the triplet state has an energy that is 1 eV more stable than the singlet state.
 
@@ -4798,38 +4795,6 @@ for lc, e in zip(bcc_LC, bcc_energies):
 #+END_SRC
 
 #+RESULTS:
-/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.75 Queued: 1392110.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.8 Queued: 1392111.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.85 Queued: 1392112.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.9 Queued: 1392113.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Cu-bcc-2.95 Queued: 1392114.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Cu-bcc-3.0 Queued: 1392115.gilgamesh.cheme.cmu.edu
-#+tblname: bcc-data
-#+caption: Total energy vs. lattice constant for BCC Cu.
-| Lattice constant (\AA$^3$) | Total energy (eV) |
-|-
-| 2.75 | None |
-| 2.8 | None |
-| 2.85 | None |
-| 2.9 | None |
-| 2.95 | None |
-| 3.0 | None |
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-bcc-2.75 Queued: 1391788.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-bcc-2.8 Queued: 1391789.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-bcc-2.85 Queued: 1391790.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-bcc-2.9 Queued: 1391791.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-bcc-2.95 Queued: 1391792.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book-new-vasp/bulk/Cu-bcc-3.0 Queued: 1391793.gilgamesh.cheme.cmu.edu
-#+tblname: bcc-data
-#+caption: Total energy vs. lattice constant for BCC Cu.
-| Lattice constant (\AA$^3$) | Total energy (eV) |
-|-
-| 2.75 | None |
-| 2.8 | None |
-| 2.85 | None |
-| 2.9 | None |
-| 2.95 | None |
-| 3.0 | None |
 #+tblname: bcc-data
 #+caption: Total energy vs. lattice constant for BCC Cu.
 | Lattice constant (\AA$^3$) | Total energy (eV) |
@@ -4839,7 +4804,7 @@ for lc, e in zip(bcc_LC, bcc_energies):
 |                       2.85 |       -3.71927399 |
 |                        2.9 |       -3.72637899 |
 |                       2.95 |       -3.70697046 |
-|                        3.0 |       -3.66645679 |
+|                        3.0 |       -3.66645678 |
 
 
 #+begin_exercise
@@ -4947,58 +4912,6 @@ plt.savefig('images/ru-contourf.png')
 plt.show()
 #+END_SRC
 #+RESULTS:
-#+begin_example
-/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.40 Queued: 1392116.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.40 Queued: 1392116.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.50 Queued: 1392117.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.50 Queued: 1392117.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.60 Queued: 1392118.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.60 Queued: 1392118.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.70 Queued: 1392119.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.70 Queued: 1392119.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.80 Queued: 1392120.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.50-1.80 Queued: 1392120.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.40 Queued: 1392121.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.40 Queued: 1392121.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.50 Queued: 1392122.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.50 Queued: 1392122.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.60 Queued: 1392123.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.60 Queued: 1392123.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.70 Queued: 1392124.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.70 Queued: 1392124.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.80 Queued: 1392125.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.60-1.80 Queued: 1392125.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.40 Queued: 1392126.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.40 Queued: 1392126.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.50 Queued: 1392127.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.50 Queued: 1392127.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.60 Queued: 1392128.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.60 Queued: 1392128.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.70 Queued: 1392129.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.70 Queued: 1392129.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.80 Queued: 1392130.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.70-1.80 Queued: 1392130.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.40 Queued: 1392131.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.40 Queued: 1392131.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.50 Queued: 1392132.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.50 Queued: 1392132.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.60 Queued: 1392133.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.60 Queued: 1392133.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.70 Queued: 1392134.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.70 Queued: 1392134.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.80 Queued: 1392135.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.80-1.80 Queued: 1392135.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.40 Queued: 1392136.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.40 Queued: 1392136.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.50 Queued: 1392137.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.50 Queued: 1392137.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.60 Queued: 1392138.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.60 Queued: 1392138.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.70 Queued: 1392139.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.70 Queued: 1392139.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.80 Queued: 1392140.gilgamesh.cheme.cmu.edu
-/home-research/jkitchin/dft-book/bulk/Ru/2.90-1.80 Queued: 1392140.gilgamesh.cheme.cmu.edu
-#+end_example
 
 # <<ru-countourf>>
 #+caption: Contour plot of the total energy of hcp Ru for different values of $a$ and $c/a$. \label{fig:ru-contourf}
@@ -5803,7 +5716,7 @@ Fe is in a BCC crystal structure, which is high in symmetry. Consequently, many 
 
 see http://www.nist.gov/data/PDFfiles/jpcrd34.pdf‎ for a lot of detail about Fe-Ni alloys and general theory about elastic constants. In the next section, we show how the code above is integrated into mod:Vasp.
 
-*** TODO Al elastic properties
+*** Al elastic properties
 First, the relaxed geometry.
 #+BEGIN_SRC python
 from vasp import Vasp
@@ -5864,6 +5777,68 @@ print(B)
 
 This example shows the basic mechanics of getting the elastic constants. The C_{44} constant above is too low, and probably we need to check these constants for convergence with respect to kpoints, planewave cutoff, and maybe the value of POTIM.
 
+*** Manual calculation of elastic constants
+It is possible to manually calculate single elastic constants; you just need to know what strain corresponds to the elastic constant.
+
+For the C11 elastic constant in a cubic system, we simply strain the cell along the x-axis, and then evaluate the second derivative at the minimum to calculate C11 like this.
+
+\(C_{11} = \frac{1}{V_C}\frac{\partial^2 E^{tot}}{\partial \gamma^2}\)
+
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.lattice.cubic import FaceCenteredCubic
+import numpy as np
+import matplotlib.pyplot as plt
+
+DELTAS = np.linspace(-0.05, 0.05, 5)
+calcs = []
+volumes = []
+
+for delta in DELTAS:
+    atoms = FaceCenteredCubic(symbol='Al')
+
+    cell = atoms.cell
+
+    T = np.array([[1 + delta, 0, 0],
+                  [0,1, 0],
+                  [0, 0, 1]])
+    newcell = np.dot(cell, T)
+    atoms.set_cell(newcell, scale_atoms=True)
+    volumes += [atoms.get_volume()]
+
+    calcs += [Vasp('bulk/Al-c11-{}'.format(delta),
+                xc='pbe',
+                kpts=[12, 12, 12],
+                encut=350,
+                atoms=atoms)]
+
+Vasp.run()
+energies =  [calc.potential_energy for calc in calcs]
+
+# fit a parabola
+eos = np.polyfit(DELTAS, energies, 2)
+
+# first derivative
+d_eos = np.polyder(eos)
+
+print(np.roots(d_eos))
+
+xfit = np.linspace(min(DELTAS), max(DELTAS))
+yfit = np.polyval(eos, xfit)
+
+plt.plot(DELTAS, energies, 'bo', xfit, yfit, 'b-')
+plt.xlabel('$\delta$')
+plt.ylabel('Energy (eV)')
+plt.savefig('images/Al-c11.png')
+
+
+#+END_SRC
+
+#+RESULTS:
+: [ 0.00727102]
+
+[[./images/Al-c11.png]]
 ** Bulk thermodynamics
 We can predict temperature dependent thermodynamic properties of bulk materials without too much effort. As with the thermochemical properties of ideal gases, we must use some simple models that we parameterize by DFT. Here we follow the example in Reference citealp:Shang20101040 for computing the thermal coefficient of expansion, heat capacity, enthalpy and entropy for Ni as a function of temperature.
 
@@ -6169,8 +6144,7 @@ Each of these questions is answered by calculating the formation energy of the a
 # get bulk Cu and Pd energies. <<pure-metal-components>>
 from vasp import Vasp
 from ase import Atom, Atoms
-# Vasp.log.setLevel(10)
-Vasp.vasprc(mode=None)
+
 
 atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000])],
               cell=  [[ 1.818,  0.000,  1.818],
@@ -6209,7 +6183,8 @@ print 'Pd energy = {0} eV'.format(pd)
 #+END_SRC
 
 #+RESULTS:
-: {'vasp.executable.serial': '/home-research/zhongnanxu/opt/vasp-5.3.5/bin/vasp-vtst-beef-serial', 'queue.options': '-joe', 'queue.command': 'qsub', 'handle_exceptions': True, 'validate': True, 'queue.nodes': '1', 'multiprocessing.cores_per_process': 'None', 'restart_unconverged': True, 'vasp.executable.parallel': '/home-research/zhongnanxu/opt/vasp-5.3.5/bin/vasp-vtst-beef-parallel', 'vdw_kernel.bindat': '/opt/kitchingroup/vasp-5.3.5/vdw_kernel.bindat', 'queue.ppn': '1', 'user.email': 'jkitchin@andrew.cmu.edu', 'mode': None, 'queue.jobname': 'None', 'queue.mem': '2GB', 'queue.walltime': '23:00:00', 'user.name': 'jkitchin'}
+: Cu energy = -3.73437194 eV
+: Pd energy = -5.22003433 eV
 
 
 Note that the Pd energy is more negative than the Cu energy. This does not mean anything significant. We cannot say Pd is more stable than Cu; it is not like Cu could transmutate into Pd!
@@ -6262,8 +6237,8 @@ print 'cupd-2 = {0} eV'.format(cupd2)
 #+END_SRC
 
 #+RESULTS:
-: cupd-1 = -9.17794311 eV
-: cupd-2 = -18.07698067 eV
+: cupd-1 = -9.17593835 eV
+: cupd-2 = -18.07779325 eV
 
 
 Looking at these energies, you could be tempted to say cupd-2 is more stable than cupd-1 because its energy is much lower. This is wrong, however, because cupd-2 has twice as many atoms as cupd-1. We should compare the normalized total energies, that is the energy normalized per CuPd formula unit, or as an alternative  the number of atoms in the unit cell. It does not matter which, as long as we normalize consistently. It is conventional in alloy calculation to normalize by the number of atoms in the unit cell.
@@ -6284,6 +6259,8 @@ print 'cupd-2: {0} eV/atom'.format(e2)
 #+END_SRC
 
 #+RESULTS:
+: cupd-1: -4.587969175 eV/atom
+: cupd-2: -4.5194483125 eV/atom
 
 After normalizing by number of atoms, we can see that cupd-1 is a more stable structure. However, we are looking at total energies, and we might ask: is cupd-1 more stable than an unreacted mixture of the parent compounds, fcc Cu and Pd? In other words, is the following reaction exothermic:
 
@@ -6329,6 +6306,8 @@ print 'Delta Hf cupd-2 = {0:1.2f} eV/atom'.format(e2)
 #+END_SRC
 
 #+RESULTS:
+: Delta Hf cupd-1 = -0.11 eV/atom
+: Delta Hf cupd-2 = -0.04 eV/atom
 
 
 The answer is yes. Both structures are energetically more favorable than an equal composition mixture of the parent metals. The heat of formation for both structures is exothermic, but the cupd-1 structure is more stable than the cupd-2 structure. This is shown conceptually in Figure ref:fig:alloy1.
@@ -6372,6 +6351,9 @@ calc = Vasp('bulk/alloy/cu3pd-1',
             atoms=atoms)
 
 e3 = atoms.get_potential_energy()
+
+Vasp.wait(abort=True)
+
 for atom in atoms:
     if atom.symbol == 'Cu':
         e3 -= cu
@@ -6383,6 +6365,7 @@ print 'Delta Hf cu3pd-1 = {0:1.2f} eV/atom'.format(e3)
 #+END_SRC
 
 #+RESULTS:
+: Delta Hf cu3pd-1 = -0.02 eV/atom
 
 The formation energy is slightly exothermic, which means the structure is more stable than a mixture of the parent metals. However, let us consider whether the structure is stable with respect to phase separation into pure Cu and the cupd-1 structure. We define the following quantities:
 
@@ -6422,9 +6405,11 @@ from vasp import Vasp
 from ase import Atom, Atoms
 
 # parent metals
-cu = Vasp('bulk/alloy/cu').potential_energy / len(atoms)
+cu = Vasp('bulk/alloy/cu')
+cu_e = cu.potential_energy / len(cu.get_atoms())
 
-pd = Vasp('bulk/alloy/pd').potential_energy / len(atoms)
+pd = Vasp('bulk/alloy/pd')
+pd_e = pd.potential_energy / len(pd.get_atoms())
 
 atoms = Atoms([Atom('Cu',  [-1.867,     1.867,      0.000]),
                Atom('Cu',  [0.000,      0.000,      0.000]),
@@ -6444,16 +6429,20 @@ calc = Vasp('bulk/alloy/cu3pd-2',
             nsw=10,
             atoms=atoms)
 e4 = atoms.get_potential_energy()
+
+Vasp.wait(abort=True)
+
 for atom in atoms:
     if atom.symbol == 'Cu':
-        e4 -= cu
+        e4 -= cu_e
     else:
-        e4 -= pd
+        e4 -= pd_e
 e4 /= len(atoms)
 print('Delta Hf cu3pd-2 = {0:1.2f} eV/atom'.format(e4))
 #+END_SRC
 
 #+RESULTS:
+: Delta Hf cu3pd-2 = -0.10 eV/atom
 
 This looks promising: the formation energy is much more favorable than cu3pd-1, and it is below the composition weighted formation energy of -0.06 eV/atom. Consequently, we conclude that this structure will not phase separate into a mixture of Cu and CuPd. We cannot say, however, if there is a more stable phase not yet considered, or if it might phase separate into two other phases. We also note here that we have ignored a few other contributions to alloy stability. We have only considered the electronic energy contributions to the formation energy. At temperatures above absolute zero there are additional contributions including configurational and vibrational entropy, which may stabilize some structures more than others. Finally, our analysis is limited to comparisons of the structures computed on the fcc lattice. In fact, it is known that the CuPd alloy forms a bcc structure. We did not calculate that structure, so we can not say if it is more or less stable than the obvious fcc structure we found.
 
@@ -6503,8 +6492,8 @@ print atoms.get_stress()
 #+END_SRC
 
 #+RESULTS:
-: -27.27469393
-: [ 0.00271993  0.00271993  0.00271993 -0.         -0.         -0.        ]
+: -27.27469148
+: [-0.01018402 -0.01018402 -0.01018402 -0.         -0.         -0.        ]
 
 **** CuO calculation
 #+BEGIN_SRC python
@@ -6544,7 +6533,7 @@ print(atoms.get_potential_energy())
 #+END_SRC
 
 #+RESULTS:
-: -19.62493655
+: -19.61568557
 
 **** TODO Reaction energy calculation
 #+BEGIN_SRC python
@@ -6575,8 +6564,7 @@ print 'Reaction energy = {0} eV'.format(rxn_energy)
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/bulk/Cu2O Queued: 1392189.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/bulk/CuO Queued: 1392190.gilgamesh.cheme.cmu.edu
+: Reaction energy = -2.11600154 eV
 
 This is the reaction energy for 2 Cu_{2}O $\rightarrow$ 4 CuO. In cite:PhysRevB.73.195107, the experimental reaction is estimated to be  about -3.14 eV.
 
@@ -7616,18 +7604,14 @@ print('Constraints = False: ', atoms.get_forces(apply_constraint=False))
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-/home-research/jkitchin/dft-book-new-vasp/surfaces/Al-slab-relaxed Queued: 1391621.gilgamesh.cheme.cmu.edu
-('Constraints = True: ', array([[0.0, 0.0, 0.0],
-       [0.0, 0.0, 0.0],
-       [None, None, None],
-       [None, None, None]], dtype=object))
-/home-research/jkitchin/dft-book-new-vasp/surfaces/Al-slab-relaxed Queued: 1391621.gilgamesh.cheme.cmu.edu
-('Constraints = False: ', array([[None, None, None],
-       [None, None, None],
-       [None, None, None],
-       [None, None, None]], dtype=object))
-#+end_example
+: ('Constraints = True: ', array([[ 0.        ,  0.        ,  0.        ],
+:        [ 0.        ,  0.        ,  0.        ],
+:        [ 0.        ,  0.        , -0.00435222],
+:        [ 0.        ,  0.        , -0.07264519]]))
+: ('Constraints = False: ', array([[ 0.        ,  0.        ,  0.        ],
+:        [ 0.        ,  0.        ,  0.        ],
+:        [ 0.        ,  0.        , -0.00435222],
+:        [ 0.        ,  0.        , -0.07264519]]))
 
 
 : Constraints = True:  [[ 0.     0.     0.   ]
@@ -8917,8 +8901,10 @@ plt.savefig('images/pt-o-fcc-hcp-neb.png')
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/surfaces/Pt-O-fcc-hcp-neb submitted: 1400536.gilgamesh.cheme.cmu.edu
-: [None, None, None, None, None]
+: Optimization terminated successfully.
+:          Current function value: -26.953429
+:          Iterations: 12
+:          Function evaluations: 24
 
 #+ATTR_LaTeX: :placement [H]
 #+caption: Energy pathway for O diffusion from an fcc to hcp site with a spline fit to determine the barrier.
@@ -9789,7 +9775,7 @@ print(Vasp('surfaces/Au-benzene-pbe',
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/surfaces/Au-benzene-pbe submitted: 1400531.gilgamesh.cheme.cmu.edu
+: /home-research/jkitchin/dft-book/surfaces/Au-benzene-pbe submitted: 1413525.gilgamesh.cheme.cmu.edu
 : None
 
 resubmitted
@@ -9810,7 +9796,6 @@ print('PBE adsorption energy = {} eV'.format(e1 - e2 - e3))
 #+END_SRC
 
 #+RESULTS:
-: PBE adsorption energy = 0.071056 eV
 
 This is a very weak energy. It is similar to the result in the reference (0.15 eV), and considerably weaker than the experiment. Next we consider one form of a VDW correction.
 
@@ -9835,9 +9820,7 @@ print(Vasp('molecules/benzene-pbe-d2',
 #+END_SRC
 
 #+RESULTS:
-: /home-research/jkitchin/dft-book/molecules/benzene-pbe-d2 submitted: 1398397.gilgamesh.cheme.cmu.edu
-: /home-research/jkitchin/dft-book/molecules/benzene-pbe-d2 Queued: 1398397.gilgamesh.cheme.cmu.edu
-: None
+: -76.17670701
 
 **** clean slab
 #+BEGIN_SRC python
@@ -13655,11 +13638,12 @@ Here we create the tex file. This extracts the scripts out to the dft-scripts fo
 #+END_SRC
 
 #+RESULTS:
-: dft was built on Fri Jun  3 13:52:03 2016
+: dft was built on Fri Jul  1 16:02:57 2016
 
 ** html
 
 #+BEGIN_SRC emacs-lisp
+(load-file "dft.el")
 (org-html-export-to-html)
 (shell-command "rm -fr blog/source/files/dft.html blog/source/files/images")
 (shell-command "cp -fr images blog/source/files")
@@ -13668,11 +13652,17 @@ Here we create the tex file. This extracts the scripts out to the dft-scripts fo
 #+END_SRC
 
 #+RESULTS:
-: dft (html) was built on Fri Jun  3 13:36:56 2016
+: dft (html) was built on Fri Jul  1 16:00:43 2016
+
+Now, do this in a shell (so the virtual env will activate):
 
 #+BEGIN_SRC sh
-
+cd blog/source
+nikola build
+nikola github_deploy
 #+END_SRC
+
+#+RESULTS:
 
 * Tests								   :noexport:
 ** Run all jobs
