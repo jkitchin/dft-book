@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2016-07-01 Fri 16:00 -->
+<!-- 2016-07-21 Thu 16:40 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="viewport" content="width=device-width, initial-scale=1" />
 <title>Modeling materials using density functional theory</title>
@@ -236,7 +236,7 @@ Free Documentation License".
 <li><a href="#orgheadline36">5. Surfaces</a>
 <ul>
 <li><a href="#orgheadline37">5.1. Surface structures</a></li>
-<li><a href="#orgheadline38">5.2. Surface calculation parameters</a></li>
+<li><a href="#orgheadline38">5.2. <span class="todo TODO">TODO</span> Surface calculation parameters</a></li>
 <li><a href="#orgheadline39">5.3. Surface relaxation</a></li>
 <li><a href="#orgheadline40">5.4. Surface reconstruction</a></li>
 <li><a href="#orgheadline41">5.5. Surface energy</a></li>
@@ -498,11 +498,11 @@ To get a perfect expansion, one needs an infinite number of planewaves.  Luckily
 </table>
 
 <p>
-Bloch's theorem eliminates the need to calculate an infinite number of wave functions, because there are only a finite number of electrons in the unit (super) cell. However, there are still an infinite number of discrete \(\mathbf{k}\) points that must be considered, and the energy of the unit cell is calculated as an integral over these points.  It turns out that wave functions at \(\mathbf{k}\) points that are close together are similar, thus an interpolation scheme can be used with a finite number of \(\mathbf{k}\) points. This also converts the integral used to determine the energy into a sum over the \(\mathbf{k}\) points, which are suitably weighted to account for the finite number of them.  There will be errors in the total energy associated with the finite number of \(\mathbf{k}\), but these can be reduced and tested for convergence by using higher $\mathbf{k}$-point densities. An excellent discussion of this for aperiodic systems can be found in Ref.  <a class='org-ref-reference' href="#makov1995:period-bound-condit">makov1995:period-bound-condit</a>.
+Bloch's theorem eliminates the need to calculate an infinite number of wave functions, because there are only a finite number of electrons in the unit (super) cell. However, there are still an infinite number of discrete k points that must be considered, and the energy of the unit cell is calculated as an integral over these points.  It turns out that wave functions at k points that are close together are similar, thus an interpolation scheme can be used with a finite number of k points. This also converts the integral used to determine the energy into a sum over the k points, which are suitably weighted to account for the finite number of them.  There will be errors in the total energy associated with the finite number of k, but these can be reduced and tested for convergence by using higher k-point densities. An excellent discussion of this for aperiodic systems can be found in Ref.  <a class='org-ref-reference' href="#makov1995:period-bound-condit">makov1995:period-bound-condit</a>.
 </p>
 
 <p>
-The most common schemes for generating \(\mathbf{k}\) points are the Chadi-Cohen scheme <a class='org-ref-reference' href="#PhysRevB.8.5747">PhysRevB.8.5747</a>, and the Monkhorst-Pack scheme <a class='org-ref-reference' href="#PhysRevB.13.5188">PhysRevB.13.5188</a>. The use of these \(\mathbf{k}\) point setups amounts to an expansion of the periodic function in reciprocal space, which allows a straight-forward interpolation of the function between the points that is more accurate than with other \(\mathbf{k}\) point generation schemes <a class='org-ref-reference' href="#PhysRevB.13.5188">PhysRevB.13.5188</a>.
+The most common schemes for generating k points are the Chadi-Cohen scheme <a class='org-ref-reference' href="#PhysRevB.8.5747">PhysRevB.8.5747</a>, and the Monkhorst-Pack scheme <a class='org-ref-reference' href="#PhysRevB.13.5188">PhysRevB.13.5188</a>. The use of these k point setups amounts to an expansion of the periodic function in reciprocal space, which allows a straight-forward interpolation of the function between the points that is more accurate than with other k point generation schemes <a class='org-ref-reference' href="#PhysRevB.13.5188">PhysRevB.13.5188</a>.
 </p>
 </div>
 </div>
@@ -532,7 +532,7 @@ VASP provides a database of PAW potentials <a class='org-ref-reference' href="#P
 <h3 id="orgheadline7"><span class="section-number-3">2.5</span> Fermi Temperature and band occupation numbers</h3>
 <div class="outline-text-3" id="text-2-5">
 <p>
-At absolute zero, the occupancies of the bands of a system are well-defined step functions; all bands up to the Fermi level are occupied, and all bands above the Fermi level are unoccupied.  There is a particular difficulty in the calculation of the electronic structures of metals compared to semiconductors and molecules. In molecules and semiconductors, there is a clear energy gap between the occupied states and unoccupied states. Thus, the occupancies are insensitive to changes in the energy that occur during the self-consistency cycles. In metals, however, the density of states is continuous at the Fermi level, and there are typically a substantial number of states that are close in energy to the Fermi level.  Consequently, small changes in the energy can dramatically change the occupation numbers, resulting in instabilities that make it difficult to converge to the occupation step function. A related problem is that the Brillouin zone integral (which in practice is performed as a sum over a finite number of \(\mathbf{k}\) points) that defines the band energy converges very slowly with the number of \(\mathbf{k}\) points due to the discontinuity in occupancies in a continuous distribution of states for metals <a class='org-ref-reference' href="#gillan1989:calcul">gillan1989:calcul</a>,<a class='org-ref-reference' href="#Kresse199615">Kresse199615</a>.  The difficulty arises because the temperature in most DFT calculations is at absolute zero.  At higher temperatures, the DOS is smeared across the Fermi level, resulting in a continuous occupation function over the distribution of states. A finite-temperature version of DFT was developed <a class='org-ref-reference' href="#PhysRev.137.A1441">PhysRev.137.A1441</a>, which is the foundation on which one solution to this problem is based. In this solution, the step function is replaced by a smoothly varying function such as the Fermi-Dirac function at a small, but non-zero temperature <a class='org-ref-reference' href="#Kresse199615">Kresse199615</a>. The total energy is then extrapolated back to absolute zero.
+At absolute zero, the occupancies of the bands of a system are well-defined step functions; all bands up to the Fermi level are occupied, and all bands above the Fermi level are unoccupied.  There is a particular difficulty in the calculation of the electronic structures of metals compared to semiconductors and molecules. In molecules and semiconductors, there is a clear energy gap between the occupied states and unoccupied states. Thus, the occupancies are insensitive to changes in the energy that occur during the self-consistency cycles. In metals, however, the density of states is continuous at the Fermi level, and there are typically a substantial number of states that are close in energy to the Fermi level.  Consequently, small changes in the energy can dramatically change the occupation numbers, resulting in instabilities that make it difficult to converge to the occupation step function. A related problem is that the Brillouin zone integral (which in practice is performed as a sum over a finite number of k points) that defines the band energy converges very slowly with the number of k points due to the discontinuity in occupancies in a continuous distribution of states for metals <a class='org-ref-reference' href="#gillan1989:calcul">gillan1989:calcul</a>,<a class='org-ref-reference' href="#Kresse199615">Kresse199615</a>.  The difficulty arises because the temperature in most DFT calculations is at absolute zero.  At higher temperatures, the DOS is smeared across the Fermi level, resulting in a continuous occupation function over the distribution of states. A finite-temperature version of DFT was developed <a class='org-ref-reference' href="#PhysRev.137.A1441">PhysRev.137.A1441</a>, which is the foundation on which one solution to this problem is based. In this solution, the step function is replaced by a smoothly varying function such as the Fermi-Dirac function at a small, but non-zero temperature <a class='org-ref-reference' href="#Kresse199615">Kresse199615</a>. The total energy is then extrapolated back to absolute zero.
 </p>
 </div>
 </div>
@@ -1403,7 +1403,7 @@ theta = 106.334624232 degrees
 <h5 id="orgheadline83"><span class="section-number-5">3.2.5.1</span> Dihedral angles</h5>
 <div class="outline-text-5" id="text-3-2-5-1">
 <p>
-There is support in ase for computing <a href="http://en.wikipedia.org/wiki/Dihedral_angle">dihedral angles</a>. Let us illustrate that for ethane. We will compute the dihedral angle between atoms 5, 1, 0, and 4. That is a H-C-C-H dihedral angle, and one can visually see (although not here) that these atoms have a dihedral angle of 60<sup>&circ;</sup> (Figure <a href="#fig:ethane-dihedral">fig:ethane-dihedral</a>).
+There is support in ase for computing <a href="http://en.wikipedia.org/wiki/Dihedral_angle">dihedral angles</a>. Let us illustrate that for ethane. We will compute the dihedral angle between atoms 5, 1, 0, and 4. That is a H-C-C-H dihedral angle, and one can visually see (although not here) that these atoms have a dihedral angle of 60<sup>&deg;</sup> (Figure <a href="#fig:ethane-dihedral">fig:ethane-dihedral</a>).
 </p>
 
 <div class="org-src-container">
@@ -5472,16 +5472,21 @@ The <a href="http://www.materialsproject.org/">Materials Project</a> offers web 
 For example, I downloaded this cif file for a RuO\(_2\) structure (Material ID 825).
 </p>
 
-<p>
-#\#CIF1.1
-##########################################################################
-</p>
+<div class="org-src-container">
 
-<p>
+<pre class="src src-text">#\#CIF1.1
 ##########################################################################
-</p>
+#               Crystallographic Information Format file
+#               Produced by PyCifRW module
+#
+#  This is a CIF file.  CIF has been adopted by the International
+#  Union of Crystallography as the standard for data archiving and
+#  transmission.
+#
+#  For information on this file format, follow the CIF links at
+#  http://www.iucr.org
+##########################################################################
 
-<p>
 data_RuO2
 _symmetry_space_group_name_H-M          'P 1'
 _cell_length_a                          3.13970109
@@ -5495,14 +5500,12 @@ _symmetry_Int_Tables_number             1
 _chemical_formula_structural            RuO2
 _chemical_formula_sum                   'Ru2 O4'
 _cell_volume                            64.8180127062
-<span class="underline">cell_formula_units_Z                   2
-loop</span>
+_cell_formula_units_Z                   2
+loop_
   _symmetry_equiv_pos_site_id
   _symmetry_equiv_pos_as_xyz
    1  'x, y, z'
-</p>
 
-<p>
 loop_
   _atom_site_type_symbol
   _atom_site_label
@@ -5519,8 +5522,8 @@ loop_
    O  O4  1  0.500000  0.194330  0.805670  0  .  1
    Ru  Ru5  1  0.500000  0.500000  0.500000  0  .  1
    Ru  Ru6  1  0.000000  0.000000  0.000000  0  .  1
-#+end_src
-</p>
+</pre>
+</div>
 
 <p>
 We can read this file in with <a href="ase.io.read">ase.io.read</a>. That function automatically recognizes the file type by the extension.
@@ -7433,7 +7436,7 @@ Fe is in a BCC crystal structure, which is high in symmetry. Consequently, many 
 </p>
 
 <p>
-see <a href="http://www.nist.gov/data/PDFfiles/jpcrd34.pdf">http://www.nist.gov/data/PDFfiles/jpcrd34.pdf</a>‎ for a lot of detail about Fe-Ni alloys and general theory about elastic constants. In the next section, we show how the code above is integrated into <a href="Vasp">Vasp</a>.
+See <a href="http://www.nist.gov/data/PDFfiles/jpcrd34.pdf">http://www.nist.gov/data/PDFfiles/jpcrd34.pdf</a> for a lot of detail about Fe-Ni alloys and general theory about elastic constants. In the next section, we show how the code above is integrated into <a href="Vasp">Vasp</a>.
 </p>
 </div>
 </div>
@@ -7469,7 +7472,7 @@ First, the relaxed geometry.
 </pre>
 
 <p>
-Ok, now with a relaxed geometry at hand, we proceed with the elastic constants. This is accomplished with IBRION=6 and ISIF ≥ 3 in VASP.
+Ok, now with a relaxed geometry at hand, we proceed with the elastic constants. This is accomplished with IBRION=6 and ISIF &ge; 3 in VASP.
 </p>
 
 <div class="org-src-container">
@@ -8535,7 +8538,7 @@ density of states can be calculated by a sum over the k-points
 </p>
 
 \begin{equation}\label{eq:dos}
-\Rho(\epsilon)=\sum_\mathbf{\mathrm{k}} \omega_\mathbf{\mathrm{k}} \sum_i \beta(\epsilon -\epsilon_{i\mathbf{\mathrm{k}}})
+\rho(\epsilon)=\sum_\mathbf{\mathrm{k}} \omega_\mathbf{\mathrm{k}} \sum_i \beta(\epsilon -\epsilon_{i\mathbf{\mathrm{k}}})
 \end{equation}
 
 <p>
@@ -9507,11 +9510,12 @@ write(<span style="color: #008000;">'images/Au-211.png'</span>,
 </div>
 
 <div id="outline-container-orgheadline38" class="outline-3">
-<h3 id="orgheadline38"><span class="section-number-3">5.2</span> Surface calculation parameters</h3>
+<h3 id="orgheadline38"><span class="section-number-3">5.2</span> <span class="todo TODO">TODO</span> Surface calculation parameters</h3>
 <div class="outline-text-3" id="text-5-2">
 <p>
 There is one important parameter that is different for surfaces than for bulk calculations, the k-point grid. Assuming you have followed the convention that the z-axis is normal to the surface, the k-point grids for slab calculations always have the form of \(M \times N \times 1\). To illustrate why, consider this example:
 </p>
+
 
 <div class="org-src-container">
 
@@ -9538,14 +9542,11 @@ There is one important parameter that is different for surfaces than for bulk ca
 <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   (<span style="color: #008000;">'$K3$'</span>, [0.0, 0.0, 1.0])],
 <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>kpts_nintersections=10)
 
+<span style="color: #0000FF;">if</span> p <span style="color: #0000FF;">is</span> <span style="color: #D0372D;">None</span>: calc.abort()
+
 p.savefig(<span style="color: #008000;">'images/Al-slab-bandstructure.png'</span>)
 </pre>
 </div>
-
-<pre class="example">
-done
-</pre>
-
 
 
 <div class="figure">
@@ -9653,15 +9654,16 @@ atoms.set_constraint(constraint)
 <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   isif=2,
 <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   nsw=10,
 <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   atoms=atoms)
-<span style="color: #0000FF;">print</span> calc.potential_energy
-<span style="color: #0000FF;">print</span> calc
+
+<span style="color: #0000FF;">print</span>(calc.potential_energy)
+<span style="color: #0000FF;">print</span>(calc)
 </pre>
 </div>
 
 <pre class="example">
--14.18341424
+-14.17963819
 
-*************** VASP CALCULATION SUMMARY ***************
+
 Vasp calculation directory:
 ---------------------------
   [[/home-research/jkitchin/dft-book/surfaces/Al-slab-relaxed]]
@@ -9675,14 +9677,14 @@ Unit cell:
   alpha, beta, gamma (deg):  90.0  90.0  60.0
   Total volume:                  191.872 Ang^3
   Stress:    xx     yy     zz     yz     xz     xy
-          0.006  0.006  0.001 -0.000 -0.000 -0.000 GPa
+          0.006  0.006  0.002 -0.000 -0.000 -0.000 GPa
 
   ID  tag     sym    x         y         z        rmsF (eV/A)
-  0   0       Al     0.000*    0.000*   10.000*      0.00
-  1   0       Al     1.432*    0.827*   12.338*      0.00
-  2   0       Al     2.864     1.653    14.646       0.03
-  3   0       Al     0.000     0.000    17.003       0.04
-  Potential energy: -14.1834 eV
+  0   4       Al     0.000*    0.000*   10.000*      0.00
+  1   3       Al     1.432*    0.827*   12.338*      0.00
+  2   2       Al     2.864     1.653    14.677       0.19
+  3   1       Al     0.000     0.000    17.015       0.01
+  Potential energy: -14.1796 eV
 
 INPUT Parameters:
 -----------------
@@ -9702,6 +9704,7 @@ Pseudopotentials used:
 ----------------------
   Al: potpaw_PBE/Al/POTCAR (git-hash: ad7c649117f1490637e05717e30ab9a0dd8774f6)
 </pre>
+
 
 <p>
 You can see that atoms 2 and 3 (the ones we relaxed, because the have tags of 1 and 2, which are less than 3) now have very low forces on them and it appears that atoms 0 and 1 have no forces on them. That is because the FixAtoms constraint works by setting the forces on those atoms to zero. We can see in the next example that the z-positions of the relaxed atoms have indeed relaxed and changed, while the position of the frozen atoms did not change.
@@ -9761,6 +9764,13 @@ Constraints = False:  [[ 0.     0.    -0.002]
 <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   <span style="color: #9B9B9B; background-color: #EDEDED;"> </span>   atoms[i].z - atoms[i-1].z)
 </pre>
 </div>
+
+<pre class="example">
+Total energy: -14.182
+d_(1,0) = 2.338 angstroms
+d_(2,1) = 2.309 angstroms
+d_(3,2) = 2.370 angstroms
+</pre>
 
 <p>
 Depending on the layer there is either slight contraction or expansion. These quantities are small, and careful convergence studies should be performed. Note the total energy change from unrelaxed to relaxed is not that large in this case (e.g., it is about 5 meV). This is usually the case for metals, where the relaxation effects are relatively small. In oxides and semiconductors, the effects can be large, and when there are adsorbates, the effects can be large also.
@@ -11463,15 +11473,14 @@ calc.<span style="color: #006FE0;">set</span>(ichain=0, lclimb=<span style="colo
 <span style="color: #BA36A5;">images</span>, <span style="color: #BA36A5;">energies</span> = calc.get_neb()
 calc.plot_neb(show=<span style="color: #D0372D;">False</span>)
 <span style="color: #0000FF;">import</span> matplotlib.pyplot <span style="color: #0000FF;">as</span> plt
-plt.savefig(<span style="color: #008000;">'images/pt-o-cineb.svg'</span>)
+plt.savefig(<span style="color: #008000;">'images/pt-o-cineb.png'</span>)
 plt.show()
 </pre>
 </div>
 
 
 <div class="figure">
-<p><object type="image/svg+xml" data="./images/pt-o-cineb.svg" >
-Sorry, your browser does not support SVG.</object>
+<p><img src="./images/pt-o-cineb.png" alt="pt-o-cineb.png" />
 </p>
 <p><span class="figure-number">Figure 92:</span> Climbing image NEB</p>
 </div>
@@ -12946,7 +12955,7 @@ In Vasp 5.3.5 it is possible to use the BEEF functional <a class='org-ref-refere
 </p>
 
 <p>
-In Vasp, we just specify xc='beef-bdw' and Vasp takes care of the rest. This includes setting some addtional variables to setup van der Waals and to get the BEEF ensemble energies. Let us consider the dissociation energy of H<sub>2</sub>.
+some addtional variables to setup van der Waals and to get the BEEF ensemble energies. Let us consider the dissociation energy of H<sub>2</sub>.
 </p>
 
 <div class="org-src-container">
@@ -20369,7 +20378,7 @@ provided the MMC is eligible for relicensing.
 <div id="postamble" class="status">
 <p class="date">Date: 2012-07-11 Wed</p>
 <p class="author">Author: John Kitchin</p>
-<p class="date">Created: 2016-07-01 Fri 16:00</p>
+<p class="date">Created: 2016-07-21 Thu 16:40</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
