@@ -3951,7 +3951,7 @@ from ase.io import write
 from ase.visualize import view
 from vasp import Vasp
 
-calc = Fasp('molecules/nh3-neb') as calc:
+calc = Vasp('molecules/nh3-neb') as calc:
 images, energies = calc.get_neb()
 
 # this rotates the atoms 90 degrees about the y-axis
