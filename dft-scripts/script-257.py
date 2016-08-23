@@ -1,8 +1,7 @@
-v1 = ['john', 'robert', 'terry']
-v2 = [4,5,6]
-f = open('somefile', 'w') #note 'w' = write mode
-f.write('#header\n')
-f.write('#ignore these lines\n')
-for a,b in zip(v1,v2):
-	f.write('{0}, {1}\n'.format(a,b))
-f.close()
+v1 = []
+v2 = []
+lines = open('somefile','r').readlines()
+for line in lines[2:]: #skip the first two lines
+    fields = line.split(',')
+	v1.append(fields[0]) #names
+	v2.append(int(fields[1])) #number

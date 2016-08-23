@@ -1,21 +1,31 @@
 from vasp import Vasp
-from ase.lattice.cubic import BodyCenteredCubic
-atoms = BodyCenteredCubic(symbol='Fe')
-for atom in atoms:
-    atom.magmom = 3.0
-from vasp.vasprc import VASPRC
-VASPRC['mode'] = None
-import logging
-log = logging.getLogger('Vasp')
-#log.setLevel(logging.DEBUG)
-calc = Vasp('bulk/Fe-bulk',
+from ase.lattice.cubic import FaceCenteredCubic
+from ase import Atoms, Atom
+# bulk system
+atoms = FaceCenteredCubic(directions=[[0, 1, 1],
+                                      [1, 0, 1],
+                                      [1, 1, 0]],
+                                     size=(1, 1, 1),
+                                     symbol='Rh')
+calc = Vasp('bulk/bulk-rh',
             xc='PBE',
-            kpts=[6, 6, 6],
             encut=350,
-            ispin=2,
+            kpts=[4, 4, 4],
             isif=3,
-            nsw=30,
-            ibrion=1,
+            ibrion=2,
+            nsw=10,
             atoms=atoms)
-print(atoms.get_potential_energy())
-print(atoms.get_stress())
+bulk_energy = atoms.get_potential_energy()
+# atomic system
+atoms = Atoms([Atom('Rh',[5, 5, 5], magmom=1)],
+              cell=(7, 8, 9))
+calc = Vasp('bulk/atomic-rh-sp',
+            xc='PBE',
+            encut=350,
+            kpts=[1, 1, 1],
+            ispin=2,
+            atoms=atoms)
+atomic_energy = atoms.get_potential_energy()
+calc.stop_if(None in [atomic_energy, bulk_energy])
+cohesive_energy = atomic_energy - bulk_energy
+print 'The cohesive energy is {0:1.3f} eV'.format(cohesive_energy)

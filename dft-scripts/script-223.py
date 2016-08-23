@@ -1,12 +1,6 @@
 from vasp import Vasp
-from ase.structure import molecule
-benzene = molecule('C6H6')
-benzene.center(vacuum=5)
-print(Vasp('molecules/benzene-pbe-d2',
-          xc='PBE',
-          encut=350,
-          kpts=[1, 1, 1],
-          ibrion=1,
-          nsw=100,
-          lvdw=True,
-          atoms=benzene).potential_energy)
+e1, e2, e3 = [Vasp(wd).potential_energy
+              for wd in ['surfaces/Au-benzene-pbe',
+                         'surfaces/Au-pbe',
+                         'molecules/benzene-pbe']]
+print('PBE adsorption energy = {} eV'.format(e1 - e2 - e3))

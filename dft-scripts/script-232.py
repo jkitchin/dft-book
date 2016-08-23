@@ -1,7 +1,13 @@
 from vasp import Vasp
-alloy_0 = Vasp('bulk/CuPd-cls-0').potential_energy
-alloy_1 = Vasp('bulk/CuPd-cls-1').potential_energy
-ref_0 = Vasp('bulk/Cu-cls-0').potential_energy
-ref_1 = Vasp('bulk/Cu-cls-1').potential_energy
-CLS = (alloy_1 - alloy_0) - (ref_1 - ref_0)
-print('CLS = {} eV'.format(CLS))
+calc = Vasp('bulk/CuPd-cls-0')
+calc.clone('bulk/CuPd-cls-1')
+calc.set(ibrion=None,
+         isif=None,
+         nsw=None,
+         setups=[[0, 'Cu']],  # Create separate entry in POTCAR for atom index 0
+         icorelevel=2,        # Perform core level shift calculation
+         clnt=0,              # Excite atom index 0
+         cln=2,               # 2p3/2 electron for Cu core level shift
+         cll=1,
+         clz=1)
+calc.update()

@@ -1,42 +1,28 @@
-# Nonlinear curve fit with confidence interval
+from scipy.optimize import fmin
 import numpy as np
-from scipy.optimize import curve_fit
-from scipy.stats.distributions import  t
-'''
-fit this equation to data
-y = c1 exp(-x) + c2*x
-this is actually a linear regression problem, but it is convenient to
-use the nonlinear fitting routine because it makes it easy to get
-confidence intervals. The downside is you need an initial guess.
-from Matlab
-b =
-    4.9671
-    2.1100
-bint =
-    4.6267    5.3075
-    1.7671    2.4528
-'''
-x = np.array([ 0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9,  1. ])
-y = np.array([ 4.70192769,  4.46826356,  4.57021389,  4.29240134,  3.88155125,
-            3.78382253,  3.65454727,  3.86379487,  4.16428541,  4.06079909])
-# this is the function we want to fit to our data
-def func(x,c0, c1):
-    return c0 * np.exp(-x) + c1*x
-pars, pcov = curve_fit(func, x, y, p0=[4.96, 2.11])
-alpha = 0.05 # 95% confidence interval
-n = len(y)    # number of data points
-p = len(pars) # number of parameters
-dof = max(0, n-p) # number of degrees of freedom
-tval = t.ppf(1.0-alpha/2., dof) # student-t value for the dof and confidence level
-for i, p,var in zip(range(n), pars, np.diag(pcov)):
-    sigma = var**0.5
-    print('c{0}: {1} [{2}  {3}]'.format(i, p,
-                                  p - sigma*tval,
-                                  p + sigma*tval))
+volumes = np.array([13.71, 14.82, 16.0, 17.23, 18.52])
+energies = np.array([-56.29, -56.41, -56.46, -56.463, -56.41])
+def Murnaghan(parameters, vol):
+    'From PRB 28,5480 (1983'
+    E0 = parameters[0]
+    B0 = parameters[1]
+    BP = parameters[2]
+    V0 = parameters[3]
+    E = E0 + B0*vol/BP*(((V0/vol)**BP)/(BP-1)+1) - V0*B0/(BP-1.)
+    return E
+def objective(pars, vol):
+    # we will minimize this function
+    err = energies - Murnaghan(pars, vol)
+    return np.sum(err**2)  # we return the summed squared error directly
+x0 = [-56., 0.54, 2., 16.5]  # initial guess of parameters
+plsq = fmin(objective, x0, args=(volumes,))  # note args is a tuple
+print('parameters = {0}'.format(plsq))
 import matplotlib.pyplot as plt
-plt.plot(x,y,'bo ')
-xfit = np.linspace(0,1)
-yfit = func(xfit, pars[0], pars[1])
-plt.plot(xfit,yfit,'b-')
-plt.legend(['data','fit'],loc='best')
-plt.savefig('images/nonlin-fit-ci.png')
+plt.plot(volumes, energies, 'ro')
+# plot the fitted curve on top
+x = np.linspace(min(volumes), max(volumes), 50)
+y = Murnaghan(plsq, x)
+plt.plot(x, y, 'k-')
+plt.xlabel(r'Volume ($\AA^3$)')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/nonlinear-fitting-lsq.png')

@@ -1,17 +1,28 @@
-# compute local potential of slab with no dipole
-from ase.lattice.surface import fcc111, add_adsorbate
 from vasp import Vasp
 import matplotlib.pyplot as plt
-from ase.io import write
-slab = fcc111('Al', size=(2, 2, 2), vacuum=10.0)
-add_adsorbate(slab, 'Na', height=1.2, position='fcc')
-slab.center()
-write('images/Na-Al-slab.png', slab, rotation='-90x', show_unit_cell=2)
-print(Vasp('surfaces/Al-Na-nodip',
-           xc='PBE',
-           encut=340,
-           kpts=[2, 2, 1],
-           lcharg=True,
-           lvtot=True,  # write out local potential
-           lvhar=True,  # write out only electrostatic potential, not xc pot
-           atoms=slab).potential_energy)
+import numpy as np
+calc = Vasp('surfaces/Al-slab-relaxed')
+atoms = calc.get_atoms()
+calc = Vasp('surfaces/Al-slab-locpot',
+            xc='PBE',
+            kpts=[6, 6, 1],
+            encut=350,
+            lvtot=True,  # write out local potential
+            lvhar=True,  # write out only electrostatic potential, not xc pot
+            atoms=atoms)
+calc.wait()
+ef = calc.get_fermi_level()
+x, y, z, lp = calc.get_local_potential()
+nx, ny, nz = lp.shape
+axy = np.array([np.average(lp[:, :, z]) for z in range(nz)])
+# setup the x-axis in realspace
+uc = atoms.get_cell()
+xaxis = np.linspace(0, uc[2][2], nz)
+plt.plot(xaxis, axy)
+plt.plot([min(xaxis), max(xaxis)], [ef, ef], 'k:')
+plt.xlabel('Position along z-axis')
+plt.ylabel('x-y averaged electrostatic potential')
+plt.savefig('images/Al-wf.png')
+ind = (xaxis > 0) & (xaxis < 5)
+wf = np.average(axy[ind]) - ef
+print ' The workfunction is {0:1.2f} eV'.format(wf)

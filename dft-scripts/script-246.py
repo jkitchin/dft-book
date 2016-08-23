@@ -1,12 +1,16 @@
 import numpy as np
-from scipy.stats.distributions import  t
-n = 10  # number of measurements
-dof = n - 1  # degrees of freedom
-avg_x = 16.1  # average measurement
-std_x = 0.01  # standard deviation of measurements
-# Find 95% prediction interval for next measurement
-alpha = 1.0 - 0.95
-pred_interval = t.ppf(1 - alpha / 2., dof) * std_x * np.sqrt(1. + 1. / n)
-s = ['We are 95% confident the next measurement',
-       ' will be between {0:1.3f} and {1:1.3f}']
-print(''.join(s).format(avg_x - pred_interval, avg_x + pred_interval))
+import matplotlib as mpl
+# http://matplotlib.sourceforge.net/users/customizing.html
+mpl.rcParams['legend.numpoints'] = 1  # default is 2
+import matplotlib.pyplot as plt
+x = np.linspace(0, 6, 100)
+y = np.cos(x)
+plt.plot(x, y, label='full')
+ind = (x > 2) & (x < 4)
+subx = x[ind]
+suby = y[ind]
+plt.plot(subx, suby, 'bo', label='sliced')
+xlabel('x')
+ylabel('cos(x)')
+plt.legend(loc='lower right')
+plt.savefig('images/np-array-slice.png')

@@ -154,9 +154,9 @@ To get a perfect expansion, one needs an infinite number of planewaves.  Luckily
 | O         |  300 |  520 |
 | O_sv      | 1066 | 1847 |
 
-Bloch's theorem eliminates the need to calculate an infinite number of wave functions, because there are only a finite number of electrons in the unit (super) cell. However, there are still an infinite number of discrete $\mathbf{k}$ points that must be considered, and the energy of the unit cell is calculated as an integral over these points.  It turns out that wave functions at $\mathbf{k}$ points that are close together are similar, thus an interpolation scheme can be used with a finite number of $\mathbf{k}$ points. This also converts the integral used to determine the energy into a sum over the $\mathbf{k}$ points, which are suitably weighted to account for the finite number of them.  There will be errors in the total energy associated with the finite number of $\mathbf{k}$, but these can be reduced and tested for convergence by using higher $\mathbf{k}$-point densities. An excellent discussion of this for aperiodic systems can be found in Ref.  citealp:makov1995:period-bound-condit.
+Bloch's theorem eliminates the need to calculate an infinite number of wave functions, because there are only a finite number of electrons in the unit (super) cell. However, there are still an infinite number of discrete k points that must be considered, and the energy of the unit cell is calculated as an integral over these points.  It turns out that wave functions at k points that are close together are similar, thus an interpolation scheme can be used with a finite number of k points. This also converts the integral used to determine the energy into a sum over the k points, which are suitably weighted to account for the finite number of them.  There will be errors in the total energy associated with the finite number of k, but these can be reduced and tested for convergence by using higher k-point densities. An excellent discussion of this for aperiodic systems can be found in Ref.  citealp:makov1995:period-bound-condit.
 
-The most common schemes for generating $\mathbf{k}$ points are the Chadi-Cohen scheme cite:PhysRevB.8.5747, and the Monkhorst-Pack scheme cite:PhysRevB.13.5188. The use of these $\mathbf{k}$ point setups amounts to an expansion of the periodic function in reciprocal space, which allows a straight-forward interpolation of the function between the points that is more accurate than with other $\mathbf{k}$ point generation schemes cite:PhysRevB.13.5188.
+The most common schemes for generating k points are the Chadi-Cohen scheme cite:PhysRevB.8.5747, and the Monkhorst-Pack scheme cite:PhysRevB.13.5188. The use of these k point setups amounts to an expansion of the periodic function in reciprocal space, which allows a straight-forward interpolation of the function between the points that is more accurate than with other k point generation schemes cite:PhysRevB.13.5188.
 
 ** Pseudopotentials
 The core electrons of an atom are computationally expensive with planewave basis sets because they are highly localized. This means that a very large number of planewaves are required to expand their wave functions. Furthermore, the contributions of the core electrons to bonding compared to those of the valence electrons is usually negligible. In fact, the primary role of the core electron wave functions is to ensure proper orthogonality between the valence electrons and core states.  Consequently, it is desirable to replace the atomic potential due to the core electrons with a pseudopotential that has the same effect on the valence electrons cite:PhysRevB.43.1993. There are essentially two kinds of pseudopotentials, norm-conserving soft pseudopotentials cite:PhysRevB.43.1993 and Vanderbilt ultrasoft pseudopotentials cite:PhysRevB.41.7892. In either case, the pseudopotential function is generated from an all-electron calculation of an atom in some reference state. In norm-conserving pseudopotentials, the charge enclosed in the pseudopotential region is the same as that enclosed by the same space in an all-electron calculation. In ultrasoft pseudopotentials, this requirement is relaxed and charge augmentation functions are used to make up the difference. As its name implies, this allows a "softer" pseudopotential to be generated, which means fewer planewaves are required to expand it.
@@ -169,7 +169,7 @@ The pseudopotentials are not unique, and calculated properties depend on them. H
 VASP provides a database of PAW potentials cite:PhysRevB.50.17953,PhysRevB.59.1758.
 
 ** Fermi Temperature and band occupation numbers
-At absolute zero, the occupancies of the bands of a system are well-defined step functions; all bands up to the Fermi level are occupied, and all bands above the Fermi level are unoccupied.  There is a particular difficulty in the calculation of the electronic structures of metals compared to semiconductors and molecules. In molecules and semiconductors, there is a clear energy gap between the occupied states and unoccupied states. Thus, the occupancies are insensitive to changes in the energy that occur during the self-consistency cycles. In metals, however, the density of states is continuous at the Fermi level, and there are typically a substantial number of states that are close in energy to the Fermi level.  Consequently, small changes in the energy can dramatically change the occupation numbers, resulting in instabilities that make it difficult to converge to the occupation step function. A related problem is that the Brillouin zone integral (which in practice is performed as a sum over a finite number of $\mathbf{k}$ points) that defines the band energy converges very slowly with the number of $\mathbf{k}$ points due to the discontinuity in occupancies in a continuous distribution of states for metals cite:gillan1989:calcul,Kresse199615.  The difficulty arises because the temperature in most DFT calculations is at absolute zero.  At higher temperatures, the DOS is smeared across the Fermi level, resulting in a continuous occupation function over the distribution of states. A finite-temperature version of DFT was developed cite:PhysRev.137.A1441, which is the foundation on which one solution to this problem is based. In this solution, the step function is replaced by a smoothly varying function such as the Fermi-Dirac function at a small, but non-zero temperature cite:Kresse199615. The total energy is then extrapolated back to absolute zero.
+At absolute zero, the occupancies of the bands of a system are well-defined step functions; all bands up to the Fermi level are occupied, and all bands above the Fermi level are unoccupied.  There is a particular difficulty in the calculation of the electronic structures of metals compared to semiconductors and molecules. In molecules and semiconductors, there is a clear energy gap between the occupied states and unoccupied states. Thus, the occupancies are insensitive to changes in the energy that occur during the self-consistency cycles. In metals, however, the density of states is continuous at the Fermi level, and there are typically a substantial number of states that are close in energy to the Fermi level.  Consequently, small changes in the energy can dramatically change the occupation numbers, resulting in instabilities that make it difficult to converge to the occupation step function. A related problem is that the Brillouin zone integral (which in practice is performed as a sum over a finite number of k points) that defines the band energy converges very slowly with the number of k points due to the discontinuity in occupancies in a continuous distribution of states for metals cite:gillan1989:calcul,Kresse199615.  The difficulty arises because the temperature in most DFT calculations is at absolute zero.  At higher temperatures, the DOS is smeared across the Fermi level, resulting in a continuous occupation function over the distribution of states. A finite-temperature version of DFT was developed cite:PhysRev.137.A1441, which is the foundation on which one solution to this problem is based. In this solution, the step function is replaced by a smoothly varying function such as the Fermi-Dirac function at a small, but non-zero temperature cite:Kresse199615. The total energy is then extrapolated back to absolute zero.
 
 ** Spin polarization and magnetism
 There are two final points that need to be discussed about these calculations, spin polarization and dipole corrections. Spin polarization is important for systems that contain net spin. For example, iron, cobalt and nickel are magnetic because they have more electrons with spin "up" than spin "down" (or vice versa).  Spin polarization must also be considered in atoms and molecules with unpaired electrons, such as hydrogen and oxygen atoms, oxygen molecules and radicals. For example, there are two spin configurations for an oxygen molecule, the singlet state with no unpaired electrons, and the triplet state with two unpaired electrons. The oxygen triplet state is lower in energy than the oxygen singlet state, and thus it corresponds to the ground state for an oxygen atom. A classically known problem involving spin polarization is the dissociation of a hydrogen molecule. In this case, the molecule starts with no net spin, but it dissociates into two atoms, each of which has an unpaired electron.  See section 5.3.5 in Reference citealp:koch2001 for more details on this.
@@ -853,7 +853,7 @@ print('theta = {0} degrees'.format(atoms.get_angle([1, 0, 2]) * 180. / pi))
 : theta = 106.334624232 degrees
 
 **** Dihedral angles
-There is support in ase for computing [[http://en.wikipedia.org/wiki/Dihedral_angle][dihedral angles]]. Let us illustrate that for ethane. We will compute the dihedral angle between atoms 5, 1, 0, and 4. That is a H-C-C-H dihedral angle, and one can visually see (although not here) that these atoms have a dihedral angle of 60^{\circ} (Figure ref:fig:ethane-dihedral).
+There is support in ase for computing [[http://en.wikipedia.org/wiki/Dihedral_angle][dihedral angles]]. Let us illustrate that for ethane. We will compute the dihedral angle between atoms 5, 1, 0, and 4. That is a H-C-C-H dihedral angle, and one can visually see (although not here) that these atoms have a dihedral angle of 60^{\deg} (Figure ref:fig:ethane-dihedral).
 
 #+BEGIN_SRC python
 # calculate an ethane dihedral angle
@@ -3950,8 +3950,10 @@ It is helpful sometimes to animate the Nudged elastic band path. Here is a scrip
 from ase.io import write
 from ase.visualize import view
 from vasp import Vasp
+import numpy as np
+import os
 
-calc = Fasp('molecules/nh3-neb') as calc:
+calc = Vasp('molecules/nh3-neb')
 images, energies = calc.get_neb()
 
 # this rotates the atoms 90 degrees about the y-axis
@@ -4165,7 +4167,7 @@ The [[http://www.materialsproject.org/][Materials Project]] offers web access to
 
 For example, I downloaded this cif file for a RuO$_2$ structure (Material ID 825).
 # C-c C-v t to tangle this out
-# +begin_src text :tangle bulk/Ru2O4_1.cif
+#+begin_src text :tangle bulk/Ru2O4_1.cif
 #\#CIF1.1
 ##########################################################################
 #               Crystallographic Information Format file
@@ -5714,7 +5716,7 @@ print np.array(EM)
 
 Fe is in a BCC crystal structure, which is high in symmetry. Consequently, many of the elements in the matrix are equal to zero.
 
-see http://www.nist.gov/data/PDFfiles/jpcrd34.pdf‎ for a lot of detail about Fe-Ni alloys and general theory about elastic constants. In the next section, we show how the code above is integrated into mod:Vasp.
+See http://www.nist.gov/data/PDFfiles/jpcrd34.pdf for a lot of detail about Fe-Ni alloys and general theory about elastic constants. In the next section, we show how the code above is integrated into mod:Vasp.
 
 *** Al elastic properties
 First, the relaxed geometry.
@@ -5739,7 +5741,7 @@ print(calc.potential_energy)
 #+RESULTS:
 : -14.97511793
 
-Ok, now with a relaxed geometry at hand, we proceed with the elastic constants. This is accomplished with IBRION=6 and ISIF ≥ 3 in VASP.
+Ok, now with a relaxed geometry at hand, we proceed with the elastic constants. This is accomplished with IBRION=6 and ISIF \ge 3 in VASP.
 
 #+BEGIN_SRC python
 from vasp import Vasp
@@ -6627,7 +6629,7 @@ density of states can be calculated by a sum over the k-points
 cite:seitsonen2000:phd:
 
 \begin{equation}\label{eq:dos}
-\Rho(\epsilon)=\sum_\mathbf{\mathrm{k}} \omega_\mathbf{\mathrm{k}} \sum_i \beta(\epsilon -\epsilon_{i\mathbf{\mathrm{k}}})
+\rho(\epsilon)=\sum_\mathbf{\mathrm{k}} \omega_\mathbf{\mathrm{k}} \sum_i \beta(\epsilon -\epsilon_{i\mathbf{\mathrm{k}}})
 \end{equation}
 
 where $\omega_\mathbf{\mathrm{k}}$ is the weight associated with the
@@ -7418,8 +7420,9 @@ write('images/Au-211.png',
 #+caption: An Au(211) surface constructed with =ase=.
 [[./images/Au-211.png]]
 
-** Surface calculation parameters
+** TODO Surface calculation parameters
 There is one important parameter that is different for surfaces than for bulk calculations, the k-point grid. Assuming you have followed the convention that the z-axis is normal to the surface, the k-point grids for slab calculations always have the form of $M \times N \times 1$. To illustrate why, consider this example:
+
 
 #+BEGIN_SRC python
 from ase.lattice.surface import fcc111
@@ -7445,11 +7448,12 @@ n, bands, p = calc.get_bandstructure(kpts_path=[(r'$\Gamma$', [0, 0, 0]),
                                                 ('$K3$', [0.0, 0.0, 1.0])],
                                      kpts_nintersections=10)
 
+if p is None: calc.abort()
+
 p.savefig('images/Al-slab-bandstructure.png')
 #+END_SRC
 
 #+RESULTS:
-: done
 
 
 # <<surface-bands>>
@@ -7537,15 +7541,16 @@ calc = Vasp('surfaces/Al-slab-relaxed',
             isif=2,
             nsw=10,
             atoms=atoms)
-print calc.potential_energy
-print calc
+
+print(calc.potential_energy)
+print(calc)
 #+END_SRC
 
 #+RESULTS:
 #+begin_example
--14.18341424
+-14.17963819
 
-*************** VASP CALCULATION SUMMARY ***************
+
 Vasp calculation directory:
 ---------------------------
   [[/home-research/jkitchin/dft-book/surfaces/Al-slab-relaxed]]
@@ -7559,14 +7564,14 @@ Unit cell:
   alpha, beta, gamma (deg):  90.0  90.0  60.0
   Total volume:                  191.872 Ang^3
   Stress:    xx     yy     zz     yz     xz     xy
-          0.006  0.006  0.001 -0.000 -0.000 -0.000 GPa
+          0.006  0.006  0.002 -0.000 -0.000 -0.000 GPa
 
   ID  tag     sym    x         y         z        rmsF (eV/A)
-  0   0       Al     0.000*    0.000*   10.000*      0.00
-  1   0       Al     1.432*    0.827*   12.338*      0.00
-  2   0       Al     2.864     1.653    14.646       0.03
-  3   0       Al     0.000     0.000    17.003       0.04
-  Potential energy: -14.1834 eV
+  0   4       Al     0.000*    0.000*   10.000*      0.00
+  1   3       Al     1.432*    0.827*   12.338*      0.00
+  2   2       Al     2.864     1.653    14.677       0.19
+  3   1       Al     0.000     0.000    17.015       0.01
+  Potential energy: -14.1796 eV
 
 INPUT Parameters:
 -----------------
@@ -7586,6 +7591,7 @@ Pseudopotentials used:
 ----------------------
   Al: potpaw_PBE/Al/POTCAR (git-hash: ad7c649117f1490637e05717e30ab9a0dd8774f6)
 #+end_example
+
 
 You can see that atoms 2 and 3 (the ones we relaxed, because the have tags of 1 and 2, which are less than 3) now have very low forces on them and it appears that atoms 0 and 1 have no forces on them. That is because the FixAtoms constraint works by setting the forces on those atoms to zero. We can see in the next example that the z-positions of the relaxed atoms have indeed relaxed and changed, while the position of the frozen atoms did not change.
 
@@ -7637,6 +7643,10 @@ for i in range(1, len(atoms)):
 #+END_SRC
 
 #+RESULTS:
+: Total energy: -14.182
+: d_(1,0) = 2.338 angstroms
+: d_(2,1) = 2.309 angstroms
+: d_(3,2) = 2.370 angstroms
 
 Depending on the layer there is either slight contraction or expansion. These quantities are small, and careful convergence studies should be performed. Note the total energy change from unrelaxed to relaxed is not that large in this case (e.g., it is about 5 meV). This is usually the case for metals, where the relaxation effects are relatively small. In oxides and semiconductors, the effects can be large, and when there are adsorbates, the effects can be large also.
 
@@ -8926,7 +8936,7 @@ calc.set(ichain=0, lclimb=True)
 images, energies = calc.get_neb()
 calc.plot_neb(show=False)
 import matplotlib.pyplot as plt
-plt.savefig('images/pt-o-cineb.svg')
+plt.savefig('images/pt-o-cineb.png')
 plt.show()
 #+END_SRC
 
@@ -8936,7 +8946,7 @@ plt.show()
 
 #+attr_latex: :placement [H]
 #+caption: Climbing image NEB
-[[./images/pt-o-cineb.svg]]
+[[./images/pt-o-cineb.png]]
 
 *** Using vibrations to confirm a transition state
 A transition state should have exactly one imaginary degree of freedom which corresponds to the mode that takes reactants to products. See [[*Vibrations%20of%20the%20bridge%20site][Vibrations of the bridge site]] for an example.
@@ -10093,7 +10103,7 @@ This is a little negative compared to the literature but that could be due to th
 ** The BEEF functional in Vasp
 In Vasp 5.3.5 it is possible to use the BEEF functional cite:wellendorff-2012-densit.
 
-In Vasp, we just specify xc='beef-bdw' and Vasp takes care of the rest. This includes setting some addtional variables to setup van der Waals and to get the BEEF ensemble energies. Let us consider the dissociation energy of H_{2}.
+some addtional variables to setup van der Waals and to get the BEEF ensemble energies. Let us consider the dissociation energy of H_{2}.
 
 #+Begin_SRC python
 from vasp import Vasp
@@ -13638,7 +13648,7 @@ Here we create the tex file. This extracts the scripts out to the dft-scripts fo
 #+END_SRC
 
 #+RESULTS:
-: dft was built on Fri Jul  1 16:02:57 2016
+: dft was built on Thu Jul 21 16:24:13 2016
 
 ** html
 
@@ -13652,8 +13662,9 @@ Here we create the tex file. This extracts the scripts out to the dft-scripts fo
 #+END_SRC
 
 #+RESULTS:
-: dft (html) was built on Fri Jul  1 16:00:43 2016
+: dft (html) was built on Thu Jul 21 16:40:21 2016
 
+** deploy the blog
 Now, do this in a shell (so the virtual env will activate):
 
 #+BEGIN_SRC sh

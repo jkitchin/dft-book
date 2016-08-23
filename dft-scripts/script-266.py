@@ -1,8 +1,6 @@
+import numpy as np
+x = np.linspace(0.0,6.0,100)
+y = np.cos(x)
 import csv
-reader = csv.reader(open("some.csv",'r'),delimiter=',')
-x,y = [],[]
-for row in reader:
-#csv returns strings that must be cast as floats
-    a,b = [float(z) for z in row]
-    x.append(a)
-    y.append(b)
+writer = csv.writer(open("some.csv", "w"))
+writer.writerows(zip(x,y))

@@ -1,8 +1,13 @@
 from vasp import Vasp
-eslab = Vasp('surfaces/Cu-110').potential_energy
-emissingrow = Vasp('surfaces/Cu-110-missing-row').potential_energy
-ebulk = Vasp('bulk/Cu-fcc').potential_energy
-print 'natoms slab        = {0}'.format(len(slab))
-print 'natoms missing row = {0}'.format(len(missingrow))
-print 'natoms bulk        = {0}'.format(len(bulk))
-print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
+from ase.visualize import view
+from ase.lattice.cubic import FaceCenteredCubic
+atoms = FaceCenteredCubic(directions=[[0, 1, 1],
+                                      [1, 0, 1],
+                                      [1, 1, 0]],
+                                     size=(1, 1, 1),
+                                     symbol='Cu')
+Vasp('bulk/Cu-fcc',
+     xc='PBE',
+     encut=350,
+     kpts=[12, 12, 12],
+     atoms=atoms).update()

@@ -1,9 +1,9 @@
-from ase.lattice.surface import surface
+from ase.lattice.surface import fcc111
 from ase.io import write
-# Au(211) with 9 layers
-s1 = surface('Au', (2, 1, 1), 9)
-s1.center(vacuum=10, axis=2)
-write('images/Au-211.png',
-      s1.repeat((3, 3, 1)),
-      rotation='-30z,90x',  # change the orientation for viewing
-      show_unit_cell=2)
+from ase.visualize import view
+slab = fcc111('Al', size=(2, 2, 3), vacuum=10.0)
+from ase.constraints import FixAtoms
+constraint = FixAtoms(mask=[atom.tag >= 2 for atom in slab])
+slab.set_constraint(constraint)
+view(slab)
+write('images/Al-slab.png', slab, rotation='90x', show_unit_cell=2)

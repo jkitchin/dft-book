@@ -1,6 +1,6 @@
-from vasp import Vasp
-calc = Vasp('bulk/CuPd-cls-0')
-calc.clone('bulk/CuPd-cls-1')
+from vasp import VAsp
+calc = Vasp('bulk/Cu-cls-0')
+calc.clone('bulk/Cu-cls-1')
 calc.set(ibrion=None,
          isif=None,
          nsw=None,

@@ -1,15 +1,13 @@
 from vasp import Vasp
-calc = Vasp('bulk/Al-bulk')
-calc.clone('bulk/Al-elastic')
-calc.set(ibrion=6,    #
-         isif=3,      # gets elastic constants
-         potim=0.015,  # displacements
-         nsw=1,
-         nfree=2)
-calc.wait(abort=True)
-EM = calc.get_elastic_moduli()
-print(EM)
-c11 = EM[0, 0]
-c12 = EM[0, 1]
-B = (c11 + 2 * c12) / 3.0
-print(B)
+from ase.lattice.cubic import FaceCenteredCubic
+atoms = FaceCenteredCubic(symbol='Al')
+calc = Vasp('bulk/Al-bulk',
+            xc='PBE',
+            kpts=[12, 12, 12],
+            encut=350,
+            prec='High',
+            isif=3,
+            nsw=30,
+            ibrion=1,
+            atoms=atoms)
+print(calc.potential_energy)

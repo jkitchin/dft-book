@@ -1,16 +1,18 @@
+from ase.lattice.cubic import BodyCenteredCubic
 import numpy as np
-from Scientific.Geometry import Vector
-A = Vector([1, 1, 1])   # Scientfic
-a = np.array([1, 1, 1])  # numpy
-B = Vector([0.0, 1.0, 0.0])
-print('|A| = ', A.length())        # Scientific Python way
-print('|a| = ', np.sum(a**2)**0.5)  # numpy way
-print('|a| = ', np.linalg.norm(a))  # numpy way 2
-print('ScientificPython angle = ', A.angle(B))  # in radians
-print ('numpy angle = {}',
-       np.arccos(np.dot(a / np.linalg.norm(a),
-                        B / np.linalg.norm(B))))
-# cross products
-print('Scientific A .cross. B = ', A.cross(B))
-# you can use Vectors in numpy
-print('numpy A .cross. B      = ', np.cross(A,B))
+bulk = BodyCenteredCubic(directions=[[1,0,0],
+                                     [0,1,0],
+                                     [0,0,1]],
+                         size=(2,2,2),
+                         latticeconstant=2.87,
+                         symbol='Fe')
+newbasis = 2.87*np.array([[-0.5, 0.5, 0.5],
+                          [0.5, -0.5, 0.5],
+                          [0.5, 0.5, -0.5]])
+pos = bulk.get_positions()
+s = np.dot(np.linalg.inv(newbasis.T), pos.T).T
+print('atom positions in primitive basis')
+print(s)
+# let us see the unit cell in terms of the primitive basis too
+print('unit cell in terms of the primitive basis')
+print(np.dot(np.linalg.inv(newbasis.T), bulk.get_cell().T).T)

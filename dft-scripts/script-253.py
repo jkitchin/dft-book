@@ -1,72 +1,67 @@
-'''
-3D vector interpolation in non-cubic unit cells with vector
-interpolation.
-This function should work for any shape unit cell.
-'''
 from vasp import Vasp
-import bisect
 import numpy as np
-from pylab import plot, xlabel, ylabel, savefig, show
 calc = Vasp('molecules/co-centered')
 atoms = calc.get_atoms()
-x,y,z,cd = calc.get_charge_density()
-def vinterp3d(x, y, z, u, xi, yi, zi):
-    p = np.array([xi, yi, zi])
-    #1D arrays of cooridinates
-    xv = x[:, 0, 0]
-    yv = y[0, :, 0]
-    zv = z[0, 0, :]
-    # we subtract 1 because bisect tells us where to insert the
-    # element to maintain an ordered list, so we want the index to the
-    # left of that point
-    i = bisect.bisect_right(xv, xi) - 1
-    j = bisect.bisect_right(yv, yi) - 1
-    k = bisect.bisect_right(zv, zi) - 1
-    #points at edge of cell. We only need P1, P2, P3, and P5
-    P1 = np.array([x[i, j, k], y[i, j, k], z[i,j,k]])
-    P2 = np.array([x[i + 1, j, k], y[i + 1, j, k], z[i + 1, j, k]])
-    P3 = np.array([x[i, j + 1, k], y[i, j + 1, k], z[i, j + 1, k]])
-    P5 = np.array([x[i, j, k + 1], y[i, j, k + 1], z[i, j, k + 1]])
-    #values of u at edge of cell
-    u1 = u[i, j, k]
-    u2 = u[i + 1, j, k]
-    u3 = u[i, j + 1, k]
-    u4 = u[i + 1, j + 1, k]
-    u5 = u[i, j, k + 1]
-    u6 = u[i + 1, j, k + 1]
-    u7 = u[i, j + 1, k + 1]
-    u8 = u[i + 1, j + 1, k + 1]
-    #cell basis vectors, not the unit cell, but the voxel cell containing the point
-    cbasis = np.array([P2 - P1,
-                       P3 - P1,
-                       P5 - P1])
-    #now get interpolated point in terms of the cell basis
-    s = np.dot(np.linalg.inv(cbasis.T), np.array([xi, yi, zi]) - P1)
-    #now s = (sa, sb, sc) which are fractional coordinates in the vector space
-    #next we do the interpolations
-    ui1 = u1 + s[0] * (u2 - u1)
-    ui2 = u3 + s[0] * (u4 - u3)
-    ui3 = u5 + s[0] * (u6 - u5)
-    ui4 = u7 + s[0] * (u8 - u7)
-    ui5 = ui1 + s[1] * (ui2 - ui1)
-    ui6 = ui3 + s[1] * (ui4 - ui3)
-    ui7 = ui5 + s[2] * (ui6 - ui5)
-    return ui7
-# compute a line with 60 points in it through these two points
-P1 = np.array([0.0, 5.0, 5.0])
-P2 = np.array([10.0, 5.0, 5.0])
-npoints = 60
-points = [P1 + n * (P2 - P1) / npoints for n in range(npoints)]
-# compute the distance along the line
-R = [np.linalg.norm(p - P1) for p in points]
-icd = [vinterp3d(x, y, z, cd, p[0], p[1], p[2]) for p in points]
-plot(R, icd)
+x, y, z, cd = calc.get_charge_density()
+def interp3d(x,y,z,cd,xi,yi,zi):
+    '''
+    interpolate a cubic 3D grid defined by x,y,z,cd at the point
+    (xi,yi,zi)
+    '''
+    def get_index(value,vector):
+        '''
+        assumes vector ordered decreasing to increasing. A bisection
+        search would be faster.
+        '''
+        for i,val in enumerate(vector):
+            if val > value:
+                return i-1
+        return None
+    xv = x[:,0,0]
+    yv = y[0,:,0]
+    zv = z[0,0,:]
+    a,b,c = xi, yi, zi
+    i = get_index(a,xv)
+    j = get_index(b,yv)
+    k = get_index(c,zv)
+    x1 = x[i,j,k]
+    x2 = x[i+1,j,k]
+    y1 = y[i,j,k]
+    y2 = y[i,j+1,k]
+    z1 = z[i,j,k]
+    z2 = z[i,j,k+1]
+    u1 = cd[i, j, k]
+    u2 = cd[i+1, j, k]
+    u3 = cd[i, j+1, k]
+    u4 = cd[i+1, j+1, k]
+    u5 = cd[i, j, k+1]
+    u6 = cd[i+1, j, k+1]
+    u7 = cd[i, j+1, k+1]
+    u8 = cd[i+1, j+1, k+1]
+    w1 = u2 + (u2-u1)/(x2-x1)*(a-x2)
+    w2 = u4 + (u4-u3)/(x2-x1)*(a-x2)
+    w3 = w2 + (w2-w1)/(y2-y1)*(b-y2)
+    w4 = u5 + (u6-u5)/(x2-x1)*(a-x1)
+    w5 = u7 + (u8-u7)/(x2-x1)*(a-x1)
+    w6 = w4 + (w5-w4)/(y2-y1)*(b-y1)
+    w7 = w3 + (w6-w3)/(z2-z1)*(c-z1)
+    u = w7
+    return u
 pos = atoms.get_positions()
+P1 = np.array([0.0, 5.0, 5.0])
+P2 = np.array([9.0, 5.0, 5.0])
+npoints = 60
+points = [P1 + n*(P2-P1)/npoints for n in range(npoints)]
+R = [np.linalg.norm(p-P1) for p in points]
+# interpolated line
+icd = [interp3d(x,y,z,cd,p[0],p[1],p[2]) for p in points]
+import matplotlib.pyplot as plt
+plt.plot(R, icd)
 cR = np.linalg.norm(pos[0] - P1)
 oR = np.linalg.norm(pos[1] - P1)
-plot([cR, cR], [0, 2], 'r-') #markers for where the nuclei are
-plot([oR, oR], [0, 8], 'r-')
-xlabel('|R| ($\AA$)')
-ylabel('Charge density (e/$\AA^3$)')
-savefig('images/interpolated-charge-density.png')
-show()
+plt.plot([cR, cR], [0, 2], 'r-') #markers for where the nuclei are
+plt.plot([oR, oR], [0, 8], 'r-')
+plt.xlabel('|R| ($\AA$)')
+plt.ylabel('Charge density (e/$\AA^3$)')
+plt.savefig('images/CO-charge-density.png')
+plt.show()

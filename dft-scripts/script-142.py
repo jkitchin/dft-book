@@ -1,22 +1,32 @@
-# run Cu2O calculation
 from vasp import Vasp
 from ase import Atom, Atoms
-# http://phycomp.technion.ac.il/~ira/types.html#Cu2O
-a = 4.27
-atoms = Atoms([Atom('Cu', [0, 0, 0]),
-               Atom('Cu', [0.5, 0.5, 0.0]),
-               Atom('Cu', [0.5, 0.0, 0.5]),
-               Atom('Cu', [0.0, 0.5, 0.5]),
-               Atom('O', [0.25, 0.25, 0.25]),
-               Atom('O', [0.75, 0.75, 0.75])])
-atoms.set_cell((a, a, a), scale_atoms=True)
-calc = Vasp('bulk/Cu2O',
-            encut=400,
+# parent metals
+cu = Vasp('bulk/alloy/cu')
+cu_e = cu.potential_energy / len(cu.get_atoms())
+pd = Vasp('bulk/alloy/pd')
+pd_e = pd.potential_energy / len(pd.get_atoms())
+atoms = Atoms([Atom('Cu',  [-1.867,     1.867,      0.000]),
+               Atom('Cu',  [0.000,      0.000,      0.000]),
+               Atom('Cu',  [0.000,      1.867,      1.867]),
+               Atom('Pd',  [-1.867,     0.000,      1.86])],
+               cell=[[-3.735,  0.000,  0.000],
+                     [0.000,  0.000,  3.735],
+                     [0.000,  3.735,  0.000]])
+calc = Vasp('bulk/alloy/cu3pd-2',
+            xc='PBE',
+            encut=350,
             kpts=[8, 8, 8],
+            nbands=34,
             ibrion=2,
             isif=3,
-            nsw=30,
-            xc='PBE',
+            nsw=10,
             atoms=atoms)
-print atoms.get_potential_energy()
-print atoms.get_stress()
+e4 = atoms.get_potential_energy()
+Vasp.wait(abort=True)
+for atom in atoms:
+    if atom.symbol == 'Cu':
+        e4 -= cu_e
+    else:
+        e4 -= pd_e
+e4 /= len(atoms)
+print('Delta Hf cu3pd-2 = {0:1.2f} eV/atom'.format(e4))

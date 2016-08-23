@@ -1,19 +1,29 @@
+# run CuO calculation
 from vasp import Vasp
-# don't forget to normalize your total energy to a formula unit. Cu2O
-# has 3 atoms, so the number of formula units in an atoms is
-# len(atoms)/3.
-calc = Vasp('bulk/Cu2O')
-atoms1 = calc.get_atoms()
-cu2o_energy = atoms1.get_potential_energy()
-calc = Vasp('bulk/CuO')
-atoms2 = calc.get_atoms()
-cuo_energy = atoms2.get_potential_energy()
-# make sure to use the same cutoff energy for the O2 molecule!
-calc = Vasp('molecules/O2-sp-triplet-400')
-atoms3 = calc.get_atoms()
-o2_energy = atoms3.get_potential_energy()
-calc.stop_if(None in [cu2o_energy, cuo_energy, o2_energy])
-cu2o_energy /= (len(atoms1) / 3)  # note integer math
-cuo_energy /= (len(atoms2) / 2)
-rxn_energy = 4.0 * cuo_energy - o2_energy - 2.0 * cu2o_energy
-print 'Reaction energy = {0} eV'.format(rxn_energy)
+from ase import Atom, Atoms
+import numpy as np
+# CuO
+# http://cst-www.nrl.navy.mil/lattice/struk/b26.html
+# http://www.springermaterials.com/docs/info/10681727_51.html
+a = 4.6837
+b = 3.4226
+c = 5.1288
+beta = 99.54/180*np.pi
+y = 0.5819
+a1 = np.array([0.5*a, -0.5*b, 0.0])
+a2 = np.array([0.5*a, 0.5*b, 0.0])
+a3 = np.array([c*np.cos(beta), 0.0, c*np.sin(beta)])
+atoms = Atoms([Atom('Cu', 0.5*a2),
+               Atom('Cu', 0.5*a1 + 0.5*a3),
+               Atom('O', -y*a1 + y*a2 + 0.25*a3),
+               Atom('O',  y*a1 - y*a2 - 0.25*a3)],
+               cell=(a1, a2, a3))
+calc = Vasp('bulk/CuO',
+            encut=400,
+            kpts=[8, 8, 8],
+            ibrion=2,
+            isif=3,
+            nsw=30,
+            xc='PBE',
+            atoms=atoms)
+print(atoms.get_potential_energy())
