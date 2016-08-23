@@ -3954,6 +3954,7 @@ import numpy as np
 import os
 
 calc = Vasp('molecules/nh3-neb')
+
 images, energies = calc.get_neb()
 
 # this rotates the atoms 90 degrees about the y-axis
