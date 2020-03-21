@@ -1,66 +1,46 @@
-'''Example of fitting the Birch-Murnaghan EOS to data'''
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import leastsq
-# raw data from 2.2.3-al-analyze-eos.py
-v = np.array([13.72, 14.83, 16.0, 17.23, 18.52])
-e = np.array([-56.29, -56.41, -56.46, -56.46, -56.42])
-#make a vector to evaluate fits on with a lot of points so it looks smooth
-vfit = np.linspace(min(v),max(v),100)
-### fit a parabola to the data
-# y = ax^2 + bx + c
-a,b,c = np.polyfit(v,e,2) #this is from pylab
+import time
 '''
-the parabola does not fit the data very well, but we can use it to get
-some analytical guesses for other parameters.
-V0 = minimum energy volume, or where dE/dV=0
-E = aV^2 + bV + c
-dE/dV = 2aV + b = 0
-V0 = -b/2a
-E0 is the minimum energy, which is:
-E0 = aV0^2 + bV0 + c
-B is equal to V0*d^2E/dV^2, which is just 2a*V0
-and from experience we know Bprime_0 is usually a small number like 4
+These are the brainless way to calculate numerical derivatives. They
+work well for very smooth data. they are surprisingly fast even up to
+10000 points in the vector.
 '''
-#now here are our initial guesses.
-v0 = -b/(2*a)
-e0 = a*v0**2 + b*v0 + c
-b0 = 2*a*v0
-bP = 4
-#now we have to create the equation of state function
-def Murnaghan(parameters,vol):
-    '''
-    given a vector of parameters and volumes, return a vector of energies.
-    equation From PRB 28,5480 (1983)
-    '''
-    E0 = parameters[0]
-    B0 = parameters[1]
-    BP = parameters[2]
-    V0 = parameters[3]
-    E = E0 + B0*vol/BP*(((V0/vol)**BP)/(BP-1)+1) - V0*B0/(BP-1.)
-    return E
-# and we define an objective function that will be minimized
-def objective(pars,y,x):
-    #we will minimize this function
-    err =  y - Murnaghan(pars,x)
-    return err
-x0 = [e0, b0, bP, v0] #initial guesses in the same order used in the Murnaghan function
-murnpars, ier = leastsq(objective, x0, args=(e,v)) #this is from scipy
-#now we make a figure summarizing the results
-plt.plot(v,e,'ro')
-plt.plot(vfit, a*vfit**2 + b*vfit + c,'--',label='parabolic fit')
-plt.plot(vfit, Murnaghan(murnpars,vfit), label='Murnaghan fit')
-plt.xlabel('Volume ($\AA^3$)')
-plt.ylabel('Energy (eV)')
-plt.legend(loc='best')
-#add some text to the figure in figure coordinates
-ax = plt.gca()
-plt.text(0.4, 0.5, 'Min volume = {0:1.2f} $\AA^3$'.format(murnpars[3]),
-     transform = ax.transAxes)
-plt.text(0.4, 0.4, 'Bulk modulus = {0:1.2f} eV/$\AA^3$ = {1:1.2f} GPa'.format(murnpars[1],
-                                                                          murnpars[1]*160.21773),
-     transform = ax.transAxes)
-plt.savefig('images/a-eos.png')
-np.set_printoptions(precision=3)
-print('initial guesses  : ', np.array(x0))  # array for easy printing
-print('fitted parameters: ', murnpars)
+x = np.linspace(0.78, 0.79, 100) # 100 points between 0.78 and 0.79
+y = np.sin(x)
+dy_analytical = np.cos(x)
+'''
+let us use a forward difference method:
+that works up until the last point, where there is not
+a forward difference to use. there, we use a backward difference.
+'''
+tf1 = time.time()
+dyf = [0.0]*len(x)
+for i in range(len(y)-1):
+    dyf[i] = (y[i+1] - y[i])/(x[i+1]-x[i])
+# set last element by backwards difference
+dyf[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
+print(' Forward difference took {0:1.1f} seconds'.format(time.time() - tf1))
+# and now a backwards difference
+tb1 = time.time()
+dyb = [0.0]*len(x)
+# set first element by forward difference
+dyb[0] = (y[0] - y[1])/(x[0] - x[1])
+for i in range(1,len(y)):
+    dyb[i] = (y[i] - y[i-1])/(x[i]-x[i-1])
+print(' Backward difference took {0:1.1f} seconds'.format(time.time() - tb1))
+# and now, a centered formula
+tc1 = time.time()
+dyc = [0.0]*len(x)
+dyc[0] = (y[0] - y[1])/(x[0] - x[1])
+for i in range(1,len(y)-1):
+    dyc[i] = (y[i+1] - y[i-1])/(x[i+1]-x[i-1])
+dyc[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
+print(' Centered difference took {0:1.1f} seconds'.format(time.time() - tc1))
+# the centered formula is the most accurate formula here
+plt.plot(x,dy_analytical, label='analytical derivative')
+plt.plot(x,dyf,'--', label='forward')
+plt.plot(x,dyb,'--', label='backward')
+plt.plot(x,dyc,'--', label='centered')
+plt.legend(loc='lower left')
+plt.savefig('images/simple-diffs.png')

@@ -1,29 +1,24 @@
-from jasp import *
-from ase.lattice.cubic import FaceCenteredCubic
-from ase import Atoms, Atom
-# bulk system
-atoms = FaceCenteredCubic(directions=[[0, 1, 1],
-                                      [1, 0, 1],
-                                      [1, 1, 0]],
-                                      size=(1, 1, 1),
-                                      symbol='Rh')
-with jasp('bulk/bulk-rh',
-          xc='PBE',
-          encut=350,
-          kpts=(4, 4, 4),
-          isif=3,
-          ibrion=2,
-          nsw=10,
-          atoms=atoms) as calc:
-    bulk_energy = atoms.get_potential_energy()
-# atomic system
-atoms = Atoms([Atom('Rh',[5, 5, 5])],
-              cell=(7, 8, 9))
-with jasp('bulk/atomic-rh',
-          xc='PBE',
-          encut=350,
-          kpts=(1, 1, 1),
-          atoms=atoms) as calc:
-    atomic_energy = atoms.get_potential_energy()
-cohesive_energy = atomic_energy - bulk_energy
-print 'The cohesive energy is {0:1.3f} eV'.format(cohesive_energy)
+from vasp import Vasp
+factors = [0.9, 0.95, 1.0, 1.05, 1.1]  # to change volume by
+energies1, volumes1 = [], []  # from step 1
+energies, volumes = [], []  # for step 2
+ready = True
+for f in factors:
+    calc = Vasp('bulk/tio2/step1-{0:1.2f}'.format(f))
+    atoms = calc.get_atoms()
+    energies1.append(atoms.get_potential_energy())
+    volumes1.append(atoms.get_volume())
+    calc.clone('bulk/tio2/step2-{0:1.2f}'.format(f))
+    calc.set(isif=4)
+    # You have to get the atoms again.
+    atoms = calc.get_atoms()
+    energies.append(atoms.get_potential_energy())
+    volumes.append(atoms.get_volume())
+print(energies, volumes)
+calc.stop_if(None in energies)
+import matplotlib.pyplot as plt
+plt.plot(volumes1, energies1, volumes, energies)
+plt.xlabel('Vol. ($\AA^3)$')
+plt.ylabel('Total energy (eV)')
+plt.legend(['step 1', 'step 2'], loc='best')
+plt.savefig('images/tio2-step2.png')

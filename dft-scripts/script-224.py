@@ -1,8 +1,12 @@
-from jasp import *
-with jasp('molecules/H-beef') as calc:
-    H = calc.get_atoms()
-    eH = H.get_potential_energy()
-with jasp('molecules/H2-beef') as calc:
-    H2 = calc.get_atoms()
-    eH2 = H2.get_potential_energy()
-print('D = {} eV'.format(2 * eH - eH2))
+from vasp import Vasp
+from ase.structure import molecule
+benzene = molecule('C6H6')
+benzene.center(vacuum=5)
+print(Vasp('molecules/benzene-pbe-d2',
+          xc='PBE',
+          encut=350,
+          kpts=[1, 1, 1],
+          ibrion=1,
+          nsw=100,
+          lvdw=True,
+          atoms=benzene).potential_energy)

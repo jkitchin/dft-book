@@ -1,14 +1,9 @@
-from jasp import *
-with jasp('surfaces/Au-110') as calc:
-    slab = calc.get_atoms()
-    eslab = slab.get_potential_energy()
-with jasp('surfaces/Au-110-missing-row') as calc:
-    missingrow = calc.get_atoms()
-    emissingrow = missingrow.get_potential_energy()
-with jasp('bulk/Au-fcc') as calc:
-    bulk = calc.get_atoms()
-    ebulk = bulk.get_potential_energy()
-print 'natoms slab        = {0}'.format(len(slab))
-print 'natoms missing row = {0}'.format(len(missingrow))
-print 'natoms bulk        = {0}'.format(len(bulk))
-print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
+from ase.lattice.surface import surface
+from ase.io import write
+# Au(211) with 9 layers
+s1 = surface('Au', (2, 1, 1), 9)
+s1.center(vacuum=10, axis=2)
+write('images/Au-211.png',
+      s1.repeat((3, 3, 1)),
+      rotation='-30z,90x',  # change the orientation for viewing
+      show_unit_cell=2)

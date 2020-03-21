@@ -1,18 +1,20 @@
-from jasp import *
-# get relaxed geometry
-with jasp('molecules/wgs/CO2') as calc:
-    CO2 = calc.get_atoms()
-# now do the vibrations
-with jasp('molecules/wgs/CO2-vib',
-          xc='PBE',
-          encut=350,
-          ismear=0,
-          ibrion=6,
-          nfree=2,
-          potim=0.02,
-          nsw=1,
-          atoms=CO2) as calc:
-    calc.calculate()
-    vib_freq = calc.get_vibrational_frequencies()
-    for i, f in enumerate(vib_freq):
-        print('{0:02d}: {1} cm^(-1)'.format(i, f))
+from vasp import Vasp
+calc = Vasp('molecules/O2-sp-singlet')
+calc.clone('molecules/O2-sp-singlet-magmoms')
+calc.set(lorbit=11)
+atoms = calc.get_atoms()
+magmoms = atoms.get_magnetic_moments()
+print('singlet ground state')
+for i, atom in enumerate(atoms):
+    print('atom {0}: magmom = {1}'.format(i, magmoms[i]))
+print(atoms.get_magnetic_moment())
+calc = Vasp('molecules/O2-sp-triplet')
+calc.clone('molecules/O2-sp-triplet-magmoms')
+calc.set(lorbit=11)
+atoms = calc.get_atoms()
+magmoms = atoms.get_magnetic_moments()
+print()
+print('triplet ground state')
+for i, atom in enumerate(atoms):
+    print('atom {0}: magmom = {1}'.format(i, magmoms[i]))
+print(atoms.get_magnetic_moment())

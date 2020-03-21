@@ -1,12 +1,9 @@
-from jasp import *
-import matplotlib.pyplot as plt
-from ase.dft import DOS
-with jasp('bulk/pd-dos') as calc:
-    dos = DOS(calc, width=0.2)
-    d = dos.get_dos()
-    e = dos.get_energies()
-import pylab as plt
-plt.plot(e, d)
-plt.xlabel('energy (eV)')
-plt.ylabel('DOS')
-plt.savefig('images/pd-dos.png')
+from vasp import Vasp
+calc = Vasp('bulk/alloy/cupd-1')
+atoms = calc.get_atoms()
+e1 = atoms.get_potential_energy()/len(atoms)
+calc = Vasp('bulk/alloy/cupd-2')
+atoms = calc.get_atoms()
+e2 = atoms.get_potential_energy()/len(atoms)
+print 'cupd-1: {0} eV/atom'.format(e1)
+print 'cupd-2: {0} eV/atom'.format(e2)

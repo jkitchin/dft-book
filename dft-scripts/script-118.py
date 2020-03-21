@@ -1,12 +1,10 @@
-import numpy as np
-EM = []
-with open('bulk/Fe-elastic/OUTCAR') as f:
-    lines = f.readlines()
-    for i, line in enumerate(lines):
-        if line.startswith(' TOTAL ELASTIC MODULI (kBar)'):
-            j = i + 3
-            data = lines[j:j+6]
-            break
-for line in data:
-    EM += [[float(x) for x in line.split()[1:]]]
-print np.array(EM)
+from vasp import Vasp
+from ase.lattice import bulk
+Al = bulk('Al', 'fcc', a=4.5, cubic=True)
+calc = Vasp('bulk/Al-lda-vasp',
+            xc='LDA', isif=7, nsw=5,
+            ibrion=1, ediffg=-1e-3,
+            lwave=False, lcharg=False,
+            atoms=Al)
+print(calc.potential_energy)
+print(calc)

@@ -1,17 +1,22 @@
-from jasp import *
-from ase.lattice.surface import fcc110
-from ase.io import write
-from ase.constraints import FixAtoms
-atoms = fcc110('Au', size=(2, 1, 6), vacuum=10.0)
-constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
-atoms.set_constraint(constraint)
-write('images/Au-110.png', atoms.repeat((2, 2, 1)), rotation='-90x', show_unit_cell=2)
-with jasp('surfaces/Au-110',
-          xc='PBE',
-          kpts=(6, 6, 1),
-          encut=350,
-          ibrion=2,
-          isif=2,
-          nsw=10,
-          atoms=atoms) as calc:
-    calc.calculate()
+from vasp import Vasp
+from ase.lattice.cubic import BodyCenteredCubic
+atoms = BodyCenteredCubic(directions=[[1, 0, 0],
+                                      [0, 1, 0],
+                                      [0, 0, 1]],
+                                      size=(1, 1, 1),
+                                      symbol='Fe')
+# set magnetic moments on each atom
+for atom in atoms:
+    atom.magmom = 2.5
+calc = Vasp('bulk/Fe-bcc-sp-1',
+            xc='PBE',
+            encut=300,
+            kpts=[4, 4, 4],
+            ispin=2,
+            lorbit=11, # you need this for individual magnetic moments
+            atoms=atoms)
+e = atoms.get_potential_energy()
+B = atoms.get_magnetic_moment()
+magmoms = atoms.get_magnetic_moments()
+print 'Total magnetic moment is {0:1.2f} Bohr-magnetons'.format(B)
+print 'Individual moments are {0} Bohr-magnetons'.format(magmoms)

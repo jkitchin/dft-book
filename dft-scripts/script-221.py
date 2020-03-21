@@ -1,11 +1,16 @@
-from jasp import *
-with jasp('bulk/CuPd-cls-0') as calc:
-    alloy_0 = calc.get_atoms().get_potential_energy()
-with jasp('bulk/CuPd-cls-1') as calc:
-    alloy_1 = calc.get_atoms().get_potential_energy()
-with jasp('bulk/Cu-cls-0') as calc:
-    ref_0 = calc.get_atoms().get_potential_energy()
-with jasp('bulk/Cu-cls-1') as calc:
-    ref_1 = calc.get_atoms().get_potential_energy()
-CLS = (alloy_1 - alloy_0) - (ref_1 - ref_0)
-print('CLS = {} eV'.format(CLS))
+# the clean gold slab
+from vasp import Vasp
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.constraints import FixAtoms
+atoms = fcc111('Au', size=(3,3,3), vacuum=10)
+# now we constrain the slab
+c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
+atoms.set_constraint(c)
+#from ase.visualize import view; view(atoms)
+print(Vasp('surfaces/Au-pbe',
+           xc='PBE',
+           encut=350,
+           kpts=[4, 4, 1],
+           ibrion=1,
+           nsw=100,
+           atoms=atoms).potential_energy)

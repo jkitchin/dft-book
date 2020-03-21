@@ -1,9 +1,13 @@
-from jasp import *
-with jasp('bulk/alloy/cupd-1') as calc:
-    atoms = calc.get_atoms()
-    e1 = atoms.get_potential_energy()/len(atoms)
-with jasp('bulk/alloy/cupd-2') as calc:
-    atoms = calc.get_atoms()
-    e2 = atoms.get_potential_energy()/len(atoms)
-print 'cupd-1: {0} eV/atom'.format(e1)
-print 'cupd-2: {0} eV/atom'.format(e2)
+from vasp import Vasp
+from ase.lattice.cubic import FaceCenteredCubic
+atoms = FaceCenteredCubic(symbol='Al')
+calc = Vasp('bulk/Al-bulk',
+            xc='PBE',
+            kpts=[12, 12, 12],
+            encut=350,
+            prec='High',
+            isif=3,
+            nsw=30,
+            ibrion=1,
+            atoms=atoms)
+print(calc.potential_energy)

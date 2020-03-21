@@ -1,14 +1,9 @@
-from jasp import *
+from ase.lattice.surface import fcc111
+from ase.io import write
 from ase.visualize import view
-from ase.lattice.cubic import FaceCenteredCubic
-atoms = FaceCenteredCubic(directions=[[0, 1, 1],
-                                      [1, 0, 1],
-                                      [1, 1, 0]],
-                                     size=(1, 1, 1),
-                                     symbol='Au')
-with jasp('bulk/Au-fcc',
-          xc='PBE',
-          encut=350,
-          kpts=(12, 12, 12),
-          atoms=atoms) as calc:
-    calc.calculate()
+slab = fcc111('Al', size=(2, 2, 3), vacuum=10.0)
+from ase.constraints import FixAtoms
+constraint = FixAtoms(mask=[atom.tag >= 2 for atom in slab])
+slab.set_constraint(constraint)
+view(slab)
+write('images/Al-slab.png', slab, rotation='90x', show_unit_cell=2)

@@ -1,20 +1,5 @@
-from ase import Atom, Atoms
-from jasp import *
-co = Atoms([Atom('C',[0, 0, 0]),
-            Atom('O',[1.2, 0, 0])],
-            cell=(6, 6, 6))
-with jasp('molecules/co-cg',
-          xc='PBE',
-          nbands=6,
-          encut=350,
-          ismear=1,
-          sigma=0.01, # this is small for a molecule
-          ibrion=2,   # conjugate gradient optimizer
-          nsw=5,      # do at least 5 steps to relax
-          atoms=co) as calc:
-    print('Forces')
-    print('=======')
-    print(co.get_forces())
-    pos = co.get_positions()
-    d = ((pos[0] - pos[1])**2).sum()**0.5
-    print('Bondlength = {0:1.2f} angstroms'.format(d))
+from vasp import Vasp
+bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
+calcs = [Vasp('molecules/co-{0}'.format(d)) for d in bond_lengths]
+energies = [calc.get_atoms().get_potential_energy() for calc in calcs]
+print(energies)

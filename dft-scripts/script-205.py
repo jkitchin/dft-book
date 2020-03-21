@@ -1,17 +1,35 @@
-from jasp import *
-# don't forget to normalize your total energy to a formula unit. Cu2O
-# has 3 atoms, so the number of formula units in an atoms is
-# len(atoms)/3.
-with jasp('bulk/Cu2O-U=4.0') as calc:
-    atoms = calc.get_atoms()
-    cu2o_energy = atoms.get_potential_energy()/(len(atoms)/3)
-with jasp('bulk/CuO-U=4.0') as calc:
-    atoms = calc.get_atoms()
-    cuo_energy = atoms.get_potential_energy()/(len(atoms)/2)
-# make sure to use the same cutoff energy for the O2 molecule!
-with jasp('molecules/O2-sp-triplet-400') as calc:
-    atoms = calc.get_atoms()
-    o2_energy = atoms.get_potential_energy()
-rxn_energy = 4.0*cuo_energy - o2_energy - 2.0*cu2o_energy
-print 'Reaction energy  = {0} eV'.format(rxn_energy)
-print 'Corrected energy = {0} eV'.format(rxn_energy - 1.36)
+from vasp import Vasp
+from ase.neb import NEB
+import matplotlib.pyplot as plt
+calc = Vasp('surfaces/Pt-slab-O-fcc')
+initial_atoms = calc.get_atoms()
+final_atoms = Vasp('surfaces/Pt-slab-O-hcp').get_atoms()
+# here is our estimated transition state. we use vector geometry to
+# define the bridge position, and add 1.451 Ang to z based on our
+# previous bridge calculation. The bridge position is half way between
+# atoms 9 and 10.
+ts = initial_atoms.copy()
+ts.positions[-1] = 0.5 * (ts.positions[9] + ts.positions[10]) + [0, 0, 1.451]
+# construct the band
+images = [initial_atoms]
+images += [initial_atoms.copy()]
+images += [ts.copy()]  # this is the TS
+neb = NEB(images)
+# Interpolate linearly the positions of these images:
+neb.interpolate()
+# now add the second half
+images2 = [ts.copy()]
+images2 += [ts.copy()]
+images2 += [final_atoms]
+neb2 = NEB(images2)
+neb2.interpolate()
+# collect final band. Note we do not repeat the TS in the second half
+final_images = images + images2[1:]
+calc = Vasp('surfaces/Pt-O-fcc-hcp-neb',
+            ibrion=1,
+            nsw=90,
+            spring=-5,
+            atoms=final_images)
+images, energies = calc.get_neb()
+p = calc.plot_neb(show=False)
+plt.savefig('images/pt-o-fcc-hcp-neb.png')

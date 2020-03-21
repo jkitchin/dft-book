@@ -1,46 +1,29 @@
+from scipy.optimize import leastsq
 import numpy as np
+vols = np.array([13.71, 14.82, 16.0, 17.23, 18.52])
+energies = np.array([-56.29, -56.41, -56.46, -56.463, -56.41])
+def Murnaghan(parameters, vol):
+    'From Phys. Rev. B 28, 5480 (1983)'
+    E0 = parameters[0]
+    B0 = parameters[1]
+    BP = parameters[2]
+    V0 = parameters[3]
+    E = (E0 + B0*vol / BP*(((V0 / vol)**BP) / (BP - 1) + 1)
+         - V0 * B0 / (BP - 1.))
+    return E
+def objective(pars, y, x):
+    # we will minimize this function
+    err = y - Murnaghan(pars, x)
+    return err
+x0 = [-56., 0.54, 2., 16.5]  # initial guess of parameters
+plsq = leastsq(objective, x0, args=(energies, vols))
+print('Fitted parameters = {0}'.format(plsq[0]))
 import matplotlib.pyplot as plt
-import time
-'''
-These are the brainless way to calculate numerical derivatives. They
-work well for very smooth data. they are surprisingly fast even up to
-10000 points in the vector.
-'''
-x = np.linspace(0.78, 0.79, 100) # 100 points between 0.78 and 0.79
-y = np.sin(x)
-dy_analytical = np.cos(x)
-'''
-let us use a forward difference method:
-that works up until the last point, where there is not
-a forward difference to use. there, we use a backward difference.
-'''
-tf1 = time.time()
-dyf = [0.0]*len(x)
-for i in range(len(y)-1):
-    dyf[i] = (y[i+1] - y[i])/(x[i+1]-x[i])
-# set last element by backwards difference
-dyf[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
-print(' Forward difference took {0:1.1f} seconds'.format(time.time() - tf1))
-# and now a backwards difference
-tb1 = time.time()
-dyb = [0.0]*len(x)
-# set first element by forward difference
-dyb[0] = (y[0] - y[1])/(x[0] - x[1])
-for i in range(1,len(y)):
-    dyb[i] = (y[i] - y[i-1])/(x[i]-x[i-1])
-print(' Backward difference took {0:1.1f} seconds'.format(time.time() - tb1))
-# and now, a centered formula
-tc1 = time.time()
-dyc = [0.0]*len(x)
-dyc[0] = (y[0] - y[1])/(x[0] - x[1])
-for i in range(1,len(y)-1):
-    dyc[i] = (y[i+1] - y[i-1])/(x[i+1]-x[i-1])
-dyc[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
-print(' Centered difference took {0:1.1f} seconds'.format(time.time() - tc1))
-# the centered formula is the most accurate formula here
-plt.plot(x,dy_analytical, label='analytical derivative')
-plt.plot(x,dyf,'--', label='forward')
-plt.plot(x,dyb,'--', label='backward')
-plt.plot(x,dyc,'--', label='centered')
-plt.legend(loc='lower left')
-plt.savefig('images/simple-diffs.png')
+plt.plot(vols, energies, 'ro')
+# plot the fitted curve on top
+x = np.linspace(min(vols), max(vols), 50)
+y = Murnaghan(plsq[0], x)
+plt.plot(x, y, 'k-')
+plt.xlabel('Volume')
+plt.ylabel('energy')
+plt.savefig('images/nonlinear-curve-fitting.png')

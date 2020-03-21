@@ -1,30 +1,42 @@
+# Nonlinear curve fit with confidence interval
 import numpy as np
+from scipy.optimize import curve_fit
+from scipy.stats.distributions import  t
+'''
+fit this equation to data
+y = c1 exp(-x) + c2*x
+this is actually a linear regression problem, but it is convenient to
+use the nonlinear fitting routine because it makes it easy to get
+confidence intervals. The downside is you need an initial guess.
+from Matlab
+b =
+    4.9671
+    2.1100
+bint =
+    4.6267    5.3075
+    1.7671    2.4528
+'''
+x = np.array([ 0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9,  1. ])
+y = np.array([ 4.70192769,  4.46826356,  4.57021389,  4.29240134,  3.88155125,
+            3.78382253,  3.65454727,  3.86379487,  4.16428541,  4.06079909])
+# this is the function we want to fit to our data
+def func(x,c0, c1):
+    return c0 * np.exp(-x) + c1*x
+pars, pcov = curve_fit(func, x, y, p0=[4.96, 2.11])
+alpha = 0.05 # 95% confidence interval
+n = len(y)    # number of data points
+p = len(pars) # number of parameters
+dof = max(0, n-p) # number of degrees of freedom
+tval = t.ppf(1.0-alpha/2., dof) # student-t value for the dof and confidence level
+for i, p,var in zip(range(n), pars, np.diag(pcov)):
+    sigma = var**0.5
+    print('c{0}: {1} [{2}  {3}]'.format(i, p,
+                                  p - sigma*tval,
+                                  p + sigma*tval))
 import matplotlib.pyplot as plt
-x = np.linspace(0,2*np.pi,100)
-y = np.sin(x) + 0.1*np.random.random(size=x.shape)
-dy_analytical = np.cos(x)
-#2-point formula
-dyf = [0.0]*len(x)
-for i in range(len(y)-1):
-    dyf[i] = (y[i+1] - y[i])/(x[i+1]-x[i])
-#set last element by backwards difference
-dyf[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
-'''
-calculate dy by 4-point center differencing using array slices
-\frac{y[i-2] - 8y[i-1] + 8[i+1] - y[i+2]}{12h}
-y[0] and y[1] must be defined by lower order methods
-and y[-1] and y[-2] must be defined by lower order methods
-'''
-dy = np.zeros(y.shape,np.float) #we know it will be this size
-h = x[1]-x[0] #this assumes the points are evenely spaced!
-dy[2:-2] = (y[0:-4] - 8*y[1:-3] + 8*y[3:-1] - y[4:])/(12.*h)
-dy[0] = (y[1]-y[0])/(x[1]-x[0])
-dy[1] = (y[2]-y[1])/(x[2]-x[1])
-dy[-2] = (y[-2] - y[-3])/(x[-2] - x[-3])
-dy[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
-plt.plot(x,y)
-plt.plot(x,dy_analytical,label='analytical derivative')
-plt.plot(x,dyf,'r-',label='2pt-forward diff')
-plt.plot(x,dy,'k--',lw=2,label='4pt-centered diff')
-plt.legend(loc='lower left')
-plt.savefig('images/multipt-diff.png')
+plt.plot(x,y,'bo ')
+xfit = np.linspace(0,1)
+yfit = func(xfit, pars[0], pars[1])
+plt.plot(xfit,yfit,'b-')
+plt.legend(['data','fit'],loc='best')
+plt.savefig('images/nonlin-fit-ci.png')

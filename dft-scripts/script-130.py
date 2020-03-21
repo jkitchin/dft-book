@@ -1,33 +1,34 @@
-from jasp import *
-from ase import Atom, Atoms
-# parent metals
-with jasp('bulk/alloy/cu') as calc:
-    atoms = calc.get_atoms()
-    cu = atoms.get_potential_energy()/len(atoms)
-with jasp('bulk/alloy/pd') as calc:
-    atoms = calc.get_atoms()
-    pd = atoms.get_potential_energy()/len(atoms)
-atoms = Atoms([Atom('Cu',  [-3.672,     3.672,      3.672]),
-               Atom('Cu',  [0.000,     0.000,      0.000]),
-               Atom('Cu',  [-10.821,   10.821,     10.821]),
-               Atom('Pd',  [-7.246,     7.246,      7.246])],
-               cell=[[-5.464,  3.565,  5.464],
-                     [-3.565,  5.464,  5.464],
-                     [-5.464,  5.464,  3.565]])
-with jasp('bulk/alloy/cu3pd-1',
-          xc='PBE',
-          encut=350,
-          kpts=(8, 8, 8),
-          nbands=34,
-          ibrion=2,
-          isif=3,
-          nsw=10,
-          atoms=atoms) as calc:
-    e3 = atoms.get_potential_energy()
-    for atom in atoms:
-        if atom.symbol == 'Cu':
-            e3 -= cu
-        else:
-            e3 -= pd
-    e3 /= len(atoms)
-print 'Delta Hf cu3pd-1 = {0:1.2f} eV/atom'.format(e3)
+from vasp import Vasp
+from ase.lattice.cubic import FaceCenteredCubic
+import numpy as np
+import matplotlib.pyplot as plt
+DELTAS = np.linspace(-0.05, 0.05, 5)
+calcs = []
+volumes = []
+for delta in DELTAS:
+    atoms = FaceCenteredCubic(symbol='Al')
+    cell = atoms.cell
+    T = np.array([[1 + delta, 0, 0],
+                  [0,1, 0],
+                  [0, 0, 1]])
+    newcell = np.dot(cell, T)
+    atoms.set_cell(newcell, scale_atoms=True)
+    volumes += [atoms.get_volume()]
+    calcs += [Vasp('bulk/Al-c11-{}'.format(delta),
+                xc='pbe',
+                kpts=[12, 12, 12],
+                encut=350,
+                atoms=atoms)]
+Vasp.run()
+energies =  [calc.potential_energy for calc in calcs]
+# fit a parabola
+eos = np.polyfit(DELTAS, energies, 2)
+# first derivative
+d_eos = np.polyder(eos)
+print(np.roots(d_eos))
+xfit = np.linspace(min(DELTAS), max(DELTAS))
+yfit = np.polyval(eos, xfit)
+plt.plot(DELTAS, energies, 'bo', xfit, yfit, 'b-')
+plt.xlabel('$\delta$')
+plt.ylabel('Energy (eV)')
+plt.savefig('images/Al-c11.png')

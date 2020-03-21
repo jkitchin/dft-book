@@ -1,17 +1,27 @@
-from jasp import *
+# Benzene on the slab
+from vasp import Vasp
+from ase.lattice.surface import fcc111, add_adsorbate
 from ase.structure import molecule
-import matplotlib.pyplot as plt
-H2 = molecule('H2')
-H2.set_cell([8, 8, 8], scale_atoms=False)
-with jasp('molecules/H2-beef',
-          xc='PBE', gga='BF',
-          encut=350,
-          ismear=0,
-          ibrion=2,
-          nsw=10,
-          atoms=H2) as calc:
-    try:
-        eH2 = H2.get_potential_energy()
-        print(eH2)
-    except (VaspSubmitted, VaspQueued):
-        eH2 = None
+from ase.constraints import FixAtoms
+atoms = fcc111('Au', size=(3,3,3), vacuum=10)
+benzene = molecule('C6H6')
+benzene.translate(-benzene.get_center_of_mass())
+# I want the benzene centered on the position in the middle of atoms
+# 20, 22, 23 and 25
+p = (atoms.positions[20] +
+     atoms.positions[22] +
+     atoms.positions[23] +
+     atoms.positions[25])/4.0 + [0.0, 0.0, 3.05]
+benzene.translate(p)
+atoms += benzene
+# now we constrain the slab
+c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
+atoms.set_constraint(c)
+#from ase.visualize import view; view(atoms)
+print(Vasp('surfaces/Au-benzene-pbe',
+           xc='PBE',
+           encut=350,
+           kpts=[4, 4, 1],
+           ibrion=1,
+           nsw=100,
+           atoms=atoms).potential_energy)

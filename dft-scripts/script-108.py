@@ -1,25 +1,22 @@
-from jasp import *
-from ase import Atom, Atoms
-from ase.utils.eos import EquationOfState
-LC = [3.75, 3.80, 3.85, 3.90, 3.95, 4.0, 4.05, 4.1]
-volumes, energies = [], []
-for a in LC:
-    atoms = Atoms([Atom('Pd', (0, 0, 0))],
-                  cell=0.5 * a * np.array([[1.0, 1.0, 0.0],
-                                           [0.0, 1.0, 1.0],
-                                           [1.0, 0.0, 1.0]]))
-    with jasp('bulk/Pd-LDA-{0}'.format(a),
-              encut=350,
-              kpts=(12, 12, 12),
-              xc='LDA',
-              atoms=atoms):
-        try:
-            e = atoms.get_potential_energy()
-            energies.append(e)
-            volumes.append(atoms.get_volume())
-        except (VaspSubmitted, VaspQueued):
-            pass
-if len(energies) == len(LC):
-    eos = EquationOfState(volumes, energies)
-    v0, e0, B = eos.fit()
-    print 'LDA lattice constant is {0:1.3f} Ang^3'.format((4*v0)**(1./3.))
+from vasp import Vasp
+import matplotlib.pyplot as plt
+import numpy as np
+x = [2.5, 2.6, 2.7, 2.8, 2.9]
+y = [1.4, 1.5, 1.6, 1.7, 1.8]
+X,Y = np.meshgrid(x, y)
+Z = np.zeros(X.shape)
+for i,a in enumerate(x):
+    for j,covera in enumerate(y):
+        wd = 'bulk/Ru/{0:1.2f}-{1:1.2f}'.format(a, covera)
+        calc = Vasp(wd)
+        Z[i][j] = calc.potential_energy
+calc.stop_if(None in Z)
+cf = plt.contourf(X, Y, Z, 20,
+                  cmap=plt.cm.jet)
+cbar = plt.colorbar(cf)
+cbar.ax.set_ylabel('Energy (eV)')
+plt.xlabel('$a$ ($\AA$)')
+plt.ylabel('$c/a$')
+plt.legend()
+plt.savefig('images/ru-contourf.png')
+plt.show()

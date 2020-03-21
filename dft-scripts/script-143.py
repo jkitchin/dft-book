@@ -1,19 +1,22 @@
-from jasp import *
+# run Cu2O calculation
+from vasp import Vasp
 from ase import Atom, Atoms
-from ase.visualize import view
-a = 5.38936
-atoms = Atoms([Atom('Si', [0, 0, 0]),
-               Atom('Si', [0.25, 0.25, 0.25])])
-atoms.set_cell([[a / 2., a / 2., 0.0],
-                [0.0,  a / 2., a / 2.],
-                [a / 2., 0.0, a / 2.]], scale_atoms=True)
-with jasp('bulk/Si-selfconsistent',
-          xc='PBE',
-          prec='Medium',
-          istart=0,
-          icharg=2,
-          ediff=0.1e-03,
-          kpts=(4, 4, 4), debug=logging.DEBUG,
-          atoms=atoms) as calc:
-    atoms.get_potential_energy()
-    print calc
+# http://phycomp.technion.ac.il/~ira/types.html#Cu2O
+a = 4.27
+atoms = Atoms([Atom('Cu', [0, 0, 0]),
+               Atom('Cu', [0.5, 0.5, 0.0]),
+               Atom('Cu', [0.5, 0.0, 0.5]),
+               Atom('Cu', [0.0, 0.5, 0.5]),
+               Atom('O', [0.25, 0.25, 0.25]),
+               Atom('O', [0.75, 0.75, 0.75])])
+atoms.set_cell((a, a, a), scale_atoms=True)
+calc = Vasp('bulk/Cu2O',
+            encut=400,
+            kpts=[8, 8, 8],
+            ibrion=2,
+            isif=3,
+            nsw=30,
+            xc='PBE',
+            atoms=atoms)
+print atoms.get_potential_energy()
+print atoms.get_stress()

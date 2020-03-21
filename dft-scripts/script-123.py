@@ -1,36 +1,18 @@
-# run the anatase calculations
-from jasp import *
-from ase import Atom, Atoms
-# http://cst-www.nrl.navy.mil/lattice/struk/c5.html
-B = 'Ti'; X = 'O'; a = 3.7842; c = 2*4.7573; z = 0.0831;
-a1 = a * np.array([1.0, 0.0, 0.0])
-a2 = a * np.array([0.0, 1.0, 0.0])
-a3 = np.array([0.5 * a, 0.5 * a, 0.5 * c])
-atoms = Atoms([Atom(B, -0.125 * a1 + 0.625 * a2 + 0.25 * a3),
-               Atom(B,  0.125 * a1 + 0.375 * a2 + 0.75 * a3),
-               Atom(X, -z*a1 + (0.25-z)*a2 + 2.*z*a3),
-               Atom(X, -(0.25+z)*a1 + (0.5-z)*a2 + (0.5+2*z)*a3),
-               Atom(X, z*a1 - (0.25 - z)*a2 + (1-2*z)*a3),
-               Atom(X, (0.25 + z)*a1 + (0.5 + z)*a2 + (0.5-2*z)*a3)],
-               cell=[a1,a2,a3])
-nTiO2 = len(atoms) / 3.
-v0 = atoms.get_volume()
-cell0 = atoms.get_cell()
-volumes = [30., 33., 35., 37., 39.]  #vol of one TiO2
-for v in volumes:
-    atoms.set_cell(cell0 * ((nTiO2*v/v0)**(1./3.)),
-                   scale_atoms=True)
-    with jasp('bulk/TiO2/anatase/anatase-{0}'.format(v),
-              encut=350,
-              kpts=(6, 6, 6),
-              xc='PBE',
-              ismear=0,
-              sigma=0.001,
-              isif=2,
-              ibrion=2,
-              nsw=20,
-              atoms=atoms) as calc:
-        try:
-            calc.calculate()
-        except (VaspSubmitted, VaspQueued):
-            pass
+from vasp import Vasp
+calc = Vasp('bulk/atomic-rh')
+atomic_energy = calc.potential_energy
+calc = Vasp('bulk/bulk-rh')
+atoms = calc.get_atoms()
+kpts = [3, 4, 6, 9, 12, 15, 18]
+calcs = [Vasp('bulk/bulk-rh-kpts-{0}'.format(k),
+                xc='PBE',
+                encut=350,
+                kpts=[k, k, k],
+                atoms=atoms)
+         for k in kpts]
+energies = [calc.potential_energy for calc in calcs]
+calcs[0].stop_if(None in energies)
+for k, e in zip(kpts, energies):
+    print('({0:2d}, {0:2d}, {0:2d}):'
+          ' cohesive energy = {1} eV'.format(k,
+                                             e - atomic_energy))

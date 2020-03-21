@@ -1,22 +1,17 @@
-from jasp import *
-with jasp('surfaces/Pt-slab-O-fcc') as calc:
-    calc.clone('surfaces/Pt-slab-O-fcc-vib')
-with jasp('surfaces/Pt-slab-O-fcc-vib') as calc:
-    calc.set(ibrion=5,     # finite differences with selective dynamics
-             nfree=2,      # central differences (default)
-             potim=0.015,  # default as well
-             ediff=1e-8,
-             nsw=1)
-    atoms = calc.get_atoms()
-    f, v = calc.get_vibrational_modes(0)
-    print 'Elapsed time = {0} seconds'.format(calc.get_elapsed_time())
-    allfreq = calc.get_vibrational_modes()[0]
-from ase.units import meV
-c = 3e10  # cm/s
-h = 4.135667516e-15  # eV*s
-print 'vibrational energy = {0} eV'.format(f)
-print 'vibrational energy = {0} meV'.format(f/meV)
-print 'vibrational freq   = {0} 1/s'.format(f/h)
-print 'vibrational freq   = {0} cm^{{-1}}'.format(f/(h*c))
-print
-print 'All energies = ', allfreq
+# compute local potential of slab with no dipole
+from ase.lattice.surface import fcc111, add_adsorbate
+from vasp import Vasp
+import matplotlib.pyplot as plt
+from ase.io import write
+slab = fcc111('Al', size=(2, 2, 2), vacuum=10.0)
+add_adsorbate(slab, 'Na', height=1.2, position='fcc')
+slab.center()
+write('images/Na-Al-slab.png', slab, rotation='-90x', show_unit_cell=2)
+print(Vasp('surfaces/Al-Na-nodip',
+           xc='PBE',
+           encut=340,
+           kpts=[2, 2, 1],
+           lcharg=True,
+           lvtot=True,  # write out local potential
+           lvhar=True,  # write out only electrostatic potential, not xc pot
+           atoms=slab).potential_energy)

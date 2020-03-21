@@ -1,44 +1,18 @@
-from jasp import *
-from ase import Atom, Atoms
-# square box origin
-atoms = Atoms([Atom('O', [0, 0, 0], magmom=2)],
-              cell=(10, 10, 10))
-with jasp('molecules/O-square-box-origin',
-          xc='PBE',
-          encut=400,
-          ismear=0,
-          sigma=0.01,
-          ispin=2,
-          atoms=atoms) as calc:
-    try:
-        print('Square box (origin): E = {0} eV'.format(atoms.get_potential_energy()))
-    except (VaspSubmitted, VaspQueued):
-        pass
-# square box center
-atoms = Atoms([Atom('O', [5, 5, 5], magmom=2)],
-              cell=(10, 10, 10))
-with jasp('molecules/O-square-box-center',
-          xc='PBE',
-          encut=400,
-          ismear=0,
-          sigma=0.01,
-          ispin=2,
-          atoms=atoms) as calc:
-    try:
-        print('Square box (center): E = {0} eV'.format(atoms.get_potential_energy()))
-    except (VaspSubmitted, VaspQueued):
-        pass
-# square box random
-atoms = Atoms([Atom('O', [2.13, 7.32, 1.11], magmom=2)],
-              cell=(10, 10, 10))
-with jasp('molecules/O-square-box-random',
-          xc='PBE',
-          encut=400,
-          ismear=0,
-          sigma=0.01,
-          ispin=2,
-          atoms=atoms) as calc:
-    try:
-        print('Square box (random): E = {0} eV'.format(atoms.get_potential_energy()))
-    except (VaspSubmitted, VaspQueued):
-        pass
+from vasp import Vasp
+from ase.dft.dos import *
+calc = Vasp('molecules/O2-sp-triplet')
+dos = DOS(calc, width=0.2)
+d_up = dos.get_dos(spin=0)
+d_down = dos.get_dos(spin=1)
+e = dos.get_energies()
+ind = e <= 0.0
+# integrate up to 0eV
+print('number of up states = {0}'.format(np.trapz(d_up[ind], e[ind])))
+print('number of down states = {0}'.format(np.trapz(d_down[ind], e[ind])))
+import pylab as plt
+plt.plot(e, d_up,
+         e, -d_down)
+plt.xlabel('energy [eV]')
+plt.ylabel('DOS')
+plt.legend(['up', 'down'])
+plt.savefig('images/O2-sp-dos.png')

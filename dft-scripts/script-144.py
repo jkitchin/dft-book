@@ -1,15 +1,29 @@
-from jasp import *
-wd = 'bulk/Si-bandstructure'
-with jasp('bulk/Si-selfconsistent') as calc:
-    calc.clone(wd)
-kpts = [[0.5, 0.5, 0.0],   # L
-        [0, 0, 0],         # Gamma
-        [0, 0, 0],
-        [0.5, 0.5, 0.5]]  # X
-with jasp(wd,
-          kpts=kpts,
-          reciprocal=True,
-          kpts_nintersections=10,
-          icharg=11) as calc:
-    calc.calculate()
-    print(calc)
+# run CuO calculation
+from vasp import Vasp
+from ase import Atom, Atoms
+import numpy as np
+# CuO
+# http://cst-www.nrl.navy.mil/lattice/struk/b26.html
+# http://www.springermaterials.com/docs/info/10681727_51.html
+a = 4.6837
+b = 3.4226
+c = 5.1288
+beta = 99.54/180*np.pi
+y = 0.5819
+a1 = np.array([0.5*a, -0.5*b, 0.0])
+a2 = np.array([0.5*a, 0.5*b, 0.0])
+a3 = np.array([c*np.cos(beta), 0.0, c*np.sin(beta)])
+atoms = Atoms([Atom('Cu', 0.5*a2),
+               Atom('Cu', 0.5*a1 + 0.5*a3),
+               Atom('O', -y*a1 + y*a2 + 0.25*a3),
+               Atom('O',  y*a1 - y*a2 - 0.25*a3)],
+               cell=(a1, a2, a3))
+calc = Vasp('bulk/CuO',
+            encut=400,
+            kpts=[8, 8, 8],
+            ibrion=2,
+            isif=3,
+            nsw=30,
+            xc='PBE',
+            atoms=atoms)
+print(atoms.get_potential_energy())

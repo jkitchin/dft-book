@@ -1,20 +1,16 @@
-from jasp.POTCAR import *
-from ase.data import chemical_symbols
-import glob, os
-print('#+ATTR_LaTeX: :environment longtable')
-print('#+tblname: POTCAR')
-print('#+caption: Parameters for POTPAW_PBE POTCAR files.')
-print('| POTCAR | ENMIN | ENMAX | prec=high (eV) | # val. elect. |')
-print('|-')
-chemical_symbols.sort()
-for symbol in chemical_symbols:
-    potcars = glob.glob('{0}/potpaw_PBE/{1}*/POTCAR'.format(os.environ['VASP_PP_PATH'],
-                                                     symbol))
-    for potcar in potcars:
-        POTCAR = os.path.relpath(potcar,
-                                 os.environ['VASP_PP_PATH']+'/potpaw_PBE')[:-7]
-        ENMIN = get_ENMIN(potcar)
-        ENMAX = get_ENMAX(potcar)
-        HIGH  = 1.3*ENMAX
-        ZVAL  = get_ZVAL(potcar)
-        print('|{POTCAR:30s}|{ENMIN}|{ENMAX}|{HIGH:1.3f}|{ZVAL}|'.format(**locals()))
+import numpy as np
+from Scientific.Geometry import Vector
+A = Vector([1, 1, 1])   # Scientfic
+a = np.array([1, 1, 1])  # numpy
+B = Vector([0.0, 1.0, 0.0])
+print('|A| = ', A.length())        # Scientific Python way
+print('|a| = ', np.sum(a**2)**0.5)  # numpy way
+print('|a| = ', np.linalg.norm(a))  # numpy way 2
+print('ScientificPython angle = ', A.angle(B))  # in radians
+print ('numpy angle = {}',
+       np.arccos(np.dot(a / np.linalg.norm(a),
+                        B / np.linalg.norm(B))))
+# cross products
+print('Scientific A .cross. B = ', A.cross(B))
+# you can use Vectors in numpy
+print('numpy A .cross. B      = ', np.cross(A,B))

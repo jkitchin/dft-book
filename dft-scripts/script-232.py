@@ -1,14 +1,13 @@
-from ase.units import *
-d = 1 * Angstrom
-print(' d = {0} nm'.format(d / nm))
-print('1 eV = {0} Hartrees'.format(eV / Hartree))
-print('1 eV = {0} Rydbergs'.format(eV / Rydberg))
-print('1 eV = {0} kJ/mol'.format(eV / (kJ / mol)))
-print('1 eV = {0} kcal/mol'.format(eV / (kcal / mol)))
-print('1 Hartree = {0} kcal/mol'.format(1 * Hartree / (kcal / mol)))
-print('1 Rydberg = {0} eV'.format(1 * Rydberg / eV))
-# derived units
-minute = 60 * s
-hour = 60 * minute
-# convert 10 hours to minutes
-print('10 hours = {0} minutes'.format(10 * hour / minute))
+from vasp import Vasp
+calc = Vasp('bulk/CuPd-cls-0')
+calc.clone('bulk/CuPd-cls-1')
+calc.set(ibrion=None,
+         isif=None,
+         nsw=None,
+         setups=[[0, 'Cu']],  # Create separate entry in POTCAR for atom index 0
+         icorelevel=2,        # Perform core level shift calculation
+         clnt=0,              # Excite atom index 0
+         cln=2,               # 2p3/2 electron for Cu core level shift
+         cll=1,
+         clz=1)
+calc.update()

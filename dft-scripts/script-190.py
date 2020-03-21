@@ -1,23 +1,37 @@
-from jasp import *
-with jasp('surfaces/Pt-slab-O-fcc') as calc:
-    calc.clone('Pt-slab-O-fcc-vib-ibrion=6')
-with jasp('surfaces/Pt-slab-O-fcc-vib-ibrion=6') as calc:
-    calc.set(ibrion=6,  # finite differences with symmetry
-             nfree=2,  # central differences (default)
-             potim=0.015,  # default as well
-             ediff=1e-8,
-             nsw=1)
-    atoms = calc.get_atoms()
-    print 'Elapsed time = {0} seconds'.format(calc.get_elapsed_time())
-    f, m = calc.get_vibrational_modes(0)
-    allfreq = calc.get_vibrational_modes()[0]
-from ase.units import meV
-c = 3e10  # cm/s
-h = 4.135667516e-15  # eV*s
-print 'For mode 0:'
-print 'vibrational energy = {0} eV'.format(f)
-print 'vibrational energy = {0} meV'.format(f / meV)
-print 'vibrational freq   = {0} 1/s'.format(f / h)
-print 'vibrational freq   = {0} cm^{{-1}}'.format(f / (h * c))
-print
-print 'All energies = ', allfreq
+# compute local potential with dipole calculation on
+from ase.lattice.surface import fcc111, add_adsorbate
+from vasp import Vasp
+import numpy as np
+slab = fcc111('Al', size=(2, 2, 2), vacuum=10.0)
+add_adsorbate(slab, 'Na', height=1.2, position='fcc')
+slab.center()
+calc = Vasp('surfaces/Al-Na-dip',
+            xc='PBE',
+            encut=340,
+            kpts=[2, 2, 1],
+            lcharg=True,
+            idipol=3,   # only along z-axis
+            lvtot=True,  # write out local potential
+            lvhar=True,  # write out only electrostatic potential, not xc pot
+            atoms=slab)
+calc.stop_if(calc.potential_energy is None)
+x, y, z, cd = calc.get_charge_density()
+n0, n1, n2 = cd.shape
+nelements = n0 * n1 * n2
+voxel_volume = slab.get_volume() / nelements
+total_electron_charge = cd.sum() * voxel_volume
+electron_density_center = np.array([(cd * x).sum(),
+                                    (cd * y).sum(),
+                                    (cd * z).sum()])
+electron_density_center *= voxel_volume
+electron_density_center /= total_electron_charge
+print 'electron-density center = {0}'.format(electron_density_center)
+uc = slab.get_cell()
+# get scaled electron charge density center
+sedc = np.dot(np.linalg.inv(uc.T), electron_density_center.T).T
+# we only write 4 decimal places out to the INCAR file, so we round here.
+sedc = np.round(sedc, 4)
+calc.clone('surfaces/Al-Na-dip-step2')
+# now run step 2 with dipole set at scaled electron charge density center
+calc.set(ldipol=True, dipol=sedc)
+print(calc.potential_energy)

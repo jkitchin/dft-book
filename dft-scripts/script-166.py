@@ -1,16 +1,21 @@
-from jasp import *
-from ase.lattice.surface import fcc110
-from ase.io import write
-from ase.constraints import FixAtoms
-atoms = fcc110('Ag', size=(2, 1, 6), vacuum=10.0)
-constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
-atoms.set_constraint(constraint)
-with jasp('surfaces/Ag-110',
-          xc='PBE',
-          kpts=(6, 6, 1),
-          encut=350,
-          ibrion=2,
-          isif=2,
-          nsw=10,
-          atoms=atoms) as calc:
-    calc.calculate()
+from ase.lattice.surface import fcc111
+from vasp import Vasp
+slab = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
+calc = Vasp('surfaces/Al-bandstructure',
+            xc='PBE',
+            encut=300,
+            kpts=[6, 6, 6],
+            lcharg=True,  # you need the charge density
+            lwave=True,   # and wavecar for the restart
+            atoms=slab)
+n, bands, p = calc.get_bandstructure(kpts_path=[(r'$\Gamma$', [0, 0, 0]),
+                                                ('$K1$', [0.5, 0.0, 0.0]),
+                                                ('$K1$', [0.5, 0.0, 0.0]),
+                                                ('$K2$', [0.5, 0.5, 0.0]),
+                                                ('$K2$', [0.5, 0.5, 0.0]),
+                                                (r'$\Gamma$', [0, 0, 0]),
+                                                (r'$\Gamma$', [0, 0, 0]),
+                                                ('$K3$', [0.0, 0.0, 1.0])],
+                                     kpts_nintersections=10)
+if p is None: calc.abort()
+p.savefig('images/Al-slab-bandstructure.png')

@@ -1,16 +1,11 @@
-from jasp import *
-from ase.lattice.surface import fcc111
-from ase.constraints import FixAtoms
-atoms = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
-constraint = FixAtoms(mask=[atom.tag >= 3 for atom in atoms])
-atoms.set_constraint(constraint)
-with jasp('surfaces/Al-slab-relaxed',
-          xc='PBE',
-          kpts=(6, 6, 1),
-          encut=350,
-          ibrion=2,
-          isif=2,
-          nsw=10,
-          atoms=atoms) as calc:
-    calc.calculate()
-    print calc
+from vasp import Vasp
+calc = Vasp('bulk/tio2/step3')
+print calc.get_fermi_level()
+calc.abort()
+n, bands, p = calc.get_bandstructure(kpts_path=[('$\Gamma$', [0.0, 0.0, 0.0]),
+                                                ('X', [0.5, 0.5, 0.0]),
+                                                ('X', [0.5, 0.5, 0.0]),
+                                                ('M', [0.0, 0.5, 0.5]),
+                                                ('M', [0.0, 0.5, 0.5]),
+                                                ('$\Gamma$', [0.0, 0.0, 0.0])])
+p.savefig('images/tio2-bandstructure-dos.png')

@@ -1,34 +1,32 @@
-from ase import Atoms, Atom
-from jasp import *
-import sys
-import matplotlib.pyplot as plt
-import numpy as np
-from ase.dft import DOS
-import pylab as plt
-a = 3.9  # approximate lattice constant
-b = a / 2.
-bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
-             cell=[(0, b, b),
-                   (b, 0, b),
-                   (b, b, 0)])
-kpts = [8, 10, 12, 14, 16, 18, 20]
-for k in kpts:
-    with jasp('bulk/pd-dos-k{0}-ismear-5'.format(k),
-              encut=300,
-              xc='PBE',
-              kpts=(k, k, k),
-              atoms=bulk) as calc:
-        # this runs the calculation
-        try:
-            bulk.get_potential_energy()
-            dos = DOS(calc, width=0.2)
-            d = dos.get_dos() + k / 4.0
-            e = dos.get_energies()
-            plt.plot(e,d, label='k={0}'.format(k))
-        except:
-            pass
-plt.xlabel('energy (eV)')
-plt.ylabel('DOS')
-plt.legend()
-plt.savefig('images/pd-dos-k-convergence-ismear-5.png')
-plt.show()
+from vasp import Vasp
+from ase import Atom, Atoms
+# parent metals
+atoms = Vasp('bulk/alloy/cu').get_atoms()
+cu = atoms.get_potential_energy() / len(atoms)
+atoms = Vasp('bulk/alloy/pd').get_atoms()
+pd = atoms.get_potential_energy() / len(atoms)
+atoms = Atoms([Atom('Cu',  [-3.672,     3.672,      3.672]),
+               Atom('Cu',  [0.000,     0.000,      0.000]),
+               Atom('Cu',  [-10.821,   10.821,     10.821]),
+               Atom('Pd',  [-7.246,     7.246,      7.246])],
+               cell=[[-5.464,  3.565,  5.464],
+                     [-3.565,  5.464,  5.464],
+                     [-5.464,  5.464,  3.565]])
+calc = Vasp('bulk/alloy/cu3pd-1',
+            xc='PBE',
+            encut=350,
+            kpts=[8, 8, 8],
+            nbands=34,
+            ibrion=2,
+            isif=3,
+            nsw=10,
+            atoms=atoms)
+e3 = atoms.get_potential_energy()
+Vasp.wait(abort=True)
+for atom in atoms:
+    if atom.symbol == 'Cu':
+        e3 -= cu
+    else:
+        e3 -= pd
+e3 /= len(atoms)
+print 'Delta Hf cu3pd-1 = {0:1.2f} eV/atom'.format(e3)

@@ -1,21 +1,17 @@
-from ase.lattice.surface import fcc111
-from ase.io import write
-from jasp import *
-from jasp.jasp_bandstructure import *
-slab = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
-with jasp('surfaces/Al-bandstructure',
-          xc='PBE',
-          encut=300,
-          kpts=(6, 6, 6),
-          atoms=slab) as calc:
-    n, bands, p = calc.get_bandstructure(kpts_path=[(r'$\Gamma$', [0, 0, 0]),
-                                                    ('$K1$', [0.5, 0.0, 0.0]),
-                                                    ('$K1$', [0.5, 0.0, 0.0]),
-                                                    ('$K2$', [0.5, 0.5, 0.0]),
-                                                    ('$K2$', [0.5, 0.5, 0.0]),
-                                                    (r'$\Gamma$', [0, 0, 0]),
-                                                    (r'$\Gamma$', [0, 0, 0]),
-                                                    ('$K3$', [0.0, 0.0, 1.0])],
-                                          kpts_nintersections=10)
-p.savefig('images/Al-slab-bandstructure.png')
-p.show()
+from vasp import Vasp
+from ase import Atom, Atoms
+from ase.visualize import view
+a = 5.38936
+atoms = Atoms([Atom('Si', [0, 0, 0]),
+               Atom('Si', [0.25, 0.25, 0.25])])
+atoms.set_cell([[a / 2., a / 2., 0.0],
+                [0.0,  a / 2., a / 2.],
+                [a / 2., 0.0, a / 2.]], scale_atoms=True)
+calc = Vasp('bulk/Si-selfconsistent',
+            xc='PBE',
+            prec='Medium',
+            lcharg=True,
+            lwave=True,
+            kpts=[4, 4, 4],
+            atoms=atoms)
+calc.run()

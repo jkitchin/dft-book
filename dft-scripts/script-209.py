@@ -1,17 +1,13 @@
-# the clean gold slab
-from jasp import *
-from ase.lattice.surface import fcc111, add_adsorbate
-from ase.constraints import FixAtoms
-atoms = fcc111('Au', size=(3,3,3), vacuum=10)
-# now we constrain the slab
-c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
-atoms.set_constraint(c)
-#from ase.visualize import view; view(atoms)
-with jasp('surfaces/Au-pbe',
-          xc='PBE',
-          encut=350,
-          kpts=(4,4,1),
-          ibrion=1,
-          nsw=100,
-          atoms=atoms) as calc:
-    print atoms.get_potential_energy()
+import matplotlib.pyplot as plt
+import numpy as np
+from ase.units import *
+atm = 101325 * Pascal #atm is not defined in units
+K = 1 # Kelvin
+# examine range over 10^-10 to 10^10 atm
+P = np.logspace(-10, 10) * atm
+plt.semilogx(P / atm, kB * (300 * K) * np.log(P / (1 * atm)), label='300K')
+plt.semilogx(P / atm, kB * (600 * K) * np.log(P / (1 * atm)), label='600K')
+plt.xlabel('Pressure (atm)')
+plt.ylabel(r'$\Delta G$ (eV)')
+plt.legend(loc='best')
+plt.savefig('images/O2-g-p.png')

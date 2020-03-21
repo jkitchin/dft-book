@@ -1,1 +1,1 @@
-pylab.save('pdat.dat',(x,y))
+ase-db example-1.db

@@ -1,54 +1,34 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from ase.units import *
-from scipy.optimize import fsolve
-K = 1. #not defined in ase.units!
-atm = 101325 * Pascal
-# Shomate parameters valid from 100-700K
-A = 31.32234; B = -20.23531; C = 57.86644
-D = -36.50624; E = -0.007374; F = -8.903471
-G = 246.7945; H = 0.0
-def entropy(T):
-    '''entropy returned as eV/K
-    T in K
-    '''
-    t = T/1000.
-    s = (A * np.log(t) + B * t + C * (t**2) / 2.
-         + D * (t**3) / 3. - E / (2. * t**2) + G)
-    return s * J / mol / K
-def enthalpy(T):
-    ''' H - H(298.15) returned as eV/molecule'''
-    t = T / 1000.
-    h = (A * t + B * (t**2) / 2. + C * (t**3) / 3.
-         + D * (t**4) / 4. - E / t + F - H)
-    return h * kJ / mol
-def DeltaMu(T, P):
-    '''
-    returns delta chemical potential of oxygen at T and P
-    T in K
-    P in atm
-    '''
-    return enthalpy(T) - T * entropy(T) + kB * T * np.log(P / atm)
-P = 1e-10*atm
-def func(T):
-    'Cu2O'
-    return -1.95 - 0.5*DeltaMu(T, P)
-print 'Cu2O decomposition temperature is {0:1.0f} K'.format(fsolve(func,
-                                                                   900)[0])
-def func(T):
-    'Ag2O'
-    return -0.99 - 0.5 * DeltaMu(T, P)
-print 'Ag2O decomposition temperature is {0:1.0f} K'.format(fsolve(func,
-                                                                   470)[0])
-T = np.linspace(100, 1000)
-# Here we plot delta mu as a function of temperature at different pressures
-# you have use \\times to escape the first \ in pyplot
-plt.plot(T, DeltaMu(T, 1e10*atm), label=r'1$\times 10^{10}$ atm')
-plt.plot(T, DeltaMu(T, 1e5*atm), label=r'1$\times 10^5$ atm')
-plt.plot(T, DeltaMu(T, 1*atm), label='1 atm')
-plt.plot(T, DeltaMu(T, 1e-5*atm), label=r'1$\times 10^{-5}$ atm')
-plt.plot(T, DeltaMu(T, 1e-10*atm), label=r'1$\times 10^{-10}$ atm')
-plt.xlabel('Temperature (K)')
-plt.ylabel(r'$\Delta \mu_{O_2}(T,p)$ (eV)')
-plt.legend(loc='best')
-plt.savefig('images/O2-mu-diff-p.png')
+from vasp import Vasp
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.constraints import FixAtoms, FixScaled
+from ase.io import write
+atoms = fcc111('Pt', size=(2, 2, 3), vacuum=10.0)
+# note this function only works when atoms are created by the surface module.
+add_adsorbate(atoms, 'O', height=1.2, position='bridge')
+constraint1 = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
+# fix in xy-direction, free in z. actually, freeze movement in surface
+# unit cell, and free along 3rd lattice vector
+constraint2 = FixScaled(atoms.get_cell(), 12, [True, True, False])
+atoms.set_constraint([constraint1, constraint2])
+write('images/Pt-O-bridge-constrained-initial.png', atoms, show_unit_cell=2)
+print 'Initial O position: {0}'.format(atoms.positions[-1])
+calc = Vasp('surfaces/Pt-slab-O-bridge-xy-constrained',
+            xc='PBE',
+            kpts=[4, 4, 1],
+            encut=350,
+            ibrion=2,
+            nsw=25,
+            atoms=atoms)
+e_bridge = atoms.get_potential_energy()
+write('images/Pt-O-bridge-constrained-final.png', atoms, show_unit_cell=2)
+print 'Final O position  : {0}'.format(atoms.positions[-1])
+# now compute Hads
+calc = Vasp('surfaces/Pt-slab')
+atoms = calc.get_atoms()
+e_slab = atoms.get_potential_energy()
+calc = Vasp('molecules/O2-sp-triplet-350')
+atoms = calc.get_atoms()
+e_O2 = atoms.get_potential_energy()
+calc.stop_if(None in [e_bridge, e_slab, e_O2])
+Hads_bridge = e_bridge - e_slab - 0.5*e_O2
+print 'Hads (bridge) = {0:1.3f} eV/O'.format(Hads_bridge)

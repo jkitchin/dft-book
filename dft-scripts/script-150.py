@@ -1,25 +1,35 @@
-from jasp import *
-from ase.lattice.cubic import BodyCenteredCubic
-atoms = BodyCenteredCubic(directions=[[1, 0, 0],
-                                      [0, 1, 0],
-                                      [0, 0, 1]],
-                                      size=(1, 1, 1),
-                                      symbol='Fe')
-# set magnetic moments on each atom
-for atom in atoms:
-    atom.magmom = 2.5
-with jasp('bulk/Fe-bcc-sp-1',
-          xc='PBE',
-          encut=300,
-          kpts=(4, 4, 4),
-          ispin=2,
-          lorbit=11, # you need this for individual magnetic moments
-          atoms=atoms) as calc:
-        try:
-            e = atoms.get_potential_energy()
-            B = atoms.get_magnetic_moment()
-            magmoms = atoms.get_magnetic_moments()
-        except (VaspSubmitted, VaspQueued):
-            pass
-print 'Total magnetic moment is {0:1.2f} Bohr-magnetons'.format(B)
-print 'Individual moments are {0} Bohr-magnetons'.format(magmoms)
+from ase import Atoms, Atom
+from vasp import Vasp
+Vasp.vasprc(mode=None)
+#Vasp.log.setLevel(10)
+import matplotlib.pyplot as plt
+import numpy as np
+from ase.dft import DOS
+import pylab as plt
+a = 3.9  # approximate lattice constant
+b = a / 2.
+bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
+             cell=[(0, b, b),
+                   (b, 0, b),
+                   (b, b, 0)])
+kpts = [8, 10, 12, 14, 16, 18, 20]
+calcs = [Vasp('bulk/pd-dos-k{0}-ismear-5'.format(k),
+              encut=300,
+              xc='PBE',
+              kpts=[k, k, k],
+              atoms=bulk) for k in kpts]
+Vasp.wait(abort=True)
+for calc in calcs:
+    # this runs the calculation
+    if calc.potential_energy is not None:
+        dos = DOS(calc, width=0.2)
+        d = dos.get_dos() + k / 4.0
+        e = dos.get_energies()
+        plt.plot(e, d, label='k={0}'.format(k))
+    else:
+        pass
+plt.xlabel('energy (eV)')
+plt.ylabel('DOS')
+plt.legend()
+plt.savefig('images/pd-dos-k-convergence-ismear-5.png')
+plt.show()

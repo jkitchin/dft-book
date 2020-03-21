@@ -1,10 +1,13 @@
-from jasp import *
-from ase.lattice.surface import fcc111
-atoms = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
-with jasp('surfaces/Al-slab-unrelaxed',
-          xc='PBE',
-          kpts=(6, 6, 1),
-          encut=350,
-          atoms=atoms) as calc:
-    atoms.get_forces()
-    print calc
+from vasp import Vasp
+wd = 'bulk/Si-bandstructure'
+calc = Vasp('bulk/Si-selfconsistent')
+calc.clone(wd)
+kpts = [[0.5, 0.5, 0.0],   # L
+        [0, 0, 0],         # Gamma
+        [0, 0, 0],
+        [0.5, 0.5, 0.5]]  # X
+calc.set(kpts=kpts,
+         reciprocal=True,
+         kpts_nintersections=10,
+         icharg=11)
+print calc.run()

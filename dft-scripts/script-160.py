@@ -1,8 +1,15 @@
-from jasp import *
-from ase.lattice.surface import fcc111
-with jasp('surfaces/Al-slab-relaxed') as calc:
-    atoms = calc.get_atoms()
-    print 'Total energy: {0:1.3f}'.format(atoms.get_potential_energy())
-    for i in range(1, len(atoms)):
-        print 'd_({0},{1}) = {2:1.3f} angstroms'.format(i, i-1,
-                                                   atoms[i].z - atoms[i-1].z)
+from vasp import Vasp
+from ase.lattice.cubic import BodyCenteredCubic
+atoms = BodyCenteredCubic(directions=[[1, 0, 0],
+                                      [0, 1, 0],
+                                      [0, 0, 1]],
+                                      size=(1, 1, 1),
+                                      symbol='Fe')
+calc = Vasp('bulk/Fe-bcc-fixedmagmom-{0:1.2f}'.format(0.0),
+            xc='PBE',
+            encut=300,
+            kpts=[4, 4, 4],
+            ispin=2,
+            nupdown=0,
+            atoms=atoms)
+print(atoms.get_potential_energy())

@@ -1,57 +1,32 @@
-from ase import Atoms, Atom
-from jasp import *
-from ase.calculators.vasp import VaspDos
-import sys
-import matplotlib.pyplot as plt
-import numpy as np
-a = 3.9  # approximate lattice constant
-b = a / 2.
-bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
-             cell=[(0, b, b),
-                   (b, 0, b),
-                   (b, b, 0)])
-RWIGS = [1.0, 1.1, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0 ]
-ED, WD, N = [], [], []
-for rwigs in RWIGS:
-    with jasp('bulk/pd-ados') as calc:
-        calc.clone('bulk/pd-ados-rwigs-{0}'.format(rwigs))
-    with jasp('bulk/pd-ados-rwigs-{0}'.format(rwigs)) as calc:
-        calc.set(rwigs=[rwigs])
-        try:
-            calc.calculate()
-        except (VaspSubmitted, VaspQueued):
-            continue
-        # now get results
-        ados = VaspDos(efermi=calc.get_fermi_level())
-        energies = ados.energy
-        dos = ados.site_dos(0, 'd')
-        #we will select energies in the range of -10, 5
-        ind = (energies < 5) & (energies > -10)
-        energies = energies[ind]
-        dos = dos[ind]
-        Nstates = np.trapz(dos, energies)
-        occupied = energies <= 0.0
-        N_occupied_states = np.trapz(dos[occupied], energies[occupied])
-        ed = np.trapz(energies * dos, energies) / np.trapz(dos, energies)
-        wd2 = np.trapz(energies**2 * dos, energies) / np.trapz(dos, energies)
-        N.append(N_occupied_states)
-        ED.append(ed)
-        WD.append(wd2**0.5)
-plt.plot(RWIGS, N, 'bo', label='N. occupied states')
-plt.legend(loc='best')
-plt.xlabel('RWIGS ($\AA$)')
-plt.ylabel('# occupied states')
-plt.savefig('images/ados-rwigs-occupation.png')
-fig, ax1 = plt.subplots()
-ax1.plot(RWIGS, ED, 'bo', label='d-band center (eV)')
-ax1.set_xlabel('RWIGS ($\AA$)')
-ax1.set_ylabel('d-band center (eV)', color='b')
-for tl in ax1.get_yticklabels():
-    tl.set_color('b')
-ax2 = ax1.twinx()
-ax2.plot(RWIGS, WD, 'gs', label='d-band width (eV)')
-ax2.set_ylabel('d-band width (eV)', color='g')
-for tl in ax2.get_yticklabels():
-    tl.set_color('g')
-plt.savefig('images/ados-rwigs-moments.png')
-plt.show()
+from vasp import Vasp
+from ase import Atom, Atoms
+# parent metals
+cu = Vasp('bulk/alloy/cu')
+cu_e = cu.potential_energy / len(cu.get_atoms())
+pd = Vasp('bulk/alloy/pd')
+pd_e = pd.potential_energy / len(pd.get_atoms())
+atoms = Atoms([Atom('Cu',  [-1.867,     1.867,      0.000]),
+               Atom('Cu',  [0.000,      0.000,      0.000]),
+               Atom('Cu',  [0.000,      1.867,      1.867]),
+               Atom('Pd',  [-1.867,     0.000,      1.86])],
+               cell=[[-3.735,  0.000,  0.000],
+                     [0.000,  0.000,  3.735],
+                     [0.000,  3.735,  0.000]])
+calc = Vasp('bulk/alloy/cu3pd-2',
+            xc='PBE',
+            encut=350,
+            kpts=[8, 8, 8],
+            nbands=34,
+            ibrion=2,
+            isif=3,
+            nsw=10,
+            atoms=atoms)
+e4 = atoms.get_potential_energy()
+Vasp.wait(abort=True)
+for atom in atoms:
+    if atom.symbol == 'Cu':
+        e4 -= cu_e
+    else:
+        e4 -= pd_e
+e4 /= len(atoms)
+print('Delta Hf cu3pd-2 = {0:1.2f} eV/atom'.format(e4))

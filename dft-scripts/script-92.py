@@ -1,16 +1,7 @@
-from jasp import *
-from ase import Atom, Atoms
-atoms = Atoms([Atom('Cu',  [0.000, 0.000, 0.000])],
-              cell= [[1.818, 0.000, 1.818],
-                     [1.818, 1.818, 0.000],
-                     [0.000, 1.818, 1.818]])
-with jasp('bulk/alloy/cu',
-          xc='PBE',
-          encut=350,
-          kpts=(13, 13, 13),
-          nbands=9,
-          ibrion=2,
-          isif=4,
-          nsw=10,
-          atoms=atoms) as calc:
-    print calc.get_valence_electrons()
+from ase.lattice.spacegroup import crystal
+# FCC aluminum
+a = 4.05
+al = crystal('Al', [(0, 0, 0)],
+             spacegroup=225,
+             cellpar=[a, a, a, 90, 90, 90])
+print(al)

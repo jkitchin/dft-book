@@ -1,3 +1,5 @@
-from ase.io import read, write
-atoms = read('bulk/Ru2O4_1.cif')
-write('images/Ru2O4.png', atoms, show_unit_cell=2)
+from ase.io import write
+from ase.lattice.cubic import FaceCenteredCubic
+atoms = FaceCenteredCubic('Ag')
+write('images/Ag-fcc.png', atoms, show_unit_cell=2)
+print(atoms)

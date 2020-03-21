@@ -1,12 +1,17 @@
-from ase.io import write
-from ase.lattice.cubic import FaceCenteredCubic
-atoms = FaceCenteredCubic(directions=[[1, 0, 0],
-                                      [0, 1, 0],
-                                      [0, 0, 1]],
-                          size=(1, 1, 1),
-                          symbol='Ag',
-                          latticeconstant=4.0)
-write('images/Ag-bulk.png', atoms, show_unit_cell=2)
-# to make an alloy, we can replace one atom with another kind
-atoms[0].symbol = 'Pd'
-write('images/AgPd-bulk.png', atoms, show_unit_cell=2)
+from vasp import Vasp
+# get relaxed geometry
+H2O = Vasp('molecules/wgs/H2O').get_atoms()
+# now do the vibrations
+calc = Vasp('molecules/wgs/H2O-vib',
+          xc='PBE',
+            encut=350,
+            ismear=0,
+            ibrion=6,
+            nfree=2,
+            potim=0.02,
+            nsw=1,
+            atoms=H2O)
+calc.wait()
+vib_freq = calc.get_vibrational_frequencies()
+for i, f in enumerate(vib_freq):
+    print('{0:02d}: {1} cm^(-1)'.format(i, f))

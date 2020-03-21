@@ -1,29 +1,31 @@
-# <<water-vib>>
-# adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
-from ase import Atoms, Atom
-from jasp import *
-import ase.units
-atoms = Atoms([Atom('H', [0.5960812,  -0.7677068,   0.0000000]),
-               Atom('O', [0.0000000,   0.0000000,   0.0000000]),
-               Atom('H', [0.5960812,   0.7677068,   0.0000000])],
-               cell=(8, 8, 8))
-atoms.center()
-with jasp('molecules/h2o_vib',
-          xc='PBE',
-          encut=400,
-          ismear=0,     # Gaussian smearing
-          ibrion=6,     # finite differences with symmetry
-          nfree=2,      # central differences (default)
-          potim=0.015,  # default as well
-          ediff=1e-8,   # for vibrations you need precise energies
-          nsw=1,        # Set to 1 for vibrational calculation
-          atoms=atoms) as calc:
-    print('Forces')
-    print('======')
-    print(atoms.get_forces())
-    print()
-    # vibrational energies are in eV
-    energies, modes = calc.get_vibrational_modes()
-    print('energies\n========')
-    for i, e in enumerate(energies):
-        print('{0:02d}: {1} eV'.format(i, e))
+from vasp import Vasp
+import numpy as np
+import matplotlib.pyplot as plt
+bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
+energies = []
+for d in bond_lengths:  # possible bond lengths
+    calc = Vasp('molecules/co-{0}'.format(d))
+    atoms = calc.get_atoms()
+    energies.append(atoms.get_potential_energy())
+# Now we fit an equation - cubic polynomial
+pp = np.polyfit(bond_lengths, energies, 3)
+dp = np.polyder(pp)  # first derivative - quadratic
+# we expect two roots from the quadratic eqn. These are where the
+# first derivative is equal to zero.
+roots = np.roots(dp)
+# The minimum is where the second derivative is positive.
+dpp = np.polyder(dp)  # second derivative - line
+secd = np.polyval(dpp, roots)
+minV = roots[secd > 0]
+minE = np.polyval(pp, minV)
+print('The minimum energy is {0[0]} eV at V = {1[0]} Ang^3'.format(minE, minV))
+# plot the fit
+x = np.linspace(1.05, 1.25)
+fit = np.polyval(pp, x)
+plt.plot(bond_lengths, energies, 'bo ')
+plt.plot(x, fit, 'r-')
+plt.plot(minV, minE, 'm* ')
+plt.legend(['DFT', 'fit', 'minimum'], numpoints=1)
+plt.xlabel(r'Bond length ($\AA$)')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/co-bondlengths.png')

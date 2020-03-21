@@ -1,18 +1,14 @@
-from jasp import *
-from jasp.elastic_moduli import *
-with jasp('bulk/Al-bulk') as calc:
-    calc.clone('bulk/Al-elastic')
-with jasp('bulk/Al-elastic',
-          ibrion=6,    #
-          isif=3,      # gets elastic constants
-          potim=0.015,  # displacements
-          nsw=1,
-          nfree=2) as calc:
-    atoms = calc.get_atoms()
-    print atoms.get_potential_energy()
-    EM = calc.get_elastic_moduli()
-    print EM
-c11 = EM[0,0]
-c12 = EM[0,1]
-B = (c11 + 2 * c12) / 3.0
-print B
+from vasp import Vasp
+from ase.lattice import bulk
+from ase.optimize import BFGS as QuasiNewton
+Al = bulk('Al', 'fcc', a=4.5, cubic=True)
+calc = Vasp('bulk/Al-lda-ase',
+            xc='LDA',
+            atoms=Al)
+from ase.constraints import StrainFilter
+sf = StrainFilter(Al)
+qn = QuasiNewton(sf, logfile='relaxation.log')
+qn.run(fmax=0.1, steps=5)
+print('Stress:\n', calc.stress)
+print('Al post ASE volume relaxation\n', calc.get_atoms().get_cell())
+print(calc)
