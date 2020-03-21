@@ -1,5 +1,5 @@
 EMACS=emacs
-BATCH_EMACS=$(EMACS) --batch -l ~/Dropbox/.emacs.d/init.el -l dft.el dft.org
+BATCH_EMACS=$(EMACS) --batch -l ~/scimax/init.el -l dft.el dft.org
 REQUIREMENTS=python
 PDFLATEX=pdflatex -shell-escape
 LATEX=latex -shell-escape
@@ -36,7 +36,7 @@ xhtml: $(PNGIMAGES)
 
 html: $(PNGIMAGES)
 	cp dftbook.sty /tmp
-	$(BATCH_EMACS) -f org-export-as-html
+	$(BATCH_EMACS) -f org-html-export-to-html
 
 mobi: html
 	/home/jkitchin/kindlegen/kindlegen dft.html
