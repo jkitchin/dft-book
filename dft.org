@@ -14281,9 +14281,9 @@ Now, we build the pdf, and clean up afterwards.
 (setq org-publish-project-alist
       '(
 	("dft-book-content"
-	 :base-directory "/home-research/jkitchin/dft/course/dft-book/"
+	 :base-directory "~/dft-book/"
 	 :base-extension "org"
-	 :publishing-directory "~/home-research/jkitchin/dft/course/dft-book/gh-pages/"
+	 :publishing-directory "~/dft-book/gh-pages/"
 	 :exclude "gh-pages\\|test\\|archive\\|molecules\\|surfaces\\|bulk\\|study-guides\\|blog\\|topics\\|index\\|help\\|header"
 	 :recursive t
 	 :publishing-function org-html-publish-to-html
@@ -14291,7 +14291,7 @@ Now, we build the pdf, and clean up afterwards.
 	 :auto-preamble t
 	 )
 	("dft-book-static"
-	 :base-directory "/home-research/jkitchin/dft/course/dft-book/"
+	 :base-directory "~/dft-book/"
 	 :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf\\|svg"
 	 :publishing-directory "/home-research/jkitchin/dft/course/dft-book/gh-pages/"
 	 :exclude  "gh-pages\\|test/\\|archive/\\|molecules/\\|surfaces/\\|bulk/\\|study-guides/"
@@ -14317,9 +14317,9 @@ I used to publish this, but now this only works for the static components
 (require 'ox-publish)
 (setq org-publish-project-alist
       '(("dft-book-static"
-	 :base-directory "/home-research/jkitchin/dft/course/dft-book/"
+	 :base-directory "~/dft-book/"
 	 :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf\\|svg"
-	 :publishing-directory "/home-research/jkitchin/dft/course/dft-book/gh-pages/"
+	 :publishing-directory "~/dft-book/gh-pages/"
 	 :exclude  "gh-pages\\|test/\\|archive/\\|molecules/\\|surfaces/\\|bulk/\\|study-guides/"
 	 :recursive t
 	 :publishing-function org-publish-attachment
