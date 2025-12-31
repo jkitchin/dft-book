@@ -271,7 +271,7 @@ KPTS = [2, 3, 4, 5, 6, 8, 10]
 TE = []
 
 for k in KPTS:
-    calc = Vasp('bulk/Ag-kpts-{0}'.format(k),
+    calc = Vasp(directory='bulk/Ag-kpts-{0}'.format(k),
                 xc='PBE',
                 kpts=[k, k, k],  # specifies the Monkhorst-Pack grid
                 encut=300,
@@ -350,7 +350,7 @@ SIGMA = [0.001, 0.05, 0.1, 0.2, 0.5]
 
 for sigma in SIGMA:
 
-    calc = Vasp('bulk/Cu-sigma-{0}'.format(sigma),
+    calc = Vasp(directory='bulk/Cu-sigma-{0}'.format(sigma),
                 xc='PBE',
                 encut=350,
                 kpts=[4, 4, 4],
@@ -447,7 +447,7 @@ atoms = Atoms([Atom('Cu',  [0.000, 0.000, 0.000])],
                      [1.818, 1.818, 0.000],
                      [0.000, 1.818, 1.818]])
 
-calc = Vasp('bulk/alloy/cu',
+calc = Vasp(directory='bulk/alloy/cu',
             xc='PBE',
             encut=350,
             kpts=[13, 13, 13],
@@ -478,7 +478,7 @@ atoms = Atoms([Atom('Cu', [0.000, 0.000, 0.000])],
                     [1.818, 1.818, 0.000],
                     [0.000, 1.818, 1.818]])
 
-calc = Vasp('bulk/alloy/cu',
+calc = Vasp(directory='bulk/alloy/cu',
             xc='PBE',
             encut=350,
             kpts=[13, 13, 13],
@@ -545,7 +545,7 @@ atoms = Atoms([Atom('Cu', [0.000, 0.000, 0.000])],
                     [1.818, 1.818, 0.000],
                     [0.000, 1.818, 1.818]])
 
-calc = Vasp('bulk/alloy/cu-setnbands',
+calc = Vasp(directory='bulk/alloy/cu-setnbands',
           xc='PBE',
           encut=350,
           kpts=[13, 13, 13],
@@ -638,7 +638,7 @@ for a in LC:
                                            [0.0, 1.0, 1.0],
                                            [1.0, 0.0, 1.0]]))
 
-    calc = Vasp('bulk/Cu-{0}'.format(a),
+    calc = Vasp(directory='bulk/Cu-{0}'.format(a),
                 xc='PBE',
                 encut=350,
                 kpts=[8, 8, 8],
@@ -690,7 +690,7 @@ LC = [3.5, 3.55, 3.6, 3.65, 3.7, 3.75]
 energies = []
 volumes = []
 for a in LC:
-    calc = Vasp('bulk/Cu-{0}'.format(a))
+    calc = Vasp(directory='bulk/Cu-{0}'.format(a))
     atoms = calc.get_atoms()
     volumes.append(atoms.get_volume())
     energies.append(atoms.get_potential_energy())
@@ -755,7 +755,7 @@ for a in LC:
                                            [-1.0,  1.0,  1.0],
                                            [ 1.0, -1.0,  1.0]]))
 
-    calc = Vasp('bulk/Cu-bcc-{0}'.format(a),
+    calc = Vasp(directory='bulk/Cu-bcc-{0}'.format(a),
                 xc='PBE',
                 encut=350,
                 kpts=[8, 8, 8],
@@ -781,7 +781,7 @@ bcc_LC = [2.75, 2.8, 2.85, 2.9, 2.95, 3.0]
 bcc_volumes = []
 bcc_energies = []
 for a in bcc_LC:
-    calc = Vasp('bulk/Cu-bcc-{0}'.format(a))
+    calc = Vasp(directory='bulk/Cu-bcc-{0}'.format(a))
     atoms = calc.get_atoms()
     bcc_volumes.append(atoms.get_volume())
     bcc_energies.append(atoms.get_potential_energy())
@@ -791,7 +791,7 @@ fcc_LC = [3.5, 3.55, 3.6, 3.65, 3.7, 3.75]
 fcc_volumes = []
 fcc_energies =[]
 for a in fcc_LC:
-    calc = Vasp('bulk/Cu-{0}'.format(a))
+    calc = Vasp(directory='bulk/Cu-{0}'.format(a))
     atoms = calc.get_atoms()
     fcc_volumes.append(atoms.get_volume())
     fcc_energies.append(atoms.get_potential_energy())
@@ -997,7 +997,7 @@ energies = []
 
 ready = True
 for k in KPOINTS:
-    calc = Vasp('bulk/tio2/kpts-{0}'.format(k),
+    calc = Vasp(directory='bulk/tio2/kpts-{0}'.format(k),
                 encut=520,
                 kpts=[k, k, k],
                 xc='PBE',
@@ -1063,7 +1063,7 @@ for f in factors:
 
     atoms.set_cell(cell0 * cell_factor, scale_atoms=True)
 
-    calc = Vasp('bulk/tio2/step1-{0:1.2f}'.format(f),
+    calc = Vasp(directory='bulk/tio2/step1-{0:1.2f}'.format(f),
                 encut=520,
                 kpts=[5, 5, 5],
                 isif=2, # relax internal degrees of freedom
@@ -1113,7 +1113,7 @@ Now, we know the minimum energy volume is near 64 \AA^3. You could at this point
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('bulk/tio2/step1-0.90')
+calc = Vasp(directory='bulk/tio2/step1-0.90')
 calc.clone('bulk/tio2/step2-0.90')
 #calc.set(isif=4)
 print calc.set(isif=4)
@@ -1135,7 +1135,7 @@ energies1, volumes1 = [], []  # from step 1
 energies, volumes = [], []  # for step 2
 ready = True
 for f in factors:
-    calc = Vasp('bulk/tio2/step1-{0:1.2f}'.format(f))
+    calc = Vasp(directory='bulk/tio2/step1-{0:1.2f}'.format(f))
     atoms = calc.get_atoms()
     energies1.append(atoms.get_potential_energy())
     volumes1.append(atoms.get_volume())
@@ -1176,10 +1176,10 @@ An alternative is a final calculation with ISIF=3, which optimizes the unit cell
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('bulk/tio2/step2-1.05')
+calc = Vasp(directory='bulk/tio2/step2-1.05')
 calc.clone('bulk/tio2/step3')
 
-calc = Vasp('bulk/tio2/step3',
+calc = Vasp(directory='bulk/tio2/step3',
             isif=3)
 calc.wait()
 print calc
@@ -1246,7 +1246,7 @@ As a final note, the VASP [[http://cms.mpi.univie.ac.at/vasp/guide/node164.html]
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('bulk/tio2/step3')
+calc = Vasp(directory='bulk/tio2/step3')
 atoms = calc.get_atoms()
 print 'default ismear: ', atoms.get_potential_energy()
 
@@ -1280,7 +1280,7 @@ for a in LC:
                   cell=0.5 * a * np.array([[1.0, 1.0, 0.0],
                                            [0.0, 1.0, 1.0],
                                            [1.0, 0.0, 1.0]]))
-    calc = Vasp('bulk/Pd-LDA-{0}'.format(a),
+    calc = Vasp(directory='bulk/Pd-LDA-{0}'.format(a),
                 encut=350,
                 kpts=[12, 12, 12],
                 xc='LDA',
@@ -1322,7 +1322,7 @@ for key in GGA:
                       cell=0.5 * a * np.array([[1.0, 1.0, 0.0],
                                                [0.0, 1.0, 1.0],
                                                [1.0, 0.0, 1.0]]))
-        calc = Vasp('bulk/Pd-GGA-{1}-{0}'.format(a, key),
+        calc = Vasp(directory='bulk/Pd-GGA-{1}-{0}'.format(a, key),
                     encut=350,
                     kpts=[12, 12, 12],
                     xc='LDA',
@@ -1362,7 +1362,7 @@ from vasp import Vasp
 from ase.lattice import bulk
 
 Al = bulk('Al', 'fcc', a=4.5, cubic=True)
-calc = Vasp('bulk/Al-lda-vasp',
+calc = Vasp(directory='bulk/Al-lda-vasp',
             xc='LDA', isif=7, nsw=5,
             ibrion=1, ediffg=-1e-3,
             lwave=False, lcharg=False,
@@ -1404,7 +1404,7 @@ Cartesian
 #+BEGIN_SRC python
 #+BEGIN_SRC python
 from vasp import Vasp
-calc = Vasp('bulk/Al-lda-vasp')
+calc = Vasp(directory='bulk/Al-lda-vasp')
 calc.view()
 print [atoms.get_volume() for atoms in calc.traj]
 print [atoms.get_potential_energy() for atoms in calc.traj]
@@ -1423,7 +1423,7 @@ from ase.optimize import BFGS as QuasiNewton
 
 Al = bulk('Al', 'fcc', a=4.5, cubic=True)
 
-calc = Vasp('bulk/Al-lda-ase',
+calc = Vasp(directory='bulk/Al-lda-ase',
             xc='LDA',
             atoms=Al)
 
@@ -1442,9 +1442,9 @@ Now for a detailed comparison:
 #+BEGIN_SRC python
 from vasp import Vasp
 
-atoms = Vasp('bulk/Al-lda-vasp').get_atoms()
+atoms = Vasp(directory='bulk/Al-lda-vasp').get_atoms()
 
-atoms2 = Vasp('bulk/Al-lda-ase').get_atoms()
+atoms2 = Vasp(directory='bulk/Al-lda-ase').get_atoms()
 
 import numpy as np
 
@@ -1475,7 +1475,7 @@ atoms = FaceCenteredCubic(directions=[[0, 1, 1],
                                       size=(1, 1, 1),
                                       symbol='Rh')
 
-calc = Vasp('bulk/bulk-rh',
+calc = Vasp(directory='bulk/bulk-rh',
             xc='PBE',
             encut=350,
             kpts=[4, 4, 4],
@@ -1489,7 +1489,7 @@ bulk_energy = atoms.get_potential_energy()
 atoms = Atoms([Atom('Rh',[5, 5, 5])],
               cell=(7, 8, 9))
 
-calc = Vasp('bulk/atomic-rh',
+calc = Vasp(directory='bulk/atomic-rh',
             xc='PBE',
             encut=350,
             kpts=[1, 1, 1],
@@ -1516,15 +1516,15 @@ index:convergence!KPOINTS
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('bulk/atomic-rh')
+calc = Vasp(directory='bulk/atomic-rh')
 atomic_energy = calc.potential_energy
 
-calc = Vasp('bulk/bulk-rh')
+calc = Vasp(directory='bulk/bulk-rh')
 atoms = calc.get_atoms()
 
 kpts = [3, 4, 6, 9, 12, 15, 18]
 
-calcs = [Vasp('bulk/bulk-rh-kpts-{0}'.format(k),
+calcs = [Vasp(directory='bulk/bulk-rh-kpts-{0}'.format(k),
                 xc='PBE',
                 encut=350,
                 kpts=[k, k, k],
@@ -1565,7 +1565,7 @@ atoms = FaceCenteredCubic(directions=[[0, 1, 1],
                                      size=(1, 1, 1),
                                      symbol='Rh')
 
-calc = Vasp('bulk/bulk-rh',
+calc = Vasp(directory='bulk/bulk-rh',
             xc='PBE',
             encut=350,
             kpts=[4, 4, 4],
@@ -1579,7 +1579,7 @@ bulk_energy = atoms.get_potential_energy()
 atoms = Atoms([Atom('Rh',[5, 5, 5], magmom=1)],
               cell=(7, 8, 9))
 
-calc = Vasp('bulk/atomic-rh-sp',
+calc = Vasp(directory='bulk/atomic-rh-sp',
             xc='PBE',
             encut=350,
             kpts=[1, 1, 1],
@@ -1615,14 +1615,14 @@ atoms = BodyCenteredCubic(symbol='Fe')
 for atom in atoms:
     atom.magmom = 3.0
 
-from vasp.vasprc import VASPRC
-VASPRC['mode'] = None
+# from vasp.vasprc import VASPRC  # Deprecated in new vasp
+# # VASPRC['mode'] = None  # Deprecated in new vasp  # Deprecated in new vasp
 
 import logging
 log = logging.getLogger('Vasp')
 #log.setLevel(logging.DEBUG)
 
-calc = Vasp('bulk/Fe-bulk',
+calc = Vasp(directory='bulk/Fe-bulk',
             xc='PBE',
             kpts=[6, 6, 6],
             encut=350,
@@ -1646,7 +1646,7 @@ Ok, now with a relaxed geometry at hand, we proceed with the elastic constants. 
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('bulk/Fe-bulk')
+calc = Vasp(directory='bulk/Fe-bulk')
 calc.clone('bulk/Fe-elastic')
 
 calc.set(ibrion=6,    #
@@ -1744,7 +1744,7 @@ from ase.lattice.cubic import FaceCenteredCubic
 
 atoms = FaceCenteredCubic(symbol='Al')
 
-calc = Vasp('bulk/Al-bulk',
+calc = Vasp(directory='bulk/Al-bulk',
             xc='PBE',
             kpts=[12, 12, 12],
             encut=350,
@@ -1764,7 +1764,7 @@ Ok, now with a relaxed geometry at hand, we proceed with the elastic constants. 
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('bulk/Al-bulk')
+calc = Vasp(directory='bulk/Al-bulk')
 calc.clone('bulk/Al-elastic')
 
 calc.set(ibrion=6,    #
@@ -1827,7 +1827,7 @@ for delta in DELTAS:
     atoms.set_cell(newcell, scale_atoms=True)
     volumes += [atoms.get_volume()]
 
-    calcs += [Vasp('bulk/Al-c11-{}'.format(delta),
+    calcs += [Vasp(directory='bulk/Al-c11-{}'.format(delta),
                 xc='pbe',
                 kpts=[12, 12, 12],
                 encut=350,
@@ -1876,7 +1876,7 @@ for a in LC:
                                            [0.0, 1.0, 1.0],
                                            [1.0, 0.0, 1.0]]))
 
-    calc = Vasp('bulk/Ni-{0}'.format(a),
+    calc = Vasp(directory='bulk/Ni-{0}'.format(a),
                 xc='PBE',
                 encut=350,
                 kpts=[12, 12, 12],
@@ -1940,7 +1940,7 @@ for v in volumes:
     atoms.set_cell(cell0 * ((nTiO2 * v / v0)**(1. / 3.)),
                    scale_atoms=True)
 
-    calc = Vasp('bulk/TiO2/rutile/rutile-{0}'.format(v),
+    calc = Vasp(directory='bulk/TiO2/rutile/rutile-{0}'.format(v),
                 encut=350,
                 kpts=[6, 6, 6],
                 xc='PBE',
@@ -1987,7 +1987,7 @@ for v in volumes:
     atoms.set_cell(cell0 * ((nTiO2*v/v0)**(1./3.)),
                    scale_atoms=True)
 
-    calc = Vasp('bulk/TiO2/anatase/anatase-{0}'.format(v),
+    calc = Vasp(directory='bulk/TiO2/anatase/anatase-{0}'.format(v),
                 encut=350,
                 kpts=[6, 6, 6],
                 xc='PBE',
@@ -2015,7 +2015,7 @@ np.set_printoptions(precision=2)
 volumes = [30., 33., 35., 37., 39.]  # vol of one TiO2 formula unit
 a_volumes, a_energies = [], []
 for v in volumes:
-    calc = Vasp('bulk/TiO2/anatase/anatase-{0}'.format(v))
+    calc = Vasp(directory='bulk/TiO2/anatase/anatase-{0}'.format(v))
     atoms = calc.get_atoms()
     nTiO2 = len(atoms) / 3.0
     a_volumes.append(atoms.get_volume() / nTiO2)
@@ -2025,7 +2025,7 @@ for v in volumes:
 volumes = [28., 30., 32., 34., 36.]  # vol of one TiO2
 r_volumes, r_energies = [], []
 for v in volumes:
-    calc = Vasp('bulk/TiO2/rutile/rutile-{0}'.format(v))
+    calc = Vasp(directory='bulk/TiO2/rutile/rutile-{0}'.format(v))
     atoms = calc.get_atoms()
     nTiO2 = len(atoms) / 3.0
     r_volumes.append(atoms.get_volume() / nTiO2)
@@ -2171,7 +2171,7 @@ atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000])],
                       [ 1.818,  1.818,  0.000],
                       [ 0.000,  1.818,  1.818]])
 
-cuc = Vasp('bulk/alloy/cu',
+cuc = Vasp(directory='bulk/alloy/cu',
           xc='PBE',
           encut=350,
           kpts=[13, 13, 13],
@@ -2188,7 +2188,7 @@ atoms = Atoms([Atom('Pd',  [0.000,      0.000,      0.000])],
                     [ 1.978,  1.978,  0.000],
                     [0.000,  1.978,  1.978]])
 
-pd = Vasp('bulk/alloy/pd',
+pd = Vasp(directory='bulk/alloy/pd',
           xc='PBE',
           encut=350,
           kpts=[13, 13, 13],
@@ -2222,7 +2222,7 @@ atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
                       [0.000,  2.039,  2.039],
                       [-3.303,  0.000,  0.000]])
 
-calc = Vasp('bulk/alloy/cupd-1',
+calc = Vasp(directory='bulk/alloy/cupd-1',
             xc='PBE',
             encut=350,
             kpts=[12, 12, 8],
@@ -2241,7 +2241,7 @@ atoms = Atoms([Atom('Cu',  [-0.049,     0.049,      0.049]),
                     [-3.701,  5.629,  5.629 ],
                     [-5.629,  5.629,  3.701 ]])
 
-calc = Vasp('bulk/alloy/cupd-2',
+calc = Vasp(directory='bulk/alloy/cupd-2',
             xc='PBE',
             encut=350,
             kpts=[8, 8, 8],
@@ -2266,11 +2266,11 @@ Looking at these energies, you could be tempted to say cupd-2 is more stable tha
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('bulk/alloy/cupd-1')
+calc = Vasp(directory='bulk/alloy/cupd-1')
 atoms = calc.get_atoms()
 e1 = atoms.get_potential_energy()/len(atoms)
 
-calc = Vasp('bulk/alloy/cupd-2')
+calc = Vasp(directory='bulk/alloy/cupd-2')
 atoms = calc.get_atoms()
 e2 = atoms.get_potential_energy()/len(atoms)
 
@@ -2290,16 +2290,16 @@ Cu + Pd $\rightarrow$ CuPd for the two configurations we examined? Below, we sho
 from vasp import Vasp
 
 # bulk energy 1
-calc = Vasp('bulk/alloy/cu')
+calc = Vasp(directory='bulk/alloy/cu')
 atoms = calc.get_atoms()
 cu = atoms.get_potential_energy()/len(atoms)
 
 # bulk energy 2
-calc = Vasp('bulk/alloy/pd')
+calc = Vasp(directory='bulk/alloy/pd')
 atoms = calc.get_atoms()
 pd = atoms.get_potential_energy()/len(atoms)
 
-calc = Vasp('bulk/alloy/cupd-1')
+calc = Vasp(directory='bulk/alloy/cupd-1')
 atoms = calc.get_atoms()
 e1 = atoms.get_potential_energy()
 # subtract bulk energies off of each atom in cell
@@ -2311,7 +2311,7 @@ for atom in atoms:
 
 e1 /= len(atoms)  # normalize by number of atoms in cell
 
-calc = Vasp('bulk/alloy/cupd-2')
+calc = Vasp(directory='bulk/alloy/cupd-2')
 atoms = calc.get_atoms()
 e2 = atoms.get_potential_energy()
 for atom in atoms:
@@ -2346,10 +2346,10 @@ from ase import Atom, Atoms
 
 # parent metals
 
-atoms = Vasp('bulk/alloy/cu').get_atoms()
+atoms = Vasp(directory='bulk/alloy/cu').get_atoms()
 cu = atoms.get_potential_energy() / len(atoms)
 
-atoms = Vasp('bulk/alloy/pd').get_atoms()
+atoms = Vasp(directory='bulk/alloy/pd').get_atoms()
 pd = atoms.get_potential_energy() / len(atoms)
 
 atoms = Atoms([Atom('Cu',  [-3.672,     3.672,      3.672]),
@@ -2360,7 +2360,7 @@ atoms = Atoms([Atom('Cu',  [-3.672,     3.672,      3.672]),
                      [-3.565,  5.464,  5.464],
                      [-5.464,  5.464,  3.565]])
 
-calc = Vasp('bulk/alloy/cu3pd-1',
+calc = Vasp(directory='bulk/alloy/cu3pd-1',
             xc='PBE',
             encut=350,
             kpts=[8, 8, 8],
@@ -2425,10 +2425,10 @@ from vasp import Vasp
 from ase import Atom, Atoms
 
 # parent metals
-cu = Vasp('bulk/alloy/cu')
+cu = Vasp(directory='bulk/alloy/cu')
 cu_e = cu.potential_energy / len(cu.get_atoms())
 
-pd = Vasp('bulk/alloy/pd')
+pd = Vasp(directory='bulk/alloy/pd')
 pd_e = pd.potential_energy / len(pd.get_atoms())
 
 atoms = Atoms([Atom('Cu',  [-1.867,     1.867,      0.000]),
@@ -2439,7 +2439,7 @@ atoms = Atoms([Atom('Cu',  [-1.867,     1.867,      0.000]),
                      [0.000,  0.000,  3.735],
                      [0.000,  3.735,  0.000]])
 
-calc = Vasp('bulk/alloy/cu3pd-2',
+calc = Vasp(directory='bulk/alloy/cu3pd-2',
             xc='PBE',
             encut=350,
             kpts=[8, 8, 8],
@@ -2498,7 +2498,7 @@ atoms = Atoms([Atom('Cu', [0, 0, 0]),
 
 atoms.set_cell((a, a, a), scale_atoms=True)
 
-calc = Vasp('bulk/Cu2O',
+calc = Vasp(directory='bulk/Cu2O',
             encut=400,
             kpts=[8, 8, 8],
             ibrion=2,
@@ -2541,7 +2541,7 @@ atoms = Atoms([Atom('Cu', 0.5*a2),
                Atom('O',  y*a1 - y*a2 - 0.25*a3)],
                cell=(a1, a2, a3))
 
-calc = Vasp('bulk/CuO',
+calc = Vasp(directory='bulk/CuO',
             encut=400,
             kpts=[8, 8, 8],
             ibrion=2,
@@ -2562,16 +2562,16 @@ from vasp import Vasp
 # don't forget to normalize your total energy to a formula unit. Cu2O
 # has 3 atoms, so the number of formula units in an atoms is
 # len(atoms)/3.
-calc = Vasp('bulk/Cu2O')
+calc = Vasp(directory='bulk/Cu2O')
 atoms1 = calc.get_atoms()
 cu2o_energy = atoms1.get_potential_energy()
 
-calc = Vasp('bulk/CuO')
+calc = Vasp(directory='bulk/CuO')
 atoms2 = calc.get_atoms()
 cuo_energy = atoms2.get_potential_energy()
 
 # make sure to use the same cutoff energy for the O2 molecule!
-calc = Vasp('molecules/O2-sp-triplet-400')
+calc = Vasp(directory='molecules/O2-sp-triplet-400')
 atoms3 = calc.get_atoms()
 o2_energy = atoms3.get_potential_energy()
 
@@ -2666,7 +2666,7 @@ def gaussian(energies, eik):
     x = ((energies - eik) / width)
     return np.exp(-x**2) / np.sqrt(np.pi) / width
 
-calc = Vasp('bulk/pd-dos')
+calc = Vasp(directory='bulk/pd-dos')
 
 # kpt weights
 wk = calc.get_k_point_weights()
@@ -2710,7 +2710,7 @@ from vasp import Vasp
 import matplotlib.pyplot as plt
 from ase.dft import DOS
 
-calc = Vasp('bulk/pd-dos')
+calc = Vasp(directory='bulk/pd-dos')
 dos = DOS(calc, width=0.2)
 d = dos.get_dos()
 e = dos.get_energies()
@@ -2735,7 +2735,7 @@ The VASP manual [[http://cms.mpi.univie.ac.at/vasp/guide/node124.html#SECTION000
 #+BEGIN_SRC python
 from vasp import Vasp
 from ase.dft import DOS
-calc = Vasp('bulk/pd-dos')
+calc = Vasp(directory='bulk/pd-dos')
 calc.clone('bulk/pd-dos-ismear-5')
 
 
@@ -2785,7 +2785,7 @@ bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
 
 kpts = [8, 10, 12, 14, 16, 18, 20]
 
-calcs = [Vasp('bulk/pd-dos-k{0}-ismear-5'.format(k),
+calcs = [Vasp(directory='bulk/pd-dos-k{0}-ismear-5'.format(k),
               encut=300,
               xc='PBE',
               kpts=[k, k, k],
@@ -2818,7 +2818,7 @@ plt.show()
 from vasp import Vasp
 from ase.dft import DOS
 # This seems very slow...
-calc = Vasp('bulk/pd-dos-k20-ismear-5')
+calc = Vasp(directory='bulk/pd-dos-k20-ismear-5')
 print DOS(calc, width=0.2)
 #+END_SRC
 
@@ -2861,7 +2861,7 @@ bulk = Atoms([Atom('Pd', (0.0, 0.0, 0.0))],
                    (b, 0, b),
                    (b, b, 0)])
 
-calc = Vasp('bulk/pd-ados',
+calc = Vasp(directory='bulk/pd-ados',
             encut=300,
             xc='PBE',
             lreal=False,
@@ -2944,7 +2944,7 @@ RWIGS = [1.0, 1.1, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0 ]
 ED, WD, N = [], [], []
 
 for rwigs in RWIGS:
-    calc = Vasp('bulk/pd-ados')
+    calc = Vasp(directory='bulk/pd-ados')
     calc.clone('bulk/pd-ados-rwigs-{0}'.format(rwigs))
     calc.set(rwigs={'Pd': rwigs})
     if calc.potential_energy is None:
@@ -3029,7 +3029,7 @@ atoms.set_cell([[a / 2., a / 2., 0.0],
                 [0.0,  a / 2., a / 2.],
                 [a / 2., 0.0, a / 2.]], scale_atoms=True)
 
-calc = Vasp('bulk/Si-selfconsistent',
+calc = Vasp(directory='bulk/Si-selfconsistent',
             xc='PBE',
             prec='Medium',
             lcharg=True,
@@ -3048,7 +3048,7 @@ from vasp import Vasp
 
 wd = 'bulk/Si-bandstructure'
 
-calc = Vasp('bulk/Si-selfconsistent')
+calc = Vasp(directory='bulk/Si-selfconsistent')
 calc.clone(wd)
 
 kpts = [[0.5, 0.5, 0.0],   # L
@@ -3150,7 +3150,7 @@ Next we will examine the connection between band structures and density of state
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('bulk/tio2/step3')
+calc = Vasp(directory='bulk/tio2/step3')
 print calc.get_fermi_level()
 calc.abort()
 n, bands, p = calc.get_bandstructure(kpts_path=[('$\Gamma$', [0.0, 0.0, 0.0]),
@@ -3187,7 +3187,7 @@ for i, a in enumerate([4.7, 5.38936, 6.0]):
                     [0.0,  a/2., a/2.],
                     [a/2., 0.0, a/2.]], scale_atoms=True)
 
-    calc = Vasp('bulk/Si-bs-{0}'.format(i),
+    calc = Vasp(directory='bulk/Si-bs-{0}'.format(i),
                 xc='PBE',
                 lcharg=True,
                 lwave=True,
@@ -3249,7 +3249,7 @@ atoms = BodyCenteredCubic(directions=[[1, 0, 0],
                                       symbol='Fe')
 
 
-calc = Vasp('bulk/Fe-bcc-fixedmagmom-{0:1.2f}'.format(0.0),
+calc = Vasp(directory='bulk/Fe-bcc-fixedmagmom-{0:1.2f}'.format(0.0),
             xc='PBE',
             encut=300,
             kpts=[4, 4, 4],
@@ -3277,7 +3277,7 @@ atoms = BodyCenteredCubic(directions=[[1, 0, 0],
 NUPDOWNS = [0.0, 2.0, 4.0, 5.0, 6.0, 8.0]
 energies = []
 for B in NUPDOWNS:
-    calc = Vasp('bulk/Fe-bcc-fixedmagmom-{0:1.2f}'.format(B),
+    calc = Vasp(directory='bulk/Fe-bcc-fixedmagmom-{0:1.2f}'.format(B),
                 xc='PBE',
                 encut=300,
                 kpts=[4, 4, 4],
@@ -3320,7 +3320,7 @@ atoms = BodyCenteredCubic(directions=[[1, 0, 0],
 for atom in atoms:
     atom.magmom = 2.5
 
-calc = Vasp('bulk/Fe-bcc-sp-1',
+calc = Vasp(directory='bulk/Fe-bcc-sp-1',
             xc='PBE',
             encut=300,
             kpts=[4, 4, 4],
@@ -3355,7 +3355,7 @@ atoms = Atoms([Atom('Fe', [0.00,  0.00,  0.00], magmom=5),
                      [2.15,    4.3,     2.15],
                      [2.15,    2.15,    4.3]])
 
-ca = Vasp('bulk/afm-feo',
+ca = Vasp(directory='bulk/afm-feo',
           encut=350,
           prec='Normal',
           ispin=2,

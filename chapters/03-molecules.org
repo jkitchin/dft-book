@@ -731,7 +731,7 @@ co = Atoms([Atom('C', [0, 0, 0]),
             Atom('O', [1.2, 0, 0])],
            cell=(6., 6., 6.))
 
-calc = Vasp('molecules/simple-co',  # output dir
+calc = Vasp(directory='molecules/simple-co',  # output dir
             xc='pbe',  # the exchange-correlation functional
             nbands=6,    # number of bands
             encut=350,    # planewave cutoff
@@ -751,7 +751,7 @@ print(co.get_forces())
 We can see what files were created and used in this calculation by printing the vasp attribute of the calculator.
 #+BEGIN_SRC python
 from vasp import Vasp
-print(Vasp('molecules/simple-co').vasp)
+print(Vasp(directory='molecules/simple-co').vasp)
 #+END_SRC
 
 #+RESULTS:
@@ -799,15 +799,15 @@ cat $VASP_PP_PATH/potpaw_PBE/C/POTCAR $VASP_PP_PATH/potpaw_PBE/O/POTCAR > POTCAR
 #+BEGIN_SRC python
 from ase import Atoms, Atom
 from vasp import Vasp
-from vasp.vasprc import VASPRC
+# from vasp.vasprc import VASPRC  # Deprecated in new vasp
 
-VASPRC['queue.ppn'] = 4
+# # VASPRC['queue.ppn'] = 4  # Deprecated in new vasp  # Deprecated in new vasp
 
 co = Atoms([Atom('C', [0, 0, 0]),
             Atom('O', [1.2, 0, 0])],
            cell=(6., 6., 6.))
 
-calc = Vasp('molecules/simple-co-n4',  # output dir
+calc = Vasp(directory='molecules/simple-co-n4',  # output dir
             xc='PBE',  # the exchange-correlation functional
             nbands=6,    # number of bands
             encut=350,    # planewave cutoff
@@ -843,7 +843,7 @@ ready = True
 for a in L:
     atoms.set_cell([a, a, a], scale_atoms=False)
     atoms.center()
-    calc = Vasp('molecules/co-L-{0}'.format(a),
+    calc = Vasp(directory='molecules/co-L-{0}'.format(a),
                 encut=350,
                 xc='PBE',
                 atoms=atoms)
@@ -878,7 +878,7 @@ from vasp import Vasp
 L = [4, 5, 6, 8, 10]
 
 for a in L:
-    calc = Vasp('molecules/co-L-{0}'.format(a))
+    calc = Vasp(directory='molecules/co-L-{0}'.format(a))
     print('{0} {1} seconds'.format(a, calc.get_elapsed_time()))
 #+END_SRC
 
@@ -937,7 +937,7 @@ atoms.center()
 
 ENCUTS = [250, 300, 350, 400, 450, 500]
 
-calcs = [Vasp('molecules/co-en-{0}'.format(en),
+calcs = [Vasp(directory='molecules/co-en-{0}'.format(en),
               encut=en,
               xc='PBE',
               atoms=atoms)
@@ -983,7 +983,7 @@ You may want to clone a calculation, so you can change some parameter without lo
 from ase import Atoms, Atom
 from vasp import Vasp
 
-calc = Vasp('molecules/simple-co')
+calc = Vasp(directory='molecules/simple-co')
 print('energy = {0} eV'.format(calc.get_atoms().get_potential_energy()))
 
 # This creates the directory and makes it current working directory
@@ -1008,7 +1008,7 @@ from enthought.mayavi import mlab
 from ase.data import vdw_radii
 from ase.data.colors import cpk_colors
 
-calc = Vasp('molecules/simple-co')
+calc = Vasp(directory='molecules/simple-co')
 calc.clone('molecules/co-chg')
 calc.set(lcharg=True)
 calc.stop_if(calc.potential_energy is None)
@@ -1085,7 +1085,7 @@ atoms = Atoms([Atom('C', [2.422, 0.0, 0.0]),
 
 atoms.center()
 
-calc = Vasp('molecules/co-centered',
+calc = Vasp(directory='molecules/co-centered',
             encut=350,
             xc='PBE',
             atoms=atoms)
@@ -1167,7 +1167,7 @@ benzene = molecule('C6H6')
 benzene.set_cell([10, 10, 10])
 benzene.center()
 
-calc1 = Vasp('molecules/benzene',
+calc1 = Vasp(directory='molecules/benzene',
             xc='PBE',
             nbands=18,
             encut=350,
@@ -1179,7 +1179,7 @@ chlorobenzene.set_cell([10, 10, 10])
 chlorobenzene.center()
 chlorobenzene[11].symbol ='Cl'
 
-calc2 = Vasp('molecules/chlorobenzene',
+calc2 = Vasp(directory='molecules/chlorobenzene',
             xc='PBE',
             nbands=22,
             encut=350,
@@ -1296,11 +1296,11 @@ def vinterp3d(x, y, z, u, xi, yi, zi):
     return ui7
 
 ### Setup calculators
-calc = Vasp('molecules/benzene')
+calc = Vasp(directory='molecules/benzene')
 benzene = calc.get_atoms()
 x1, y1, z1, cd1 = calc.get_charge_density()
 
-calc = Vasp('molecules/chlorobenzene')
+calc = Vasp(directory='molecules/chlorobenzene')
 x2, y2, z2, cd2 = calc.get_charge_density()
 
 cdiff = cd2 - cd1
@@ -1346,12 +1346,12 @@ The [[http://en.wikipedia.org/wiki/Molecular_dipole_moment#Molecular_dipoles][di
 
 #+BEGIN_SRC python
 from vasp import Vasp
-from vasp.VaspChargeDensity import VaspChargeDensity
+from vasp.charge_density import VaspChargeDensity
 import numpy as np
 from ase.units import Debye
 import os
 
-calc = Vasp('molecules/co-centered')
+calc = Vasp(directory='molecules/co-centered')
 atoms = calc.get_atoms()
 calc.stop_if(atoms.get_potential_energy() is None)
 
@@ -1396,7 +1396,7 @@ electron_density_center /= total_electron_charge
 electron_dipole_moment = -electron_density_center * total_electron_charge
 
 # now the ion charge center. We only need the Zval listed in the potcar
-from vasp.POTCAR import get_ZVAL
+from vasp.potcar import get_ZVAL
 
 LOP = calc.get_pseudopotentials()
 ppp = os.environ['VASP_PP_PATH']
@@ -1435,7 +1435,7 @@ Note that a function using the code above exists in =vasp= which makes it trivia
 from vasp import Vasp
 from ase.units import Debye
 
-calc = Vasp('molecules/co-centered')
+calc = Vasp(directory='molecules/co-centered')
 
 dipole_moment = calc.get_dipole_moment()
 print('The dipole moment is {0:1.2f} Debye'.format(dipole_moment))
@@ -1453,7 +1453,7 @@ from vasp import Vasp
 from ase.dft.dos import DOS
 import matplotlib.pyplot as plt
 
-calc = Vasp('molecules/simple-co')   # we already ran this!
+calc = Vasp(directory='molecules/simple-co')   # we already ran this!
 dos = DOS(calc)
 plt.plot(dos.get_energies(), dos.get_dos())
 plt.xlabel('Energy - $E_f$ (eV)')
@@ -1487,10 +1487,10 @@ from ase.dft.dos import DOS
 import matplotlib.pyplot as plt
 
 # get the geometry from another calculation
-calc = Vasp('molecules/simple-co')
+calc = Vasp(directory='molecules/simple-co')
 atoms = calc.get_atoms()
 
-calc = Vasp('molecules/co-ados',
+calc = Vasp(directory='molecules/co-ados',
             encut=300,
             xc='PBE',
             rwigs={'C': 1.0, 'O': 1.0},     # these are the cutoff radii for projected states
@@ -1550,7 +1550,7 @@ atoms = Atoms([Atom('C',  [ 0.0000,	0.0000,		-0.8088]),
                cell=(10, 10, 10))
 atoms.center()
 
-calc = Vasp('molecules/CF3Br',
+calc = Vasp(directory='molecules/CF3Br',
             encut=350,
             xc='PBE',
             ibrion=1,
@@ -1624,7 +1624,7 @@ from ase.structure import molecule
 atoms = molecule('H2O')
 atoms.center(vacuum=6)
 
-calc = Vasp('molecules/h2o-bader',
+calc = Vasp(directory='molecules/h2o-bader',
             xc='PBE',
             encut=350,
             lcharg=True,
@@ -1642,7 +1642,7 @@ We use this code to see the changes in charges on the atoms.
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('molecules/h2o-bader')
+calc = Vasp(directory='molecules/h2o-bader')
 calc.bader(ref=True, overwrite=True)
 atoms = calc.get_atoms()
 for atom in atoms:
@@ -1680,7 +1680,7 @@ for d in bond_lengths:  # possible bond lengths
                 Atom('O', [d, 0, 0])],
                cell=(6, 6, 6))
 
-    calc = Vasp('molecules/co-{0}'.format(d),  # output dir
+    calc = Vasp(directory='molecules/co-{0}'.format(d),  # output dir
                 xc='PBE',
                 nbands=6,
                 encut=350,
@@ -1754,7 +1754,7 @@ ATOMS = [Atoms([Atom('C', [0, 0, 0]),
                cell=(6, 6, 6))
          for d in bond_lengths]
 
-calcs = [Vasp('molecules/co-{0}'.format(d),  # output dir
+calcs = [Vasp(directory='molecules/co-{0}'.format(d),  # output dir
                 xc='PBE',
                 nbands=6,
                 encut=350,
@@ -1776,7 +1776,7 @@ We can retrieve data similarly.
 from vasp import Vasp
 
 bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
-calcs = [Vasp('molecules/co-{0}'.format(d)) for d in bond_lengths]
+calcs = [Vasp(directory='molecules/co-{0}'.format(d)) for d in bond_lengths]
 
 energies = [calc.get_atoms().get_potential_energy() for calc in calcs]
 
@@ -1792,7 +1792,7 @@ from vasp import Vasp
 from ase.db import connect
 
 bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
-calcs = [Vasp('molecules/co-{0}'.format(d)) for d in bond_lengths]
+calcs = [Vasp(directory='molecules/co-{0}'.format(d)) for d in bond_lengths]
 
 con = connect('co-database.db', append=False)
 for atoms in [calc.get_atoms() for calc in calcs]:
@@ -1842,7 +1842,7 @@ energies = []
 
 for d in bond_lengths:  # possible bond lengths
 
-    calc = Vasp('molecules/co-{0}'.format(d))
+    calc = Vasp(directory='molecules/co-{0}'.format(d))
     atoms = calc.get_atoms()
     energies.append(atoms.get_potential_energy())
 
@@ -1906,7 +1906,7 @@ co = Atoms([Atom('C',[0, 0, 0]),
             Atom('O',[1.2, 0, 0])],
             cell=(6, 6, 6))
 
-calc = Vasp('molecules/co-cg',
+calc = Vasp(directory='molecules/co-cg',
           xc='PBE',
           nbands=6,
           encut=350,
@@ -1945,7 +1945,7 @@ atoms = Atoms([Atom('H', [0.5960812, -0.7677068, 0.0000000]),
 
 atoms.center()
 
-calc = Vasp('molecules/h2o-relax-centered',
+calc = Vasp(directory='molecules/h2o-relax-centered',
             xc='PBE',
             encut=400,
             ismear=0,  # Gaussian smearing
@@ -1971,7 +1971,7 @@ print(atoms.get_forces())
 
 #+BEGIN_SRC python
 from vasp import Vasp
-calc = Vasp('molecules/h2o-relax-centered')
+calc = Vasp(directory='molecules/h2o-relax-centered')
 
 from ase.visualize import view
 view(calc.traj)
@@ -2001,7 +2001,7 @@ bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
 energies = []
 
 for d in bond_lengths:
-    calc = Vasp('molecules/co-{0}'.format(d))
+    calc = Vasp(directory='molecules/co-{0}'.format(d))
     atoms = calc.get_atoms()
     energies.append(atoms.get_potential_energy())
 
@@ -2088,7 +2088,7 @@ atoms = Atoms([Atom('H', [0.5960812,  -0.7677068,   0.0000000]),
                cell=(8, 8, 8))
 atoms.center()
 
-calc = Vasp('molecules/h2o_vib',
+calc = Vasp(directory='molecules/h2o_vib',
             xc='PBE',
             encut=400,
             ismear=0,     # Gaussian smearing
@@ -2159,7 +2159,7 @@ Let us briefly discuss how to determine which vectors are vibrations and which a
 # <<h2o-vib-vis>>
 from vasp import Vasp
 import numpy as np
-calc = Vasp('molecules/h2o_vib')
+calc = Vasp(directory='molecules/h2o_vib')
 energies, modes = calc.get_vibrational_modes(mode=0, massweighted=True,
                                              show=True)
 #+end_src
@@ -2181,7 +2181,7 @@ c = 3e10  # speed of light cm/s
 h = 4.135667516e-15  # eV/s
 
 # first, get the frequencies.
-calc = Vasp('molecules/h2o_vib')
+calc = Vasp(directory='molecules/h2o_vib')
 freq = calc.get_vibrational_frequencies()
 
 ZPE = 0.0
@@ -2218,7 +2218,7 @@ atoms = Atoms([Atom('H', [0.5960812,  -0.7677068,   0.0000000]),
                Atom('H', [0.5960812,   0.7677068,   0.0000000])],
               cell=(8, 8, 8))
 
-calc = Vasp('molecules/h2o_relax',
+calc = Vasp(directory='molecules/h2o_relax',
           xc='PBE',
             encut=400,
             ismear=0,  # Gaussian smearing
@@ -2245,11 +2245,11 @@ Next, we instruct VASP to compute the vibrational modes using [[http://cmt.dur.a
 from vasp import Vasp
 
 # read in relaxed geometry
-calc = Vasp('molecules/h2o_relax')
+calc = Vasp(directory='molecules/h2o_relax')
 atoms = calc.get_atoms()
 
 # now define a new calculator
-calc = Vasp('molecules/h2o_vib_dfpt',
+calc = Vasp(directory='molecules/h2o_vib_dfpt',
             xc='PBE',
             encut=400,
             ismear=0,  # Gaussian smearing
@@ -2413,7 +2413,7 @@ See also cite:giannozzi:8537. For HREELS simulations see cite:0953-8984-22-26-26
 The shell script above has been translated to a convenient python function in mod:vasp.
 #+BEGIN_SRC python
 from vasp import Vasp
-calc = Vasp('molecules/h2o_vib_dfpt')
+calc = Vasp(directory='molecules/h2o_vib_dfpt')
 print('mode  Relative intensity')
 for i, intensity in enumerate(calc.get_infrared_intensities()):
     print('{0:02d}     {1:1.3f}'.format(i, intensity))
@@ -2465,7 +2465,7 @@ atoms = molecule('N2')
 atoms.set_cell((10,10,10), scale_atoms=False)
 
 # first we relax a molecule
-calc = Vasp('molecules/n2-relax',
+calc = Vasp(directory='molecules/n2-relax',
             xc='PBE',
             encut=300,
             ibrion=2,
@@ -2474,7 +2474,7 @@ calc = Vasp('molecules/n2-relax',
 electronicenergy = atoms.get_potential_energy()
 
 # next, we get vibrational modes
-calc2 = Vasp('molecules/n2-vib',
+calc2 = Vasp(directory='molecules/n2-vib',
              xc='PBE',
              encut=300,
              ibrion=6,
@@ -2591,7 +2591,7 @@ from ase import Atom, Atoms
 atoms = Atoms([Atom('O', [5, 5, 5])],
               cell=(10, 10, 10))
 
-calc = Vasp('molecules/O',
+calc = Vasp(directory='molecules/O',
             xc='PBE',
             encut=400,
             ismear=0,
@@ -2604,7 +2604,7 @@ atoms = Atoms([Atom('O', [5, 5, 5]),
                Atom('O', [6.22, 5, 5])],
               cell=(10, 10, 10))
 
-calc = Vasp('molecules/O2',
+calc = Vasp(directory='molecules/O2',
             xc='PBE',
             encut=400,
             ismear=0,
@@ -2634,7 +2634,7 @@ from ase import Atom, Atoms
 atoms = Atoms([Atom('O', [5, 5, 5], magmom=2)],
               cell=(10, 10, 10))
 
-calc = Vasp('molecules/O-sp-triplet',
+calc = Vasp(directory='molecules/O-sp-triplet',
             xc='PBE',
             encut=400,
             ismear=0,
@@ -2652,7 +2652,7 @@ atoms = Atoms([Atom('O', [5,    5, 5], magmom=1),
                Atom('O', [6.22, 5, 5], magmom=1)],
               cell=(10, 10, 10))
 
-calc = Vasp('molecules/O2-sp-triplet',
+calc = Vasp(directory='molecules/O2-sp-triplet',
             xc='PBE',
             encut=400,
             ismear=0,
@@ -2686,7 +2686,7 @@ In a spin-polarized calculation there are actually two electron densities: one f
 from vasp import Vasp
 from ase.dft.dos import *
 
-calc = Vasp('molecules/O2-sp-triplet')
+calc = Vasp(directory='molecules/O2-sp-triplet')
 
 dos = DOS(calc, width=0.2)
 d_up = dos.get_dos(spin=0)
@@ -2729,7 +2729,7 @@ for encut in encuts:
     atoms = Atoms([Atom('O', [5, 5, 5], magmom=2)],
                   cell=(10, 10, 10))
 
-    calc = Vasp('molecules/O-sp-triplet-{0}'.format(encut),
+    calc = Vasp(directory='molecules/O-sp-triplet-{0}'.format(encut),
                 xc='PBE',
                 encut=encut,
                 ismear=0,
@@ -2743,7 +2743,7 @@ for encut in encuts:
                    Atom('O', [6.22, 5, 5], magmom=1)],
                   cell=(10, 10, 10))
 
-    calc = Vasp('molecules/O2-sp-triplet-{0}'.format(encut),
+    calc = Vasp(directory='molecules/O2-sp-triplet-{0}'.format(encut),
                 xc='PBE',
                 encut=encut,
                 ismear=0,
@@ -2846,7 +2846,7 @@ for sigma in sigmas:
     atoms = Atoms([Atom('O',[5, 5, 5], magmom=2)],
                   cell=(10, 10, 10))
 
-    calc = Vasp('molecules/O-sp-triplet-sigma-{0}'.format(sigma),
+    calc = Vasp(directory='molecules/O-sp-triplet-sigma-{0}'.format(sigma),
                 xc='PBE',
                 encut=400,
                 ismear=0,
@@ -2861,7 +2861,7 @@ for sigma in sigmas:
                    Atom('O',[6.22, 5, 5],magmom=1)],
                   cell=(10, 10, 10))
 
-    calc = Vasp('molecules/O2-sp-triplet-sigma-{0}'.format(sigma),
+    calc = Vasp(directory='molecules/O2-sp-triplet-sigma-{0}'.format(sigma),
                 xc='PBE',
                 encut=400,
                 ismear=0,
@@ -2908,7 +2908,7 @@ from ase import Atom, Atoms
 atoms = Atoms([Atom('O', [5, 5, 5], magmom=0)],
               cell=(10, 10, 10))
 
-calc = Vasp('molecules/O-sp-singlet',
+calc = Vasp(directory='molecules/O-sp-singlet',
             xc='PBE',
             encut=400,
             ismear=0,
@@ -2925,7 +2925,7 @@ atoms = Atoms([Atom('O', [5, 5, 5], magmom=1),
                Atom('O', [6.22, 5, 5], magmom=-1)],
               cell=(10, 10, 10))
 
-calc = Vasp('molecules/O2-sp-singlet',
+calc = Vasp(directory='molecules/O2-sp-singlet',
             xc='PBE',
             encut=400,
             ismear=0,
@@ -2953,10 +2953,10 @@ if None not in (E_O, E_O2):
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('molecules/O2-sp-singlet')
+calc = Vasp(directory='molecules/O2-sp-singlet')
 print('singlet: {0} eV'.format(calc.potential_energy))
 
-calc = Vasp('molecules/O2-sp-triplet')
+calc = Vasp(directory='molecules/O2-sp-triplet')
 print('triplet: {0} eV'.format(calc.potential_energy))
 #+END_SRC
 
@@ -2983,7 +2983,7 @@ pars = dict(xc='PBE',
             sigma=0.01,
             ispin=2)
 
-calc = Vasp('molecules/O-square-box-origin',
+calc = Vasp(directory='molecules/O-square-box-origin',
             atoms=atoms, **pars)
 
 print('Square box (origin): E = {0} eV'.format(atoms.get_potential_energy()))
@@ -2992,7 +2992,7 @@ print('Square box (origin): E = {0} eV'.format(atoms.get_potential_energy()))
 atoms = Atoms([Atom('O', [5, 5, 5], magmom=2)],
               cell=(10, 10, 10))
 
-calc = Vasp('molecules/O-square-box-center',
+calc = Vasp(directory='molecules/O-square-box-center',
             atoms=atoms, **pars)
 print('Square box (center): E = {0} eV'.format(atoms.get_potential_energy()))
 
@@ -3000,7 +3000,7 @@ print('Square box (center): E = {0} eV'.format(atoms.get_potential_energy()))
 atoms = Atoms([Atom('O', [2.13, 7.32, 1.11], magmom=2)],
               cell=(10, 10, 10))
 
-calc = Vasp('molecules/O-square-box-random',
+calc = Vasp(directory='molecules/O-square-box-random',
             atoms=atoms, **pars)
 
 print('Square box (random): E = {0} eV'.format(atoms.get_potential_energy()))
@@ -3022,7 +3022,7 @@ from ase import Atom, Atoms
 atoms = Atoms([Atom('O', [0, 0, 0], magmom=2)],
               cell=(8, 9, 10))
 
-calc = Vasp('molecules/O-orthorhombic-box-origin',
+calc = Vasp(directory='molecules/O-orthorhombic-box-origin',
             xc='PBE',
             encut=400,
             ismear=0,
@@ -3035,7 +3035,7 @@ print('Orthorhombic box (origin): E = {0} eV'.format(atoms.get_potential_energy(
 # orthorhombic box center
 atoms = Atoms([Atom('O', [4, 4.5, 5], magmom=2)],
               cell=(8, 9, 10))
-calc = Vasp('molecules/O-orthorhombic-box-center',
+calc = Vasp(directory='molecules/O-orthorhombic-box-center',
             xc='PBE',
             encut=400,
             ismear=0,
@@ -3049,7 +3049,7 @@ print('Orthorhombic box (center): E = {0} eV'.format(atoms.get_potential_energy(
 atoms = Atoms([Atom('O', [2.13, 7.32, 1.11], magmom=2)],
               cell=(8, 9, 10))
 
-calc = Vasp('molecules/O-orthorhombic-box-random',
+calc = Vasp(directory='molecules/O-orthorhombic-box-random',
             xc='PBE',
             encut=400,
             ismear=0,
@@ -3074,7 +3074,7 @@ from ase import Atom, Atoms
 atoms = Atoms([Atom('O', [5.1, 4.2, 6.1], magmom=2)],
               cell=(8, 9, 10))
 
-calc = Vasp('molecules/O-sp-triplet-lowsym',
+calc = Vasp(directory='molecules/O-sp-triplet-lowsym',
             xc='PBE',
             encut=400,
             ismear=0,
@@ -3090,7 +3090,7 @@ atoms = Atoms([Atom('O', [5,    5, 5], magmom=1),
                Atom('O', [6.22, 5, 5], magmom=1)],
               cell=(10, 10, 10))
 
-calc = Vasp('molecules/O2-sp-triplet',
+calc = Vasp(directory='molecules/O2-sp-triplet',
             xc='PBE',
             encut=400,
             ismear=0,
@@ -3124,7 +3124,7 @@ It is one thing to see the total magnetic moment of a singlet state, and another
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('molecules/O2-sp-singlet')
+calc = Vasp(directory='molecules/O2-sp-singlet')
 calc.clone('molecules/O2-sp-singlet-magmoms')
 
 
@@ -3137,7 +3137,7 @@ for i, atom in enumerate(atoms):
     print('atom {0}: magmom = {1}'.format(i, magmoms[i]))
 print(atoms.get_magnetic_moment())
 
-calc = Vasp('molecules/O2-sp-triplet')
+calc = Vasp(directory='molecules/O2-sp-triplet')
 calc.clone('molecules/O2-sp-triplet-magmoms')
 
 calc.set(lorbit=11)
@@ -3179,7 +3179,7 @@ from ase import Atom, Atoms
 atoms = Atoms([Atom('O', [4, 4.5, 5], magmom=2)],
               cell=(8, 9, 10))
 
-calc = Vasp('molecules/O-sp-triplet-lowsym-s',
+calc = Vasp(directory='molecules/O-sp-triplet-lowsym-s',
           xc='PBE',
             ismear=0,
             ispin=2,
@@ -3202,7 +3202,7 @@ from ase import Atom, Atoms
 atoms = Atoms([Atom('O', [4, 4.5, 5], magmom=2)],
               cell=(8, 9, 10))
 
-calc = Vasp('molecules/O-sp-triplet-lowsym-s',
+calc = Vasp(directory='molecules/O-sp-triplet-lowsym-s',
           xc='PBE',
             ismear=0,
             ispin=2,
@@ -3220,7 +3220,7 @@ atoms = Atoms([Atom('O', [5,    5, 5], magmom=1),
                Atom('O', [6.22, 5, 5], magmom=1)],
               cell=(10, 10, 10))
 
-calc = Vasp('molecules/O2-sp-triplet-s',
+calc = Vasp(directory='molecules/O2-sp-triplet-s',
             xc='PBE',
             ismear=0,
             sigma=0.01,
@@ -3278,7 +3278,7 @@ H2 = molecule('H2')
 H2.set_cell([8, 8, 8], scale_atoms=False)
 
 # now the calculators to get the energies
-c1 = Vasp('molecules/wgs/CO',
+c1 = Vasp(directory='molecules/wgs/CO',
           xc='PBE',
           encut=350,
           ismear=0,
@@ -3288,7 +3288,7 @@ c1 = Vasp('molecules/wgs/CO',
 
 eCO = CO.get_potential_energy()
 
-c2 = Vasp('molecules/wgs/CO2',
+c2 = Vasp(directory='molecules/wgs/CO2',
           xc='PBE',
           encut=350,
           ismear=0,
@@ -3298,7 +3298,7 @@ c2 = Vasp('molecules/wgs/CO2',
 
 eCO2 = CO2.get_potential_energy()
 
-c3 = Vasp('molecules/wgs/H2',
+c3 = Vasp(directory='molecules/wgs/H2',
           xc='PBE',
           encut=350,
           ismear=0,
@@ -3308,7 +3308,7 @@ c3 = Vasp('molecules/wgs/H2',
 
 eH2 = H2.get_potential_energy()
 
-c4 = Vasp('molecules/wgs/H2O',
+c4 = Vasp(directory='molecules/wgs/H2O',
           xc='PBE',
           encut=350,
           ismear=0,
@@ -3341,7 +3341,7 @@ from vasp import Vasp
 
 print('**** Calculation summaries')
 print('***** CO')
-calc = Vasp('molecules/wgs/H2O')
+calc = Vasp(directory='molecules/wgs/H2O')
 print('#+begin_example')
 print(calc)
 print('#+end_example')
@@ -3384,11 +3384,11 @@ To correct the reaction energy for temperature effects, we must compute the vibr
 from vasp import Vasp
 
 # get relaxed geometry
-calc = Vasp('molecules/wgs/CO')
+calc = Vasp(directory='molecules/wgs/CO')
 CO = calc.get_atoms()
 
 # now do the vibrations
-calc = Vasp('molecules/wgs/CO-vib',
+calc = Vasp(directory='molecules/wgs/CO-vib',
           xc='PBE',
             encut=350,
             ismear=0,
@@ -3418,11 +3418,11 @@ CO has only one vibrational mode (3N-5 = 6 - 5 = 1). The other 5 modes are 3 tra
 from vasp import Vasp
 
 # get relaxed geometry
-calc = Vasp('molecules/wgs/CO2')
+calc = Vasp(directory='molecules/wgs/CO2')
 CO2 = calc.get_atoms()
 
 # now do the vibrations
-calc = Vasp('molecules/wgs/CO2-vib',
+calc = Vasp(directory='molecules/wgs/CO2-vib',
             xc='PBE',
             encut=350,
             ismear=0,
@@ -3455,10 +3455,10 @@ CO$_2$ is a linear molecule with 3N-5 = 4 vibrational modes. They are the first 
 from vasp import Vasp
 
 # get relaxed geometry
-H2 = Vasp('molecules/wgs/H2').get_atoms()
+H2 = Vasp(directory='molecules/wgs/H2').get_atoms()
 
 # now do the vibrations
-calc = Vasp('molecules/wgs/H2-vib',
+calc = Vasp(directory='molecules/wgs/H2-vib',
             xc='PBE',
             encut=350,
             ismear=0,
@@ -3488,10 +3488,10 @@ There is only one frequency of importance (the one at 4281 cm$^{-1}$) for the li
 from vasp import Vasp
 
 # get relaxed geometry
-H2O = Vasp('molecules/wgs/H2O').get_atoms()
+H2O = Vasp(directory='molecules/wgs/H2O').get_atoms()
 
 # now do the vibrations
-calc = Vasp('molecules/wgs/H2O-vib',
+calc = Vasp(directory='molecules/wgs/H2O-vib',
           xc='PBE',
             encut=350,
             ismear=0,
@@ -3529,19 +3529,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # first we get the electronic energies
-c1 = Vasp('molecules/wgs/CO')
+c1 = Vasp(directory='molecules/wgs/CO')
 E_CO = c1.potential_energy
 CO = c1.get_atoms()
 
-c2 = Vasp('molecules/wgs/CO2')
+c2 = Vasp(directory='molecules/wgs/CO2')
 E_CO2 = c2.potential_energy
 CO2 = c2.get_atoms()
 
-c3 = Vasp('molecules/wgs/H2')
+c3 = Vasp(directory='molecules/wgs/H2')
 E_H2 = c3.potential_energy
 H2 = c3.get_atoms()
 
-c4 = Vasp('molecules/wgs/H2O')
+c4 = Vasp(directory='molecules/wgs/H2O')
 E_H2O = c4.potential_energy
 H2O = c4.get_atoms()
 
@@ -3549,19 +3549,19 @@ H2O = c4.get_atoms()
 h = 4.1356675e-15  # eV * s
 c = 3.0e10  # cm / s
 
-calc = Vasp('molecules/wgs/CO-vib')
+calc = Vasp(directory='molecules/wgs/CO-vib')
 vib_freq = calc.get_vibrational_frequencies()
 CO_vib_energies = [h * c * nu for nu in vib_freq]
 
-calc = Vasp('molecules/wgs/CO2-vib')
+calc = Vasp(directory='molecules/wgs/CO2-vib')
 vib_freq = calc.get_vibrational_frequencies()
 CO2_vib_energies = [h * c * nu for nu in vib_freq]
 
-calc = Vasp('molecules/wgs/H2-vib')
+calc = Vasp(directory='molecules/wgs/H2-vib')
 vib_freq = calc.get_vibrational_frequencies()
 H2_vib_energies = [h * c * nu for nu in vib_freq]
 
-calc = Vasp('molecules/wgs/H2O-vib')
+calc = Vasp(directory='molecules/wgs/H2O-vib')
 vib_freq = calc.get_vibrational_frequencies()
 H2O_vib_energies = [h * c * nu for nu in vib_freq]
 
@@ -3668,13 +3668,13 @@ atoms2.positions = pos2
 atoms.translate([5, 5, 5])
 atoms2.translate([5, 5, 5])
 
-calcs = [Vasp('molecules/nh3-initial',
+calcs = [Vasp(directory='molecules/nh3-initial',
               xc='PBE',
               encut=350,
               ibrion=1,
               nsw=10,
               atoms=atoms),
-         Vasp('molecules/nh3-final',
+         Vasp(directory='molecules/nh3-final',
              xc='PBE',
              encut=350,
              ibrion=1,
@@ -3695,8 +3695,8 @@ from vasp import Vasp
 from ase.neb import NEB
 from ase.io import read
 
-atoms = Vasp('molecules/nh3-initial').get_atoms()
-atoms2 = Vasp('molecules/nh3-final').get_atoms()
+atoms = Vasp(directory='molecules/nh3-initial').get_atoms()
+atoms2 = Vasp(directory='molecules/nh3-final').get_atoms()
 
 # 5 images including endpoints
 images = [atoms]   # initial state
@@ -3706,7 +3706,7 @@ images += [atoms2]  # final state
 neb = NEB(images)
 neb.interpolate()
 
-calc = Vasp('molecules/nh3-neb',
+calc = Vasp(directory='molecules/nh3-neb',
             xc='PBE',
             ibrion=1, encut=350,
             nsw=90,
@@ -3740,7 +3740,7 @@ The calculator view function shows you the band.
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('molecules/nh3-neb')
+calc = Vasp(directory='molecules/nh3-neb')
 calc.view()
 #+END_SRC
 
@@ -3762,7 +3762,7 @@ from vasp import Vasp
 import numpy as np
 import os
 
-calc = Vasp('molecules/nh3-neb')
+calc = Vasp(directory='molecules/nh3-neb')
 
 images, energies = calc.get_neb()
 

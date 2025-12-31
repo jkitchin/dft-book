@@ -21,7 +21,7 @@ from vasp import Vasp
 from ase import Atom, Atoms
 import logging
 
-calc = Vasp('bulk/Cu2O')
+calc = Vasp(directory='bulk/Cu2O')
 calc.clone('bulk/Cu2O-U=4.0')
 
 calc.set(ldau=True,   # turn DFT+U on
@@ -58,7 +58,7 @@ grep -A 3 "LDA+U is selected, type is set to LDAUTYPE" bulk/Cu2O-U=4.0/OUTCAR
 from vasp import Vasp
 from ase import Atom, Atoms
 
-calc = Vasp('bulk/CuO')
+calc = Vasp(directory='bulk/CuO')
 calc.clone('bulk/CuO-U=4.0')
 
 calc.set(ldau=True,   # turn DFT+U on
@@ -80,16 +80,16 @@ print(atoms.get_potential_energy())
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('bulk/Cu2O-U=4.0')
+calc = Vasp(directory='bulk/Cu2O-U=4.0')
 atoms = calc.get_atoms()
 cu2o_energy = atoms.get_potential_energy() / (len(atoms) / 3)
 
-calc = Vasp('bulk/CuO-U=4.0')
+calc = Vasp(directory='bulk/CuO-U=4.0')
 atoms = calc.get_atoms()
 cuo_energy = atoms.get_potential_energy() / (len(atoms) / 2)
 
 # make sure to use the same cutoff energy for the O2 molecule!
-calc = Vasp('molecules/O2-sp-triplet-400')
+calc = Vasp(directory='molecules/O2-sp-triplet-400')
 o2_energy = calc.results['energy']
 
 calc.stop_if(None in [cu2o_energy, cuo_energy, o2_energy])
@@ -117,7 +117,7 @@ It is reasonable to consider how sensitive our results are to the U parameter. W
 from vasp import Vasp
 for U in [2.0, 4.0, 6.0]:
     ## Cu2O ########################################
-    calc = Vasp('bulk/Cu2O')
+    calc = Vasp(directory='bulk/Cu2O')
     calc.clone('bulk/Cu2O-U={0}'.format(U))
 
 
@@ -132,7 +132,7 @@ for U in [2.0, 4.0, 6.0]:
     cu2o_energy = atoms1.get_potential_energy() / (len(atoms1) / 3)
 
     ## CuO ########################################
-    calc = Vasp('bulk/CuO')
+    calc = Vasp(directory='bulk/CuO')
     calc.clone('bulk/CuO-U={0}'.format(U))
 
 
@@ -148,7 +148,7 @@ for U in [2.0, 4.0, 6.0]:
 
     ## O2 ########################################
     # make sure to use the same cutoff energy for the O2 molecule!
-    calc = Vasp('molecules/O2-sp-triplet-400')
+    calc = Vasp(directory='molecules/O2-sp-triplet-400')
     atoms = calc.get_atoms()
     o2_energy = atoms.get_potential_energy()
 
@@ -194,7 +194,7 @@ atoms = FaceCenteredCubic(directions=[[0, 1, 1],
                                       symbol='Ni')
 atoms[0].magmom = 1
 
-calc = Vasp('bulk/Ni-PBE',
+calc = Vasp(directory='bulk/Ni-PBE',
             ismear=-5,
             kpts=[5, 5, 5],
             xc='PBE',
@@ -223,7 +223,7 @@ if atoms.get_potential_energy() is not None:
     d_pbe0 = dos.get_dos()
 
 ## HSE06
-calc = Vasp('bulk/Ni-PBE')
+calc = Vasp(directory='bulk/Ni-PBE')
 calc.clone('bulk/Ni-HSE06')
 
 calc.set(xc='hse06')
@@ -282,7 +282,7 @@ from ase.structure import molecule
 benzene = molecule('C6H6')
 benzene.center(vacuum=5)
 
-print(Vasp('molecules/benzene-pbe',
+print(Vasp(directory='molecules/benzene-pbe',
            xc='PBE',
            encut=350,
            kpts=[1, 1, 1],
@@ -309,7 +309,7 @@ atoms.set_constraint(c)
 
 #from ase.visualize import view; view(atoms)
 
-print(Vasp('surfaces/Au-pbe',
+print(Vasp(directory='surfaces/Au-pbe',
            xc='PBE',
            encut=350,
            kpts=[4, 4, 1],
@@ -349,7 +349,7 @@ atoms.set_constraint(c)
 
 #from ase.visualize import view; view(atoms)
 
-print(Vasp('surfaces/Au-benzene-pbe',
+print(Vasp(directory='surfaces/Au-benzene-pbe',
            xc='PBE',
            encut=350,
            kpts=[4, 4, 1],
@@ -393,7 +393,7 @@ from ase.structure import molecule
 benzene = molecule('C6H6')
 benzene.center(vacuum=5)
 
-print(Vasp('molecules/benzene-pbe-d2',
+print(Vasp(directory='molecules/benzene-pbe-d2',
           xc='PBE',
           encut=350,
           kpts=[1, 1, 1],
@@ -419,7 +419,7 @@ atoms = fcc111('Au', size=(3, 3, 3), vacuum=10)
 c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
 atoms.set_constraint(c)
 
-print(Vasp('surfaces/Au-pbe-d2',
+print(Vasp(directory='surfaces/Au-pbe-d2',
           xc='PBE',
           encut=350,
           kpts=[4, 4, 1],
@@ -460,7 +460,7 @@ atoms.set_constraint(c)
 
 #from ase.visualize import view; view(atoms)
 
-print(Vasp('surfaces/Au-benzene-pbe-d2',
+print(Vasp(directory='surfaces/Au-benzene-pbe-d2',
           xc='PBE',
           encut=350,
           kpts=[4, 4, 1],
@@ -503,7 +503,7 @@ from enthought.mayavi import mlab
 atoms = molecule('CF4')
 atoms.center(vacuum=5)
 
-calc = Vasp('molecules/cf4-elf',
+calc = Vasp(directory='molecules/cf4-elf',
             encut=350,
             prec='high',
             ismear=0,
@@ -560,7 +560,7 @@ atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
 atoms = atoms.repeat((2, 2, 2))
 print atoms[0]
 
-calc = Vasp('bulk/Cu-cls-0',
+calc = Vasp(directory='bulk/Cu-cls-0',
             xc='PBE',
             encut=350,
             kpts=[4, 4, 4],
@@ -589,7 +589,7 @@ atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
 
 atoms = atoms.repeat((2, 2, 2))
 
-calc = Vasp('bulk/CuPd-cls-0',
+calc = Vasp(directory='bulk/CuPd-cls-0',
             xc='PBE',
             encut=350,
             kpts=[4, 4, 4],
@@ -609,7 +609,7 @@ Next, we have to do the excitation in each structure. For these, we do not relax
 #+BEGIN_SRC python
 from vasp import VAsp
 
-calc = Vasp('bulk/Cu-cls-0')
+calc = Vasp(directory='bulk/Cu-cls-0')
 calc.clone('bulk/Cu-cls-1')
 
 calc.set(ibrion=None,
@@ -632,7 +632,7 @@ calc.update()
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('bulk/CuPd-cls-0')
+calc = Vasp(directory='bulk/CuPd-cls-0')
 calc.clone('bulk/CuPd-cls-1')
 
 calc.set(ibrion=None,
@@ -656,13 +656,13 @@ Finally we calculate the CLS:
 #+BEGIN_SRC python
 from vasp import Vasp
 
-alloy_0 = Vasp('bulk/CuPd-cls-0').potential_energy
+alloy_0 = Vasp(directory='bulk/CuPd-cls-0').potential_energy
 
-alloy_1 = Vasp('bulk/CuPd-cls-1').potential_energy
+alloy_1 = Vasp(directory='bulk/CuPd-cls-1').potential_energy
 
-ref_0 = Vasp('bulk/Cu-cls-0').potential_energy
+ref_0 = Vasp(directory='bulk/Cu-cls-0').potential_energy
 
-ref_1 = Vasp('bulk/Cu-cls-1').potential_energy
+ref_1 = Vasp(directory='bulk/Cu-cls-1').potential_energy
 
 CLS = (alloy_1 - alloy_0) - (ref_1 - ref_0)
 
@@ -688,7 +688,7 @@ H2 = molecule('H2')
 H2.set_cell([8, 8, 8], scale_atoms=False)
 H2.center()
 
-calc = Vasp('molecules/H2-beef',
+calc = Vasp(directory='molecules/H2-beef',
           xc='beef-vdw',
             encut=350,
             ismear=0,
@@ -712,7 +712,7 @@ H = molecule('H')
 H.set_cell([8, 8, 8], scale_atoms=False)
 H.center()
 
-calc = Vasp('molecules/H-beef',
+calc = Vasp(directory='molecules/H-beef',
             xc='beef-vdw',
             encut=350,
             ismear=0,
@@ -729,8 +729,8 @@ Now, the dissociation energy.
 #+BEGIN_SRC python
 from vasp import Vasp
 
-print('D = {} eV'.format(2 * Vasp('molecules/H-beef').potential_energy -
-                         Vasp('molecules/H2-beef').potential_energy))
+print('D = {} eV'.format(2 * Vasp(directory='molecules/H-beef').potential_energy -
+                         Vasp(directory='molecules/H2-beef').potential_energy))
 #+END_SRC
 
 #+RESULTS:
@@ -747,10 +747,10 @@ Note that this ensemble represents the contribution just from the functionals, a
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('molecules/H-beef')
+calc = Vasp(directory='molecules/H-beef')
 ensH = calc.get_beefens()
 
-calc = Vasp('molecules/H2-beef')
+calc = Vasp(directory='molecules/H2-beef')
 ensH2 = calc.get_beefens()
 
 ensD = 2 * ensH - ensH2
@@ -789,7 +789,7 @@ from ase.structure import molecule
 atoms = molecule('CO')
 atoms.center(vacuum=5)
 
-calc = Vasp('molecules/CO-vacuum',
+calc = Vasp(directory='molecules/CO-vacuum',
             encut=600,
             prec='Accurate',
             ismear=0,
@@ -816,7 +816,7 @@ Next, we do the solvation calculation. We use the default solvent dielectric con
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('molecules/CO-vacuum')
+calc = Vasp(directory='molecules/CO-vacuum')
 calc.clone('molecules/CO-solvated')
 
 calc.set(istart=1,  #

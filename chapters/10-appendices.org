@@ -531,7 +531,7 @@ We use 1D interpolation formulas to compute the value of the scalar field at poi
 from vasp import Vasp
 import numpy as np
 
-calc = Vasp('molecules/co-centered')
+calc = Vasp(directory='molecules/co-centered')
 atoms = calc.get_atoms()
 x, y, z, cd = calc.get_charge_density()
 
@@ -642,7 +642,7 @@ import bisect
 import numpy as np
 from pylab import plot, xlabel, ylabel, savefig, show
 
-calc = Vasp('molecules/co-centered')
+calc = Vasp(directory='molecules/co-centered')
 atoms = calc.get_atoms()
 x,y,z,cd = calc.get_charge_density()
 
@@ -1746,7 +1746,7 @@ from vasp import Vasp
 atoms = Atoms([Atom('O',[5, 5, 5], magmom=1)],
              cell=(6, 6, 6))
 
-calc = Vasp('molecules/O_s',
+calc = Vasp(directory='molecules/O_s',
           encut=300,
             xc='PBE',
             ispin=2,
@@ -1777,14 +1777,14 @@ vasp is smart. If you ask for more than one node, it will automatically try to r
 
 #+BEGIN_SRC python
 from vasp import Vasp
-from vasp.vasprc import VASPRC
+# from vasp.vasprc import VASPRC  # Deprecated in new vasp
 
-VASPRC['queue.ppn']=4
+# # VASPRC['queue.ppn'] = 4  # Deprecated in new vasp  # Deprecated in new vasp
 from ase import Atom, Atoms
 atoms = Atoms([Atom('O',[5, 5, 5], magmom=1)],
              cell=(6, 6, 6))
 
-calc = Vasp('molecules/O_s-4nodes',
+calc = Vasp(directory='molecules/O_s-4nodes',
           encut=300,
           xc='PBE',
           ispin=2,
@@ -1953,16 +1953,16 @@ Here is an example of running this through the queue. The main variations are yo
 #!/usr/bin/env python
 import multiprocessing
 from vasp import Vasp
-from vasp.vasprc import VASPRC
+# from vasp.vasprc import VASPRC  # Deprecated in new vasp
 from ase import Atom, Atoms
 from ase.utils.eos import EquationOfState
 import numpy as np
 
-VASPRC['queue.nodes'] = 1
+# # VASPRC['queue.nodes'] = 1  # Deprecated in new vasp  # Deprecated in new vasp
 
 # Here we will be able to run three MPI jobs on 2 cores at a time.
-VASPRC['queue.ppn'] = 6
-VASPRC['multiprocessing.cores_per_process'] = 2
+# # VASPRC['queue.ppn'] = 6  # Deprecated in new vasp  # Deprecated in new vasp
+# # VASPRC['multiprocessing.cores_per_process'] = 2  # Deprecated in new vasp  # Deprecated in new vasp
 
 # to submit this script, save it as cu-mp.py
 # qsub -l nodes=1:ppn=6,walltime=10:00:00 cu-mp.py
@@ -2088,7 +2088,7 @@ Vasp has some capability for representing a calculation result in an archival fo
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('bulk/alloy/cu')
+calc = Vasp(directory='bulk/alloy/cu')
 print(calc.json)
 #+END_SRC
 
@@ -2124,7 +2124,7 @@ print(calc.json)
 The incar:ENCUT tag and incar:PREC tag affect the accuracy/convergence of your calculations.
 
 #+BEGIN_SRC python :results output raw
-from vasp.POTCAR import get_ENMIN, get_ENMAX, get_ZVAL
+from vasp.potcar import get_ENMIN, get_ENMAX, get_ZVAL
 from ase.data import chemical_symbols
 import glob, os
 
@@ -2600,7 +2600,7 @@ co = Atoms([Atom('C', [0, 0, 0]),
             Atom('O', [1.2, 0, 0])],
            cell=(6., 6., 6.))
 
-calc = Vasp('molecules/simple-co',  # output dir
+calc = Vasp(directory='molecules/simple-co',  # output dir
             xc='pbe',  # the exchange-correlation functional
             nbands=6,    # number of bands
             encut=350,    # planewave cutoff

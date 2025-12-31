@@ -62,7 +62,7 @@ from vasp import Vasp
 
 slab = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
 
-calc = Vasp('surfaces/Al-bandstructure',
+calc = Vasp(directory='surfaces/Al-bandstructure',
             xc='PBE',
             encut=300,
             kpts=[6, 6, 6],
@@ -105,7 +105,7 @@ from ase.lattice.surface import fcc111
 
 atoms = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
 
-calc = Vasp('surfaces/Al-slab-unrelaxed',
+calc = Vasp(directory='surfaces/Al-slab-unrelaxed',
             xc='PBE',
             kpts=[6, 6, 1],
             encut=350,
@@ -125,7 +125,7 @@ Some points to note. The forces on the atoms have symmetry to them. That is beca
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('surfaces/Al-slab-unrelaxed')
+calc = Vasp(directory='surfaces/Al-slab-unrelaxed')
 atoms = calc.get_atoms()
 print 'Total energy: {0:1.3f} eV'.format(atoms.get_potential_energy())
 
@@ -165,7 +165,7 @@ atoms = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
 constraint = FixAtoms(mask=[atom.tag >= 3 for atom in atoms])
 atoms.set_constraint(constraint)
 
-calc = Vasp('surfaces/Al-slab-relaxed',
+calc = Vasp(directory='surfaces/Al-slab-relaxed',
             xc='PBE',
             kpts=[6, 6, 1],
             encut=350,
@@ -232,7 +232,7 @@ pydoc:ase.atoms.Atoms.get_forces
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('surfaces/Al-slab-relaxed')
+calc = Vasp(directory='surfaces/Al-slab-relaxed')
 atoms = calc.get_atoms()
 
 print('Constraints = True: ', atoms.get_forces(apply_constraint=True))
@@ -265,7 +265,7 @@ print('Constraints = False: ', atoms.get_forces(apply_constraint=False))
 from vasp import Vasp
 from ase.lattice.surface import fcc111
 
-calc = Vasp('surfaces/Al-slab-relaxed')
+calc = Vasp(directory='surfaces/Al-slab-relaxed')
 atoms = calc.get_atoms()
 print 'Total energy: {0:1.3f}'.format(atoms.get_potential_energy())
 
@@ -325,7 +325,7 @@ atoms.set_constraint(constraint)
 
 write('images/Au-110.png', atoms.repeat((2, 2, 1)), rotation='-90x', show_unit_cell=2)
 
-print Vasp('surfaces/Au-110',
+print(Vasp(directory='surfaces/Au-110',
            xc='PBE',
            kpts=[6, 6, 1],
            encut=350,
@@ -361,7 +361,7 @@ write('images/Au-110-missing-row.png',
       rotation='-90x',
       show_unit_cell=2)
 
-calc = Vasp('surfaces/Au-110-missing-row',
+calc = Vasp(directory='surfaces/Au-110-missing-row',
            xc='PBE',
            kpts=[6, 6, 1],
            encut=350,
@@ -392,7 +392,7 @@ atoms = FaceCenteredCubic(directions=[[0, 1, 1],
                                      size=(1, 1, 1),
                                      symbol='Au')
 
-print Vasp('bulk/Au-fcc',
+print(Vasp(directory='bulk/Au-fcc',
            xc='PBE',
            encut=350,
            kpts=[12, 12, 12],
@@ -406,9 +406,9 @@ print Vasp('bulk/Au-fcc',
 #+BEGIN_SRC python
 from vasp import Vasp
 
-print 'dE = {0:1.3f} eV'.format(Vasp('surfaces/Au-110-missing-row').potential_energy
-                                + Vasp('bulk/Au-fcc').potential_energy
-                                - Vasp('surfaces/Au-110').potential_energy)
+print 'dE = {0:1.3f} eV'.format(Vasp(directory='surfaces/Au-110-missing-row').potential_energy
+                                + Vasp(directory='bulk/Au-fcc').potential_energy
+                                - Vasp(directory='surfaces/Au-110').potential_energy)
 #+END_SRC
 
 #+RESULTS:
@@ -431,7 +431,7 @@ atoms = fcc110('Ag', size=(2, 1, 6), vacuum=10.0)
 constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
 atoms.set_constraint(constraint)
 
-calc = Vasp('surfaces/Ag-110',
+calc = Vasp(directory='surfaces/Ag-110',
             xc='PBE',
             kpts=[6, 6, 1],
             encut=350,
@@ -457,7 +457,7 @@ del atoms[11]  # delete surface row
 constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
 atoms.set_constraint(constraint)
 
-Vasp('surfaces/Ag-110-missing-row',
+Vasp(directory='surfaces/Ag-110-missing-row',
      xc='PBE',
      kpts=[6, 6, 1],
      encut=350,
@@ -481,7 +481,7 @@ atoms = FaceCenteredCubic(directions=[[0, 1, 1],
                                       size=(1, 1, 1),
                                       symbol='Ag')
 
-Vasp('bulk/Ag-fcc',
+Vasp(directory='bulk/Ag-fcc',
      xc='PBE',
      encut=350,
      kpts=[12, 12, 12],
@@ -494,11 +494,11 @@ Vasp('bulk/Ag-fcc',
 #+BEGIN_SRC python
 from vasp import Vasp
 
-eslab = Vasp('surfaces/Ag-110').potential_energy
+eslab = Vasp(directory='surfaces/Ag-110').potential_energy
 
-emissingrow = Vasp('surfaces/Ag-110-missing-row').potential_energy
+emissingrow = Vasp(directory='surfaces/Ag-110-missing-row').potential_energy
 
-ebulk = Vasp('bulk/Ag-fcc').potential_energy
+ebulk = Vasp(directory='bulk/Ag-fcc').potential_energy
 
 print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
 #+END_SRC
@@ -519,7 +519,7 @@ atoms = fcc110('Cu', size=(2, 1, 6), vacuum=10.0)
 constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
 atoms.set_constraint(constraint)
 
-Vasp('surfaces/Cu-110',
+Vasp(directory='surfaces/Cu-110',
      xc='PBE',
      kpts=[6, 6, 1],
      encut=350,
@@ -543,7 +543,7 @@ del atoms[11]  # delete surface row
 constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
 atoms.set_constraint(constraint)
 
-Vasp('surfaces/Cu-110-missing-row',
+Vasp(directory='surfaces/Cu-110-missing-row',
      xc='PBE',
      kpts=[6, 6, 1],
      encut=350,
@@ -567,7 +567,7 @@ atoms = FaceCenteredCubic(directions=[[0, 1, 1],
                                      size=(1, 1, 1),
                                      symbol='Cu')
 
-Vasp('bulk/Cu-fcc',
+Vasp(directory='bulk/Cu-fcc',
      xc='PBE',
      encut=350,
      kpts=[12, 12, 12],
@@ -580,11 +580,11 @@ Vasp('bulk/Cu-fcc',
 #+BEGIN_SRC python
 from vasp import Vasp
 
-eslab = Vasp('surfaces/Cu-110').potential_energy
+eslab = Vasp(directory='surfaces/Cu-110').potential_energy
 
-emissingrow = Vasp('surfaces/Cu-110-missing-row').potential_energy
+emissingrow = Vasp(directory='surfaces/Cu-110-missing-row').potential_energy
 
-ebulk = Vasp('bulk/Cu-fcc').potential_energy
+ebulk = Vasp(directory='bulk/Cu-fcc').potential_energy
 
 print 'natoms slab        = {0}'.format(len(slab))
 print 'natoms missing row = {0}'.format(len(missingrow))
@@ -643,7 +643,7 @@ for n in Nlayers:
     slab = fcc111('Cu', size=(1, 1, n), vacuum=10.0)
     slab.center()
 
-    calc = Vasp('bulk/Cu-layers/{0}'.format(n),
+    calc = Vasp(directory='bulk/Cu-layers/{0}'.format(n),
                 xc='PBE',
                 encut=350,
                 kpts=[8, 8, 1],
@@ -718,10 +718,10 @@ from vasp import Vasp
 import matplotlib.pyplot as plt
 import numpy as np
 
-calc = Vasp('surfaces/Al-slab-relaxed')
+calc = Vasp(directory='surfaces/Al-slab-relaxed')
 atoms = calc.get_atoms()
 
-calc = Vasp('surfaces/Al-slab-locpot',
+calc = Vasp(directory='surfaces/Al-slab-locpot',
             xc='PBE',
             kpts=[6, 6, 1],
             encut=350,
@@ -804,7 +804,7 @@ add_adsorbate(slab, 'Na', height=1.2, position='fcc')
 slab.center()
 write('images/Na-Al-slab.png', slab, rotation='-90x', show_unit_cell=2)
 
-print(Vasp('surfaces/Al-Na-nodip',
+print(Vasp(directory='surfaces/Al-Na-nodip',
            xc='PBE',
            encut=340,
            kpts=[2, 2, 1],
@@ -837,7 +837,7 @@ add_adsorbate(slab, 'Na', height=1.2, position='fcc')
 
 slab.center()
 
-calc = Vasp('surfaces/Al-Na-dip',
+calc = Vasp(directory='surfaces/Al-Na-dip',
             xc='PBE',
             encut=340,
             kpts=[2, 2, 1],
@@ -887,7 +887,7 @@ To see the difference in what the dipole correction does, we now plot the potent
 from vasp import Vasp
 import matplotlib.pyplot as plt
 
-calc = Vasp('surfaces/Al-Na-nodip')
+calc = Vasp(directory='surfaces/Al-Na-nodip')
 atoms = calc.get_atoms()
 
 x, y, z, lp = calc.get_local_potential()
@@ -900,7 +900,7 @@ xaxis_1 = np.linspace(0, uc[2][2], nz)
 
 e1 = atoms.get_potential_energy()
 
-calc = Vasp('surfaces/Al-Na-dip-step2')
+calc = Vasp(directory='surfaces/Al-Na-dip-step2')
 atoms = calc.get_atoms()
 
 x, y, z, lp = calc.get_local_potential()
@@ -967,7 +967,7 @@ atoms.set_constraint(constraint)
 from ase.io import write
 write('images/Pt-fcc-ori.png', atoms, show_unit_cell=2)
 
-print(Vasp('surfaces/Pt-slab',
+print(Vasp(directory='surfaces/Pt-slab',
            xc='PBE',
            kpts=[4, 4, 1],
            encut=350,
@@ -1000,7 +1000,7 @@ atoms.set_constraint(constraint)
 from ase.io import write
 write('images/Pt-fcc-site.png', atoms, show_unit_cell=2)
 
-print(Vasp('surfaces/Pt-slab-O-fcc',
+print(Vasp(directory='surfaces/Pt-slab-O-fcc',
            xc='PBE',
            kpts=[4, 4, 1],
            encut=350,
@@ -1031,7 +1031,7 @@ add_adsorbate(atoms, 'O', height=1.2, position='bridge')
 constraint = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
 atoms.set_constraint(constraint)
 
-print(Vasp('surfaces/Pt-slab-O-bridge',
+print(Vasp(directory='surfaces/Pt-slab-O-bridge',
            xc='PBE',
            kpts=[4, 4, 1],
            encut=350,
@@ -1064,7 +1064,7 @@ atoms.set_constraint(constraint)
 from ase.io import write
 write('images/Pt-hcp-o-site.png', atoms, show_unit_cell=2)
 
-print(Vasp('surfaces/Pt-slab-O-hcp',
+print(Vasp(directory='surfaces/Pt-slab-O-hcp',
            xc='PBE',
            kpts=[4, 4, 1],
            encut=350,
@@ -1086,27 +1086,27 @@ print(Vasp('surfaces/Pt-slab-O-hcp',
 from vasp import Vasp
 from ase.io import write
 
-calc = Vasp('surfaces/Pt-slab')
+calc = Vasp(directory='surfaces/Pt-slab')
 atoms = calc.get_atoms()
 e_slab = atoms.get_potential_energy()
 write('images/pt-slab.png', atoms,show_unit_cell=2)
 
-calc = Vasp('surfaces/Pt-slab-O-fcc')
+calc = Vasp(directory='surfaces/Pt-slab-O-fcc')
 atoms = calc.get_atoms()
 e_slab_o_fcc = atoms.get_potential_energy()
 write('images/pt-slab-fcc-o.png', atoms,show_unit_cell=2)
 
-calc = Vasp('surfaces/Pt-slab-O-hcp')
+calc = Vasp(directory='surfaces/Pt-slab-O-hcp')
 atoms = calc.get_atoms()
 e_slab_o_hcp = atoms.get_potential_energy()
 write('images/pt-slab-hcp-o.png', atoms,show_unit_cell=2)
 
-calc = Vasp('surfaces/Pt-slab-O-bridge')
+calc = Vasp(directory='surfaces/Pt-slab-O-bridge')
 atoms = calc.get_atoms()
 e_slab_o_bridge = atoms.get_potential_energy()
 write('images/pt-slab-bridge-o.png', atoms,show_unit_cell=2)
 
-calc = Vasp('molecules/O2-sp-triplet-350')
+calc = Vasp(directory='molecules/O2-sp-triplet-350')
 atoms = calc.get_atoms()
 e_O2 = atoms.get_potential_energy()
 
@@ -1192,7 +1192,7 @@ atoms.set_constraint([constraint1, constraint2])
 write('images/Pt-O-bridge-constrained-initial.png', atoms, show_unit_cell=2)
 print 'Initial O position: {0}'.format(atoms.positions[-1])
 
-calc = Vasp('surfaces/Pt-slab-O-bridge-xy-constrained',
+calc = Vasp(directory='surfaces/Pt-slab-O-bridge-xy-constrained',
             xc='PBE',
             kpts=[4, 4, 1],
             encut=350,
@@ -1205,12 +1205,12 @@ write('images/Pt-O-bridge-constrained-final.png', atoms, show_unit_cell=2)
 print 'Final O position  : {0}'.format(atoms.positions[-1])
 
 # now compute Hads
-calc = Vasp('surfaces/Pt-slab')
+calc = Vasp(directory='surfaces/Pt-slab')
 atoms = calc.get_atoms()
 e_slab = atoms.get_potential_energy()
 
 
-calc = Vasp('molecules/O2-sp-triplet-350')
+calc = Vasp(directory='molecules/O2-sp-triplet-350')
 atoms = calc.get_atoms()
 e_O2 = atoms.get_potential_energy()
 
@@ -1258,7 +1258,7 @@ atoms.set_constraint(constraint)
 
 write('images/Pt-fcc-1ML.png', atoms, show_unit_cell=2)
 
-print(Vasp('surfaces/Pt-slab-1x1',
+print(Vasp(directory='surfaces/Pt-slab-1x1',
            xc='PBE',
            kpts=[8, 8, 1],
            encut=350,
@@ -1291,7 +1291,7 @@ atoms.set_constraint(constraint)
 
 write('images/Pt-o-fcc-1ML.png', atoms, show_unit_cell=2)
 
-print(Vasp('surfaces/Pt-slab-1x1-O-fcc',
+print(Vasp(directory='surfaces/Pt-slab-1x1-O-fcc',
            xc='PBE',
            kpts=[8, 8, 1],
            encut=350,
@@ -1312,12 +1312,12 @@ print(Vasp('surfaces/Pt-slab-1x1-O-fcc',
 #+BEGIN_SRC python
 from vasp import Vasp
 
-e_slab_o = Vasp('surfaces/Pt-slab-1x1-O-fcc').potential_energy
+e_slab_o = Vasp(directory='surfaces/Pt-slab-1x1-O-fcc').potential_energy
 
 # clean slab
-e_slab = Vasp('surfaces/Pt-slab-1x1').potential_energy
+e_slab = Vasp(directory='surfaces/Pt-slab-1x1').potential_energy
 
-e_O2 = Vasp('molecules/O2-sp-triplet-350').potential_energy
+e_O2 = Vasp(directory='molecules/O2-sp-triplet-350').potential_energy
 
 hads = e_slab_o - e_slab - 0.5 * e_O2
 print 'Hads (1ML) = {0:1.3f} eV'.format(hads)
@@ -1365,7 +1365,7 @@ Adsorbates also have vibrational modes. Unlike a free molecule, the translationa
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('surfaces/Pt-slab-O-fcc')
+calc = Vasp(directory='surfaces/Pt-slab-O-fcc')
 calc.clone('surfaces/Pt-slab-O-fcc-vib')
 
 calc.set(ibrion=5,     # finite differences with selective dynamics
@@ -1399,7 +1399,7 @@ There are three modes for the free oxygen atom. One of them is a mode normal to 
 #+BEGIN_SRC python
 from vasp import Vasp
 
-calc = Vasp('surfaces/Pt-slab-O-fcc')
+calc = Vasp(directory='surfaces/Pt-slab-O-fcc')
 calc.clone('Pt-slab-O-fcc-vib-ibrion=6')
 calc.set(ibrion=6,  # finite differences with symmetry
          nfree=2,  # central differences (default)
@@ -1450,7 +1450,7 @@ from vasp import Vasp
 from ase.constraints import FixAtoms
 
 # clone calculation so we do not overwrite previous results
-calc = Vasp('surfaces/Pt-slab-O-bridge-xy-constrained')
+calc = Vasp(directory='surfaces/Pt-slab-O-bridge-xy-constrained')
 calc.clone('surfaces/Pt-slab-O-bridge-vib')
 
 calc.set(ibrion=5,  # finite differences with selective dynamics
@@ -1498,10 +1498,10 @@ from vasp import Vasp
 from ase.neb import NEB
 import matplotlib.pyplot as plt
 
-calc = Vasp('surfaces/Pt-slab-O-fcc')
+calc = Vasp(directory='surfaces/Pt-slab-O-fcc')
 initial_atoms = calc.get_atoms()
 
-final_atoms = Vasp('surfaces/Pt-slab-O-hcp').get_atoms()
+final_atoms = Vasp(directory='surfaces/Pt-slab-O-hcp').get_atoms()
 
 # here is our estimated transition state. we use vector geometry to
 # define the bridge position, and add 1.451 Ang to z based on our
@@ -1531,7 +1531,7 @@ neb2.interpolate()
 final_images = images + images2[1:]
 
 
-calc = Vasp('surfaces/Pt-O-fcc-hcp-neb',
+calc = Vasp(directory='surfaces/Pt-O-fcc-hcp-neb',
             ibrion=1,
             nsw=90,
             spring=-5,
@@ -1561,7 +1561,7 @@ One issue with the standard NEB method is there is no image that is exactly at t
 # perform a climbing image NEB calculation
 from vasp import Vasp
 
-calc = Vasp('surfaces/Pt-O-fcc-hcp-neb')
+calc = Vasp(directory='surfaces/Pt-O-fcc-hcp-neb')
 calc.clone('surfaces/Pt-O-fcc-hcp-cineb')
 calc.set(ichain=0, lclimb=True)
 
@@ -1599,7 +1599,7 @@ atoms.append(Atom('C', [atoms[12].x, atoms[12].y, atoms[12].z + 1.851]))
 atoms.append(Atom('O', [atoms[-1].x, atoms[-1].y, atoms[-1].z + 1.157]))
 
 for field in [-0.5, 0.0, 0.5]:
-    Vasp('surfaces/Pt-co-field-{0}'.format(field),
+    Vasp(directory='surfaces/Pt-co-field-{0}'.format(field),
          xc='PBE',
          encut=350,
          kpts=[6, 6, 1],
@@ -1630,7 +1630,7 @@ from ase.dft.stm import STM
 import matplotlib.pyplot as plt
 
 
-calc = Vasp('surfaces/Al-slab-relaxed')
+calc = Vasp(directory='surfaces/Al-slab-relaxed')
 atoms = calc.get_atoms()
 
 stm = STM(atoms)
