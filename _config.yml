@@ -1,0 +1,57 @@
+# Jupyter Book configuration
+# See https://jupyterbook.org/customize/config.html
+
+title: "Modeling Materials Using Density Functional Theory"
+author: "John Kitchin"
+copyright: "2012-2025"
+logo: images/cover-page.png
+
+# Force re-execution of notebooks on each build.
+# See https://jupyterbook.org/content/execute.html
+execute:
+  execute_notebooks: 'off'  # Don't execute notebooks during build
+
+# Define the name of the latex output file for PDF builds
+latex:
+  latex_documents:
+    targetname: dft-book.tex
+
+# Add a bibtex file so that we can create citations
+bibtex_bibfiles:
+  - dft.bib
+
+# Information about where the book exists on the web
+repository:
+  url: https://github.com/jkitchin/dft-book
+  branch: master
+
+# Add GitHub buttons to your book
+html:
+  use_issues_button: true
+  use_repository_button: true
+  home_page_in_navbar: false
+
+# Launch button settings
+launch_buttons:
+  notebook_interface: "classic"
+  binderhub_url: ""
+
+# Parse and render settings
+parse:
+  myst_enable_extensions:
+    - amsmath
+    - colon_fence
+    - deflist
+    - dollarmath
+    - html_admonition
+    - html_image
+    - linkify
+    - replacements
+    - smartquotes
+    - substitution
+
+sphinx:
+  extra_extensions:
+    - sphinx.ext.mathjax
+  config:
+    mathjax_path: https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

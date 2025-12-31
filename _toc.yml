@@ -1,0 +1,28 @@
+# Table of contents
+# See https://jupyterbook.org/customize/toc.html
+
+format: jb-book
+root: notebooks/01-introduction-to-book
+
+parts:
+  - caption: Fundamentals
+    chapters:
+      - file: notebooks/02-introduction-to-dft
+
+  - caption: Applications
+    chapters:
+      - file: notebooks/03-molecules
+      - file: notebooks/04-bulk-systems
+      - file: notebooks/05-surfaces
+      - file: notebooks/06-atomistic-thermodynamics
+
+  - caption: Advanced Topics
+    chapters:
+      - file: notebooks/07-advanced-electronic-structure
+      - file: notebooks/08-databases
+
+  - caption: Appendices
+    chapters:
+      - file: notebooks/09-acknowledgments
+      - file: notebooks/10-appendices
+      - file: notebooks/11-python
