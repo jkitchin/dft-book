@@ -1,0 +1,1651 @@
+* Surfaces
+  :PROPERTIES:
+  :ID:       af4a3f54-6572-49ac-b938-e62401bc35b9
+  :END:
+** Surface structures
+As with molecules and bulk systems mod:ase provides several convenience functions for making surfaces.
+*** Simple surfaces
+ase provides many [[https://wiki.fysik.dtu.dk/ase/ase/surface.html#module-ase.lattice.surface][utility functions]] to setup surfaces. Here is a simple example of an fcc111 Al surface. There are built in functions for fcc111, bcc110, bcc111, hcp001 and diamond111.
+
+#+BEGIN_SRC python
+from ase.lattice.surface import fcc111
+from ase.io import write
+from ase.visualize import view
+
+slab = fcc111('Al', size=(2, 2, 3), vacuum=10.0)
+from ase.constraints import FixAtoms
+constraint = FixAtoms(mask=[atom.tag >= 2 for atom in slab])
+slab.set_constraint(constraint)
+
+view(slab)
+write('images/Al-slab.png', slab, rotation='90x', show_unit_cell=2)
+#+END_SRC
+
+#+RESULTS:
+
+#+ATTR_LaTeX: :width 205bp :placement [H]
+#+caption: An Al(111) slab with three layers and 20 \AA of vacuum.
+[[./images/Al-slab.png]]
+
+*** Vicinal surfaces
+
+The vast majority of surface calculations are performed on flat surfaces. This is partially because these surfaces tend to have the lowest surface energies, and thus are likely to be experimentally observed. The flat surfaces, also known as low Miller index surfaces, also have small unit cells, which tends to make them computationally affordable. There are, however, many reasons to model the properties of surfaces that are not flat. You may be interested in the reactivity of a step edge, for example, or you may use the lower cooridnation of steps as a proxy for nanoparticle reactivity.  Many stepped surfaces are not that difficult to make now. The main idea in generating them is described [[https://wiki.fysik.dtu.dk/ase/_downloads/general_surface.pdf][here]]. mod:ase provides a general function for making vicinal surfaces. Here is an example of a (211) surface.
+
+#+BEGIN_SRC python
+from ase.lattice.surface import surface
+from ase.io import write
+
+# Au(211) with 9 layers
+s1 = surface('Au', (2, 1, 1), 9)
+s1.center(vacuum=10, axis=2)
+
+write('images/Au-211.png',
+      s1.repeat((3, 3, 1)),
+      rotation='-30z,90x',  # change the orientation for viewing
+      show_unit_cell=2)
+#+END_SRC
+
+#+RESULTS:
+
+#+ATTR_LaTeX: :width 3in :placement [H]
+#+attr_org: :width 300
+#+caption: An Au(211) surface constructed with =ase=.
+[[./images/Au-211.png]]
+
+** TODO Surface calculation parameters
+There is one important parameter that is different for surfaces than for bulk calculations, the k-point grid. Assuming you have followed the convention that the z-axis is normal to the surface, the k-point grids for slab calculations always have the form of $M \times N \times 1$. To illustrate why, consider this example:
+
+
+#+BEGIN_SRC python
+from ase.lattice.surface import fcc111
+from vasp import Vasp
+
+slab = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
+
+calc = Vasp('surfaces/Al-bandstructure',
+            xc='PBE',
+            encut=300,
+            kpts=[6, 6, 6],
+            lcharg=True,  # you need the charge density
+            lwave=True,   # and wavecar for the restart
+            atoms=slab)
+
+n, bands, p = calc.get_bandstructure(kpts_path=[(r'$\Gamma$', [0, 0, 0]),
+                                                ('$K1$', [0.5, 0.0, 0.0]),
+                                                ('$K1$', [0.5, 0.0, 0.0]),
+                                                ('$K2$', [0.5, 0.5, 0.0]),
+                                                ('$K2$', [0.5, 0.5, 0.0]),
+                                                (r'$\Gamma$', [0, 0, 0]),
+                                                (r'$\Gamma$', [0, 0, 0]),
+                                                ('$K3$', [0.0, 0.0, 1.0])],
+                                     kpts_nintersections=10)
+
+if p is None: calc.abort()
+
+p.savefig('images/Al-slab-bandstructure.png')
+#+END_SRC
+
+#+RESULTS:
+
+
+# <<surface-bands>>
+#+attr_latex: :placement [H]
+#+caption: Band structure of an Al slab in the plane (path from Gamma to K1 to K2 to Gamma) and normal to the surface (Gamma to K3). Note the bands are flat in the direction normal to the surface, hence only one k-point is needed in this direction.
+[[./images/Al-slab-bandstructure.png]]
+
+** Surface relaxation
+   :PROPERTIES:
+   :ID:       10d1486b-97d1-48a4-83dd-d71097668d18
+   :END:
+When a surface is created, the bulk symmetry is broken and consequently there will be forces on the surface atoms. We will examine some consequences of this with a simple Al slab. First, we show there are forces on the slab atoms.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.lattice.surface import fcc111
+
+atoms = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
+
+calc = Vasp('surfaces/Al-slab-unrelaxed',
+            xc='PBE',
+            kpts=[6, 6, 1],
+            encut=350,
+            atoms=atoms)
+
+print(atoms.get_forces())
+#+END_SRC
+
+#+RESULTS:
+: [[ 0.          0.         -0.01505445]
+:  [ 0.          0.          0.18818605]
+:  [ 0.          0.         -0.18818605]
+:  [ 0.          0.          0.01505445]]
+
+Some points to note. The forces on the atoms have symmetry to them. That is because the slab is centered. Had the slab had an odd number of atoms, it is likely the center atom would have no forces on it. Next we consider the spacing between each layer in the slab. We do this for comparison later.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+
+calc = Vasp('surfaces/Al-slab-unrelaxed')
+atoms = calc.get_atoms()
+print 'Total energy: {0:1.3f} eV'.format(atoms.get_potential_energy())
+
+for i in range(1, len(atoms)):
+    print '{0}  deltaz = {1:1.3f} angstroms'.format(i, atoms[i].z - atoms[i-1].z)
+#+END_SRC
+
+#+RESULTS:
+: Total energy: -14.179 eV
+: 1  deltaz = 2.338 angstroms
+: 2  deltaz = 2.338 angstroms
+: 3  deltaz = 2.338 angstroms
+
+To reduce the forces, we can let VASP relax the geometry. We have to make some decisions about how to relax the slab. One choice would be to relax all the atoms in the slab. If we do that, then there will be no atoms with bulk like spacing unless we increase the slab thickness pretty dramatically. It is pretty common to freeze some atoms at the bulk coordinates, and let the others relax. We will freeze the bottom two layers (defined by tags 3 and 4) and let the first two layers relax. To do that we add constraints to the slab.
+
+Note: the [[https://wiki.fysik.dtu.dk/ase/ase/constraints.html][ase constraints]] are only partially used by =Vasp=. The mod:ase.constraints.FixAtoms constraint gets written to the POSCAR file, and is then used internally in VASP. The only other constraint that VASP can use internally is [[mod:ase.constraints.FixScaled]]. The other constraints are not written to the POSCAR and are not used by VASP.
+
+#+BEGIN_SRC python
+from ase.lattice.surface import fcc111
+atoms = fcc111('Al', size=(2, 2, 4), vacuum=10.0)
+print([atom.z for atom in atoms])
+print [atom.z <= 13 for atom in atoms]
+#+END_SRC
+
+#+RESULTS:
+: [9.9999999999999982, 9.9999999999999982, 9.9999999999999982, 9.9999999999999982, 12.338268590217982, 12.338268590217982, 12.338268590217982, 12.338268590217982, 14.676537180435968, 14.676537180435968, 14.676537180435968, 14.676537180435968, 17.01480577065395, 17.01480577065395, 17.01480577065395, 17.01480577065395]
+: [True, True, True, True, True, True, True, True, False, False, False, False, False, False, False, False]
+
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.lattice.surface import fcc111
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Al', size=(1, 1, 4), vacuum=10.0)
+
+constraint = FixAtoms(mask=[atom.tag >= 3 for atom in atoms])
+atoms.set_constraint(constraint)
+
+calc = Vasp('surfaces/Al-slab-relaxed',
+            xc='PBE',
+            kpts=[6, 6, 1],
+            encut=350,
+            ibrion=2,
+            isif=2,
+            nsw=10,
+            atoms=atoms)
+
+print(calc.potential_energy)
+print(calc)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+-14.17963819
+
+
+Vasp calculation directory:
+---------------------------
+  [[/home-research/jkitchin/dft-book/surfaces/Al-slab-relaxed]]
+
+Unit cell:
+----------
+       x       y       z             |v|
+  v0   2.864   0.000   0.000       2.864 Ang
+  v1   1.432   2.480   0.000       2.864 Ang
+  v2   0.000   0.000  27.015      27.015 Ang
+  alpha, beta, gamma (deg):  90.0  90.0  60.0
+  Total volume:                  191.872 Ang^3
+  Stress:    xx     yy     zz     yz     xz     xy
+          0.006  0.006  0.002 -0.000 -0.000 -0.000 GPa
+
+  ID  tag     sym    x         y         z        rmsF (eV/A)
+  0   4       Al     0.000*    0.000*   10.000*      0.00
+  1   3       Al     1.432*    0.827*   12.338*      0.00
+  2   2       Al     2.864     1.653    14.677       0.19
+  3   1       Al     0.000     0.000    17.015       0.01
+  Potential energy: -14.1796 eV
+
+INPUT Parameters:
+-----------------
+  pp        : PBE
+  isif      : 2
+  xc        : pbe
+  kpts      : [6, 6, 1]
+  encut     : 350
+  lcharg    : False
+  ibrion    : 2
+  ismear    : 1
+  lwave     : True
+  sigma     : 0.1
+  nsw       : 10
+
+Pseudopotentials used:
+----------------------
+  Al: potpaw_PBE/Al/POTCAR (git-hash: ad7c649117f1490637e05717e30ab9a0dd8774f6)
+#+end_example
+
+
+You can see that atoms 2 and 3 (the ones we relaxed, because the have tags of 1 and 2, which are less than 3) now have very low forces on them and it appears that atoms 0 and 1 have no forces on them. That is because the FixAtoms constraint works by setting the forces on those atoms to zero. We can see in the next example that the z-positions of the relaxed atoms have indeed relaxed and changed, while the position of the frozen atoms did not change.
+
+Note there are two versions of the forces. The true forces, and the forces when constraints are applied.
+pydoc:ase.atoms.Atoms.get_forces
+#+BEGIN_SRC python
+from vasp import Vasp
+
+calc = Vasp('surfaces/Al-slab-relaxed')
+atoms = calc.get_atoms()
+
+print('Constraints = True: ', atoms.get_forces(apply_constraint=True))
+
+print('Constraints = False: ', atoms.get_forces(apply_constraint=False))
+
+#+END_SRC
+
+#+RESULTS:
+: ('Constraints = True: ', array([[ 0.        ,  0.        ,  0.        ],
+:        [ 0.        ,  0.        ,  0.        ],
+:        [ 0.        ,  0.        , -0.00435222],
+:        [ 0.        ,  0.        , -0.07264519]]))
+: ('Constraints = False: ', array([[ 0.        ,  0.        ,  0.        ],
+:        [ 0.        ,  0.        ,  0.        ],
+:        [ 0.        ,  0.        , -0.00435222],
+:        [ 0.        ,  0.        , -0.07264519]]))
+
+
+: Constraints = True:  [[ 0.     0.     0.   ]
+:  [ 0.     0.     0.   ]
+:  [ 0.     0.    -0.049]
+:  [ 0.     0.    -0.019]]
+: Constraints = False:  [[ 0.     0.    -0.002]
+:  [ 0.     0.     0.069]
+:  [ 0.     0.    -0.049]
+:  [ 0.     0.    -0.019]]
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.lattice.surface import fcc111
+
+calc = Vasp('surfaces/Al-slab-relaxed')
+atoms = calc.get_atoms()
+print 'Total energy: {0:1.3f}'.format(atoms.get_potential_energy())
+
+for i in range(1, len(atoms)):
+    print 'd_({0},{1}) = {2:1.3f} angstroms'.format(i, i-1,
+                                                    atoms[i].z - atoms[i-1].z)
+#+END_SRC
+
+#+RESULTS:
+: Total energy: -14.182
+: d_(1,0) = 2.338 angstroms
+: d_(2,1) = 2.309 angstroms
+: d_(3,2) = 2.370 angstroms
+
+Depending on the layer there is either slight contraction or expansion. These quantities are small, and careful convergence studies should be performed. Note the total energy change from unrelaxed to relaxed is not that large in this case (e.g., it is about 5 meV). This is usually the case for metals, where the relaxation effects are relatively small. In oxides and semiconductors, the effects can be large, and when there are adsorbates, the effects can be large also.
+
+** Surface reconstruction
+index:reconstruction
+
+We previously considered how relaxation can lower the surface energy. For some surfaces, a more extreme effect can reduce the surface energy: reconstruction. In a simple surface relaxation, the basic structure of a surface is preserved. However, sometimes there is a different surface structure that may have a lower surface energy. Some famous reconstructions include: Si-\(\sqrt{7}\times\sqrt{7}\), Pt(100) hex reconstruction cite:PhysRevB.56.10518,PhysRevB.82.161418, and the Au(111) herringbone reconstruction.
+
+We will consider the (110) missing row reconstruction cite:PhysRevB.83.075415. For some metals, especially Pt and Au, it is energetically favorable to form the so-called missing row reconstruction where every other row in the surface is "missing". It is favorable because it lowers the surface energy. Let us consider how we might calculate and predict that. It is straightforward to compute the energy of a (110) slab, and of a (110) slab with one row missing. However, these slabs contain different numbers of atoms, so we cannot directly compare the total energies to determine which energy is lower.
+
+We have to consider where the missing row atoms have gone, so we can account for their energy. We will consider that they have gone into the bulk, and so we to consider the energy associated with the following transformation:
+
+slab_{110} $\rightarrow$ slab_{missing row} + bulk
+
+Thus, if this change in energy: \(E_{bulk} + E_{slab_{missing row}} - E_{slab_{110}} \) is negative, then the formation of the missing row is expected to be favorable.
+
+*** Au(110) missing row reconstruction
+We first consider the Au(110) case, where the reconstruction is known to be favorable.
+**** Clean Au(110) slab
+
+#+BEGIN_SRC python
+from ase.lattice.surface import fcc110
+from ase.io import write
+from ase.constraints import FixAtoms
+from ase.visualize import view
+
+atoms = fcc110('Au', size=(2, 1, 6), vacuum=10.0)
+constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms.set_constraint(constraint)
+view(atoms)
+#+END_SRC
+
+#+RESULTS:
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.lattice.surface import fcc110
+from ase.io import write
+from ase.constraints import FixAtoms
+
+atoms = fcc110('Au', size=(2, 1, 6), vacuum=10.0)
+constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms.set_constraint(constraint)
+
+write('images/Au-110.png', atoms.repeat((2, 2, 1)), rotation='-90x', show_unit_cell=2)
+
+print Vasp('surfaces/Au-110',
+           xc='PBE',
+           kpts=[6, 6, 1],
+           encut=350,
+           ibrion=2,
+           isif=2,
+           nsw=10,
+           atoms=atoms).potential_energy
+#+END_SRC
+
+#+RESULTS:
+: -35.92440066
+
+#+ATTR_LaTeX: :placement [H] :width 2in
+#+ATTR_org: :width 300
+#+caption: The unreconstructed Au(110) surface viewed from the side.
+[[./images/Au-110.png]]
+
+**** Missing row in Au(110)
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.lattice.surface import fcc110
+from ase.io import write
+from ase.constraints import FixAtoms
+
+atoms = fcc110('Au', size=(2, 1, 6), vacuum=10.0)
+del atoms[11]  # delete surface row
+
+constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms.set_constraint(constraint)
+
+write('images/Au-110-missing-row.png',
+      atoms.repeat((2, 2, 1)),
+      rotation='-90x',
+      show_unit_cell=2)
+
+calc = Vasp('surfaces/Au-110-missing-row',
+           xc='PBE',
+           kpts=[6, 6, 1],
+           encut=350,
+           ibrion=2,
+           isif=2,
+           nsw=10,
+           atoms=atoms)
+
+calc.update()
+#+END_SRC
+
+#+RESULTS:
+
+#+ATTR_LaTeX: :placement [H] :width 2in
+#+ATTR_org: :width 200
+#+caption: Au(110) with the missing row reconstruction.
+[[./images/Au-110-missing-row.png]]
+
+**** Bulk Au
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.visualize import view
+from ase.lattice.cubic import FaceCenteredCubic
+
+atoms = FaceCenteredCubic(directions=[[0, 1, 1],
+                                      [1, 0, 1],
+                                      [1, 1, 0]],
+                                     size=(1, 1, 1),
+                                     symbol='Au')
+
+print Vasp('bulk/Au-fcc',
+           xc='PBE',
+           encut=350,
+           kpts=[12, 12, 12],
+           atoms=atoms).potential_energy
+#+END_SRC
+
+#+RESULTS:
+: -3.19446244
+
+**** Analysis of energies
+#+BEGIN_SRC python
+from vasp import Vasp
+
+print 'dE = {0:1.3f} eV'.format(Vasp('surfaces/Au-110-missing-row').potential_energy
+                                + Vasp('bulk/Au-fcc').potential_energy
+                                - Vasp('surfaces/Au-110').potential_energy)
+#+END_SRC
+
+#+RESULTS:
+: natoms slab        = 12
+: natoms missing row = 11
+: natoms bulk        = 1
+: dE = -0.070 eV
+
+The missing row formation energy is slightly negative. The magnitude of the formation energy is pretty small, but just slightly bigger than the typical convergence errors observed, so we should cautiously conclude that the reconstruction if favorable for Au(110). We made a lot of shortcuts in computing this quantity, including using the experimental lattice constant of Au, not checking for convergence in k-points or planewave cutoff, and not checking for convergence with respect to slab thickness or number of relaxed layers.
+
+*** Ag(110) missing row reconstruction
+**** Clean Ag(110) slab
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.lattice.surface import fcc110
+from ase.io import write
+from ase.constraints import FixAtoms
+
+atoms = fcc110('Ag', size=(2, 1, 6), vacuum=10.0)
+constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms.set_constraint(constraint)
+
+calc = Vasp('surfaces/Ag-110',
+            xc='PBE',
+            kpts=[6, 6, 1],
+            encut=350,
+            ibrion=2,
+            isif=2,
+            nsw=10,
+            atoms=atoms)
+calc.update()
+#+END_SRC
+
+#+RESULTS:
+
+**** Missing row in Ag(110)
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.lattice.surface import fcc110
+from ase.io import write
+from ase.constraints import FixAtoms
+
+atoms = fcc110('Ag', size=(2, 1, 6), vacuum=10.0)
+del atoms[11]  # delete surface row
+
+constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms.set_constraint(constraint)
+
+Vasp('surfaces/Ag-110-missing-row',
+     xc='PBE',
+     kpts=[6, 6, 1],
+     encut=350,
+     ibrion=2,
+     isif=2,
+     nsw=10,
+     atoms=atoms).update()
+#+END_SRC
+
+#+RESULTS:
+
+**** Bulk Ag
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.visualize import view
+from ase.lattice.cubic import FaceCenteredCubic
+
+atoms = FaceCenteredCubic(directions=[[0, 1, 1],
+                                      [1, 0, 1],
+                                      [1, 1, 0]],
+                                      size=(1, 1, 1),
+                                      symbol='Ag')
+
+Vasp('bulk/Ag-fcc',
+     xc='PBE',
+     encut=350,
+     kpts=[12, 12, 12],
+     atoms=atoms).update()
+#+END_SRC
+
+#+RESULTS:
+
+**** Analysis of energies
+#+BEGIN_SRC python
+from vasp import Vasp
+
+eslab = Vasp('surfaces/Ag-110').potential_energy
+
+emissingrow = Vasp('surfaces/Ag-110-missing-row').potential_energy
+
+ebulk = Vasp('bulk/Ag-fcc').potential_energy
+
+print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
+#+END_SRC
+
+#+RESULTS:
+: dE = -0.010 eV
+
+For Ag(110), the missing row formation energy is practically thermoneutral, i.e. not that favorable. This energy is so close to 0eV, that we cannot confidently say whether the reconstruction is favorable or not. Experimentally, the reconstruction is not seen on very clean Ag(110) although it is reported that some adsorbates may induce the reconstruction cite:PhysRevLett.59.2307.
+
+*** Cu(110) missing row reconstruction
+**** Clean Cu(110) slab
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.lattice.surface import fcc110
+from ase.constraints import FixAtoms
+
+atoms = fcc110('Cu', size=(2, 1, 6), vacuum=10.0)
+constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms.set_constraint(constraint)
+
+Vasp('surfaces/Cu-110',
+     xc='PBE',
+     kpts=[6, 6, 1],
+     encut=350,
+     ibrion=2,
+     isif=2,
+     nsw=10,
+     atoms=atoms).update()
+#+END_SRC
+
+#+RESULTS:
+
+**** Missing row in Cu(110)
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.lattice.surface import fcc110
+from ase.constraints import FixAtoms
+
+atoms = fcc110('Cu', size=(2, 1, 6), vacuum=10.0)
+del atoms[11]  # delete surface row
+
+constraint = FixAtoms(mask=[atom.tag > 2 for atom in atoms])
+atoms.set_constraint(constraint)
+
+Vasp('surfaces/Cu-110-missing-row',
+     xc='PBE',
+     kpts=[6, 6, 1],
+     encut=350,
+     ibrion=2,
+     isif=2,
+     nsw=10,
+     atoms=atoms).update()
+#+END_SRC
+
+#+RESULTS:
+
+**** Bulk Cu
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.visualize import view
+from ase.lattice.cubic import FaceCenteredCubic
+
+atoms = FaceCenteredCubic(directions=[[0, 1, 1],
+                                      [1, 0, 1],
+                                      [1, 1, 0]],
+                                     size=(1, 1, 1),
+                                     symbol='Cu')
+
+Vasp('bulk/Cu-fcc',
+     xc='PBE',
+     encut=350,
+     kpts=[12, 12, 12],
+     atoms=atoms).update()
+#+END_SRC
+
+#+RESULTS:
+
+**** Analysis
+#+BEGIN_SRC python
+from vasp import Vasp
+
+eslab = Vasp('surfaces/Cu-110').potential_energy
+
+emissingrow = Vasp('surfaces/Cu-110-missing-row').potential_energy
+
+ebulk = Vasp('bulk/Cu-fcc').potential_energy
+
+print 'natoms slab        = {0}'.format(len(slab))
+print 'natoms missing row = {0}'.format(len(missingrow))
+print 'natoms bulk        = {0}'.format(len(bulk))
+
+print 'dE = {0:1.3f} eV'.format(emissingrow + ebulk - eslab)
+#+END_SRC
+
+#+RESULTS:
+
+It is questionable whether we should consider this evidence of a missing row reconstruction because the number is small. That does not mean the reconstruction will not happen, but it could mean it is very easy to lift.
+
+** Surface energy
+The easiest way to calculate surface energies is from this equation:
+
+$\sigma = \frac{1}{2}(E_{slab} - \frac{N_{slab}}{N_{bulk}} E_{bulk})$
+
+where $E_{slab}$ is the total energy of a symmetric slab (i.e. one with inversion symmetry, and where both sides of the slab have been relaxed), $E_{bulk}$ is the total energy of a bulk unit cell, $N_{slab}$ is the number of atoms in the slab, and $N_{bulk}$ is the number of atoms in the bulk unit cell. One should be sure that the bulk energy is fully converged with respect to $k$-points, and that the slab energy is also converged with respect to $k$-points. The energies should be compared at the same cutoff energies. The idea is then to increase the thickness of the slab until the surface energy $\sigma$ converges.
+
+
+# inkscape images/surface-construction.svg
+#+ATTR_LaTeX: :placement [H] :width 2in
+#+ATTR_org: :width 300
+#+caption: Schematic figure illustrating the calculation of a surface energy.
+[[./images/surface-construction.png]]
+
+Unfortunately, this approach does not always work. The bulk system is treated subtly different than the slab system, particularly in the $z$-direction where the vacuum is (where typically only one $k$-point is used in slabs). Consequently, the $k$-point sampling is not equivalent in the two systems, and one can in general expect some errors due to this, with the best case being cancellation of the errors due to total $k$-point convergence. In the worst case, one can get a linear divergence in the surface energy with slab thickness cite:PhysRevB.49.16798.
+
+A variation of this method that usually results in better $k$-point error cancellation is to calculate the bulk unit cell energy using the slab unit cell with no vacuum space, with the same $k$-point mesh in the $x$ and $y$ directions, but with increased $k$-points in the $z$-direction. Thus, the bulk system and slab system have the same Brillouin zone in at least two dimensions. This maximizes the cancellation of $k$-point errors, but still does not guarantee convergence of the surface energy, as discussed in cite:PhysRevB.49.16798,0953-8984-10-4-017.
+
+For quick estimates of the surface energy, one of the methods described above is likely sufficient. The advantage of these methods is the small number of calculations required to obtain the estimate, one needs only a bulk calculation (which must be done anyhow to get the bulk lattice constant to create the slab), and a slab calculation that is sufficiently thick to get the estimate. Additional calculations are only required to test the convergence of the surface energy.
+
+An alternative method for calculating surface energies that does not involve an explicit bulk calculation follows Ref. cite:0953-8984-10-4-017. The method follows from equation (ref{eq:se}) where for a N-atom slab, in the limit of N \rightarrow \infty,
+
+$E_{slab} \approx 2\sigma + \frac{N_{slab}}{N_{bulk}} E_{bulk}$
+
+Then, we can estimate E_{bulk} by plotting the total energy of the slab as a function of the slab thickness.
+
+$\sigma = \lim_{N \rightarrow \infty} \frac{1}{2}(E_{slab}^N - N \Delta E_N)$
+
+where $\Delta E_N = E_{slab}^N - E_{slab}^{N-1}$.
+
+We will examine this approach here. We will use unrelaxed slabs for computational efficiency.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.lattice.surface import fcc111
+import matplotlib.pyplot as plt
+
+Nlayers = [3, 4, 5, 6, 7, 8, 9, 10, 11]
+energies = []
+sigmas = []
+
+for n in Nlayers:
+
+    slab = fcc111('Cu', size=(1, 1, n), vacuum=10.0)
+    slab.center()
+
+    calc = Vasp('bulk/Cu-layers/{0}'.format(n),
+                xc='PBE',
+                encut=350,
+                kpts=[8, 8, 1],
+                atoms=slab)
+    calc.set_nbands(f=2)  # the default nbands in VASP is too low for Cu
+    energies.append(slab.get_potential_energy())
+
+calc.stop_if(None in energies)
+
+for i in range(len(Nlayers) - 1):
+    N = Nlayers[i]
+    DeltaE_N = energies[i + 1] - energies[i]
+    sigma = 0.5 * (-N * energies[i + 1] + (N + 1) * energies[i])
+    sigmas.append(sigma)
+    print 'nlayers = {1:2d} sigma = {0:1.3f} eV/atom'.format(sigma, N)
+
+plt.plot(Nlayers[0:-1], sigmas, 'bo-')
+plt.xlabel('Number of layers')
+plt.ylabel('Surface energy (eV/atom)')
+plt.savefig('images/Cu-unrelaxed-surface-energy.png')
+#+END_SRC
+
+#+RESULTS:
+: nlayers =  3 sigma = 0.561 eV/atom
+: nlayers =  4 sigma = 0.398 eV/atom
+: nlayers =  5 sigma = 0.594 eV/atom
+: nlayers =  6 sigma = 0.308 eV/atom
+: nlayers =  7 sigma = 0.590 eV/atom
+: nlayers =  8 sigma = 0.332 eV/atom
+: nlayers =  9 sigma = 0.591 eV/atom
+: nlayers = 10 sigma = 0.392 eV/atom
+
+# <<oscillating-surface-energy>>
+#+ATTR_LaTeX: :placement [H]
+#+caption: Surface energy of a Cu(111) slab as a function of thickness.
+[[./images/Cu-unrelaxed-surface-energy.png]]
+
+One reason for the oscillations may be quantum size effects cite:Fiolhais2003209. In citealp:PhysRevB.75.115131 the surface energy of Cu(111) is reported as 0.48 eV/atom, or 1.36 J/m$^2$. Here is an example showing a conversion between these two units. We use ase to compute the area of the unit cell from the norm of the cross-product of the vectors defining the surface unit cell.
+
+#+BEGIN_SRC python
+from ase.lattice.surface import fcc111
+from ase.units import J, m
+import numpy as np
+
+slab = fcc111('Cu', size=(1, 1, 3), vacuum=10.0)
+cell = slab.get_cell()
+
+area = np.linalg.norm(np.cross(cell[0], cell[1]))  # area per atom
+
+sigma = 0.48  # eV/atom
+
+print 'sigma = {0} J/m^2'.format(sigma / area / (J / m**2))
+#+END_SRC
+
+#+RESULTS:
+: sigma = 1.36281400415 J/m^2
+
+*** Advanced topics in surface energy
+The surface energies can be used to estimate the shapes of nanoparticles using a Wulff construction. See citealp:doi.10.1021/jp200950a for an example of computing Mo_{2}C surface energies and particle shapes, and cite:Inoglu2009188 for an example of the influence of adsorbates on surface energies and particle shapes of Cu.
+
+For a classic paper on trends in surface energies see cite:Vitos1998186.
+
+** Work function
+   :PROPERTIES:
+   :ID:       6fb2a790-5fc8-47f7-b379-bf6eb65bd3f5
+   :END:
+[[index:work function]]
+To get the work function, we need to have the local potential. This is not written by default in VASP, and we have to tell it to do that with the [[incar:LVTOT][LVTOT]] and [[incar:LVHAR][LVHAR]] keywords.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+import matplotlib.pyplot as plt
+import numpy as np
+
+calc = Vasp('surfaces/Al-slab-relaxed')
+atoms = calc.get_atoms()
+
+calc = Vasp('surfaces/Al-slab-locpot',
+            xc='PBE',
+            kpts=[6, 6, 1],
+            encut=350,
+            lvtot=True,  # write out local potential
+            lvhar=True,  # write out only electrostatic potential, not xc pot
+            atoms=atoms)
+calc.wait()
+ef = calc.get_fermi_level()
+x, y, z, lp = calc.get_local_potential()
+
+nx, ny, nz = lp.shape
+
+axy = np.array([np.average(lp[:, :, z]) for z in range(nz)])
+# setup the x-axis in realspace
+uc = atoms.get_cell()
+xaxis = np.linspace(0, uc[2][2], nz)
+
+plt.plot(xaxis, axy)
+plt.plot([min(xaxis), max(xaxis)], [ef, ef], 'k:')
+plt.xlabel('Position along z-axis')
+plt.ylabel('x-y averaged electrostatic potential')
+plt.savefig('images/Al-wf.png')
+
+ind = (xaxis > 0) & (xaxis < 5)
+wf = np.average(axy[ind]) - ef
+print ' The workfunction is {0:1.2f} eV'.format(wf)
+#+END_SRC
+
+#+RESULTS:
+:  The workfunction is 4.17 eV
+
+The workfunction of Al is listed as 4.08 at http://hyperphysics.phy-astr.gsu.edu/hbase/tables/photoelec.html.
+
+#+ATTR_LaTeX: :placement [H]
+#+caption: $xy$ averaged local electrostatic potential of an Al(111) slab.
+[[./images/Al-wf.png]]
+
+** Dipole correction
+[[index:dipole correction]]
+
+A subtle problem can arise when an adsorbate is placed on one side of
+a slab with periodic boundary conditions, which is currently the
+common practice.  The problem is that this gives the slab a dipole
+moment. The array of dipole moments created by the periodic boundary
+conditions generates an electric field that can distort the electron
+density of the slab and change the energy. The existence of this field
+in the vacuum also makes the zero-potential in the vacuum ill-defined,
+thus the work function is not well-defined. One solution to this
+problem is to use slabs with adsorbates on both sides, but then very
+thick (eight to ten layers) slabs must be used to ensure the
+adsorbates do not interact through the slab. An alternative solution,
+the dipole correction scheme, was developed by Neugebauer and
+Scheffler cite:PhysRevB.46.16067 and later corrected by Bengtsson
+cite:PhysRevB.59.12301. In this technique, an external field is
+imposed in the vacuum region that exactly cancels the artificial field
+caused by the slab dipole moment. The advantage of this approach is
+that thinner slabs with adsorbates on only one side can be used.
+
+There are also literature reports that the correction is small
+cite:morikawa2001:c2h2-si.  Nevertheless, in the literature the use
+of this correction is fairly standard, and it is typical to at least
+consider the correction.
+
+Here we will just illustrate the effect.
+
+*** Slab with no dipole correction
+
+We simply run the calculation here, and compare the results later.
+
+#+BEGIN_SRC python
+# compute local potential of slab with no dipole
+from ase.lattice.surface import fcc111, add_adsorbate
+from vasp import Vasp
+import matplotlib.pyplot as plt
+from ase.io import write
+
+slab = fcc111('Al', size=(2, 2, 2), vacuum=10.0)
+add_adsorbate(slab, 'Na', height=1.2, position='fcc')
+
+slab.center()
+write('images/Na-Al-slab.png', slab, rotation='-90x', show_unit_cell=2)
+
+print(Vasp('surfaces/Al-Na-nodip',
+           xc='PBE',
+           encut=340,
+           kpts=[2, 2, 1],
+           lcharg=True,
+           lvtot=True,  # write out local potential
+           lvhar=True,  # write out only electrostatic potential, not xc pot
+           atoms=slab).potential_energy)
+#+END_SRC
+
+#+RESULTS:
+: -22.55264459
+
+# <<asymmetric-slab>>
+#+attr_latex: :placement [H] :width 2in
+#+attr_org: :width 300
+#+caption: Example slab with a Na atom on it for illustrating the effects of dipole corrections.
+[[./images/Na-Al-slab.png]]
+
+*** TODO Slab with a dipole correction
+    Note this takes a considerably longer time to run than without a dipole correction! In VASP there are several levels of dipole correction to apply. You can use the [[incar:IDIPOL][IDIPOL]] tag to turn it on, and specify which direction to apply it in (1=$x$, 2=$y$, 3=$z$, 4=$(x,y,z)$). This simply corrects the total energy and forces. It does not change the contents of LOCPOT. For that, you have to also set the [[incar:LDIPOL][LDIPOL]] and [[incar:DIPOL][DIPOL]] tags. It is not efficient to set all three at the same time for some reason. The VASP manual recommends you first set IDIPOL to get a converged electronic structure, and then set LDIPOL to True, and set the center of electron density in DIPOL. That makes these calculations a multistep process, because we must run a calculation, analyze the charge density to get the center of charge, and then run a second calculation.
+
+#+BEGIN_SRC python
+# compute local potential with dipole calculation on
+from ase.lattice.surface import fcc111, add_adsorbate
+from vasp import Vasp
+import numpy as np
+
+slab = fcc111('Al', size=(2, 2, 2), vacuum=10.0)
+add_adsorbate(slab, 'Na', height=1.2, position='fcc')
+
+slab.center()
+
+calc = Vasp('surfaces/Al-Na-dip',
+            xc='PBE',
+            encut=340,
+            kpts=[2, 2, 1],
+            lcharg=True,
+            idipol=3,   # only along z-axis
+            lvtot=True,  # write out local potential
+            lvhar=True,  # write out only electrostatic potential, not xc pot
+            atoms=slab)
+
+calc.stop_if(calc.potential_energy is None)
+
+x, y, z, cd = calc.get_charge_density()
+n0, n1, n2 = cd.shape
+nelements = n0 * n1 * n2
+voxel_volume = slab.get_volume() / nelements
+total_electron_charge = cd.sum() * voxel_volume
+
+electron_density_center = np.array([(cd * x).sum(),
+                                    (cd * y).sum(),
+                                    (cd * z).sum()])
+electron_density_center *= voxel_volume
+electron_density_center /= total_electron_charge
+
+print 'electron-density center = {0}'.format(electron_density_center)
+uc = slab.get_cell()
+
+# get scaled electron charge density center
+sedc = np.dot(np.linalg.inv(uc.T), electron_density_center.T).T
+
+# we only write 4 decimal places out to the INCAR file, so we round here.
+sedc = np.round(sedc, 4)
+
+calc.clone('surfaces/Al-Na-dip-step2')
+
+# now run step 2 with dipole set at scaled electron charge density center
+calc.set(ldipol=True, dipol=sedc)
+print(calc.potential_energy)
+#+END_SRC
+
+#+RESULTS:
+
+*** Comparing no dipole correction with a dipole correction
+
+To see the difference in what the dipole correction does, we now plot the potentials from each calculation.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+import matplotlib.pyplot as plt
+
+calc = Vasp('surfaces/Al-Na-nodip')
+atoms = calc.get_atoms()
+
+x, y, z, lp = calc.get_local_potential()
+nx, ny, nz = lp.shape
+
+axy_1 = [np.average(lp[:, :, z]) for z in range(nz)]
+# setup the x-axis in realspace
+uc = atoms.get_cell()
+xaxis_1 = np.linspace(0, uc[2][2], nz)
+
+e1 = atoms.get_potential_energy()
+
+calc = Vasp('surfaces/Al-Na-dip-step2')
+atoms = calc.get_atoms()
+
+x, y, z, lp = calc.get_local_potential()
+nx, ny, nz = lp.shape
+
+axy_2 = [np.average(lp[:, :, z]) for z in range(nz)]
+# setup the x-axis in realspace
+uc = atoms.get_cell()
+xaxis_2 = np.linspace(0, uc[2][2], nz)
+
+ef2 = calc.get_fermi_level()
+e2 = atoms.get_potential_energy()
+
+print 'The difference in energy is {0} eV.'.format(e2-e1)
+
+plt.plot(xaxis_1, axy_1, label='no dipole correction')
+plt.plot(xaxis_2, axy_2, label='dipole correction')
+plt.plot([min(xaxis_2), max(xaxis_2)], [ef2, ef2], 'k:', label='Fermi level')
+plt.xlabel('z ($\AA$)')
+plt.ylabel('xy-averaged electrostatic potential')
+plt.legend(loc='best')
+plt.savefig('images/dip-vs-nodip-esp.png')
+#+END_SRC
+
+#+RESULTS:
+
+#+ATTR_LaTeX: :placement [H]
+#+caption: Comparison of the electrostatic potentials with a dipole correction and without it.
+[[./images/dip-vs-nodip-esp.png]]
+
+The key points to notice in this figure are:
+1. The two deep dips are where the atoms are.
+2. Without a dipole correction, the electrostatic potential never flattens out. there is near constant slope in the vacuum region, which means there is an electric field there.
+3. With a dipole correction the potential is flat in the vacuum region, except for the step jump near 23 \AA.
+4. The difference between the Fermi level and the flat vacuum potential is the work function.
+5. The difference in energy with and without the dipole correction here is small.
+
+** Adsorption energies
+[[index:adsorption energy]]
+*** Simple estimate of the adsorption energy
+Calculating an adsorption energy amounts to computing the energy of the following kind of reaction:
+
+slab + gas-phase molecule $\rightarrow$ slab_adsorbate + products
+
+#+attr_latex: :placement [H] :width 3in
+#+attr_org: :width 300
+#+caption: Schematic of an adsorption process.
+[[./images/adsorbate-energy.png]]
+
+There are many variations of this idea. The slab may already have some adsorbates on it, the slab may reconstruct on adsorption, the gas-phase molecule may or may not dissociate, and the products may or may not stick to the surface. We have to decide where to put the adsorbates, i.e. what site to put them on, and some sites will be more stable than others. We will consider the dissociative adsorption of O$_2$ on three sites of a Pt(111) slab. We will assume the oxygen molecule has split in half, and that the atoms have moved far apart. We will model the oxygen coverage at 0.25 ML, which means we need to use a $2 \times 2$ surface unit cell. For computational speed, we will freeze the slab, but allow the adsorbate to relax.
+
+\( \Delta H_{ads} (eV/O) = E_{slab+O} - E_{slab} - 0.5*E_{O_2} \)
+**** Calculations
+***** clean slab calculation
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.lattice.surface import fcc111
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Pt', size=(2, 2, 3), vacuum=10.0)
+constraint = FixAtoms(mask=[True for atom in atoms])
+atoms.set_constraint(constraint)
+
+from ase.io import write
+write('images/Pt-fcc-ori.png', atoms, show_unit_cell=2)
+
+print(Vasp('surfaces/Pt-slab',
+           xc='PBE',
+           kpts=[4, 4, 1],
+           encut=350,
+           atoms=atoms).potential_energy)
+#+END_SRC
+
+#+RESULTS:
+: -68.23616204
+
+#+attr_latex: :placement [H] :width 2in
+#+attr_org: :width 300
+#+caption: Pt(111) fcc surface
+[[./images/Pt-fcc-ori.png]]
+
+***** fcc site
+#+BEGIN_SRC python
+from vasp import Vasp
+
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Pt', size=(2, 2, 3), vacuum=10.0)
+
+# note this function only works when atoms are created by the surface module.
+add_adsorbate(atoms, 'O', height=1.2, position='fcc')
+
+constraint = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
+atoms.set_constraint(constraint)
+
+from ase.io import write
+write('images/Pt-fcc-site.png', atoms, show_unit_cell=2)
+
+print(Vasp('surfaces/Pt-slab-O-fcc',
+           xc='PBE',
+           kpts=[4, 4, 1],
+           encut=350,
+           ibrion=2,
+           nsw=25,
+           atoms=atoms).potential_energy)
+#+END_SRC
+
+#+RESULTS:
+: -74.23018764
+
+#+attr_latex: :placement [H] :width 2in
+#+attr_org: :width 200
+#+caption: FCC site.
+[[./images/Pt-fcc-site.png]]
+
+***** O atom on the bridge site
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Pt', size=(2, 2, 3), vacuum=10.0)
+
+# note this function only works when atoms are created by the surface module.
+add_adsorbate(atoms, 'O', height=1.2, position='bridge')
+
+constraint = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
+atoms.set_constraint(constraint)
+
+print(Vasp('surfaces/Pt-slab-O-bridge',
+           xc='PBE',
+           kpts=[4, 4, 1],
+           encut=350,
+           ibrion=2,
+           nsw=25,
+           atoms=atoms).potential_energy)
+#+END_SRC
+
+#+RESULTS:
+: -74.23023073
+
+#+ATTR_LaTeX: :width 203bp :placement [H]
+#+caption: Initial geometry of the bridge site. It is definitely on the bridge.
+[[./images/Pt-o-brige-ori.png]]
+
+***** hcp site
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Pt', size=(2, 2, 3), vacuum=10.0)
+
+# note this function only works when atoms are created by the surface module.
+add_adsorbate(atoms, 'O', height=1.2, position='hcp')
+
+constraint = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
+atoms.set_constraint(constraint)
+
+from ase.io import write
+write('images/Pt-hcp-o-site.png', atoms, show_unit_cell=2)
+
+print(Vasp('surfaces/Pt-slab-O-hcp',
+           xc='PBE',
+           kpts=[4, 4, 1],
+           encut=350,
+           ibrion=2,
+           nsw=25,
+           atoms=atoms).potential_energy)
+#+END_SRC
+
+#+RESULTS:
+: -73.76942127
+
+#+attr_latex: :placement [H] :width 2in
+#+attr_org: :width 200
+#+caption: HCP site.
+[[./images/Pt-hcp-o-site.png]]
+
+**** Analysis of adsorption energies
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.io import write
+
+calc = Vasp('surfaces/Pt-slab')
+atoms = calc.get_atoms()
+e_slab = atoms.get_potential_energy()
+write('images/pt-slab.png', atoms,show_unit_cell=2)
+
+calc = Vasp('surfaces/Pt-slab-O-fcc')
+atoms = calc.get_atoms()
+e_slab_o_fcc = atoms.get_potential_energy()
+write('images/pt-slab-fcc-o.png', atoms,show_unit_cell=2)
+
+calc = Vasp('surfaces/Pt-slab-O-hcp')
+atoms = calc.get_atoms()
+e_slab_o_hcp = atoms.get_potential_energy()
+write('images/pt-slab-hcp-o.png', atoms,show_unit_cell=2)
+
+calc = Vasp('surfaces/Pt-slab-O-bridge')
+atoms = calc.get_atoms()
+e_slab_o_bridge = atoms.get_potential_energy()
+write('images/pt-slab-bridge-o.png', atoms,show_unit_cell=2)
+
+calc = Vasp('molecules/O2-sp-triplet-350')
+atoms = calc.get_atoms()
+e_O2 = atoms.get_potential_energy()
+
+Hads_fcc = e_slab_o_fcc - e_slab - 0.5 * e_O2
+Hads_hcp = e_slab_o_hcp - e_slab - 0.5 * e_O2
+Hads_bridge = e_slab_o_bridge - e_slab - 0.5 * e_O2
+
+print 'Hads (fcc)    = {0} eV/O'.format(Hads_fcc)
+print 'Hads (hcp)    = {0} eV/O'.format(Hads_hcp)
+print 'Hads (bridge) = {0} eV/O'.format(Hads_bridge)
+#+END_SRC
+
+#+RESULTS:
+
+You can see the hcp site is not as energetically favorable as the fcc site. Interestingly, the bridge site seems to be as favorable as the fcc site. This is not correct, and to see why, we have to look at the final geometries of each calculation. First the fcc (Figure ref:fig:fcc and hcp (Figure ref:fig:hcp sites, which look like we expect.
+
+#+ATTR_LaTeX: :width 203bp :placement [H]
+#+caption: Final geometry of the fcc site. \label{fig:fcc}
+[[./images/pt-slab-fcc-o.png]]
+
+
+#+ATTR_LaTeX: :width 203bp :placement [H]
+#+caption: Final geometry of the hcp site. \label{fig:hcp}
+[[./images/pt-slab-hcp-o.png]]
+
+The bridge site (Figure ref:fig:bridge, however, is clearly not at a bridge site!
+
+#+caption: Final geometry of the bridge site. You can see that the oxygen atom ended up in the fcc site. \label{fig:bridge}
+#+ATTR_LaTeX: :width 203bp :placement [H]
+[[./images/pt-slab-bridge-o.png]]
+
+Let us see what the original geometry and final geometry for the bridge site were. The POSCAR contains the initial geometry (as long as you haven't copied CONTCAR to POSCAR), and the CONTCAR contains the final geometry.
+
+#+BEGIN_SRC python
+from ase.io import read, write
+
+atoms = read('surfaces/Pt-slab-O-bridge/POSCAR')
+write('images/Pt-o-brige-ori.png', atoms, show_unit_cell=2)
+
+atoms = read('surfaces/Pt-slab-O-bridge/CONTCAR')
+write('images/Pt-o-brige-final.png', atoms, show_unit_cell=2)
+#+END_SRC
+
+#+RESULTS:
+
+#+ATTR_LaTeX: :width 203bp :placement [H]
+#+caption: Initial geometry of the bridge site. It is definitely on the bridge.
+[[./images/Pt-o-brige-ori.png]]
+
+#+ATTR_LaTeX: :width 203bp :placement [H]
+#+caption: Final geometry of the bridge site. It has fallen into the fcc site.
+[[./images/Pt-o-brige-final.png]]
+
+You can see the problem. We should not call the adsorption energy from this calculation a bridge site adsorption energy because the O atom is actually in an fcc site! This kind of result can happen with relaxation, and you should always check that the result you get makes sense. Next, we consider how to get a bridge site adsorption energy by using constraints.
+
+Some final notes:
+1. We did not let the slabs relax in these examples, and allowing them to relax is likely to have a big effect on the adsorption energies. You have to decide how many layers to relax, and check for convergence with respect to the number of layers.
+2. The slabs were pretty thin. It is typical these days to see slabs that are 4-5 or more layers thick.
+3. We did not consider how well converged the calculations were with respect to $k$-points or incar:ENCUT.
+4. We did not consider the effect of the error in O$_2$ dissociation energy on the adsorption energies.
+4. We did not consider coverage effects (see [[*Coverage%20dependence][Coverage dependence]]).
+
+**** Adsorption on bridge site with constraints
+To prevent the oxygen atom from sliding down into the fcc site, we have to constrain it so that it only moves in the $z$-direction. This is an artificial constraint; the bridge site is only metastable. But there are lots of reasons you might want to do this anyway. One is the bridge site is a transition state for diffusion between the fcc and hcp sites. Another is to understand the role of coordination in the adsorption energies. We use a func:ase.constraints.FixScaled constraint in ase to constrain the O atom so it can only move in the $z$-direction (actually so it can only move in the direction of the third unit cell vector, which only has a $z$-component).
+
+#+BEGIN_SRC python
+from vasp import Vasp
+
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.constraints import FixAtoms, FixScaled
+from ase.io import write
+
+atoms = fcc111('Pt', size=(2, 2, 3), vacuum=10.0)
+
+# note this function only works when atoms are created by the surface module.
+add_adsorbate(atoms, 'O', height=1.2, position='bridge')
+constraint1 = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
+# fix in xy-direction, free in z. actually, freeze movement in surface
+# unit cell, and free along 3rd lattice vector
+constraint2 = FixScaled(atoms.get_cell(), 12, [True, True, False])
+
+atoms.set_constraint([constraint1, constraint2])
+write('images/Pt-O-bridge-constrained-initial.png', atoms, show_unit_cell=2)
+print 'Initial O position: {0}'.format(atoms.positions[-1])
+
+calc = Vasp('surfaces/Pt-slab-O-bridge-xy-constrained',
+            xc='PBE',
+            kpts=[4, 4, 1],
+            encut=350,
+            ibrion=2,
+            nsw=25,
+            atoms=atoms)
+e_bridge = atoms.get_potential_energy()
+
+write('images/Pt-O-bridge-constrained-final.png', atoms, show_unit_cell=2)
+print 'Final O position  : {0}'.format(atoms.positions[-1])
+
+# now compute Hads
+calc = Vasp('surfaces/Pt-slab')
+atoms = calc.get_atoms()
+e_slab = atoms.get_potential_energy()
+
+
+calc = Vasp('molecules/O2-sp-triplet-350')
+atoms = calc.get_atoms()
+e_O2 = atoms.get_potential_energy()
+
+calc.stop_if(None in [e_bridge, e_slab, e_O2])
+
+Hads_bridge = e_bridge - e_slab - 0.5*e_O2
+
+print 'Hads (bridge) = {0:1.3f} eV/O'.format(Hads_bridge)
+#+END_SRC
+
+#+RESULTS:
+: Initial O position: [  1.38592929   0.          15.72642611]
+: Final O position  : [  1.38592929   0.          15.9685262 ]
+: Hads (bridge) = -0.512 eV/O
+
+You can see that only the \(z\)-position of the O atom changed. Also, the adsorption energy of O on the bridge site is *much* less favorable than on the fcc or hcp sites.
+
+#+ATTR_LaTeX: :width 203bp :placement [H]
+#+caption: Initial state of the O atom on the bridge site.
+[[./images/Pt-O-bridge-constrained-initial.png]]
+
+#+ATTR_LaTeX: :width 203bp :placement [H]
+#+caption: Final state of the constrained O atom, still on the bridge site.
+[[./images/Pt-O-bridge-constrained-final.png]]
+
+*** Coverage dependence
+    The adsorbates on the surface can interact with each other which results in coverage dependent adsorption energies cite:PhysRevB.82.045414. Coverage dependence is not difficult to model; we simply compute adsorption energies in different size unit cells, and/or with different adsorbate configurations. Here we consider dissociative oxygen adsorption at 1ML on Pt(111) in an fcc site, which is one oxygen atom in a $1 \times 1$ unit cell.
+
+For additional reading, see these references from our work:
+- Correlations of coverage dependence of oxygen adsorption on different metals cite:miller:104709,Miller2009794
+- Coverage effects of atomic adsorbates on Pd(111) cite:PhysRevB.79.205412
+- Simple model for estimating coverage dependence cite:PhysRevB.82.045414
+- Coverage effects on alloys cite:PhysRevB.77.075437
+
+**** clean slab calculation
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.io import write
+from ase.lattice.surface import fcc111
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Pt', size=(1, 1, 3), vacuum=10.0)
+constraint = FixAtoms(mask=[True for atom in atoms])
+atoms.set_constraint(constraint)
+
+write('images/Pt-fcc-1ML.png', atoms, show_unit_cell=2)
+
+print(Vasp('surfaces/Pt-slab-1x1',
+           xc='PBE',
+           kpts=[8, 8, 1],
+           encut=350,
+           atoms=atoms).potential_energy)
+#+END_SRC
+
+#+RESULTS:
+: -17.05903301
+
+#+attr_latex: :placement [H] :width 2in
+#+attr_org: :width 200
+#+caption: 1 \times 1 unit cell.
+[[./images/Pt-fcc-1ML.png]]
+
+**** fcc site at 1 ML coverage
+#+BEGIN_SRC python
+from vasp import Vasp
+
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.constraints import FixAtoms
+from ase.io import write
+
+atoms = fcc111('Pt', size=(1, 1, 3), vacuum=10.0)
+
+# note this function only works when atoms are created by the surface module.
+add_adsorbate(atoms, 'O', height=1.2, position='fcc')
+
+constraint = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
+atoms.set_constraint(constraint)
+
+write('images/Pt-o-fcc-1ML.png', atoms, show_unit_cell=2)
+
+print(Vasp('surfaces/Pt-slab-1x1-O-fcc',
+           xc='PBE',
+           kpts=[8, 8, 1],
+           encut=350,
+           ibrion=2,
+           nsw=25,
+           atoms=atoms).potential_energy)
+#+END_SRC
+
+#+RESULTS:
+: -22.13585728
+
+#+attr_latex: :placement [h] :width 2in
+#+attr_org: :width 200
+#+caption: 1 ML oxygen in the fcc site.
+[[./images/Pt-o-fcc-1ML.png]]
+
+**** Adsorption energy at 1ML
+#+BEGIN_SRC python
+from vasp import Vasp
+
+e_slab_o = Vasp('surfaces/Pt-slab-1x1-O-fcc').potential_energy
+
+# clean slab
+e_slab = Vasp('surfaces/Pt-slab-1x1').potential_energy
+
+e_O2 = Vasp('molecules/O2-sp-triplet-350').potential_energy
+
+hads = e_slab_o - e_slab - 0.5 * e_O2
+print 'Hads (1ML) = {0:1.3f} eV'.format(hads)
+#+END_SRC
+
+#+RESULTS:
+
+
+: Hads (1ML) = -0.099 eV
+
+The adsorption energy is *much* less favorable at 1ML coverage than at 0.25 ML coverage! We will return what this means in [[*Effect%20on%20adsorption][Atomistic thermodynamics effect on adsorption]].
+
+*** Effect of adsorption on the surface energy
+There is a small point to make here about what adsorption does to surface energies. Let us define a general surface formation energy scheme like this:
+
+#+ATTR_LaTeX: :placement [H] :width 3in
+#+ATTR_org: :width 300
+#+caption: Schematic of forming a surface with adsorbates. First we form two clean surfaces by cleaving the bulk, then allow adsorption to occur on the surfaces.
+[[./images/adsorbate-surface-energy.png]]
+
+Let us presume the surfaces are symmetric, and that each surface contributes half of the energy change. The overall change in energy:
+
+$\Delta E = E_{slab,ads} - E_{ads} - E_{bulk}$
+
+where the the energies are appropriately normalized for the stoichiometry. Let us rearrange the terms, and add and subtract a constant term $E_{slab}$.
+
+$\Delta E = E_{slab,ads} - E_{slab} - E_{ads} - E_{bulk} + E_{slab}$
+
+We defined $\gamma_{clean} = \frac{1}{2A}(E_{slab} - E_{bulk})$, and we defined $H_{ads} = E_{slab,ads} - E_{slab} - E_{ads}$ for adsorption on a single side of a slab. In this case, there are adsorbates on both sides of the slab, so $E_{slab,ads} - E_{slab} - E_{ads} = 2 \Delta H_{ads}$. If we normalize by $2A$, the area for both sides of the slab, we get
+
+$\frac{\Delta E}{2A} = \gamma = \gamma_{clean} + \frac{H_{ads}}{A}$
+
+You can see here that the adsorption energy serves to stabilize, or reduce the surface energy, provided that the adsorption energy is negative.
+
+Some final notes about the equations above:
+
+- We were not careful about stoichiometry. As written, it is assumed there are the same number of atoms (not including the adsorbates) in the slabs and bulk, and the same number of adsorbate atoms in the slab and $E_{ads}$. Appropriate normalization factors must be included if that is not true.
+
+- It is not necessary to perform a symmetric slab calculation to determine the effect of adsorption on the surface energy! You can examine $\gamma - \gamma_{clean}$ with knowledge of only the adsorption energies!
+
+** Adsorbate vibrations
+
+Adsorbates also have vibrational modes. Unlike a free molecule, the translational and rotational modes of an adsorbate may actually have real frequencies. Sometimes they are called frustrated translations or rotations. For metal surfaces with adsorbates, it is common to only compute vibrational modes of the adsorbate on a frozen metal slab. The rationale is that the metal atoms are so much heavier than the adsorbate that there will be little coupling between the surface and adsorbates. You can limit the number of modes calculated with constraints (func:ase.constraints.FixAtoms or func:ase.constraints.FixScaled) if you use [[incar:IBRION][IBRION]]=5. The other IBRION settings (6, 7, 8) do not respect the selective dynamics constraints. Below we consider the vibrational modes of an oxygen atom in an fcc site on Pt(111).
+
+#+BEGIN_SRC python
+from vasp import Vasp
+
+calc = Vasp('surfaces/Pt-slab-O-fcc')
+calc.clone('surfaces/Pt-slab-O-fcc-vib')
+
+calc.set(ibrion=5,     # finite differences with selective dynamics
+         nfree=2,      # central differences (default)
+         potim=0.015,  # default as well
+         ediff=1e-8,
+         nsw=1)
+atoms = calc.get_atoms()
+f, v = calc.get_vibrational_modes(0)
+print 'Elapsed time = {0} seconds'.format(calc.get_elapsed_time())
+allfreq = calc.get_vibrational_modes()[0]
+
+from ase.units import meV
+c = 3e10  # cm/s
+h = 4.135667516e-15  # eV*s
+
+print 'vibrational energy = {0} eV'.format(f)
+print 'vibrational energy = {0} meV'.format(f/meV)
+print 'vibrational freq   = {0} 1/s'.format(f/h)
+print 'vibrational freq   = {0} cm^{{-1}}'.format(f/(h*c))
+print
+print 'All energies = ', allfreq
+#+END_SRC
+
+#+RESULTS:
+
+
+
+There are three modes for the free oxygen atom. One of them is a mode normal to the surface (the one with highest frequency. The other two are called frustrated translations. Note that we did not include the surface Pt atoms in the calculation, and this will have an effect on the result because the O atom could be coupled to the surface modes. It is typical to neglect this coupling because of the large difference in mass between O and Pt.  Next we look at the difference in results when we calculate all the modes.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+
+calc = Vasp('surfaces/Pt-slab-O-fcc')
+calc.clone('Pt-slab-O-fcc-vib-ibrion=6')
+calc.set(ibrion=6,  # finite differences with symmetry
+         nfree=2,  # central differences (default)
+         potim=0.015,  # default as well
+         ediff=1e-8,
+         nsw=1)
+calc.update()
+print 'Elapsed time = {0} seconds'.format(calc.get_elapsed_time())
+
+f, m = calc.get_vibrational_modes(0)
+allfreq = calc.get_vibrational_modes()[0]
+
+from ase.units import meV
+c = 3e10  # cm/s
+h = 4.135667516e-15  # eV*s
+
+print 'For mode 0:'
+print 'vibrational energy = {0} eV'.format(f)
+print 'vibrational energy = {0} meV'.format(f / meV)
+print 'vibrational freq   = {0} 1/s'.format(f / h)
+print 'vibrational freq   = {0} cm^{{-1}}'.format(f / (h * c))
+print
+print 'All energies = ', allfreq
+#+END_SRC
+
+#+RESULTS:
+: Elapsed time = 77121.015 seconds
+: For mode 0:
+: vibrational energy = 0.063537929 eV
+: vibrational energy = 63.537929 meV
+: vibrational freq   = 1.53634035507e+13 1/s
+: vibrational freq   = 512.113451691 cm^{-1}
+:
+: All energies =  [0.06353792899999999, 0.045628623, 0.045628623, 0.023701702, 0.023701702, 0.023223747, 0.022978233, 0.022978233, 0.022190167, 0.021807461, 0.02040119, 0.02040119, 0.019677135000000002, 0.015452848, 0.015302098000000002, 0.015302098000000002, 0.0148412, 0.0148412, 0.014071851000000002, 0.012602063, 0.012602063, 0.012409611999999999, 0.012300973000000002, 0.011735683, 0.011735683, 0.011714521, 0.011482183, 0.011482183, 0.010824891, 0.010414177, 0.010414177, 0.009799697, 0.00932905, 0.00932905, 0.003859079, 0.003859079, (2.9894000000000002e-05+0j), (2.9894000000000002e-05+0j), (0.00012182999999999999+0j)]
+
+
+
+Note that now there are 39 modes, which is 3*N where N=13 atoms in the unit cell. Many of the modes are low in frequency, which correspond to slab modes that are essentially phonons. The O frequencies are not that different from the previous calculation (497 vs 512 cm$^{-1}$. This is why it is common to keep the slab atoms frozen.
+
+Calculating these results took 39*2 finite differences. It took about a day to get these results on a single CPU. It pays to use constraints to minimize the number of these calculations.
+
+
+*** Vibrations of the bridge site
+Here we consider the vibrations of an O atom in a bridge site, which we saw earlier is a metastable saddle point.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.constraints import FixAtoms
+
+# clone calculation so we do not overwrite previous results
+calc = Vasp('surfaces/Pt-slab-O-bridge-xy-constrained')
+calc.clone('surfaces/Pt-slab-O-bridge-vib')
+
+calc.set(ibrion=5,  # finite differences with selective dynamics
+         nfree=2,   # central differences (default)
+         potim=0.015,  # default as well
+         ediff=1e-8,
+         nsw=1)
+
+atoms = calc.get_atoms()
+del atoms.constraints
+constraint = FixAtoms(mask=[atom.symbol != 'O' for atom in atoms])
+atoms.set_constraint([constraint])
+
+f, v = calc.get_vibrational_modes(2)
+print(calc.get_vibrational_modes()[0])
+
+from ase.units import meV
+c = 3e10  # cm/s
+h = 4.135667516e-15  # eV*s
+
+print('vibrational energy = {0} eV'.format(f))
+print('vibrational energy = {0} meV'.format(f/meV))
+print('vibrational freq   = {0} 1/s'.format(f/h))
+print('vibrational freq   = {0} cm^(-1)'.format(f/(h*c)))
+#+END_SRC
+
+#+RESULTS:
+: [0.06691932, 0.047345270999999994, (0.020649715000000003+0j)]
+: vibrational energy = (0.020649715+0j) eV
+: vibrational energy = (20.649715+0j) meV
+: vibrational freq   = (4.99307909065e+12+0j) 1/s
+: vibrational freq   = (166.435969688+0j) cm^(-1)
+
+Note that we have one imaginary mode. This corresponds to the motion of the O atom falling into one of the neighboring 3-fold sites. It also indicates this position is not a stable minimum, but rather a saddle point. This position is a transition state for hopping between the fcc and hcp sites.
+
+** Surface Diffusion barrier
+
+See this review cite:ANIE.ANIE200602223 of diffusion on transition metal surfaces.
+
+*** Standard nudged elastic band method
+Here we illustrate a standard NEB method. You need an initial and final state to start with. We will use the results from previous calculations of oxygen atoms in an fcc and hcp site. then we will construct a band of images connecting these two sites. Finally, we let VASP optimize the band and analyze the results to get the barrier.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.neb import NEB
+import matplotlib.pyplot as plt
+
+calc = Vasp('surfaces/Pt-slab-O-fcc')
+initial_atoms = calc.get_atoms()
+
+final_atoms = Vasp('surfaces/Pt-slab-O-hcp').get_atoms()
+
+# here is our estimated transition state. we use vector geometry to
+# define the bridge position, and add 1.451 Ang to z based on our
+# previous bridge calculation. The bridge position is half way between
+# atoms 9 and 10.
+ts = initial_atoms.copy()
+ts.positions[-1] = 0.5 * (ts.positions[9] + ts.positions[10]) + [0, 0, 1.451]
+
+# construct the band
+images = [initial_atoms]
+images += [initial_atoms.copy()]
+images += [ts.copy()]  # this is the TS
+
+neb = NEB(images)
+# Interpolate linearly the positions of these images:
+neb.interpolate()
+
+# now add the second half
+images2 = [ts.copy()]
+images2 += [ts.copy()]
+images2 += [final_atoms]
+
+neb2 = NEB(images2)
+neb2.interpolate()
+
+# collect final band. Note we do not repeat the TS in the second half
+final_images = images + images2[1:]
+
+
+calc = Vasp('surfaces/Pt-O-fcc-hcp-neb',
+            ibrion=1,
+            nsw=90,
+            spring=-5,
+            atoms=final_images)
+
+images, energies = calc.get_neb()
+p = calc.plot_neb(show=False)
+plt.savefig('images/pt-o-fcc-hcp-neb.png')
+#+END_SRC
+
+#+RESULTS:
+: Optimization terminated successfully.
+:          Current function value: -26.953429
+:          Iterations: 12
+:          Function evaluations: 24
+
+#+ATTR_LaTeX: :placement [H]
+#+caption: Energy pathway for O diffusion from an fcc to hcp site with a spline fit to determine the barrier.
+[[./images/pt-o-fcc-hcp-neb.png]]
+
+We should compare this barrier to what we could estimate from the simple adsorption energies in the fcc and bridge sites. The adsorption energy in the fcc site was -1.04 eV, and in the bridge site was -0.49 eV. The difference between these two is 0.55 eV, which is very close to the calculated barrier from the NEB calculation. In cases where you can determine what the transition state is, e.g. by symmetry, or other means, it is much faster to directly compute the energy of the initial and transition states for barrier determinations. This is not usually possible though.
+
+*** Climbing image NEB
+One issue with the standard NEB method is there is no image that is exactly at the transition state. That means there is some uncertainty of the true energy of the transition state, and there is no way to verify the transition state by vibrational analysis. The climbing image NEB method cite:henkelman:9901 solves that problem by making one image climb to the top. You set [[incar:LCLIMB][LCLIMB]]==True= in =Vasp= to turn on the climbing image method. Here we use the previous calculation as a starting point and turn on the climbing image method.
+
+#+BEGIN_SRC python
+# perform a climbing image NEB calculation
+from vasp import Vasp
+
+calc = Vasp('surfaces/Pt-O-fcc-hcp-neb')
+calc.clone('surfaces/Pt-O-fcc-hcp-cineb')
+calc.set(ichain=0, lclimb=True)
+
+images, energies = calc.get_neb()
+calc.plot_neb(show=False)
+import matplotlib.pyplot as plt
+plt.savefig('images/pt-o-cineb.png')
+plt.show()
+#+END_SRC
+
+#+RESULTS:
+
+
+
+#+attr_latex: :placement [H]
+#+caption: Climbing image NEB
+[[./images/pt-o-cineb.png]]
+
+*** Using vibrations to confirm a transition state
+A transition state should have exactly one imaginary degree of freedom which corresponds to the mode that takes reactants to products. See [[*Vibrations%20of%20the%20bridge%20site][Vibrations of the bridge site]] for an example.
+
+** TODO Diffusion rates with transition state theory :noexport:
+
+** TODO Effects of electric fields on adsorbates :noexport:
+Electric fields can polarize adsorbates, i.e. shift their electron density around, which changes their stability . We can model this to some extent in VASP. We have to set the incar:EFIELD parameter to specify the field strength (in V/\AA), and incar:LDIPOL to =True=, and finally specify which lattice vector the field should be applied to with incar:IDIPOL. Usually, incar:IDIPOL will be set to 3 for surfaces so it points in the direction of the third lattice vector, which is conventionally in the z-direction and normal to the surface.
+
+We will illustrate the effect using an example from cite:doi-10.1021/jp810518x for the effect of electric field on the adsorption energy of a CO molecule on Pt(111) at 0.25 ML. For simplicity, we will use a frozen slab, with the CO molecule in the geometry reported in that reference.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.lattice.surface import fcc111
+
+atoms = fcc111('Pt', size=(2, 2, 4), vacuum=10.0, a=3.986)
+atoms.append(Atom('C', [atoms[12].x, atoms[12].y, atoms[12].z + 1.851]))
+atoms.append(Atom('O', [atoms[-1].x, atoms[-1].y, atoms[-1].z + 1.157]))
+
+for field in [-0.5, 0.0, 0.5]:
+    Vasp('surfaces/Pt-co-field-{0}'.format(field),
+         xc='PBE',
+         encut=350,
+         kpts=[6, 6, 1],
+         efield=field,  # set the field
+         ldipol=True,   # turn dipole correction on
+         idipol=3,      # set field in z-direction
+         atoms=atoms)
+
+    print '{0}: {1:1.3f}'.format(field, atoms.get_potential_energy())
+#+END_SRC
+
+#+RESULTS:
+
+These energies are crazy different, and the forces on the atoms with the field on are insanely high. This section is on hold until I figure that out.
+
+** TODO Simulating STM images		:noexport:
+this link seems to be nonexistent now: http://cst-www.nrl.navy.mil/users/sullivan/stm_backup/stm2.html
+
+see http://vaspnotes.blogspot.com/2013/09/simulated-stm.html
+
+adapted from https://wiki.fysik.dtu.dk/gpaw/tutorials/stm/stm.html
+
+Vasp needs this function for STM to work: get_pseudo_wave_function
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.dft.stm import STM
+import matplotlib.pyplot as plt
+
+
+calc = Vasp('surfaces/Al-slab-relaxed')
+atoms = calc.get_atoms()
+
+stm = STM(atoms)
+z = 8.0
+bias = 1.0
+c = stm.get_averaged_current(bias, z)
+x, y, h = stm.scan(bias, c, repeat=(3, 5))
+
+
+plt.gca(aspect='equal')
+plt.contourf(x, y, h, 40)
+plt.hot()
+plt.colorbar()
+plt.show()
+#+END_SRC
+
+#+RESULTS:
+

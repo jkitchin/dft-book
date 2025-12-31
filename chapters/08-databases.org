@@ -1,0 +1,27 @@
+* Databases in molecular simulations
+The continued increase in computing power has enabled us to create massive amounts of computational data. Some of this data is accessible in papers, or at websites, e.g. https://cmr.fysik.dtu.dk.
+
+Our Vasp module works natively with the ase-database. It is easy to write an entry to a database.
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.db import connect
+calc = Vasp('molecules/simple-co')
+atoms = calc.get_atoms()
+print calc.results
+con = connect('example-1.db')
+con.write(atoms)
+#+END_SRC
+
+#+RESULTS:
+: {'magmom': 0, 'stress': array([ 0.0414556 ,  0.01094971,  0.01094971, -0.        , -0.        , -0.        ]), 'magmoms': array([ 0.,  0.]), 'charges': array([None, None], dtype=object), 'energy': -14.69111507, 'dipole': None, 'forces': array([[ 5.09138064,  0.        ,  0.        ],
+:        [-5.09138064,  0.        ,  0.        ]])}
+
+#+BEGIN_SRC sh
+ase-db example-1.db
+#+END_SRC
+
+#+RESULTS:
+: id|age|user    |formula|calculator| energy| fmax|pbc| volume|charge|  mass| smax|magmom
+:  1| 5s|jkitchin|CO     |vasp      |-14.691|5.091|TTT|216.000| 0.000|28.010|0.041| 0.000
+: Rows: 1
+

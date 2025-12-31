@@ -1,0 +1,3792 @@
+* Molecules
+  :PROPERTIES:
+  :ID:       0ba173be-1449-4c71-b040-02864f3af5a5
+  :END:
+In this chapter we consider how to construct models of molecules, how to manipulate them, and how to calculate many properties of molecules. For a nice comparison of VASP and Gaussian see citealp:paier:234102.
+** Defining and visualizing molecules
+We start by learning how to define a molecule and visualize it. We will begin with defining molecules from scratch, then reading molecules from data files, and finally using some built-in databases in =ase=.
+*** From scratch
+When there is no data file for the molecule you want, or no database to get it from, you have to define your atoms geometry by hand. Here is how that is done for a CO molecule (Figure ref:fig:co-origin). We must define the type and position of each atom, and the unit cell the atoms are in.
+
+#+BEGIN_SRC python
+from ase import Atoms, Atom
+from ase.io import write
+
+# define an Atoms object
+atoms = Atoms([Atom('C', [0., 0., 0.]),
+               Atom('O', [1.1, 0., 0.])],
+              cell=(10, 10, 10))
+
+print('V = {0:1.0f} Angstrom^3'.format(atoms.get_volume()))
+
+write('images/simple-cubic-cell.png', atoms, show_unit_cell=2)
+#+END_SRC
+
+#+RESULTS:
+: V = 1000 Angstrom^3
+
+#+caption: Image of a CO molecule with the C at the origin. \label{fig:co-origin}
+#+ATTR_LaTeX: :placement [H] :width 2in
+#+attr_org: :width 200
+[[./images/simple-cubic-cell.png]]
+
+There are two inconvenient features of the simple cubic cell:
+
+1. Since the CO molecule is at the corner, its electron density is spread over the 8 corners of the box, which is not convenient for visualization later (see [[*Visualizing%20electron%20density][Visualizing electron density]]).
+
+2. Due to the geometry of the cube, you need fairly large cubes to make sure the electron density of the molecule does not overlap with that of its images. Electron-electron interactions are repulsive, and the overlap makes the energy increase significantly. Here, the CO molecule has 6 images due to periodic boundary conditions that are 10 \AA away. The volume of the unit cell is 1000 \AA$^3$.
+
+The first problem is easily solved by centering the atoms in the unit cell. The second problem can be solved by using a face-centered cubic lattice, which is the lattice with the closest packing. We show the results of the centering in Figure ref:fig:co-fcc, where we have guessed values for $b$ until the CO molecules are on average 10 \AA apart. Note the final volume is only about 715 \AA$^3$, which is smaller than the cube. This will result in less computational time to compute properties.
+
+#+BEGIN_SRC python
+from ase import Atoms, Atom
+from ase.io import write
+
+b = 7.1
+atoms = Atoms([Atom('C', [0., 0., 0.]),
+               Atom('O', [1.1, 0., 0.])],
+              cell=[[b, b, 0.],
+                    [b, 0., b],
+                    [0., b, b]])
+
+print('V = {0:1.0f} Ang^3'.format(atoms.get_volume()))
+
+atoms.center()  # translate atoms to center of unit cell
+write('images/fcc-cell.png', atoms, show_unit_cell=2)
+#+END_SRC
+
+#+RESULTS:
+: V = 716 Ang^3
+
+#+caption: CO in a face-centered cubic unit cell. \label{fig:co-fcc}
+#+ATTR_LaTeX: :placement [H] :width 2in
+#+attr_org: :width 200
+[[./images/fcc-cell.png]]
+
+At this point you might ask, "How do you know the distance to the neighboring image?" The =ag= viewer lets you compute this graphically, but we can use code to determine this too. All we have to do is figure out the length of each lattice vector, because these are what separate the atoms in the images. We use the mod:numpy module to compute the distance of a vector as the square root of the sum of squared elements.
+
+#+BEGIN_SRC python
+from ase import Atoms, Atom
+import numpy as np
+
+b = 7.1
+atoms = Atoms([Atom('C', [0., 0., 0.]),
+               Atom('O', [1.1, 0., 0.])],
+              cell=[[b, b, 0.],
+                    [b, 0., b],
+                    [0., b, b]])
+
+# get unit cell vectors and their lengths
+(a1, a2, a3) = atoms.get_cell()
+print('|a1| = {0:1.2f} Ang'.format(np.sum(a1**2)**0.5))
+print('|a2| = {0:1.2f} Ang'.format(np.linalg.norm(a2)))
+print('|a3| = {0:1.2f} Ang'.format(np.sum(a3**2)**0.5))
+#+END_SRC
+
+#+RESULTS:
+: |a1| = 10.04 Ang
+: |a2| = 10.04 Ang
+: |a3| = 10.04 Ang
+
+*** Reading other data formats into a calculation
+
+mod:ase.io.read supports many different file formats:
+#+begin_example
+    Known formats:
+
+    =========================  ===========
+    format                     short name
+    =========================  ===========
+    GPAW restart-file          gpw
+    Dacapo netCDF output file  dacapo
+    Old ASE netCDF trajectory  nc
+    Virtual Nano Lab file      vnl
+    ASE pickle trajectory      traj
+    ASE bundle trajectory      bundle
+    GPAW text output           gpaw-text
+    CUBE file                  cube
+    XCrySDen Structure File    xsf
+    Dacapo text output         dacapo-text
+    XYZ-file                   xyz
+    VASP POSCAR/CONTCAR file   vasp
+    VASP OUTCAR file           vasp_out
+    SIESTA STRUCT file         struct_out
+    ABINIT input file          abinit
+    V_Sim ascii file           v_sim
+    Protein Data Bank          pdb
+    CIF-file                   cif
+    FHI-aims geometry file     aims
+    FHI-aims output file       aims_out
+    VTK XML Image Data         vti
+    VTK XML Structured Grid    vts
+    VTK XML Unstructured Grid  vtu
+    TURBOMOLE coord file       tmol
+    TURBOMOLE gradient file    tmol-gradient
+    exciting input             exi
+    AtomEye configuration      cfg
+    WIEN2k structure file      struct
+    DftbPlus input file        dftb
+    CASTEP geom file           cell
+    CASTEP output file         castep
+    CASTEP trajectory file     geom
+    ETSF format                etsf.nc
+    DFTBPlus GEN format        gen
+    CMR db/cmr-file            db
+    CMR db/cmr-file            cmr
+    LAMMPS dump file           lammps
+    Gromacs coordinates        gro
+    =========================  ===========
+#+end_example
+
+You can read XYZ file format to create mod:ase.Atoms objects.  Here is
+what an XYZ file format might look like:
+
+#+begin_example
+#+include: molecules/isobutane.xyz
+#+end_example
+
+The first line is the number of atoms in the file. The second line is
+often a comment. What follows is one line per atom with the symbol and
+Cartesian coordinates in \AA. Note that the XYZ format does not have
+unit cell information in it, so you will have to figure out a way to
+provide it. In this example, we center the atoms in a box with vacuum
+on all sides (Figure ref:fig:isobutane).
+
+#+BEGIN_SRC python
+from ase.io import read, write
+
+atoms = read('molecules/isobutane.xyz')
+atoms.center(vacuum=5)
+write('images/isobutane-xyz.png', atoms, show_unit_cell=2)
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: An isobutane molecule read in from an XYZ formatted data file. \label{fig:isobutane}
+#+ATTR_LaTeX: :placement [H] :width 2in
+#+attr_org: :width 200
+[[./images/isobutane-xyz.png]]
+
+*** Predefined molecules
+
+mod:ase defines a number of molecular geometries in the
+mod:ase.data.molecules database.  For example, the database includes
+the molecules in the G2/97 database cite:curtiss:1063. This database
+contains a broad set of atoms and molecules for which good
+experimental data exists, making them useful for benchmarking studies.
+See [[http://www.cse.anl.gov/OldCHMwebsiteContent/compmat/comptherm.htm][this site]] for the original files.
+
+The coordinates for the atoms in the database are [[http://en.wikipedia.org/wiki/M%C3%B8ller-Plesset_perturbation_theory][MP2]](full)/[[http://en.wikipedia.org/wiki/Basis_set_%28chemistry%29][6-31G(d)]]
+optimized geometries. Here is a list of all the species available in
+mod:ase.data.g2. You may be interested in reading about some of the other databases in mod:ase.data too.
+
+#+BEGIN_SRC python
+from ase.data import g2
+keys = g2.data.keys()
+# print in 3 columns
+for i in range(len(keys) / 3):
+    print('{0:25s}{1:25s}{2:25s}'.format(*tuple(keys[i * 3: i * 3 + 3])))
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+isobutene                CH3CH2OH                 CH3COOH
+COF2                     CH3NO2                   CF3CN
+CH3OH                    CCH                      CH3CH2NH2
+PH3                      Si2H6                    O3
+O2                       BCl3                     CH2_s1A1d
+Be                       H2CCl2                   C3H9C
+C3H9N                    CH3CH2OCH3               BF3
+CH3                      CH4                      S2
+C2H6CHOH                 SiH2_s1A1d               H3CNH2
+CH3O                     H                        BeH
+P                        C3H4_C3v                 C2F4
+OH                       methylenecyclopropane    F2O
+SiCl4                    HCF3                     HCCl3
+C3H7                     CH3CH2O                  AlF3
+CH2NHCH2                 SiH2_s3B1d               H2CF2
+SiF4                     H2CCO                    PH2
+OCS                      HF                       NO2
+SH2                      C3H4_C2v                 H2O2
+CH3CH2Cl                 isobutane                CH3COF
+HCOOH                    CH3ONO                   C5H8
+2-butyne                 SH                       NF3
+HOCl                     CS2                      P2
+C                        CH3S                     O
+C4H4S                    S                        C3H7Cl
+H2CCHCl                  C2H6                     CH3CHO
+C2H4                     HCN                      C2H2
+C2Cl4                    bicyclobutane            H2
+C6H6                     N2H4                     C4H4NH
+H2CCHCN                  H2CCHF                   cyclobutane
+HCl                      CH3OCH3                  Li2
+Na                       CH3SiH3                  NaCl
+CH3CH2SH                 OCHCHO                   SiH4
+C2H5                     SiH3                     NH
+ClO                      AlCl3                    CCl4
+NO                       C2H3                     ClF
+HCO                      CH3CONH2                 CH2SCH2
+CH3COCH3                 C3H4_D2d                 CH
+CO                       CN                       F
+CH3COCl                  N                        CH3Cl
+Si                       C3H8                     CS
+N2                       Cl2                      NCCN
+F2                       CO2                      Cl
+CH2OCH2                  H2O                      CH3CO
+SO                       HCOOCH3                  butadiene
+ClF3                     Li                       PF3
+B                        CH3SH                    CF4
+C3H6_Cs                  C2H6NH                   N2O
+LiF                      H2COH                    cyclobutene
+LiH                      SiO                      Si2
+C2H6SO                   C5H5N                    trans-butane
+Na2                      C4H4O                    SO2
+NH3                      NH2                      CH2_s3B1d
+ClNO                     C3H6_D3h                 Al
+CH3SCH3                  H2CO                     CH3CN
+#+end_example
+
+<<g2-database>>
+Some other databases include the mod:ase.data.s22 for weakly interacting dimers and complexes, and mod:ase.data.extra_molecules which has a few extras like biphenyl and C60.
+
+Here is an example of getting the geometry of an acetonitrile molecule and writing an image to a file. Note that the default unit cell is a 1 Å × Å × Å  cubic cell. That is too small to use if your calculator uses periodic boundary conditions. We center the atoms in the unit cell and add vacuum on each side. We will add 6 Å of vacuum on each side. In the write command we use the option =show_unit_cell= =2 to draw the unit cell boundaries. See Figure ref:fig:ch3cn.
+
+#+BEGIN_SRC python
+from ase.structure import molecule
+from ase.io import write
+
+atoms = molecule('CH3CN')
+
+atoms.center(vacuum=6)
+print('unit cell')
+print('---------')
+print(atoms.get_cell())
+
+write('images/ch3cn.png', atoms, show_unit_cell=2)
+#+END_SRC
+
+#+RESULTS:
+: unit cell
+: ---------
+: [[ 13.775328   0.         0.      ]
+:  [  0.        13.537479   0.      ]
+:  [  0.         0.        15.014576]]
+
+#+caption: A CH_{3}CN molecule in a box. \label{fig:ch3cn}
+#+ATTR_LaTeX: :placement [H] :width 2in
+#+attr_org: :width 200
+[[./images/ch3cn.png]]
+
+
+It is possible to rotate the atoms with func:ase.io.write if you wanted to see pictures from another angle. In the next example we rotate 45 degrees about the $x$-axis, then 45 degrees about the $y$-axis. Note that this only affects the image, not the actual coordinates. See Figure ref:fig:ch3cn-rot.
+
+
+#+BEGIN_SRC python
+from ase.structure import molecule
+from ase.io import write
+
+atoms = molecule('CH3CN')
+
+atoms.center(vacuum=6)
+print('unit cell')
+print('---------')
+print(atoms.get_cell())
+
+write('images/ch3cn-rotated.png', atoms,
+      show_unit_cell=2, rotation='45x,45y,0z')
+#+END_SRC
+
+#+RESULTS:
+: unit cell
+: ---------
+: [[ 13.775328   0.         0.      ]
+:  [  0.        13.537479   0.      ]
+:  [  0.         0.        15.014576]]
+
+#+caption: The rotated version of CH_{3}CN. \label{fig:ch3cn-rot}
+#+ATTR_LaTeX: :placement [H] :width 2in
+#+attr_org: :width 200
+[[./images/ch3cn-rotated.png]]
+
+If you actually want to rotate the coordinates, there is a nice way to do that too, with the func:ase.Atoms.rotate method. Actually there are some subtleties in rotation. One rotates the molecule an angle (in radians) around a vector, but you have to choose whether the center of mass should be fixed or not. You also must decide whether or not the unit cell should be rotated. In the next example you can see the coordinates have changed due to the rotations. Note that the write function uses the rotation angle in degrees, while the rotate function uses radians.
+
+#+BEGIN_SRC python
+from ase.structure import molecule
+from ase.io import write
+from numpy import pi
+
+atoms = molecule('CH3CN')
+atoms.center(vacuum=6)
+p1 = atoms.get_positions()
+
+atoms.rotate('x', pi/4, center='COM', rotate_cell=False)
+atoms.rotate('y', pi/4, center='COM', rotate_cell=False)
+
+write('images/ch3cn-rotated-2.png', atoms, show_unit_cell=2)
+print('difference in positions after rotating')
+print('atom    difference vector')
+print('--------------------------------------')
+p2 = atoms.get_positions()
+
+diff = p2 - p1
+for i, d in enumerate(diff):
+    print('{0} {1}'.format(i, d))
+#+END_SRC
+
+#+RESULTS:
+: difference in positions after rotating
+: atom    difference vector
+: --------------------------------------
+: 0 [-0.65009456  0.91937255  0.65009456]
+: 1 [ 0.08030744 -0.11357187 -0.08030744]
+: 2 [ 0.66947344 -0.94677841 -0.66947344]
+: 3 [-0.32532156  0.88463727  1.35030756]
+: 4 [-1.35405183  1.33495444 -0.04610517]
+: 5 [-0.8340703   1.33495444  1.2092413 ]
+
+#+caption: Rotated CH_{3}CN molecule
+#+ATTR_LaTeX: :width 2in :placement [H]
+#+attr_org: :width 200
+[[./images/ch3cn-rotated-2.png]]
+
+Note in this last case the unit cell is oriented differently than the previous example, since we chose not to rotate the unit cell.
+
+*** Combining Atoms objects
+It is frequently useful to combine two =Atoms= objects, e.g. for computing reaction barriers, or other types of interactions. In =ase=, we simply add two =Atoms= objects together. Here is an example of getting an ammonia and oxygen molecule in the same unit cell. See Figure ref:fig:combined-atoms. We set the =Atoms= about three \AA apart using the func:ase.Atoms.translate function.
+
+#+BEGIN_SRC python
+from ase.structure import molecule
+from ase.io import write
+
+atoms1 = molecule('NH3')
+
+atoms2 = molecule('O2')
+atoms2.translate([3, 0, 0])
+
+bothatoms = atoms1 + atoms2
+bothatoms.center(5)
+
+write('images/bothatoms.png', bothatoms, show_unit_cell=2, rotation='90x')
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: Image featuring ammonia and oxygen molecule in one unit cell. \label{fig:combined-atoms}
+#+ATTR_LaTeX: :placement [H] :width 2in
+#+attr_org: :width 200
+[[./images/bothatoms.png]]
+
+** Simple properties
+Simple properties do not require a DFT calculation. They are typically only functions of the atom types and geometries.
+*** Getting cartesian positions
+If you want the $(x,y,z)$ coordinates of the atoms, use the func:ase.Atoms.get_positions. If you are interested in the fractional coordinates, use func:ase.Atoms.get_scaled_positions.
+
+#+BEGIN_SRC python
+from ase.structure import molecule
+
+atoms = molecule('C6H6')  # benzene
+
+# access properties on each atom
+print(' #  sym   p_x     p_y     p_z')
+print('------------------------------')
+for i, atom in enumerate(atoms):
+   print('{0:3d}{1:^4s}{2:-8.2f}{3:-8.2f}{4:-8.2f}'.format(i,
+                                                           atom.symbol,
+                                                           atom.x,
+                                                           atom.y,
+                                                           atom.z))
+
+# get all properties in arrays
+sym = atoms.get_chemical_symbols()
+pos = atoms.get_positions()
+num = atoms.get_atomic_numbers()
+
+atom_indices = range(len(atoms))
+
+print()
+print('  # sym    at#    p_x     p_y     p_z')
+print('-------------------------------------')
+for i, s, n, p in zip(atom_indices, sym, num, pos):
+    px, py, pz = p
+    print('{0:3d}{1:>3s}{2:8d}{3:-8.2f}{4:-8.2f}{5:-8.2f}'.format(i, s, n,
+                                                                  px, py, pz))
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+ #  sym   p_x     p_y     p_z
+------------------------------
+  0 C      0.00    1.40    0.00
+  1 C      1.21    0.70    0.00
+  2 C      1.21   -0.70    0.00
+  3 C      0.00   -1.40    0.00
+  4 C     -1.21   -0.70    0.00
+  5 C     -1.21    0.70    0.00
+  6 H      0.00    2.48    0.00
+  7 H      2.15    1.24    0.00
+  8 H      2.15   -1.24    0.00
+  9 H      0.00   -2.48    0.00
+ 10 H     -2.15   -1.24    0.00
+ 11 H     -2.15    1.24    0.00
+()
+  # sym    at#    p_x     p_y     p_z
+-------------------------------------
+  0  C       6    0.00    1.40    0.00
+  1  C       6    1.21    0.70    0.00
+  2  C       6    1.21   -0.70    0.00
+  3  C       6    0.00   -1.40    0.00
+  4  C       6   -1.21   -0.70    0.00
+  5  C       6   -1.21    0.70    0.00
+  6  H       1    0.00    2.48    0.00
+  7  H       1    2.15    1.24    0.00
+  8  H       1    2.15   -1.24    0.00
+  9  H       1    0.00   -2.48    0.00
+ 10  H       1   -2.15   -1.24    0.00
+ 11  H       1   -2.15    1.24    0.00
+#+end_example
+
+*** Molecular weight and molecular formula
+[[index:molecular weight]]
+We can quickly compute the molecular weight of a molecule with this recipe. We use func:ase.Atoms.get_masses to get an array of the atomic masses of each atom in the =Atoms= object, and then just sum them up.
+
+#+BEGIN_SRC python
+from ase.structure import molecule
+
+atoms = molecule('C6H6')
+masses = atoms.get_masses()
+
+molecular_weight = masses.sum()
+molecular_formula = atoms.get_chemical_formula(mode='reduce')
+
+# note use of two lines to keep length of line reasonable
+s = 'The molecular weight of {0} is {1:1.2f} gm/mol'
+print(s.format(molecular_formula, molecular_weight))
+#+END_SRC
+
+#+RESULTS:
+: The molecular weight of C6H6 is 78.11 gm/mol
+
+Note that the argument =reduce=True= for func:ase.Atoms.get_chemical_formula collects all the symbols to provide a molecular formula.
+
+*** Center of mass
+[[index:center of mass]]
+The center of mass (COM) is defined as:
+
+COM = $\frac{\sum m_i \cdot r_i}{\sum m_i}$
+
+The center of mass is essentially the average position of the atoms, weighted by the mass of each atom. Here is an example of getting the center of mass from an =Atoms= object using func:ase.Atoms.get_center_of_mass.
+
+#+BEGIN_SRC python
+from ase.structure import molecule
+import numpy as np
+
+# ammonia
+atoms = molecule('NH3')
+
+  # cartesian coordinates
+print('COM1 = {0}'.format(atoms.get_center_of_mass()))
+
+# compute the center of mass by hand
+pos = atoms.positions
+masses = atoms.get_masses()
+
+COM = np.array([0., 0., 0.])
+for m, p in zip(masses, pos):
+    COM += m*p
+COM /= masses.sum()
+
+print('COM2 = {0}'.format(COM))
+
+# one-line linear algebra definition of COM
+print('COM3 = {0}'.format(np.dot(masses, pos) / np.sum(masses)))
+#+END_SRC
+
+#+RESULTS:
+: COM1 = [  0.00000000e+00   5.91843349e-08   4.75457009e-02]
+: COM2 = [  0.00000000e+00   5.91843349e-08   4.75457009e-02]
+: COM3 = [  0.00000000e+00   5.91843349e-08   4.75457009e-02]
+
+You can see see that these centers of mass, which are calculated by different methods, are the same.
+
+*** Moments of inertia
+[[index:moment of inertia]]
+The [[http://en.wikipedia.org/wiki/Moment_of_inertia][moment of inertia]] is a measure of resistance to changes in rotation. It is defined by $I = \sum_{i=1}^N m_i r_i^2$ where $r_i$ is the distance to an axis of rotation. There are typically three moments of inertia, although some may be zero depending on symmetry, and others may be degenerate. There is a convenient function to get the  moments of inertia: func:ase.Atoms.get_moments_of_inertia. Here are several examples of molecules with different types of symmetry.:
+
+#+BEGIN_SRC python
+from ase.structure import molecule
+
+print('linear rotors: I = [0 Ia Ia]')
+atoms = molecule('CO2')
+print('  CO2 moments of inertia: {}'.format(atoms.get_moments_of_inertia()))
+print('')
+
+print('symmetric rotors (Ia = Ib) < Ic')
+atoms = molecule('NH3')
+print('  NH3 moments of inertia: {}'.format(atoms.get_moments_of_inertia()))
+
+atoms = molecule('C6H6')
+print('  C6H6 moments of inertia: {}'.format(atoms.get_moments_of_inertia()))
+print('')
+
+print('symmetric rotors Ia < (Ib = Ic)')
+atoms = molecule('CH3Cl')
+print('CH3Cl moments of inertia: {}'.format(atoms.get_moments_of_inertia()))
+print('')
+
+print('spherical rotors Ia = Ib = Ic')
+atoms = molecule('CH4')
+print('  CH4 moments of inertia: {}'.format(atoms.get_moments_of_inertia()))
+print('')
+
+print('unsymmetric rotors Ia != Ib != Ic')
+atoms = molecule('C3H7Cl')
+print('  C3H7Cl moments of inertia: {}'.format(atoms.get_moments_of_inertia()))
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+linear rotors: I = [0 Ia Ia]
+  CO2 moments of inertia: [  0.          44.45384271  44.45384271]
+
+symmetric rotors (Ia = Ib) < Ic
+  NH3 moments of inertia: [ 1.71012426  1.71012548  2.67031768]
+  C6H6 moments of inertia: [  88.77914641   88.77916799  177.5583144 ]
+
+symmetric rotors Ia < (Ib = Ic)
+CH3Cl moments of inertia: [  3.20372189  37.97009644  37.97009837]
+
+spherical rotors Ia = Ib = Ic
+  CH4 moments of inertia: [ 3.19145621  3.19145621  3.19145621]
+
+unsymmetric rotors Ia != Ib != Ic
+  C3H7Cl moments of inertia: [  19.41351508  213.18961963  223.16255537]
+#+end_example
+
+If you want to know the principle axes of rotation, we simply pass =vectors=True= to the function, and it returns the moments of inertia and the principle axes.
+
+#+BEGIN_SRC python
+from ase.structure import molecule
+
+atoms = molecule('CH3Cl')
+moments, axes = atoms.get_moments_of_inertia(vectors=True)
+print('Moments = {0}'.format(moments))
+print('axes = {0}'.format(axes))
+#+END_SRC
+
+#+RESULTS:
+: Moments = [  3.20372189  37.97009644  37.97009837]
+: axes = [[ 0.  0.  1.]
+:  [ 0.  1.  0.]
+:  [ 1.  0.  0.]]
+
+This shows the first moment is about the z-axis, the second moment is about the y-axis, and the third moment is about the x-axis.
+
+*** Computing bond lengths and angles
+A typical question we might ask is, "What is the structure of a molecule?" In other words, what are the bond lengths, angles between bonds, and similar properties. The Atoms object contains an func:ase.Atoms.get_distance method to make this easy. To calculate the distance between two atoms, you have to specify their indices, remembering that the index starts at 0.
+
+#+BEGIN_SRC python
+from ase.structure import molecule
+
+# ammonia
+atoms = molecule('NH3')
+
+print('atom symbol')
+print('===========')
+for i, atom in enumerate(atoms):
+    print('{0:2d} {1:3s}' .format(i, atom.symbol))
+
+# N-H bond length
+s = 'The N-H distance is {0:1.3f} angstroms'
+print(s.format(atoms.get_distance(0, 1)))
+#+END_SRC
+
+#+RESULTS:
+: atom symbol
+: ===========
+:  0 N
+:  1 H
+:  2 H
+:  3 H
+: The N-H distance is 1.017 angstroms
+
+Bond angles are a little trickier. If we had vectors describing the directions between two atoms, we could use some simple trigonometry to compute the angle between the vectors: $\vec{a} \cdot \vec{b} = |\vec{a}||\vec{b}| \cos(\theta)$.  So we can calculate the angle as $\theta = \arccos\left(\frac{\vec{a} \cdot \vec{b}}{|\vec{a}||\vec{b}|}\right)$, we just have to define our two vectors $\vec{a}$ and $\vec{b}$. We compute these vectors as the difference in positions of two atoms. For example, here we compute the angle H-N-H in an ammonia molecule. This is the angle between N-H$_1$ and N-H$_2$. In the next example, we utilize functions in mod:numpy to perform the calculations, specifically the func:numpy.arccos function, the func:numpy.dot function, and func:numpy.linalg.norm functions.
+
+#+BEGIN_SRC python
+from ase.structure import molecule
+
+# ammonia
+atoms = molecule('NH3')
+
+print('atom symbol')
+print('===========')
+for i, atom in enumerate(atoms):
+    print('{0:2d} {1:3s}'.format(i, atom.symbol))
+
+a = atoms.positions[0] - atoms.positions[1]
+b = atoms.positions[0] - atoms.positions[2]
+
+from numpy import arccos, dot, pi
+from numpy.linalg import norm
+
+theta_rad = arccos(dot(a, b) / (norm(a) * norm(b)))  # in radians
+
+print('theta = {0:1.1f} degrees'.format(theta_rad * 180./pi))
+#+END_SRC
+
+#+RESULTS:
+: atom symbol
+: ===========
+:  0 N
+:  1 H
+:  2 H
+:  3 H
+: theta = 106.3 degrees
+
+#+caption: Schematic of the vectors defining the H-N-H angle.
+#+ATTR_LaTeX: :width 270bp :placement [H] :width 2in
+#+attr_org: :width 200
+[[./images/NH3-vectors.png]]
+
+Alternatively you could use func:ase.Atoms.get_angle. Note we want the angle between atoms with indices [1, 0, 2] to get the H-N-H angle.
+
+#+BEGIN_SRC python
+from ase.structure import molecule
+from numpy import pi
+# ammonia
+atoms = molecule('NH3')
+
+print('theta = {0} degrees'.format(atoms.get_angle([1, 0, 2]) * 180. / pi))
+#+END_SRC
+
+#+RESULTS:
+: theta = 106.334624232 degrees
+
+**** Dihedral angles
+There is support in ase for computing [[http://en.wikipedia.org/wiki/Dihedral_angle][dihedral angles]]. Let us illustrate that for ethane. We will compute the dihedral angle between atoms 5, 1, 0, and 4. That is a H-C-C-H dihedral angle, and one can visually see (although not here) that these atoms have a dihedral angle of 60^{\deg} (Figure ref:fig:ethane-dihedral).
+
+#+BEGIN_SRC python
+# calculate an ethane dihedral angle
+from ase.structure import molecule
+import numpy as np
+
+atoms = molecule('C2H6')
+
+print('atom symbol')
+print('===========')
+for i, atom in enumerate(atoms):
+  print('{0:2d} {1:3s}'.format(i, atom.symbol))
+
+da = atoms.get_dihedral([5, 1, 0, 4]) * 180. / np.pi
+print('dihedral angle = {0:1.2f} degrees'.format(da))
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+atom symbol
+===========
+ 0 C
+ 1 C
+ 2 H
+ 3 H
+ 4 H
+ 5 H
+ 6 H
+ 7 H
+dihedral angle = 60.00 degrees
+#+end_example
+
+#+caption: Schematic of the calculated ethane dihedral angle. \label{fig:ethane-dihedral}
+#+ATTR_LaTeX: :width 2in :placement [H]
+#+attr_org: :width 200
+[[./images/ethane-dihedral.png]]
+In this section we covered properties that require simple calculations, but not DFT calculations, to compute.
+
+** Simple properties that require single computations
+   :PROPERTIES:
+   :ID:       4fff14db-59ee-4e84-bbd2-f4428d1679f9
+   :END:
+There are many properties that only require a single DFT calculation to obtain the energy, forces, density of states, electron density and electrostatic potential. This section describes some of these calculations and their analysis.
+*** Energy and forces
+Two of the most important quantities we are interested in are the total
+energy and the forces on the atoms. To get these quantities, we have
+to define a calculator and attach it to an mod:ase.Atoms object so
+that =ase= knows how to get the data. After defining the calculator a
+DFT calculation must be run.
+
+Here is an example of getting the energy and forces from a CO
+molecule. The forces in this case are very high, indicating that this
+geometry is not close to the ground state geometry. Note that the
+forces are only along the $x$-axis, which is along the molecular axis. We will see how to minimize this force in [[*Manual%20determination%20of%20a%20bond%20length][Manual determination]] and [[*Automatic%20geometry%20optimization%20with%20VASP][Automatic geometry optimization with VASP]].
+
+#+begin_note
+This is your first DFT calculation in the book! See [[incar:ISMEAR][ISMEAR]], incar:SIGMA, incar:NBANDS, and incar:ENCUT to learn more about these VASP keywords.
+#+end_note
+
+
+#+BEGIN_SRC python
+from ase import Atoms, Atom
+from vasp import Vasp
+
+co = Atoms([Atom('C', [0, 0, 0]),
+            Atom('O', [1.2, 0, 0])],
+           cell=(6., 6., 6.))
+
+calc = Vasp('molecules/simple-co',  # output dir
+            xc='pbe',  # the exchange-correlation functional
+            nbands=6,    # number of bands
+            encut=350,    # planewave cutoff
+            ismear=1,    # Methfessel-Paxton smearing
+            sigma=0.01,  # very small smearing factor for a molecule
+            atoms=co)
+
+print('energy = {0} eV'.format(co.get_potential_energy()))
+print(co.get_forces())
+#+END_SRC
+
+#+RESULTS:
+: energy = -14.69111507 eV
+: [[ 5.09138064  0.          0.        ]
+:  [-5.09138064  0.          0.        ]]
+
+We can see what files were created and used in this calculation by printing the vasp attribute of the calculator.
+#+BEGIN_SRC python
+from vasp import Vasp
+print(Vasp('molecules/simple-co').vasp)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+INCAR
+-----
+INCAR created by Atomic Simulation Environment
+ ENCUT = 350
+ LCHARG = .FALSE.
+ NBANDS = 6
+ ISMEAR = 1
+ LWAVE = .FALSE.
+ SIGMA = 0.01
+
+
+POSCAR
+------
+ C  O
+ 1.0000000000000000
+     6.0000000000000000    0.0000000000000000    0.0000000000000000
+     0.0000000000000000    6.0000000000000000    0.0000000000000000
+     0.0000000000000000    0.0000000000000000    6.0000000000000000
+   1   1
+Cartesian
+  0.0000000000000000  0.0000000000000000  0.0000000000000000
+  1.2000000000000000  0.0000000000000000  0.0000000000000000
+
+
+KPOINTS
+-------
+KPOINTS created by Atomic Simulation Environment
+0
+Monkhorst-Pack
+1 1 1
+0.0 0.0 0.0
+
+
+POTCAR
+------
+cat $VASP_PP_PATH/potpaw_PBE/C/POTCAR $VASP_PP_PATH/potpaw_PBE/O/POTCAR > POTCAR
+#+end_example
+
+**** Running a job in parallel
+
+#+BEGIN_SRC python
+from ase import Atoms, Atom
+from vasp import Vasp
+from vasp.vasprc import VASPRC
+
+VASPRC['queue.ppn'] = 4
+
+co = Atoms([Atom('C', [0, 0, 0]),
+            Atom('O', [1.2, 0, 0])],
+           cell=(6., 6., 6.))
+
+calc = Vasp('molecules/simple-co-n4',  # output dir
+            xc='PBE',  # the exchange-correlation functional
+            nbands=6,    # number of bands
+            encut=350,    # planewave cutoff
+            ismear=1,    # Methfessel-Paxton smearing
+            sigma=0.01,  # very small smearing factor for a molecule
+            atoms=co)
+
+print('energy = {0} eV'.format(co.get_potential_energy()))
+print(co.get_forces())
+#+END_SRC
+
+#+RESULTS:
+: energy = -14.69072754 eV
+: [[ 5.09089107  0.          0.        ]
+:  [-5.09089107  0.          0.        ]]
+
+**** Convergence with unit cell size
+There are a number of parameters that affect the energy and forces including the calculation parameters and the unit cell. We will first consider the effect of the unit cell on the total energy and forces. The reason that the unit cell affects the total energy is that it can change the distribution of electrons in the molecule.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atoms, Atom
+import numpy as np
+np.set_printoptions(precision=3, suppress=True)
+
+atoms = Atoms([Atom('C', [0, 0, 0]),
+               Atom('O', [1.2, 0, 0])])
+
+L = [4, 5, 6, 8, 10]
+
+energies = []
+ready = True
+for a in L:
+    atoms.set_cell([a, a, a], scale_atoms=False)
+    atoms.center()
+    calc = Vasp('molecules/co-L-{0}'.format(a),
+                encut=350,
+                xc='PBE',
+                atoms=atoms)
+
+    energies.append(atoms.get_potential_energy())
+
+print(energies)
+calc.stop_if(None in energies)
+
+import matplotlib.pyplot as plt
+plt.plot(L, energies, 'bo-')
+plt.xlabel('Unit cell length ($\AA$)')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/co-e-v.png')
+#+END_SRC
+
+#+RESULTS:
+: [-15.35943747, -14.85641864, -14.68750595, -14.63202061, -14.65342838]
+
+#+caption: Total energy of a CO molecule as a function of the unit cell length.
+#+attr_latex: :placement [H]
+#+attr_org: :width 200
+[[./images/co-e-v.png]]
+
+Here there are evidently attractive interactions between the CO molecules which lower the total energy for small box sizes. We have to decide what an appropriate volume for our calculation is, and the choice depends on the goal. We may wish to know the total energy of a molecule that is not interacting with any other molecules, e.g. in the ideal gas limit. In that case we need a large unit cell so the electron density from the molecule does not go outside the unit cell where it would overlap with neighboring images.
+
+It pays to check for convergence. The cost of running the calculation goes up steeply with increasing cell size. Doubling a lattice vector here leads to a 20-fold increase in computational time! Note that doubling a lattice vector length increases the volume by a factor of 8 for a cube. The cost goes up because the number of planewaves that fit in the cube grows as the cube gets larger.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+
+L = [4, 5, 6, 8, 10]
+
+for a in L:
+    calc = Vasp('molecules/co-L-{0}'.format(a))
+    print('{0} {1} seconds'.format(a, calc.get_elapsed_time()))
+#+END_SRC
+
+#+RESULTS:
+: 4 10.748 seconds
+: 5 11.855 seconds
+: 6 15.613 seconds
+: 8 28.346 seconds
+: 10 45.259 seconds
+
+
+Let us consider what the pressure in the unit cell is. In the ideal gas limit we have $PV = nRT$, which gives a pressure of zero at absolute zero. At non-zero temperatures, we have $P=n/V RT$. Let us consider some examples. In atomic units we use $k_B$ instead of $R$.
+
+#+BEGIN_SRC python
+from ase.units import kB, Pascal
+import numpy as np
+import matplotlib.pyplot as plt
+
+atm = 101325 * Pascal
+
+L = np.linspace(4, 10)
+V = L**3
+
+n = 1  # one atom/molecule per unit cell
+
+for T in [298, 600, 1000]:
+    P = n / V * kB * T / atm  # convert to atmospheres
+
+    plt.plot(V, P, label='{0}K'.format(T))
+
+plt.xlabel('Unit cell volume ($\AA^3$)')
+plt.ylabel('Pressure (atm)')
+plt.legend(loc='best')
+plt.savefig('images/ideal-gas-pressure.png')
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: Ideal gas pressure dependence on temperature and unit cell volume.
+#+attr_latex: :placement [H]
+[[./images/ideal-gas-pressure.png]]
+
+**** Convergence of ENCUT
+The total energy and forces also depend on the computational parameters, notably incar:ENCUT.
+
+#+BEGIN_SRC python
+from ase import Atoms, Atom
+from vasp import Vasp
+import numpy as np
+np.set_printoptions(precision=3, suppress=True)
+
+atoms = Atoms([Atom('C', [0, 0, 0]),
+               Atom('O', [1.2, 0, 0])],
+              cell=(6, 6, 6))
+atoms.center()
+
+ENCUTS = [250, 300, 350, 400, 450, 500]
+
+calcs = [Vasp('molecules/co-en-{0}'.format(en),
+              encut=en,
+              xc='PBE',
+              atoms=atoms)
+         for en in ENCUTS]
+
+energies = [calc.potential_energy for calc in calcs]
+print(energies)
+calcs[0].stop_if(None in energies)
+
+import matplotlib.pyplot as plt
+plt.plot(ENCUTS, energies, 'bo-')
+plt.xlabel('ENCUT (eV)')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/co-encut-v.png')
+#+END_SRC
+
+#+RESULTS:
+: [-14.95250419, -14.71808896, -14.68750595, -14.66725733, -14.65604528, -14.65012078]
+
+#+caption: Dependence of the total energy of CO molecule on ENCUT.
+#+attr_latex: :placement [H]
+[[./images/co-encut-v.png]]
+
+You can see in this figure that it takes a cutoff energy of about 400 eV to achieve a convergence level around 10 meV, and that even at 500 meV the energy is still changing slightly. Keep in mind that we are generally interested in differences in total energy, and the differences tend to converge faster than a single total energy. Also it is important to note that it is usually a single element that determines the rate of convergence. The reason we do not just use very high ENCUT all the time is it is expensive.
+
+#+BEGIN_SRC sh
+grep "Elapsed time (sec):" molecules/co-en-*/OUTCAR
+#+END_SRC
+
+#+RESULTS:
+: molecules/co-en-250/OUTCAR:                         Elapsed time (sec):       11.634
+: molecules/co-en-300/OUTCAR:                         Elapsed time (sec):       14.740
+: molecules/co-en-350/OUTCAR:                         Elapsed time (sec):       13.577
+: molecules/co-en-400/OUTCAR:                         Elapsed time (sec):       16.310
+: molecules/co-en-450/OUTCAR:                         Elapsed time (sec):       17.704
+: molecules/co-en-500/OUTCAR:                         Elapsed time (sec):       11.658
+
+
+**** Cloning
+You may want to clone a calculation, so you can change some parameter without losing the previous result. The clone function does this, and changes the calculator over to the new directory.
+
+#+BEGIN_SRC python
+from ase import Atoms, Atom
+from vasp import Vasp
+
+calc = Vasp('molecules/simple-co')
+print('energy = {0} eV'.format(calc.get_atoms().get_potential_energy()))
+
+# This creates the directory and makes it current working directory
+calc.clone('molecules/clone-1')
+calc.set(encut=325)  # this will trigger a new calculation
+
+print('energy = {0} eV'.format(calc.get_atoms().get_potential_energy()))
+#+END_SRC
+
+#+RESULTS:
+: energy = -14.69111507 eV
+: energy = -14.77117554 eV
+
+*** Visualizing electron density
+
+The electron density is a 3\(d\) quantity: for every $(x,y,z)$ point, there is a charge density. That means we need 4 numbers for each point: $(x,y,z)$ and $\rho(x,y,z)$. Below we show an example (Figure ref:fig:cd1) of plotting the charge density, and we consider some issues we have to consider when visualizing volumetric data in unit cells with periodic boundary conditions. We will use the results from a previous calculation.
+
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from enthought.mayavi import mlab
+from ase.data import vdw_radii
+from ase.data.colors import cpk_colors
+
+calc = Vasp('molecules/simple-co')
+calc.clone('molecules/co-chg')
+calc.set(lcharg=True)
+calc.stop_if(calc.potential_energy is None)
+
+atoms = calc.get_atoms()
+x, y, z, cd = calc.get_charge_density()
+
+
+# make a white figure
+mlab.figure(1, bgcolor=(1, 1, 1))
+
+# plot the atoms as spheres
+for atom in atoms:
+    mlab.points3d(atom.x,
+                  atom.y,
+                  atom.z,
+                  #this determines the size of the atom
+                  scale_factor=vdw_radii[atom.number] / 5.,
+                  resolution=20,
+                  # a tuple is required for the color
+                  color=tuple(cpk_colors[atom.number]),
+                  scale_mode='none')
+
+# draw the unit cell - there are 8 corners, and 12 connections
+a1, a2, a3 = atoms.get_cell()
+origin = [0, 0, 0]
+cell_matrix = [[origin,  a1],
+               [origin,  a2],
+               [origin,  a3],
+               [a1,      a1 + a2],
+               [a1,      a1 + a3],
+               [a2,      a2 + a1],
+               [a2,      a2 + a3],
+               [a3,      a1 + a3],
+               [a3,      a2 + a3],
+               [a1 + a2, a1 + a2 + a3],
+               [a2 + a3, a1 + a2 + a3],
+               [a1 + a3, a1 + a3 + a2]]
+
+for p1, p2 in cell_matrix:
+    mlab.plot3d([p1[0], p2[0]], # x-positions
+                [p1[1], p2[1]], # y-positions
+                [p1[2], p2[2]], # z-positions
+                tube_radius=0.02)
+
+# Now plot the charge density
+
+mlab.contour3d(x, y, z, cd)
+mlab.view(azimuth=-90, elevation=90, distance='auto')
+
+mlab.savefig('images/co-cd.png')
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: Charge density of a CO molecule that is located at the origin. The electron density that is outside the cell is wrapped around to the other corners. \label{fig:cd1}
+#+ATTR_LaTeX: :placement [H] :width 3in
+#+attr_org: :width 200
+[[./images/co-cd.png]]
+
+If we take care to center the CO molecule in the unit cell, we get a nicer looking result.
+
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from enthought.mayavi import mlab
+from ase.data import vdw_radii
+from ase.data.colors import cpk_colors
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('C', [2.422, 0.0, 0.0]),
+               Atom('O', [3.578, 0.0, 0.0])],
+               cell=(10,10,10))
+
+atoms.center()
+
+calc = Vasp('molecules/co-centered',
+            encut=350,
+            xc='PBE',
+            atoms=atoms)
+calc.set(lcharg=True,)
+calc.stop_if(calc.potential_energy is None)
+
+atoms = calc.get_atoms()
+x, y, z, cd = calc.get_charge_density()
+
+mlab.figure(bgcolor=(1, 1, 1))
+
+# plot the atoms as spheres
+for atom in atoms:
+    mlab.points3d(atom.x,
+                  atom.y,
+                  atom.z,
+                  scale_factor=vdw_radii[atom.number]/5,
+                  resolution=20,
+                  # a tuple is required for the color
+                  color=tuple(cpk_colors[atom.number]),
+                  scale_mode='none')
+
+# draw the unit cell - there are 8 corners, and 12 connections
+a1, a2, a3 = atoms.get_cell()
+origin = [0, 0, 0]
+cell_matrix = [[origin,  a1],
+               [origin,  a2],
+               [origin,  a3],
+               [a1,      a1 + a2],
+               [a1,      a1 + a3],
+               [a2,      a2 + a1],
+               [a2,      a2 + a3],
+               [a3,      a1 + a3],
+               [a3,      a2 + a3],
+               [a1 + a2, a1 + a2 + a3],
+               [a2 + a3, a1 + a2 + a3],
+               [a1 + a3, a1 + a3 + a2]]
+
+for p1, p2 in cell_matrix:
+    mlab.plot3d([p1[0], p2[0]], # x-positions
+                [p1[1], p2[1]], # y-positions
+                [p1[2], p2[2]], # z-positions
+                tube_radius=0.02)
+
+
+# Now plot the charge density
+mlab.contour3d(x, y, z, cd, transparent=True)
+
+# this view was empirically found by iteration
+mlab.view(azimuth=-90, elevation=90, distance='auto')
+
+mlab.savefig('images/co-centered-cd.png')
+mlab.show()
+#+END_SRC
+
+#+RESULTS:
+
+
+
+# <<co-centered>>
+#+caption: Charge density of a CO molecule centered in the unit cell. Now the electron density is centered in the unit cell. \label{fig:cd2}
+#+ATTR_LaTeX: :placement [H] :width 3in
+#+attr_org: :width 200
+[[./images/co-centered-cd.png]]
+
+TODO: how to make this figure http://www.zid.tuwien.ac.at/fileadmin/files_zid/zidline/images/zl22/vasp--fig1.jpg
+
+*** Visualizing electron density differences
+Here, we visualize how charge moves in a benzene ring when you substitute an H atom with an electronegative Cl atom.
+
+#+BEGIN_SRC python
+#!/usr/bin/env python
+from ase import *
+from ase.structure import molecule
+from vasp import Vasp
+
+### Setup calculators
+benzene = molecule('C6H6')
+benzene.set_cell([10, 10, 10])
+benzene.center()
+
+calc1 = Vasp('molecules/benzene',
+            xc='PBE',
+            nbands=18,
+            encut=350,
+            atoms=benzene)
+calc1.set(lcharg=True)
+
+chlorobenzene =  molecule('C6H6')
+chlorobenzene.set_cell([10, 10, 10])
+chlorobenzene.center()
+chlorobenzene[11].symbol ='Cl'
+
+calc2 = Vasp('molecules/chlorobenzene',
+            xc='PBE',
+            nbands=22,
+            encut=350,
+            atoms=chlorobenzene)
+calc2.set(lcharg=True)
+calc2.stop_if(None in (calc1.potential_energy, calc2.potential_energy))
+
+x1, y1, z1, cd1 = calc1.get_charge_density()
+x2, y2, z2, cd2 = calc2.get_charge_density()
+
+cdiff = cd2 - cd1
+
+print(cdiff.min(), cdiff.max())
+##########################################
+
+
+##### set up visualization of charge difference
+from enthought.mayavi import mlab
+mlab.contour3d(x1, y1, z1, cdiff,
+               contours=[-0.02, 0.02])
+
+mlab.savefig('images/cdiff.png')
+#+END_SRC
+
+#+RESULTS:
+: (-2.0821159999999987, 2.9688999999999979)
+
+[[./images/cdiff.png]]
+
+#+BEGIN_SRC python
+#!/usr/bin/env python
+from ase import *
+from ase.structure import molecule
+from vasp import Vasp
+import bisect
+import numpy as np
+
+def vinterp3d(x, y, z, u, xi, yi, zi):
+    "Interpolate the point (xi, yi, zi) from the values at u(x, y, z)"
+    p = np.array([xi, yi, zi])
+
+    #1D arrays of coordinates
+    xv = x[:, 0, 0]
+    yv = y[0, :, 0]
+    zv = z[0, 0, :]
+
+    # we subtract 1 because bisect tells us where to insert the
+    # element to maintain an ordered list, so we want the index to the
+    # left of that point
+    i = bisect.bisect_right(xv, xi) - 1
+    j = bisect.bisect_right(yv, yi) - 1
+    k = bisect.bisect_right(zv, zi) - 1
+
+    if i == len(x) - 1:
+        i = len(x) - 2
+    elif i < 0:
+        i = 0
+
+    if j == len(y) - 1:
+        j = len(y) - 2
+    elif j < 0:
+        j = 0
+
+    if k == len(z) - 1:
+        k = len(z) - 2
+    elif k < 0:
+        k = 0
+
+    # points at edge of cell. We only need P1, P2, P3, and P5
+    P1 = np.array([x[i, j, k],
+                   y[i, j, k],
+                   z[i, j, k]])
+    P2 = np.array([x[i + 1, j, k],
+                   y[i + 1, j, k],
+                   z[i + 1, j, k]])
+    P3 = np.array([x[i, j + 1, k],
+                   y[i, j + 1, k],
+                   z[i, j + 1, k]])
+    P5 = np.array([x[i, j, k + 1],
+                   y[i, j, k + 1],
+                   z[i, j, k + 1]])
+
+    # values of u at edge of cell
+    u1 = u[i, j, k]
+    u2 = u[i+1, j, k]
+    u3 = u[i, j+1, k]
+    u4 = u[i+1, j+1, k]
+    u5 = u[i, j, k+1]
+    u6 = u[i+1, j, k+1]
+    u7 = u[i, j+1, k+1]
+    u8 = u[i+1, j+1, k+1]
+
+    # cell basis vectors, not the unit cell, but the voxel cell containing the point
+    cbasis = np.array([P2 - P1,
+                       P3 - P1,
+                       P5 - P1])
+
+    # now get interpolated point in terms of the cell basis
+    s = np.dot(np.linalg.inv(cbasis.T), np.array([xi, yi, zi]) - P1)
+
+    # now s = (sa, sb, sc) which are fractional coordinates in the vector space
+    # next we do the interpolations
+    ui1 = u1 + s[0] * (u2 - u1)
+    ui2 = u3 + s[0] * (u4 - u3)
+
+    ui3 = u5 + s[0] * (u6 - u5)
+    ui4 = u7 + s[0] * (u8 - u7)
+
+    ui5 = ui1 + s[1] * (ui2 - ui1)
+    ui6 = ui3 + s[1] * (ui4 - ui3)
+
+    ui7 = ui5 + s[2] * (ui6 - ui5)
+
+    return ui7
+
+### Setup calculators
+calc = Vasp('molecules/benzene')
+benzene = calc.get_atoms()
+x1, y1, z1, cd1 = calc.get_charge_density()
+
+calc = Vasp('molecules/chlorobenzene')
+x2, y2, z2, cd2 = calc.get_charge_density()
+
+cdiff = cd2 - cd1
+
+#we need the x-y plane at z=5
+import matplotlib.pyplot as plt
+from scipy import mgrid
+
+X, Y = mgrid[0: 10: 25j, 0: 10: 25j]
+
+cdiff_plane = np.zeros(X.shape)
+ni, nj = X.shape
+
+for i in range(ni):
+    for j in range(nj):
+        cdiff_plane[i, j] = vinterp3d(x1, y1, z1, cdiff,
+                                      X[i, j], Y[i, j], 5.0)
+
+plt.imshow(cdiff_plane.T,
+           vmin=-0.02,  # min charge diff to plot
+           vmax=0.02,  # max charge diff to plot
+           cmap=plt.cm.gist_heat,  # colormap
+           extent=(0., 10., 0., 10.))  # axes limits
+
+# plot atom positions. It is a little tricky to see why we reverse the x and y coordinates. That is because imshow does that.
+x = [a.x for a in benzene]
+y = [a.y for a in benzene]
+plt.plot(x, y, 'bo')
+
+plt.colorbar() #add colorbar
+plt.savefig('images/cdiff-imshow.png')
+plt.show()
+#+END_SRC
+
+#+RESULTS:
+
+
+[[./images/cdiff-imshow.png]]
+
+*** Dipole moments
+[[index:dipole moment]]
+The [[http://en.wikipedia.org/wiki/Molecular_dipole_moment#Molecular_dipoles][dipole moment]] is a vector describing the separation of  electrical (negative) and nuclear (positive) charge. The magnitude of this vector is the dipole moment, which has units of Coulomb-meter, or more commonly Debye. The symmetry of a molecule determines if a molecule has a dipole moment or not. Below we compute the dipole moment of CO. We must integrate the electron density to find the center of electrical charge, and compute a sum over the nuclei to find the center of positive charge.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from vasp.VaspChargeDensity import VaspChargeDensity
+import numpy as np
+from ase.units import Debye
+import os
+
+calc = Vasp('molecules/co-centered')
+atoms = calc.get_atoms()
+calc.stop_if(atoms.get_potential_energy() is None)
+
+vcd = VaspChargeDensity('molecules/co-centered/CHG')
+
+cd = np.array(vcd.chg[0])
+
+n0, n1, n2 = cd.shape
+
+s0 = 1.0 / n0
+s1 = 1.0 / n1
+s2 = 1.0 / n2
+
+X, Y, Z = np.mgrid[0.0:1.0:s0,
+                   0.0:1.0:s1,
+                   0.0:1.0:s2]
+
+C = np.column_stack([X.ravel(),
+                     Y.ravel(),
+                     Z.ravel()])
+
+atoms = calc.get_atoms()
+uc = atoms.get_cell()
+real = np.dot(C, uc)
+
+# now convert arrays back to unitcell shape
+x = np.reshape(real[:, 0], (n0, n1, n2))
+y = np.reshape(real[:, 1], (n0, n1, n2))
+z = np.reshape(real[:, 2], (n0, n1, n2))
+
+
+nelements = n0 * n1 * n2
+voxel_volume = atoms.get_volume() / nelements
+total_electron_charge = -cd.sum() * voxel_volume
+
+electron_density_center = np.array([(cd * x).sum(),
+                                    (cd * y).sum(),
+                                    (cd * z).sum()])
+electron_density_center *= voxel_volume
+electron_density_center /= total_electron_charge
+
+electron_dipole_moment = -electron_density_center * total_electron_charge
+
+# now the ion charge center. We only need the Zval listed in the potcar
+from vasp.POTCAR import get_ZVAL
+
+LOP = calc.get_pseudopotentials()
+ppp = os.environ['VASP_PP_PATH']
+
+zval = {}
+for sym, ppath, hash in LOP:
+    fullpath = os.path.join(ppp, ppath)
+    z = get_ZVAL(fullpath)
+    zval[sym] = z
+    ion_charge_center = np.array([0.0, 0.0, 0.0])
+    total_ion_charge = 0.0
+
+for atom in atoms:
+    Z = zval[atom.symbol]
+    total_ion_charge += Z
+    pos = atom.position
+    ion_charge_center += Z * pos
+
+ion_charge_center /= total_ion_charge
+ion_dipole_moment = ion_charge_center * total_ion_charge
+
+dipole_vector = (ion_dipole_moment + electron_dipole_moment)
+
+dipole_moment = ((dipole_vector**2).sum())**0.5 / Debye
+print('The dipole vector is {0}'.format(dipole_vector))
+print('The dipole moment is {0:1.2f} Debye'.format(dipole_moment))
+#+END_SRC
+
+#+RESULTS:
+: The dipole vector is [ 0.02048406  0.00026357  0.00026357]
+: The dipole moment is 0.10 Debye
+
+
+Note that a function using the code above exists in =vasp= which makes it trivial to compute the dipole moment. Here is an example of its usage.
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.units import Debye
+
+calc = Vasp('molecules/co-centered')
+
+dipole_moment = calc.get_dipole_moment()
+print('The dipole moment is {0:1.2f} Debye'.format(dipole_moment))
+#+END_SRC
+
+#+RESULTS:
+: The dipole moment is 0.10 Debye
+
+*** The density of states (DOS)
+The density of states (DOS) gives you the number of electronic states (i.e., the orbitals) that have a particular energy. We can get this information from the last calculation we just ran without having to run another DFT calculation.
+
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.dft.dos import DOS
+import matplotlib.pyplot as plt
+
+calc = Vasp('molecules/simple-co')   # we already ran this!
+dos = DOS(calc)
+plt.plot(dos.get_energies(), dos.get_dos())
+plt.xlabel('Energy - $E_f$ (eV)')
+plt.ylabel('DOS')
+
+# make sure you save the figure outside the with statement, or provide
+# the correct relative or absolute path to where you want it.
+plt.savefig('images/co-dos.png')
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: Density of states for a CO molecule.
+#+ATTR_LaTeX: :placement [H]
+[[./images/co-dos.png]]
+
+*** Atom-projected density of states on molecules
+Let us consider which states in the density of states belong to which atoms in a molecule. This can only be a qualitative consideration because the orbitals on the atoms often hybridize to form molecular orbitals, e.g. in methane the $s$ and $p$ orbitals can form what we call $sp^3$ orbitals. We can compute atom-projected density of states in VASP, which is done by projecting the wave function onto localized atomic orbitals. Here is an example. We will consider the CO molecule. To get atom-projected density of states, we must set [[incar:RWIGS][RWIGS]] for each atom. This parameter defines the radius of the sphere around the atom which cuts off the projection. The total density of states and projected density of states information comes from the DOSCAR file.
+
+Note that unlike the DOS, here we must run another calculation because we did not specify the atom-projected keywords above. Our strategy is to get the atoms from the previous calculation, and use them in a new calculation. You could redo the calculation in the same directory, but you risk losing the results of the first step. That can make it difficult to reproduce a result. We advocate our approach of using multiple directories for the subsequent calculations, because it leaves a clear trail of how the work was done.
+
+#+begin_note
+The [[incar:RWIGS][RWIGS]] is not uniquely determined for an element. There are various natural choices, e.g. the ionic radius of an atom, or a value that minimizes overlap of neighboring spheres, but these values can change slightly in different environments.
+
+You can also get spin-polarized atom-projected DOS, and magnetization projected DOS. See http://cms.mpi.univie.ac.at/vasp/vasp/DOSCAR_file.html#doscar for more details.
+#+end_note
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.dft.dos import DOS
+import matplotlib.pyplot as plt
+
+# get the geometry from another calculation
+calc = Vasp('molecules/simple-co')
+atoms = calc.get_atoms()
+
+calc = Vasp('molecules/co-ados',
+            encut=300,
+            xc='PBE',
+            rwigs={'C': 1.0, 'O': 1.0},     # these are the cutoff radii for projected states
+            atoms=atoms)
+
+calc.stop_if(calc.potential_energy is None)
+
+# now get results
+dos = DOS(calc)
+plt.plot(dos.get_energies(), dos.get_dos() + 10)
+
+energies, c_s = calc.get_ados(0, 's')
+_, c_p = calc.get_ados(0, 'p')
+_, o_s = calc.get_ados(1, 's')
+_, o_p = calc.get_ados(1, 'p')
+
+_, c_d = calc.get_ados(0, 'd')
+_, o_d = calc.get_ados(1, 'd')
+
+plt.plot(energies, c_s + 6, energies, o_s + 5)
+plt.plot(energies, c_p + 4, energies, o_p + 3)
+plt.plot(energies, c_d, energies, o_d + 2)
+plt.xlabel('Energy - $E_f$ (eV)')
+plt.ylabel('DOS')
+plt.legend(['DOS',
+            'C$_s$', 'O$_s$',
+            'C$_p$', 'O$_p$',
+            'C$_d$', 'O$_d$'],
+           ncol=2, loc='best')
+plt.savefig('images/co-ados.png')
+#+end_src
+
+#+RESULTS:
+
+#+caption: Atom-projected DOS for a CO molecule. The total density of states and the \(s\), \(p\) and \(d\) states on the C and O are shown.
+#+ATTR_LaTeX: :placement [H]
+[[./images/co-ados.png]]
+
+*** Electrostatic potential
+This is an example of the so-called \sigma hole in a [[http://pubs.acs.org/cen/science/87/8738sci2.html][halogen bond]]. The coordinates for the CF_{3}Br molecule were found at [[http://cccbdb.nist.gov/exp2.asp?casno=75638]].
+
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+from ase.io import write
+
+from enthought.mayavi import mlab
+from ase.data import vdw_radii
+from ase.data.colors import cpk_colors
+
+atoms = Atoms([Atom('C',  [ 0.0000,	0.0000,		-0.8088]),
+               Atom('Br', [ 0.0000,	0.0000,		 1.1146]),
+               Atom('F',  [ 0.0000,	1.2455,		-1.2651]),
+               Atom('F',  [ 1.0787,    -0.6228,		-1.2651]),
+               Atom('F',  [-1.0787,    -0.6228,		-1.2651])],
+               cell=(10, 10, 10))
+atoms.center()
+
+calc = Vasp('molecules/CF3Br',
+            encut=350,
+            xc='PBE',
+            ibrion=1,
+            nsw=50,
+            lcharg=True,
+            lvtot=True,
+            lvhar=True,
+            atoms=atoms)
+calc.set_nbands(f=2)
+calc.stop_if(calc.potential_energy is None)
+
+x, y, z, lp = calc.get_local_potential()
+x, y, z, cd = calc.get_charge_density()
+
+mlab.figure(1, bgcolor=(1, 1, 1)) # make a white figure
+
+# plot the atoms as spheres
+for atom in atoms:
+    mlab.points3d(atom.x,
+                  atom.y,
+                  atom.z,
+                  scale_factor=vdw_radii[atom.number]/5.,
+                  resolution=20,
+                  # a tuple is required for the color
+                  color=tuple(cpk_colors[atom.number]),
+                  scale_mode='none')
+# plot the bonds. We want a line from C-Br, C-F, etc...
+# We create a bond matrix showing which atoms are connected.
+bond_matrix = [[0, 1],
+               [0, 2],
+               [0, 3],
+               [0, 4]]
+
+for a1, a2 in bond_matrix:
+    mlab.plot3d(atoms.positions[[a1,a2], 0], # x-positions
+                atoms.positions[[a1,a2], 1], # y-positions
+                atoms.positions[[a1,a2], 2], # z-positions
+                [2, 2],
+                tube_radius=0.02,
+                colormap='Reds')
+
+mlab.contour3d(x, y, z, lp)
+mlab.savefig('images/halogen-ep.png')
+mlab.show()
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: Plot of the electrostatic potential of CF_{3}Br. TODO: figure out how to do an isosurface of charge, colormapped by the local potential.
+#+attr_latex: :placement [H] :width 3in
+#+attr_org: :width 200
+[[./images/halogen-ep.png]]
+
+See http://www.uni-due.de/~hp0058/?file=manual03.html&dir=vmdplugins for examples of using [[http://www.ks.uiuc.edu/Research/vmd/][VMD]] for visualization.
+
+*** TODO Visualizing Kohn-Sham orbitals                            :noexport:
+need to read wavecar files! We cannot do this yet. There is some hope at http://www.andrew.cmu.edu/user/feenstra/wavetrans/, but I have not figured out how to use it yet.
+
+*** Bader analysis
+index:bader
+
+Note: Thanks to @prtkm for helping improve this section (https://github.com/jkitchin/dft-book/issues/2).
+Bader analysis is a charge partitioning scheme where charge is divided by surfaces of zero flux that define atomic basins of charge. The most modern way of calculating the Bader charges is using the =bader= program from Graeme Henkelmen's group cite:Henkelman2006354,doi.10.1021/ct100125x. Let us consider a water molecule, centered in a box. The strategy is first to run the calculation, then run the bader program on the results.
+
+We have to specify laechg to be true so that the all-electron core charges will be written out to files. Here we setup and run the calculation to get the densities first.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+
+from ase.structure import molecule
+atoms = molecule('H2O')
+atoms.center(vacuum=6)
+
+calc = Vasp('molecules/h2o-bader',
+            xc='PBE',
+            encut=350,
+            lcharg=True,
+            laechg=True,
+            atoms=atoms)
+print calc.potential_energy
+#+END_SRC
+
+#+RESULTS:
+: -14.22250648
+
+Now that the calculation is done, get the bader code and scripts from http://theory.cm.utexas.edu/henkelman/code/bader/.
+
+We use this code to see the changes in charges on the atoms.
+#+BEGIN_SRC python
+from vasp import Vasp
+
+calc = Vasp('molecules/h2o-bader')
+calc.bader(ref=True, overwrite=True)
+atoms = calc.get_atoms()
+for atom in atoms:
+    print('|{0} | {1} |'.format(atom.symbol, atom.charge))
+#+END_SRC
+
+#+RESULTS:
+: |O | -1.2326 |
+: |H | 0.6161 |
+: |H | 0.6165 |
+
+
+
+The results above are comparable to those from gpaw at https://wiki.fysik.dtu.dk/gpaw/tutorials/bader/bader.html.
+
+You can see some charge has been "transferred" from H to O.
+
+** Geometry optimization
+   :PROPERTIES:
+   :ID:       af5957a7-116e-42f0-b617-0bf2059fd1e5
+   :END:
+*** Manual determination of a bond length
+The equilibrium bond length of a CO molecule is approximately the bond length that minimizes the total energy. We can find that by computing the total energy as a function of bond length, and noting where the minimum is. Here is an example in VASP. There are a few features to point out here. We want to compute 5 bond lengths, and each calculation is independent of all the others. mod:vasp is set up to automatically handle jobs for you by submitting them to the queue. It raises a variety of exceptions to let you know what has happened, and you must handle these to control the workflow. We will illustrate this by the following examples.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+
+bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
+energies = []
+
+for d in bond_lengths:  # possible bond lengths
+
+    co = Atoms([Atom('C', [0, 0, 0]),
+                Atom('O', [d, 0, 0])],
+               cell=(6, 6, 6))
+
+    calc = Vasp('molecules/co-{0}'.format(d),  # output dir
+                xc='PBE',
+                nbands=6,
+                encut=350,
+                ismear=1,
+                sigma=0.01,
+                atoms=co)
+
+    energies.append(co.get_potential_energy())
+    print('d = {0:1.2f} ang'.format(d))
+    print('energy = {0:1.3f} eV'.format(energies[-1] or 0))
+    print('forces = (eV/ang)\n {0}'.format(co.get_forces()))
+    print('')  # blank line
+
+if None in energies:
+    calc.abort()
+else:
+    import matplotlib.pyplot as plt
+    plt.plot(bond_lengths, energies, 'bo-')
+    plt.xlabel(r'Bond length ($\AA$)')
+    plt.ylabel('Total energy (eV)')
+    plt.savefig('images/co-bondlengths.png')
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+d = 1.05 ang
+energy = -14.216 eV
+forces = (eV/ang)
+ [[-14.93017486   0.           0.        ]
+ [ 14.93017486   0.           0.        ]]
+
+d = 1.10 ang
+energy = -14.722 eV
+forces = (eV/ang)
+ [[-5.81988086  0.          0.        ]
+ [ 5.81988086  0.          0.        ]]
+
+d = 1.15 ang
+energy = -14.841 eV
+forces = (eV/ang)
+ [[ 0.63231023  0.          0.        ]
+ [-0.63231023  0.          0.        ]]
+
+d = 1.20 ang
+energy = -14.691 eV
+forces = (eV/ang)
+ [[ 5.09138064  0.          0.        ]
+ [-5.09138064  0.          0.        ]]
+
+d = 1.25 ang
+energy = -14.355 eV
+forces = (eV/ang)
+ [[ 8.14027842  0.          0.        ]
+ [-8.14027842  0.          0.        ]]
+
+#+end_example
+
+[[./images/co-bondlengths.png]]
+
+
+Before continuing, it is worth looking at some other approaches to setup and run these calculations. Here we consider a functional approach that uses list comprehensions pretty extensively.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+
+bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
+
+ATOMS = [Atoms([Atom('C', [0, 0, 0]),
+                Atom('O', [d, 0, 0])],
+               cell=(6, 6, 6))
+         for d in bond_lengths]
+
+calcs = [Vasp('molecules/co-{0}'.format(d),  # output dir
+                xc='PBE',
+                nbands=6,
+                encut=350,
+                ismear=1,
+                sigma=0.01,
+                atoms=atoms)
+         for d, atoms in zip(bond_lengths, ATOMS)]
+
+energies = [atoms.get_potential_energy() for atoms in ATOMS]
+
+print(energies)
+#+END_SRC
+
+#+RESULTS:
+: [-14.21584765, -14.72174343, -14.84115208, -14.69111507, -14.35508371]
+
+We can retrieve data similarly.
+#+BEGIN_SRC python
+from vasp import Vasp
+
+bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
+calcs = [Vasp('molecules/co-{0}'.format(d)) for d in bond_lengths]
+
+energies = [calc.get_atoms().get_potential_energy() for calc in calcs]
+
+print(energies)
+#+END_SRC
+
+#+RESULTS:
+: [-14.21584765, -14.72174343, -14.84115208, -14.69111507, -14.35508371]
+
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.db import connect
+
+bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
+calcs = [Vasp('molecules/co-{0}'.format(d)) for d in bond_lengths]
+
+con = connect('co-database.db', append=False)
+for atoms in [calc.get_atoms() for calc in calcs]:
+    con.write(atoms)
+#+END_SRC
+
+#+RESULTS:
+
+Here we just show that there are entries in our database. If you run the code above many times, each time will add new entries.
+
+#+BEGIN_SRC sh
+ase-db co-database.db
+#+END_SRC
+
+#+RESULTS:
+: id|age|user    |formula|calculator| energy|  fmax|pbc| volume|charge|  mass| smax|magmom
+:  1|12s|jkitchin|CO     |vasp      |-14.216|14.930|TTT|216.000| 0.000|28.010|0.060| 0.000
+:  2|10s|jkitchin|CO     |vasp      |-14.722| 5.820|TTT|216.000| 0.000|28.010|0.017| 0.000
+:  3| 9s|jkitchin|CO     |vasp      |-14.841| 0.632|TTT|216.000| 0.000|28.010|0.017| 0.000
+:  4| 9s|jkitchin|CO     |vasp      |-14.691| 5.091|TTT|216.000| 0.000|28.010|0.041| 0.000
+:  5| 7s|jkitchin|CO     |vasp      |-14.355| 8.140|TTT|216.000| 0.000|28.010|0.060| 0.000
+: Rows: 5
+
+This database is now readable in Python too. Here we read in all the results. Later we will learn how to select specific entries.
+
+#+BEGIN_SRC python
+from ase.io import read
+
+ATOMS = read('co-database.db', ':')
+print([a[0].x - a[1].x for a in ATOMS])
+print([atoms.get_potential_energy() for atoms in ATOMS])
+#+END_SRC
+
+#+RESULTS:
+: [-1.0499999999999998, -1.09999998, -1.15000002, -1.2000000000000002, -1.2499999800000001]
+: [-14.21584765, -14.72174343, -14.84115208, -14.69111507, -14.35508371]
+
+Now, back to the goal of finding the minimum. To find the minimum we could run more calculations, but a simpler and faster way is to fit a polynomial to the data, and find the analytical minimum. The results are shown in Figure ref:fig:co-bondlengths.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+import numpy as np
+import matplotlib.pyplot as plt
+
+bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
+energies = []
+
+for d in bond_lengths:  # possible bond lengths
+
+    calc = Vasp('molecules/co-{0}'.format(d))
+    atoms = calc.get_atoms()
+    energies.append(atoms.get_potential_energy())
+
+# Now we fit an equation - cubic polynomial
+pp = np.polyfit(bond_lengths, energies, 3)
+dp = np.polyder(pp)  # first derivative - quadratic
+
+# we expect two roots from the quadratic eqn. These are where the
+# first derivative is equal to zero.
+roots = np.roots(dp)
+
+# The minimum is where the second derivative is positive.
+dpp = np.polyder(dp)  # second derivative - line
+secd = np.polyval(dpp, roots)
+
+minV = roots[secd > 0]
+minE = np.polyval(pp, minV)
+
+print('The minimum energy is {0[0]} eV at V = {1[0]} Ang^3'.format(minE, minV))
+
+# plot the fit
+x = np.linspace(1.05, 1.25)
+fit = np.polyval(pp, x)
+
+plt.plot(bond_lengths, energies, 'bo ')
+plt.plot(x, fit, 'r-')
+plt.plot(minV, minE, 'm* ')
+plt.legend(['DFT', 'fit', 'minimum'], numpoints=1)
+plt.xlabel(r'Bond length ($\AA$)')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/co-bondlengths.png')
+#+END_SRC
+
+#+RESULTS:
+: The minimum energy is -14.8458440947 eV at V = 1.14437582331 Ang^3
+
+
+#+caption: Energy vs CO bond length. \label{fig:co-bondlengths}
+#+ATTR_LaTeX: :placement [H]
+[[./images/co-bondlengths.png]]
+
+*** Automatic geometry optimization with VASP
+It is generally the case that the equilibrium geometry of a system is the one that minimizes the total energy and forces. Since each atom has three degrees of freedom, you can quickly get a high dimensional optimization problem. Luckily, VASP has built-in geometry optimization using the [[incar:IBRION][IBRION]] and [[incar:NSW][NSW]] tags. Here we compute the bond length for a CO molecule, letting VASP do the geometry optimization for us.
+
+Here are the most common choices for IBRION.
+| IBRION value | algorithm                                      |
+|--------------+------------------------------------------------|
+|            1 | quasi-Newton    (use if initial guess is good) |
+|            2 | conjugate gradient                             |
+
+
+#+begin_note
+VASP applies a criteria for stopping a geometry optimization. When the change in energy between two steps is less than 0.001 eV (or 10*EDIFF), the relaxation is stopped. This criteria is controlled by the incar:EDIFFG tag. If you prefer to stop based on forces, set EDIFFG=-0.05, i.e. to a negative number. The units of force is eV/\AA. For most work, a force tolerance of 0.05 eV/\AA is usually sufficient.
+#+end_note
+
+#+BEGIN_SRC python
+from ase import Atom, Atoms
+from vasp import Vasp
+
+co = Atoms([Atom('C',[0, 0, 0]),
+            Atom('O',[1.2, 0, 0])],
+            cell=(6, 6, 6))
+
+calc = Vasp('molecules/co-cg',
+          xc='PBE',
+          nbands=6,
+          encut=350,
+          ismear=1,
+          sigma=0.01, # this is small for a molecule
+          ibrion=2,   # conjugate gradient optimizer
+          nsw=5,      # do at least 5 steps to relax
+          atoms=co)
+
+print('Forces')
+print('=======')
+print(co.get_forces())
+
+pos = co.get_positions()
+d = ((pos[0] - pos[1])**2).sum()**0.5
+print('Bondlength = {0:1.2f} angstroms'.format(d))
+#+END_SRC
+
+#+RESULTS:
+: Forces
+: =======
+: [[-0.8290116  0.         0.       ]
+:  [ 0.8290116  0.         0.       ]]
+: Bondlength = 1.14 angstroms
+
+*** Relaxation of a water molecule
+It is not more complicated to relax more atoms, it just may take longer because there are more electrons and degrees of freedom. Here we relax a water molecule which has three atoms.
+#+BEGIN_SRC python
+from ase import Atoms, Atom
+from vasp import Vasp
+
+atoms = Atoms([Atom('H', [0.5960812, -0.7677068, 0.0000000]),
+               Atom('O', [0.0000000,  0.0000000, 0.0000000]),
+               Atom('H', [0.5960812,  0.7677068, 0.0000000])],
+              cell=(8, 8, 8))
+
+atoms.center()
+
+calc = Vasp('molecules/h2o-relax-centered',
+            xc='PBE',
+            encut=400,
+            ismear=0,  # Gaussian smearing
+            ibrion=2,
+            ediff=1e-8,
+            nsw=10,
+            atoms=atoms)
+
+print("forces")
+print('=======')
+print(atoms.get_forces())
+#+END_SRC
+
+#+RESULTS:
+: [[ 4.2981572   3.23149312  4.        ]
+:  [ 3.70172616  4.          4.        ]
+:  [ 4.2981572   4.76850688  4.        ]]
+: forces
+: =======
+: [[ -3.49600000e-05   5.06300000e-05   0.00000000e+00]
+:  [  6.99200000e-05   0.00000000e+00   0.00000000e+00]
+:  [ -3.49600000e-05  -5.06300000e-05   0.00000000e+00]]
+
+#+BEGIN_SRC python
+from vasp import Vasp
+calc = Vasp('molecules/h2o-relax-centered')
+
+from ase.visualize import view
+view(calc.traj)
+#+END_SRC
+
+#+RESULTS:
+
+** Vibrational frequencies
+   :PROPERTIES:
+   :ID:       a9c1ebd4-65cd-4818-8ee0-923f3b800e22
+   :END:
+index:vibrations
+*** Manual calculation of vibrational frequency
+
+The principle idea in calculating vibrational frequencies is that we consider a molecular system as masses connected by springs. If the springs are Hookean, e.g. the force is proportional to the displacement, then we can readily solve the equations of motion and find that the vibrational frequencies are related to the force constants and the masses of the atoms. For example, in a simple molecule like CO where there is only one spring, the frequency is:
+
+$\nu = \frac{1}{2\pi}\sqrt{k/\mu}$ where $\frac{1}{\mu} = \frac{1}{m_C} + \frac{1}{m_O}$ and $k$ is the spring constant. We will compute the value of $k$ from DFT calculations as follows:
+
+$k = \frac{\partial^2E}{\partial x^2}$ at the equilibrium bond length. We actually already have the data to do this from [[*Manual%20determination%20of%20a%20bond%20length][Manual determination]]. We only need to fit an equation to the energy vs. bond-length data, find the minimum energy bond-length, and then evaluate the second derivative of the fitted function at the minimum. We will use a cubic polynomial for demonstration here. Polynomials are numerically convenient because they are easy to fit, and it is trivial to get the roots and derivatives of the polynomials, as well as to evaluate them at other points using func:numpy.polyfit, func:numpy.polyder, and func:numpy.polyval.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+import numpy as np
+from ase.units import *
+
+bond_lengths = [1.05, 1.1, 1.15, 1.2, 1.25]
+energies = []
+
+for d in bond_lengths:
+    calc = Vasp('molecules/co-{0}'.format(d))
+    atoms = calc.get_atoms()
+    energies.append(atoms.get_potential_energy())
+
+# fit the data
+pars = np.polyfit(bond_lengths, energies, 3)
+xfit = np.linspace(1.05, 1.25)
+efit = np.polyval(pars, xfit)
+
+# first derivative
+dpars = np.polyder(pars)
+# find where the minimum is. chose the second one because it is the
+# minimum we need.
+droots = np.roots(dpars)
+
+# second derivative
+ddpars = np.polyder(dpars)
+
+d_min = droots[np.polyval(ddpars, droots) > 0]
+
+# curvature at minimum = force constant in SI units
+k = np.polyval(ddpars, d_min) / (J / m**2)
+
+# mu, reduced mass
+from ase.data import atomic_masses
+C_mass = atomic_masses[6] / kg
+O_mass = atomic_masses[8] / kg
+
+mu = 1.0 / (1.0 / C_mass + 1.0 / O_mass)
+
+frequency = 1. / (2. * np.pi) * np.sqrt(k / mu)
+print('The CO vibrational frequency is {0} Hz'.format(*frequency))
+print('The CO vibrational frequency is {0[0]} cm^{{-1}}'.format(frequency / 3e10))
+
+import matplotlib.pyplot as plt
+plt.plot(bond_lengths, energies, 'bo ')
+plt.plot(xfit, efit, 'b-')
+plt.xlabel('Bond length ($\AA$)')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/co-freq.png')
+#+END_SRC
+
+#+RESULTS:
+: The CO vibrational frequency is 6.43186126691e+13 Hz
+: The CO vibrational frequency is 2143.95375564 cm^{-1}
+
+[[./images/co-freq.png]]
+
+This result is in good agreement with [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C630080&Units=SI&Type=IR-SPEC&Index=0#IR-SPEC][experiment]]. The procedure described above is basically how many vibrational calculations are performed. With more atoms, you have to determine a force constant matrix and diagonalize it. For more details, see cite:wilson1955. In practice, we usually allow a packaged code to automate this, which we cover in [[*Automated%20vibrational%20calculations][Automated vibrational calculations]].
+
+We now consider how much energy is in this vibration. This is commonly called zero-point energy (ZPE) and it is defined as $E_{ZPE} = \frac{1}{2} h \nu$ for a single mode, and $h$ is Planck's constant (4.135667516e-15 eV/s).
+
+#+BEGIN_SRC python
+
+c = 3e10  # speed of light cm/s
+h = 4.135667516e-15  # eV*s
+
+nu = 2143.6076625*c  # 1/s
+
+E_zpe = 0.5*h*nu
+
+print('E_ZPE = {0:1.3f} eV'.format(E_zpe))
+#+END_SRC
+
+#+RESULTS:
+: E_ZPE = 0.133 eV
+
+This is a reasonable amount of energy! Zero-point energy increases with increasing vibrational frequency, and tends to be very important for small atoms.
+
+A final note is that this analysis is in the "harmonic approximation". The frequency equation is the solution to a harmonic oscillator. If the spring is non-linear, then there are anharmonic effects that may become important, especially at higher temperatures.
+
+*** TODO Automated vibrational calculations
+VASP has built-in capability for performing vibrational calculations. We access the capability by using a new value for incar:IBRION. The values of 5 and 6 calculated the Hessian matrix using finite differences. For IBRION=5, all atoms that are not constrained are displaced. For IBRION=6, only symmetry inequivalent displacements are considered, which makes the calculations slightly cheaper. You can specify the number of displacements with incar:NFREE. The default number of displacements is 2. You can also specify the size of the displacement with incar:POTIM (the default is 0.015 \AA).
+
+#+BEGIN_SRC python
+# <<water-vib>>
+# adapted from http://cms.mpi.univie.ac.at/wiki/index.php/H2O_vibration
+from ase import Atoms, Atom
+from vasp import Vasp
+import ase.units
+
+atoms = Atoms([Atom('H', [0.5960812,  -0.7677068,   0.0000000]),
+               Atom('O', [0.0000000,   0.0000000,   0.0000000]),
+               Atom('H', [0.5960812,   0.7677068,   0.0000000])],
+               cell=(8, 8, 8))
+atoms.center()
+
+calc = Vasp('molecules/h2o_vib',
+            xc='PBE',
+            encut=400,
+            ismear=0,     # Gaussian smearing
+            ibrion=6,     # finite differences with symmetry
+            nfree=2,      # central differences (default)
+            potim=0.015,  # default as well
+            ediff=1e-8,   # for vibrations you need precise energies
+            nsw=1,        # Set to 1 for vibrational calculation
+            atoms=atoms)
+
+print('Forces')
+print('======')
+print(atoms.get_forces())
+print('')
+calc.stop_if(calc.potential_energy is None)
+
+# vibrational energies are in eV
+energies, modes = calc.get_vibrational_modes()
+print('energies\n========')
+for i, e in enumerate(energies):
+    print('{0:02d}: {1} eV'.format(i, e))
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Forces
+======
+[[ 0.01810349 -0.03253721 -0.00127275]
+ [-0.03620698  0.          0.0025455 ]
+ [ 0.01810349  0.03253721 -0.00127275]]
+
+energies
+========
+00: 0.475855773 eV
+01: 0.46176517 eV
+02: 0.196182182 eV
+03: 0.007041992 eV
+04: 0.002445078 eV
+05: (0.000292003+0j) eV
+06: (0.012756432+0j) eV
+07: (0.01305212+0j) eV
+08: (0.015976377+0j) eV
+#+end_example
+
+Note we get 9 frequencies here. Water has 3 atoms, with three degrees of freedom each, leading to 9 possible combinations of collective motions. Three of those collective motions are translations, i.e. where all atoms move in the same direction (either $x$, $y$ or $z$) and there is no change in the total energy of the molecule. Another three of those motions are rotations, which also do not change the total energy of the molecule. That leaves 3N-6 = 3 degrees of vibrational freedom where some or all of the bonds are stretched, resulting in a change in the total energy. The modes of water vibration are (with our calculated values in parentheses):
+
+1. a symmetric stretch at 3657 cm^{-1}   (3723)
+2. an asymmetric stretch at 3756 cm^{-1} (3836)
+3. and a bending mode at 1595 cm^{-1}    (1583)
+
+http://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=800#Electronic-Spec
+
+The results are not too far off, and more accurate frequencies may be possible using tighter tolerance on [[incar:POTIM][POTIM]], or by using [[incar:IBRION][IBRION]]=7 or 8.
+
+Let us briefly discuss how to determine which vectors are vibrations and which are rotations or translations. One way is to visualize the modes. The vibrations are easy to spot. The rotations/translations are not always cleanly separable. This is an issue of accuracy and convergence. We usually do not worry about this because these modes are usually not important.
+
+1. mode 0 is an asymmetric stretch
+2. mode 1 is a symmetric stretch
+3. mode 2 is a bending mode
+4. mode 3 is a mixed translation/rotation
+5. mode 4 is a rotation
+6. mode 5 is a translation
+7. mode 6 is a rotation
+8. mode 7 is a partial translation
+9. mode 8 is a rotation
+
+#+BEGIN_SRC python
+# <<h2o-vib-vis>>
+from vasp import Vasp
+import numpy as np
+calc = Vasp('molecules/h2o_vib')
+energies, modes = calc.get_vibrational_modes(mode=0, massweighted=True,
+                                             show=True)
+#+end_src
+#+RESULTS:
+
+See http://www.gaussian.com/g_whitepap/vib.htm for a more quantitative discussion of these modes, identifying them, and a method to project the rotations and translations out of the Hessian matrix.
+
+**** Zero-point energy for multiple modes
+For a molecule with lots of vibrational modes the zero-point energy is defined as the sum over all the vibrational modes:
+
+$E_{ZPE} = \sum_i \frac{1}{2} h \nu_i$
+
+Here is an example for water. Note we do not sum over the imaginary modes. We should also ignore the rotational and translational modes (some of those are imaginary, but some are just small).
+
+#+BEGIN_SRC python
+from vasp import Vasp
+import numpy as np
+c = 3e10  # speed of light cm/s
+h = 4.135667516e-15  # eV/s
+
+# first, get the frequencies.
+calc = Vasp('molecules/h2o_vib')
+freq = calc.get_vibrational_frequencies()
+
+ZPE = 0.0
+for f in freq:
+    if not isinstance(f, float):
+        continue  # skip complex numbers
+    nu = f * c  # convert to frequency
+    ZPE += 0.5 * h * nu
+
+print(np.sum([0.5 * h * f * c for f in freq if isinstance(f, float)]))
+
+print('The ZPE of water is {0:1.3f} eV'.format(ZPE))
+
+# one liner
+ZPE = np.sum([0.5 * h * f * c for f in freq if isinstance(f, float)])
+print('The ZPE of water is {0:1.3f} eV'.format(ZPE))
+#+END_SRC
+
+#+RESULTS:
+
+
+Note the zero-point energy of water is also fairly high (more than 0.5 eV). That is because of the high frequency O-H stretches.
+
+** Simulated infrared spectra
+[[index:infrared intensity]]
+At http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02 there is a recipe for computing the Infrared vibrational spectroscopy intensities in VASP. We are going to do that for water here. First, we will relax a water molecule.
+
+#+BEGIN_SRC python
+from ase import Atoms, Atom
+from vasp import Vasp
+
+atoms = Atoms([Atom('H', [0.5960812,  -0.7677068,   0.0000000]),
+               Atom('O', [0.0000000,   0.0000000,   0.0000000]),
+               Atom('H', [0.5960812,   0.7677068,   0.0000000])],
+              cell=(8, 8, 8))
+
+calc = Vasp('molecules/h2o_relax',
+          xc='PBE',
+            encut=400,
+            ismear=0,  # Gaussian smearing
+            ibrion=2,
+            ediff=1e-8,
+            nsw=10,
+            atoms=atoms)
+print('Forces')
+print('===========================')
+print(atoms.get_forces())
+#+END_SRC
+
+#+RESULTS:
+: Forces
+: ===========================
+: [[ -3.80700000e-05   5.32200000e-05   0.00000000e+00]
+:  [  7.61400000e-05   0.00000000e+00   0.00000000e+00]
+:  [ -3.80700000e-05  -5.32200000e-05   0.00000000e+00]]
+
+Next, we instruct VASP to compute the vibrational modes using [[http://cmt.dur.ac.uk/sjc/thesis_prt/node39.html][density functional perturbation theory]] with IBRION=7. Note, this is different than in [[Vibrational frequencies]] where finite differences were used.
+
+# <<vib-ir>>
+#+BEGIN_SRC python
+from vasp import Vasp
+
+# read in relaxed geometry
+calc = Vasp('molecules/h2o_relax')
+atoms = calc.get_atoms()
+
+# now define a new calculator
+calc = Vasp('molecules/h2o_vib_dfpt',
+            xc='PBE',
+            encut=400,
+            ismear=0,  # Gaussian smearing
+            ibrion=7,  # switches on the DFPT vibrational analysis (with
+            # no symmetry constraints)
+            nfree=2,
+            potim=0.015,
+            lepsilon=True,  # enables to calculate and to print the BEC
+            # tensors
+            lreal=False,
+            nsw=1,
+            nwrite=3,  # affects OUTCAR verbosity: explicitly forces
+            # SQRT(mass)-divided eigenvectors to be printed
+            atoms=atoms)
+
+print(calc.potential_energy)
+#+END_SRC
+
+#+RESULTS:
+: -14.22662275
+
+To analyze the results, this [[http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02][shell script]] was provided to extract the results.
+# <<ir-shell-script>>
+#+BEGIN_SRC sh :dir molecules/h2o_vib_dfpt
+#!/bin/bash
+# A utility for calculating the vibrational intensities from VASP output (OUTCAR)
+# (C) David Karhanek, 2011-03-25, ICIQ Tarragona, Spain (www.iciq.es)
+
+# extract Born effective charges tensors
+printf "..reading OUTCAR"
+BORN_NROWS=`grep NIONS OUTCAR | awk '{print $12*4+1}'`
+if [ `grep 'BORN' OUTCAR | wc -l` = 0 ] ; then \
+   printf " .. FAILED! Born effective charges missing! Bye! \n\n" ; exit 1 ; fi
+grep "in e, cummulative" -A $BORN_NROWS OUTCAR > born.txt
+
+# extract Eigenvectors and eigenvalues
+if [ `grep 'SQRT(mass)' OUTCAR | wc -l` != 1 ] ; then \
+   printf " .. FAILED! Restart VASP with NWRITE=3! Bye! \n\n" ; exit 1 ; fi
+EIG_NVIBS=`grep -A 2000 'SQRT(mass)' OUTCAR | grep 'cm-1' | wc -l`
+EIG_NIONS=`grep NIONS OUTCAR | awk '{print $12}'`
+EIG_NROWS=`echo "($EIG_NIONS+3)*$EIG_NVIBS+3" | bc`
+grep -A $(($EIG_NROWS+2)) 'SQRT(mass)' OUTCAR | tail -n $(($EIG_NROWS+1)) | sed 's/f\/i/fi /g' > eigenvectors.txt
+printf " ..done\n"
+
+# set up a new directory, split files - prepare for parsing
+printf "..splitting files"
+mkdir intensities ; mv born.txt eigenvectors.txt intensities/
+cd intensities/
+let NBORN_NROWS=BORN_NROWS-1
+let NEIG_NROWS=EIG_NROWS-3
+let NBORN_STEP=4
+let NEIG_STEP=EIG_NIONS+3
+tail -n $NBORN_NROWS born.txt > temp.born.txt
+tail -n $NEIG_NROWS eigenvectors.txt > temp.eige.txt
+mkdir inputs ; mv born.txt eigenvectors.txt inputs/
+split -a 3 -d -l $NEIG_STEP temp.eige.txt temp.ei.
+split -a 3 -d -l $NBORN_STEP temp.born.txt temp.bo.
+mkdir temps01 ; mv temp.born.txt temp.eige.txt temps01/
+for nu in `seq 1 $EIG_NVIBS` ; do
+ let nud=nu-1 ; ei=`printf "%03u" $nu` ; eid=`printf "%03u" $nud` ; mv temp.ei.$eid eigens.vib.$ei
+done
+for s in `seq 1 $EIG_NIONS` ; do
+ let sd=s-1 ; bo=`printf "%03u" $s` ; bod=`printf "%03u" $sd` ; mv temp.bo.$bod borncs.$bo
+done
+printf " ..done\n"
+
+# parse deviation vectors (eig)
+printf "..parsing eigenvectors"
+let sad=$EIG_NIONS+1
+for nu in `seq 1 $EIG_NVIBS` ; do
+ nuu=`printf "%03u" $nu`
+ tail -n $sad eigens.vib.$nuu | head -n $EIG_NIONS | awk '{print $4,$5,$6}' > e.vib.$nuu.allions
+ split -a 3 -d -l 1 e.vib.$nuu.allions temp.e.vib.$nuu.ion.
+ for s in `seq 1 $EIG_NIONS` ; do
+  let sd=s-1; bo=`printf "%03u" $s`; bod=`printf "%03u" $sd`; mv temp.e.vib.$nuu.ion.$bod e.vib.$nuu.ion.$bo
+ done
+done
+printf " ..done\n"
+
+# parse born effective charge matrices (born)
+printf "..parsing eff.charges"
+for s in `seq 1 $EIG_NIONS` ; do
+ ss=`printf "%03u" $s`
+ awk '{print $2,$3,$4}' borncs.$ss | tail -3 > bornch.$ss
+done
+mkdir temps02 ; mv eigens.* borncs.* temps02/
+printf " ..done\n"
+
+# parse matrices, multiply them and collect squares (giving intensities)
+printf "..multiplying matrices, summing "
+for nu in `seq 1 $EIG_NVIBS` ; do
+ nuu=`printf "%03u" $nu`
+ int=0.0
+ for alpha in 1 2 3 ;  do            # summing over alpha coordinates
+  sumpol=0.0
+  for s in `seq 1 $EIG_NIONS` ; do   # summing over atoms
+   ss=`printf "%03u" $s`
+   awk -v a="$alpha" '(NR==a){print}' bornch.$ss > z.ion.$ss.alpha.$alpha
+   # summing over beta coordinates and multiplying Z(s,alpha)*e(s) done by the following awk script
+   paste z.ion.$ss.alpha.$alpha  e.vib.$nuu.ion.$ss | \
+   awk '{pol=$1*$4+$2*$5+$3*$6; print $0,"  ",pol}' > matr-vib-${nuu}-alpha-${alpha}-ion-${ss}
+  done
+  sumpol=`cat matr-vib-${nuu}-alpha-${alpha}-ion-* | awk '{sum+=$7} END {print sum}'`
+  int=`echo "$int+($sumpol)^2" | sed 's/[eE]/*10^/g' |  bc -l`
+ done
+ freq=`awk '(NR==1){print $8}' temps02/eigens.vib.$nuu`
+ echo "$nuu $freq $int">> exact.res.txt
+ printf "."
+done
+printf " ..done\n"
+
+# format results, normalize intensities
+printf "..normalizing intensities"
+max=`awk '(NR==1){max=$3} $3>=max {max=$3} END {print max}' exact.res.txt`
+awk -v max="$max" '{printf "%03u %6.1f %5.3f\n",$1,$2,$3/max}' exact.res.txt > results.txt
+printf " ..done\n"
+
+# clean up, display results
+printf "..finalizing:\n"
+mkdir temps03; mv bornch.* e.vib.*.allions temps03/
+mkdir temps04; mv z.ion* e.vib.*.ion.* temps04/
+mkdir temps05; mv matr-* temps05/
+mkdir results; mv *res*txt results/
+let NMATRIX=$EIG_NVIBS**2
+printf "%5u atoms found\n%5u vibrations found\n%5u matrices evaluated" \
+       $EIG_NIONS $EIG_NVIBS $NMATRIX > results/statistics.txt
+  # fast switch to clean up all temporary files
+  rm -r temps*
+cat results/results.txt
+#+END_SRC
+
+#+RESULTS:
+
+
+Note that the results above include the rotational and translational modes (modes 4-9). The following [[http://homepage.univie.ac.at/david.karhanek/downloads.html#Entry02][shell script]] removes those, and recalculates the intensities. Note that it appears to just remove the last 6 modes and req compute the intensities. It is not obvious that will always be the right way to do it as the order of the eigenvectors is not guaranteed.
+
+#+BEGIN_SRC sh :dir molecules/h2o_vib_dfpt
+#!/bin/bash
+# reformat intensities, just normal modes: 3N -> (3N-6)
+printf "..reformatting and normalizing intensities"
+cd intensities/results/
+nlns=`wc -l exact.res.txt | awk '{print $1}' `; let bodylns=nlns-6
+head -n $bodylns exact.res.txt > temp.reform.res.txt
+max=`awk '(NR==1){max=$3} $3>=max {max=$3} END {print max}' temp.reform.res.txt`
+awk -v max="$max" '{print $1,$2,$3/max}' temp.reform.res.txt > exact.reform.res.txt
+awk -v max="$max" '{printf "%03u %6.1f %5.3f\n",$1,$2,$3/max}' temp.reform.res.txt > reform.res.txt
+printf " ..done\n..normal modes:\n"
+rm temp.reform.res.txt
+cat reform.res.txt
+cd ../..
+#+END_SRC
+
+#+RESULTS:
+: ..reformatting and normalizing intensities ..done
+: ..normal modes:
+
+The interpretation of these results is that the mode at 3713 cm^{-1} would be nearly invisible in the IR spectrum. Earlier we interpreted that as the symmetric stretch. In this mode, there is only a small change in the molecule dipole moment, so there is a small IR intensity.
+
+See also cite:giannozzi:8537. For HREELS simulations see cite:0953-8984-22-26-265006.
+
+The shell script above has been translated to a convenient python function in mod:vasp.
+#+BEGIN_SRC python
+from vasp import Vasp
+calc = Vasp('molecules/h2o_vib_dfpt')
+print('mode  Relative intensity')
+for i, intensity in enumerate(calc.get_infrared_intensities()):
+    print('{0:02d}     {1:1.3f}'.format(i, intensity))
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+mode  Relative intensity
+00     0.227
+01     0.006
+02     0.312
+03     1.000
+04     0.002
+05     0.000
+06     0.006
+07     0.000
+08     0.350
+#+end_example
+
+** Thermochemical properties of molecules
+index:thermochemistry
+mod:ase.thermochemistry can be used to estimate thermodynamic properties of gases in the ideal gas limit. The module needs as input the geometry, the total energy, the vibrational energies, and some information about the molecular symmetry. We first consider an N_{2} molecule.
+
+The symmetry numbers are determined by the molecular point group cite:springerlink-10.1007/s00214-007-0328-0. Here is a table of the most common ones.
+
+#+caption: Symmetry numbers for common point groups
+| point group    | $\sigma$ | examples      |
+|----------------+----------+---------------|
+| C_{1}          |        1 |               |
+| C_{s}          |        1 |               |
+| C_{2}          |        2 |               |
+| C_{2v}         |        2 | H_{2}O        |
+| C_{3v}         |        3 | NH_{3}        |
+| $C_{\infty v}$ |        1 | CO            |
+| D_{2h}         |        4 |               |
+| D_{3h}         |        6 |               |
+| D_{5h}         |       10 |               |
+| $D_{\infty h}$ |        2 | CO_{2}, H_{2} |
+| D_{3d}         |        6 |               |
+| T_{d}          |       12 | CH_{4}        |
+| O_{h}          |       24 |               |
+
+#+BEGIN_SRC python
+from ase.structure import molecule
+from ase.thermochemistry import IdealGasThermo
+from vasp import Vasp
+
+atoms = molecule('N2')
+atoms.set_cell((10,10,10), scale_atoms=False)
+
+# first we relax a molecule
+calc = Vasp('molecules/n2-relax',
+            xc='PBE',
+            encut=300,
+            ibrion=2,
+            nsw=5,
+            atoms=atoms)
+electronicenergy = atoms.get_potential_energy()
+
+# next, we get vibrational modes
+calc2 = Vasp('molecules/n2-vib',
+             xc='PBE',
+             encut=300,
+             ibrion=6,
+             nfree=2,
+             potim=0.15,
+             nsw=1,
+             atoms=atoms)
+
+calc2.wait()
+
+vib_freq = calc2.get_vibrational_frequencies() # in cm^1
+
+#convert wavenumbers to energy
+h = 4.1356675e-15 # eV*s
+c = 3.0e10 #cm/s
+vib_energies = [h*c*nu for nu in vib_freq]
+print('vibrational energies\n====================')
+for i,e in enumerate(vib_energies):
+    print('{0:02d}: {1} eV'.format(i,e))
+
+
+# # now we can get some properties. Note we only need one vibrational
+# energy since there is only one mode. This example does not work if
+# you give all the energies because one energy is zero.
+thermo = IdealGasThermo(vib_energies=vib_energies[0:0],
+                        potentialenergy=electronicenergy, atoms=atoms,
+                        geometry='linear', symmetrynumber=2, spin=0)
+
+# temperature in K, pressure in Pa, G in eV
+G = thermo.get_gibbs_energy(temperature=298.15, pressure=101325.)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+vibrational energies
+====================
+00: 0.281619180732 eV
+01: 0.0302718194691 eV
+02: 0.0302718194691 eV
+03: 6.20350125e-10 eV
+04: 4.962801e-10 eV
+05: 0.0 eV
+Enthalpy components at T = 298.15 K:
+===============================
+E_pot                -16.484 eV
+E_ZPE                  0.000 eV
+Cv_trans (0->T)        0.039 eV
+Cv_rot (0->T)          0.026 eV
+Cv_vib (0->T)          0.000 eV
+(C_v -> C_p)           0.026 eV
+-------------------------------
+H                    -16.394 eV
+===============================
+
+Entropy components at T = 298.15 K and P = 101325.0 Pa:
+=================================================
+                           S               T*S
+S_trans (1 atm)    0.0015579 eV/K        0.464 eV
+S_rot              0.0007868 eV/K        0.235 eV
+S_elec             0.0000000 eV/K        0.000 eV
+S_vib              0.0000000 eV/K        0.000 eV
+S (1 atm -> P)    -0.0000000 eV/K       -0.000 eV
+-------------------------------------------------
+S                  0.0023447 eV/K        0.699 eV
+=================================================
+
+Free energy components at T = 298.15 K and P = 101325.0 Pa:
+=======================
+    H        -16.394 eV
+ -T*S         -0.699 eV
+-----------------------
+    G        -17.093 eV
+=======================
+#+end_example
+
+
+
+Let us compare this to what is in the [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C7727379&Units=SI&Mask=1#Thermo-Gas][Nist webbook]] via the Shomate equations.
+#+BEGIN_SRC python
+import numpy as np
+A = 28.98641
+B = 1.853978
+C = -9.647459
+D = 16.63537
+E = 0.000117
+F = -8.671914
+G = 226.4168
+H = 0.0
+
+T = 298.15
+t = T/1000.
+
+S = A*np.log(t) + B*t + C*t**2/2 + D*t**3/3 - E/(2*t**2) + G
+print('-T*S = {0:1.3f} eV'.format(-T*S/1000/96.4853))
+#+END_SRC
+
+#+RESULTS:
+: -T*S = -0.592 eV
+
+This is reasonable agreement for the entropy. You will get different results if you use different exchange correlation functionals.
+
+** Molecular reaction energies
+   :PROPERTIES:
+   :ID:       5aa65ee8-f47e-4f65-b52a-de9920505350
+   :END:
+*** O_{2} dissociation
+The first reaction we consider is a simple dissociation of oxygen molecule into two oxygen atoms: O_{2} \rightarrow 2O. The dissociation energy is pretty straightforward to define: it is the energy of the products minus the energy of the reactant. $D = 2*E_O - E_{O_2}$. It would appear that we simply calculate the energy of an oxygen atom, and the energy of an oxygen molecule and evaluate the formula. Let us do that.
+
+**** Simple estimate of O_{2} dissociation energy
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('O', [5, 5, 5])],
+              cell=(10, 10, 10))
+
+calc = Vasp('molecules/O',
+            xc='PBE',
+            encut=400,
+            ismear=0,
+            atoms=atoms)
+
+E_O = atoms.get_potential_energy()
+
+# now relaxed O2 dimer
+atoms = Atoms([Atom('O', [5, 5, 5]),
+               Atom('O', [6.22, 5, 5])],
+              cell=(10, 10, 10))
+
+calc = Vasp('molecules/O2',
+            xc='PBE',
+            encut=400,
+            ismear=0,
+            ibrion=2,
+            nsw=10,
+            atoms=atoms)
+
+E_O2 = atoms.get_potential_energy()
+
+if None not in (E_O, E_O2):
+    print('O2 -> 2O  D = {0:1.3f} eV'.format(2 * E_O - E_O2))
+#+END_SRC
+
+#+RESULTS:
+: O2 -> 2O  D = 8.619 eV
+
+The answer we have obtained is way too high! Experimentally the dissociation energy is about 5.2 eV (need reference), which is *very* different than what we calculated! Let us consider some factors that contribute to this error.
+
+We implicitly neglected spin-polarization in the example above. That could be a problem, since the O_{2} molecule can be in one of two spin states, a singlet or a triplet, and these should have different energies. Furthermore, the oxygen atom can be a singlet or a triplet, and these would have different energies. To account for spin polarization, we have to tell VASP to use spin-polarization, and give initial guesses for the magnetic moments of the atoms. Let us try again with spin polarization.
+
+**** Estimating O_{2} dissociation energy with spin polarization in triplet ground states
+To tell VASP to use spin-polarization we use [[incar:ISPIN][ISPIN]]=2, and we set initial guesses for magnetic moments on the atoms with the magmom keyword. In a triplet state there are two electrons with spins of the same sign.
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('O', [5, 5, 5], magmom=2)],
+              cell=(10, 10, 10))
+
+calc = Vasp('molecules/O-sp-triplet',
+            xc='PBE',
+            encut=400,
+            ismear=0,
+            ispin=2,  # turn spin-polarization on
+            atoms=atoms)
+
+E_O = atoms.get_potential_energy()
+
+
+print('Magnetic moment on O = {0} Bohr'
+      ' magnetons'.format(atoms.get_magnetic_moment()))
+
+# now relaxed O2 dimer
+atoms = Atoms([Atom('O', [5,    5, 5], magmom=1),
+               Atom('O', [6.22, 5, 5], magmom=1)],
+              cell=(10, 10, 10))
+
+calc = Vasp('molecules/O2-sp-triplet',
+            xc='PBE',
+            encut=400,
+            ismear=0,
+            ispin=2,   # turn spin-polarization on
+            ibrion=2,  # make sure we relax the geometry
+            nsw=10,
+            atoms=atoms)
+
+E_O2 = atoms.get_potential_energy()
+
+# verify magnetic moment
+print('Magnetic moment on O2 = {0} Bohr'
+      ' magnetons'.format(atoms.get_magnetic_moment()))
+
+if None not in (E_O, E_O2):
+    print('O2 -> 2O  D = {0:1.3f} eV'.format(2 * E_O - E_O2))
+#+END_SRC
+
+#+RESULTS:
+: Magnetic moment on O = 2.0000072 Bohr magnetons
+: Magnetic moment on O2 = 2.0000084 Bohr magnetons
+: O2 -> 2O  D = 6.746 eV
+
+This is much closer to accepted literature values for the DFT-GGA O$_2$ dissociation energy. It is still more than 1 eV above an experimental value, but most of that error is due to the GGA exchange correlation functional. Some additional parameters that might need to be checked for convergence are the SIGMA value (it is probably too high for a molecule), as well as the cutoff energy. Oxygen is a "hard" atom that requires a high cutoff energy to achieve high levels of convergence.
+
+
+***** Looking at the two spin densities
+In a spin-polarized calculation there are actually two electron densities: one for spin-up and one for spin-down. We will look at the differences in these two through the density of states.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.dft.dos import *
+
+calc = Vasp('molecules/O2-sp-triplet')
+
+dos = DOS(calc, width=0.2)
+d_up = dos.get_dos(spin=0)
+d_down = dos.get_dos(spin=1)
+e = dos.get_energies()
+
+ind = e <= 0.0
+# integrate up to 0eV
+print('number of up states = {0}'.format(np.trapz(d_up[ind], e[ind])))
+print('number of down states = {0}'.format(np.trapz(d_down[ind], e[ind])))
+
+import pylab as plt
+plt.plot(e, d_up,
+         e, -d_down)
+plt.xlabel('energy [eV]')
+plt.ylabel('DOS')
+plt.legend(['up', 'down'])
+plt.savefig('images/O2-sp-dos.png')
+#+END_SRC
+
+#+RESULTS:
+: number of up states = 6.11729553486
+: number of down states = 5.00000794208
+
+#+caption: Spin-polarized DOS for the O_{2} molecule. \label{fig:o2-sp-dos}
+#+ATTR_LaTeX: :placement [H]
+[[./images/O2-sp-dos.png]]
+
+You can see in Figure ref:fig:o2-sp-dos that there are two different densities of states for the two spins. One has 7 electrons in it (the blue lines), and the other has 5 electrons in it (the green line). The difference of two electrons leads to the magnetic moment of 2 which we calculated earlier. Remember that only peaks in the DOS below the Fermi level are occupied. It is customary to set the Fermi level to 0 eV in DOS plots. The peaks roughly correspond to electrons. For example, the blue peak between -25 and -30 eV corresponds to one electron, in a 1s orbital, where as the blue peak between -5 and -10 eV corresponds to three electrons.
+
+**** Convergence study of the O_{2} dissociation energy
+index:convergence!ENCUT
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+encuts = [250, 300, 350, 400, 450, 500, 550]
+
+D = []
+for encut in encuts:
+    atoms = Atoms([Atom('O', [5, 5, 5], magmom=2)],
+                  cell=(10, 10, 10))
+
+    calc = Vasp('molecules/O-sp-triplet-{0}'.format(encut),
+                xc='PBE',
+                encut=encut,
+                ismear=0,
+                ispin=2,
+                atoms=atoms)
+
+    E_O = atoms.get_potential_energy()
+
+    # now relaxed O2 dimer
+    atoms = Atoms([Atom('O', [5,    5, 5], magmom=1),
+                   Atom('O', [6.22, 5, 5], magmom=1)],
+                  cell=(10, 10, 10))
+
+    calc = Vasp('molecules/O2-sp-triplet-{0}'.format(encut),
+                xc='PBE',
+                encut=encut,
+                ismear=0,
+                ispin=2,   # turn spin-polarization on
+                ibrion=2,  # this turns relaxation on
+                nsw=10,
+                atoms=atoms)
+
+    E_O2 = atoms.get_potential_energy()
+
+    if None not in (E_O, E_O2):
+        d = 2*E_O - E_O2
+        D.append(d)
+        print('O2 -> 2O encut = {0}  D = {1:1.3f} eV'.format(encut, d))
+
+if not D or None in D: calc.abort()
+
+import matplotlib.pyplot as plt
+plt.plot(encuts, D)
+plt.xlabel('ENCUT (eV)')
+plt.ylabel('O$_2$ dissociation energy (eV)')
+plt.savefig('images/O2-dissociation-convergence.png')
+#+END_SRC
+
+#+RESULTS:
+: O2 -> 2O encut = 250  D = 6.774 eV
+: O2 -> 2O encut = 300  D = 6.804 eV
+: O2 -> 2O encut = 350  D = 6.785 eV
+: O2 -> 2O encut = 400  D = 6.746 eV
+: O2 -> 2O encut = 450  D = 6.727 eV
+: O2 -> 2O encut = 500  D = 6.725 eV
+: O2 -> 2O encut = 550  D = 6.727 eV
+
+#+caption: Convergence study of the O_{2} dissociation energy as a function of ENCUT. \label{fig:o2-encut}
+#+ATTR_LaTeX: :placement [H]
+[[./images/O2-dissociation-convergence.png]]
+
+Based on these results (Figure ref:fig:o2-encut), you could argue the dissociation energy is converged to about 2 meV at a planewave cutoff of 450 eV, and within 50 meV at 350 eV cutoff. You have to decide what an appropriate level of convergence is. Note that increasing the planewave cutoff significantly increases the computational time, so you are balancing level of convergence with computational speed. It would appear that planewave cutoff is not the cause for the discrepancy between our calculations and literature values.
+
+#+BEGIN_SRC python
+encuts = [250, 300, 350, 400, 450, 500, 550]
+print('encut (eV)            Total CPU time')
+print('--------------------------------------------------------')
+
+for encut in encuts:
+    OUTCAR = 'molecules/O2-sp-triplet-{0}/OUTCAR'.format(encut)
+    f = open(OUTCAR, 'r')
+    for line in f:
+        if 'Total CPU time used (sec)' in line:
+            print('{0} eV: {1}'.format(encut, line))
+    f.close()
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+encut (eV)            Total CPU time
+--------------------------------------------------------
+250 eV:                   Total CPU time used (sec):     1551.338
+
+300 eV:                   Total CPU time used (sec):     2085.191
+
+350 eV:                   Total CPU time used (sec):     2795.841
+
+400 eV:                   Total CPU time used (sec):     2985.064
+
+450 eV:                   Total CPU time used (sec):     5155.562
+
+500 eV:                   Total CPU time used (sec):     4990.818
+
+550 eV:                   Total CPU time used (sec):     5262.052
+
+#+end_example
+
+**** Illustration of the effect of SIGMA
+
+The methodology for extrapolation of the total energy to absolute zero is
+only valid for a continuous density of states at the Fermi level
+cite:Kresse199615. Consequently, it should not be used for
+semiconductors, molecules or atoms. In VASP, this means a very small
+Fermi temperature (SIGMA) should be used.  The O_{2} dissociation energy
+as a function of SIGMA is shown in Figure
+ref:fig:sigma-o2-diss. A variation of nearly 0.2 eV is seen from the
+default Fermi temperature of $k_bT=0.2$ eV and the value of
+$k_bT=0.0001$ eV. However, virtually no change was observed for a
+hydrogen atom or molecule or for an oxygen molecule as a function of
+the Fermi temperature. It is recommended that the total energy be
+calculated at several values of the Fermi temperature to make sure the
+total energy is converged with respect to the Fermi temperature.
+
+We were not careful in selecting a good value for [[incar:SIGMA][SIGMA]] in the calculations above. The default value of SIGMA is 0.2, which may be fine for metals, but it is not correct for molecules. SIGMA is the broadening factor used to smear the electronic density of states at the Fermi level. For a metal with a continuous density of states this is appropriate, but for molecules with discrete energy states it does not make sense. We are somewhat forced to use the machinery designed for metals on molecules. The solution is to use a very small SIGMA. Ideally you would use SIGMA=0, but that is not practical for convergence reasons, so we try to find what is small enough. Let us examine the effect of SIGMA on the dissociation energy here.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+
+sigmas = [0.2, 0.1, 0.05, 0.02, 0.01, 0.001]
+
+D = []
+for sigma in sigmas:
+    atoms = Atoms([Atom('O',[5, 5, 5], magmom=2)],
+                  cell=(10, 10, 10))
+
+    calc = Vasp('molecules/O-sp-triplet-sigma-{0}'.format(sigma),
+                xc='PBE',
+                encut=400,
+                ismear=0,
+                sigma=sigma,
+                ispin=2,
+                atoms=atoms)
+
+    E_O = atoms.get_potential_energy()
+
+    # now relaxed O2 dimer
+    atoms = Atoms([Atom('O',[5,    5, 5],magmom=1),
+                   Atom('O',[6.22, 5, 5],magmom=1)],
+                  cell=(10, 10, 10))
+
+    calc = Vasp('molecules/O2-sp-triplet-sigma-{0}'.format(sigma),
+                xc='PBE',
+                encut=400,
+                ismear=0,
+                sigma=sigma,
+                ispin=2,   # turn spin-polarization on
+                ibrion=2,  # make sure we relax the geometry
+                nsw=10,
+                atoms=atoms)
+
+    E_O2 = atoms.get_potential_energy()
+
+    if None not in (E_O, E_O2):
+        d = 2 * E_O - E_O2
+        D.append(d)
+        print('O2 -> 2O sigma = {0}  D = {1:1.3f} eV'.format(sigma, d))
+
+import matplotlib.pyplot as plt
+plt.plot(sigmas, D, 'bo-')
+plt.xlabel('SIGMA (eV)')
+plt.ylabel('O$_2$ dissociation energy (eV)')
+plt.savefig('images/O2-dissociation-sigma-convergence.png')
+#+END_SRC
+
+#+RESULTS:
+: O2 -> 2O sigma = 0.2  D = 6.669 eV
+: O2 -> 2O sigma = 0.1  D = 6.746 eV
+: O2 -> 2O sigma = 0.05  D = 6.784 eV
+: O2 -> 2O sigma = 0.02  D = 6.807 eV
+: O2 -> 2O sigma = 0.01  D = 6.815 eV
+: O2 -> 2O sigma = 0.001  D = 6.822 eV
+
+#+caption: Effect of SIGMA on the oxygen dissociation energy. \label{fig:sigma-o2-diss}
+#+ATTR_LaTeX: :placement [H]
+[[./images/O2-dissociation-sigma-convergence.png]]
+
+Clearly SIGMA has an effect, but it does not move the dissociation energy closer to the literature values!
+
+**** Estimating singlet oxygen dissociation energy
+Finally, let us consider the case where each species is in the singlet state.
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('O', [5, 5, 5], magmom=0)],
+              cell=(10, 10, 10))
+
+calc = Vasp('molecules/O-sp-singlet',
+            xc='PBE',
+            encut=400,
+            ismear=0,
+            ispin=2,
+            atoms=atoms)
+
+E_O = atoms.get_potential_energy()
+
+print('Magnetic moment on O = {0} Bohr'
+      ' magnetons'.format(atoms.get_magnetic_moment()))
+
+# now relaxed O2 dimer
+atoms = Atoms([Atom('O', [5, 5, 5], magmom=1),
+               Atom('O', [6.22, 5, 5], magmom=-1)],
+              cell=(10, 10, 10))
+
+calc = Vasp('molecules/O2-sp-singlet',
+            xc='PBE',
+            encut=400,
+            ismear=0,
+            ispin=2,  # turn spin-polarization on
+            ibrion=2, # make sure we relax the geometry
+            nsw=10,
+            atoms=atoms)
+
+E_O2 = atoms.get_potential_energy()
+
+# verify magnetic moment
+print('O2 molecule magnetic moment = ', atoms.get_magnetic_moment())
+
+if None not in (E_O, E_O2):
+    print('O2 -> 2O  D = {0:1.3f} eV'.format(2 * E_O - E_O2))
+#+END_SRC
+
+#+RESULTS:
+: Magnetic moment on O = 0.0001638 Bohr magnetons
+: ('O2 molecule magnetic moment = ', 0.0)
+: O2 -> 2O  D = 8.619 eV
+
+ Let us directly compare their total energies:
+
+#+BEGIN_SRC python
+from vasp import Vasp
+
+calc = Vasp('molecules/O2-sp-singlet')
+print('singlet: {0} eV'.format(calc.potential_energy))
+
+calc = Vasp('molecules/O2-sp-triplet')
+print('triplet: {0} eV'.format(calc.potential_energy))
+#+END_SRC
+
+#+RESULTS:
+: singlet: -8.77378302 eV
+: triplet: -9.84832389 eV
+
+You can see here the triplet state has an energy that is 1 eV more stable than the singlet state.
+
+**** Estimating triplet oxygen dissociation energy with low symmetry
+It has been suggested that breaking spherical symmetry of the atom can result in lower energy of the atom. The symmetry is broken by putting the atom off-center in a box. We will examine the total energy of an oxygen atom in a few geometries. First, let us consider variations of a square box.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+
+# square box origin
+atoms = Atoms([Atom('O', [0, 0, 0], magmom=2)],
+              cell=(10, 10, 10))
+
+pars = dict(xc='PBE',
+            encut=400,
+            ismear=0,
+            sigma=0.01,
+            ispin=2)
+
+calc = Vasp('molecules/O-square-box-origin',
+            atoms=atoms, **pars)
+
+print('Square box (origin): E = {0} eV'.format(atoms.get_potential_energy()))
+
+# square box center
+atoms = Atoms([Atom('O', [5, 5, 5], magmom=2)],
+              cell=(10, 10, 10))
+
+calc = Vasp('molecules/O-square-box-center',
+            atoms=atoms, **pars)
+print('Square box (center): E = {0} eV'.format(atoms.get_potential_energy()))
+
+# square box random
+atoms = Atoms([Atom('O', [2.13, 7.32, 1.11], magmom=2)],
+              cell=(10, 10, 10))
+
+calc = Vasp('molecules/O-square-box-random',
+            atoms=atoms, **pars)
+
+print('Square box (random): E = {0} eV'.format(atoms.get_potential_energy()))
+#+END_SRC
+
+#+RESULTS:
+: Square box (origin): E = -1.51654778 eV
+: Square box (center): E = -1.51654804 eV
+: Square box (random): E = -1.5152871 eV
+
+There is no significant difference in these energies. The origin and center calculations are identical in energy. The meV variation in the random calculation is negligible. Now, let us consider some non-square boxes.
+
+#+BEGIN_SRC python
+# calculate O atom energy in orthorhombic boxes
+from vasp import Vasp
+from ase import Atom, Atoms
+
+# orthorhombic box origin
+atoms = Atoms([Atom('O', [0, 0, 0], magmom=2)],
+              cell=(8, 9, 10))
+
+calc = Vasp('molecules/O-orthorhombic-box-origin',
+            xc='PBE',
+            encut=400,
+            ismear=0,
+            sigma=0.01,
+            ispin=2,
+            atoms=atoms)
+
+print('Orthorhombic box (origin): E = {0} eV'.format(atoms.get_potential_energy()))
+
+# orthorhombic box center
+atoms = Atoms([Atom('O', [4, 4.5, 5], magmom=2)],
+              cell=(8, 9, 10))
+calc = Vasp('molecules/O-orthorhombic-box-center',
+            xc='PBE',
+            encut=400,
+            ismear=0,
+            sigma=0.01,
+            ispin=2,
+            atoms=atoms)
+
+print('Orthorhombic box (center): E = {0} eV'.format(atoms.get_potential_energy()))
+
+# orthorhombic box random
+atoms = Atoms([Atom('O', [2.13, 7.32, 1.11], magmom=2)],
+              cell=(8, 9, 10))
+
+calc = Vasp('molecules/O-orthorhombic-box-random',
+            xc='PBE',
+            encut=400,
+            ismear=0,
+            sigma=0.01,
+            ispin=2,
+            atoms=atoms)
+
+print('Orthorhombic box (random): E = {0} eV'.format(atoms.get_potential_energy()))
+#+END_SRC
+
+#+RESULTS:
+: Orthorhombic box (origin): E = -1.89375092 eV
+: Orthorhombic box (center): E = -1.89375153 eV
+: Orthorhombic box (random): E = -1.87999536 eV
+
+This is a surprisingly large difference in energy! Nearly 0.4 eV. This is precisely the amount of energy we were in disagreement with the literature values. Surprisingly, the "random" position is higher in energy, similar to the cubic boxes. Finally, we put this all together. We use a non-symmetric box for the O-atom.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('O', [5.1, 4.2, 6.1], magmom=2)],
+              cell=(8, 9, 10))
+
+calc = Vasp('molecules/O-sp-triplet-lowsym',
+            xc='PBE',
+            encut=400,
+            ismear=0,
+            sigma=0.01,
+            ispin=2,
+            atoms=atoms)
+
+E_O = atoms.get_potential_energy()
+print('Magnetic moment on O = {0} Bohr  magnetons'.format(atoms.get_magnetic_moment()))
+
+# now relaxed O2 dimer
+atoms = Atoms([Atom('O', [5,    5, 5], magmom=1),
+               Atom('O', [6.22, 5, 5], magmom=1)],
+              cell=(10, 10, 10))
+
+calc = Vasp('molecules/O2-sp-triplet',
+            xc='PBE',
+            encut=400,
+            ismear=0,
+            sigma=0.01,
+            ispin=2,   # turn spin-polarization on
+            ibrion=2,  # make sure we relax the geometry
+            nsw=10,
+            atoms=atoms)
+
+E_O2 = atoms.get_potential_energy()
+# verify magnetic moment
+print('Magnetic moment on O2 = {0} Bohr magnetons'.format(atoms.get_magnetic_moment()))
+
+
+if None not in (E_O, E_O2):
+    print('E_O: ', E_O)
+    print('O2 -> 2O  D = {0:1.3f} eV'.format(2 * E_O - E_O2))
+#+END_SRC
+
+#+RESULTS:
+: Magnetic moment on O = 2.0000073 Bohr  magnetons
+: Magnetic moment on O2 = 2.0000084 Bohr magnetons
+: ('E_O: ', -1.89307116)
+: O2 -> 2O  D = 6.062 eV
+
+This actually agrees within 30-50 meV of reported literature values, although still nearly an eV greater than the experimental dissociation energy. Note that with a different "random" position, we get the lower energy for the O atom. All the disagreement we had been seeing was apparently in the O atom energy. So, if you do not need the dissociation energy in your analysis, you will not see the error. Also note that this error is specific to there being a spherical atom in a symmetric cell. This is not a problem for most molecules, which are generally non-spherical.
+
+**** Verifying the magnetic moments on each atom
+It is one thing to see the total magnetic moment of a singlet state, and another to ask what are the magnetic moments on each atom. In VASP you must use incar:LORBIT = 11 to get the magnetic moments of the atoms written out.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+
+calc = Vasp('molecules/O2-sp-singlet')
+calc.clone('molecules/O2-sp-singlet-magmoms')
+
+
+calc.set(lorbit=11)
+atoms = calc.get_atoms()
+magmoms = atoms.get_magnetic_moments()
+
+print('singlet ground state')
+for i, atom in enumerate(atoms):
+    print('atom {0}: magmom = {1}'.format(i, magmoms[i]))
+print(atoms.get_magnetic_moment())
+
+calc = Vasp('molecules/O2-sp-triplet')
+calc.clone('molecules/O2-sp-triplet-magmoms')
+
+calc.set(lorbit=11)
+atoms = calc.get_atoms()
+magmoms = atoms.get_magnetic_moments()
+print()
+print('triplet ground state')
+for i, atom in enumerate(atoms):
+    print('atom {0}: magmom = {1}'.format(i, magmoms[i]))
+print(atoms.get_magnetic_moment())
+#+END_SRC
+
+#+RESULTS:
+: singlet ground state
+: atom 0: magmom = 0.0
+: atom 1: magmom = 0.0
+: 0.0
+: ()
+: triplet ground state
+: atom 0: magmom = 0.815
+: atom 1: magmom = 0.815
+: 2.0000083
+
+Note the atomic magnetic moments do not add up to the total magnetic moment. The atomic magnetic moments are not really true observable properties. The moments are determined by a projection method that probably involves a spherical orbital, so the moments may be over or underestimated.
+
+**** Using a different potential
+It is possible we need a higher quality potential to get the 6.02 eV value quoted by many in the literature. Here we try the O_sv potential, which treats the 1s electrons as valence electrons. Note however, the ENMIN in the POTCAR is very high!
+
+#+BEGIN_SRC sh :exports both
+grep ENMIN $VASP_PP_PATH/potpaw_PBE/O_sv/POTCAR
+#+END_SRC
+
+#+RESULTS:
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('O', [4, 4.5, 5], magmom=2)],
+              cell=(8, 9, 10))
+
+calc = Vasp('molecules/O-sp-triplet-lowsym-s',
+          xc='PBE',
+            ismear=0,
+            ispin=2,
+            sigma=0.01,
+            setups=[['O', '_s']],
+            atoms=atoms)
+
+E_O = atoms.get_potential_energy()
+print(E_O)
+#+END_SRC
+
+#+RESULTS:
+: -1.57217591
+
+In the following calculation, we let VASP select an appropriate ENCUT value.
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('O', [4, 4.5, 5], magmom=2)],
+              cell=(8, 9, 10))
+
+calc = Vasp('molecules/O-sp-triplet-lowsym-s',
+          xc='PBE',
+            ismear=0,
+            ispin=2,
+            sigma=0.01,
+            setups=[['O', '_s']],
+            atoms=atoms)
+
+E_O = atoms.get_potential_energy()
+
+print('Magnetic moment on O = {0} Bohr'
+      ' magnetons'.format(atoms.get_magnetic_moment()))
+
+# now relaxed O2 dimer
+atoms = Atoms([Atom('O', [5,    5, 5], magmom=1),
+               Atom('O', [6.22, 5, 5], magmom=1)],
+              cell=(10, 10, 10))
+
+calc = Vasp('molecules/O2-sp-triplet-s',
+            xc='PBE',
+            ismear=0,
+            sigma=0.01,
+            ispin=2,   # turn spin-polarization on
+            ibrion=2,  # make sure we relax the geometry
+            nsw=10,
+            setups=[['O', '_s']],
+            atoms=atoms)
+
+E_O2 = atoms.get_potential_energy()
+
+# verify magnetic moment
+print('Magnetic moment on O2 = {0} Bohr'
+      ' magnetons'.format(atoms.get_magnetic_moment()))
+
+if None not in (E_O, E_O2):
+    print('O2 -> 2O  D = {0:1.3f} eV'.format(2*E_O - E_O2))
+#+END_SRC
+
+#+RESULTS:
+: Magnetic moment on O = 1.9999982 Bohr magnetons
+: Magnetic moment on O2 = 2.0000102 Bohr magnetons
+: O2 -> 2O  D = 6.120 eV
+
+
+This result is close to other reported values. It is possibly not converged, since we let VASP choose the ENCUT value, and that value is the ENMIN value in the POTCAR. Nevertheless, the point is that a harder potential does not fix the problem of overbinding in the O_{2} molecule. That is a fundamental flaw in the GGA exchange-correlation functional.
+
+*** Water gas shift example
+We consider calculating the reaction energy of the water-gas shift reaction in this example.
+
+CO + H_{2}O $\leftrightharpoons$ CO_{2} + H_{2}
+
+We define the reaction energy as the difference in energy between the products and reactants.
+
+$\Delta E = E_{CO_2} + E_{H_2} - E_{CO} - E_{H_2O}$
+
+For now, we compute this energy simply as the difference in DFT energies. In the next section we will add zero-point energies and compute the energy difference as a function of temperature. For now, we simply need to compute the total energy of each molecule in its equilibrium geometry.
+
+#+BEGIN_SRC python
+from ase.structure import molecule
+from vasp import Vasp
+
+# first we define our molecules. These will automatically be at the coordinates from the G2 database.
+
+CO = molecule('CO')
+CO.set_cell([8, 8, 8], scale_atoms=False)
+
+H2O = molecule('H2O')
+H2O.set_cell([8, 8, 8], scale_atoms=False)
+
+CO2 = molecule('CO2')
+CO2.set_cell([8, 8, 8], scale_atoms=False)
+
+H2 = molecule('H2')
+H2.set_cell([8, 8, 8], scale_atoms=False)
+
+# now the calculators to get the energies
+c1 = Vasp('molecules/wgs/CO',
+          xc='PBE',
+          encut=350,
+          ismear=0,
+          ibrion=2,
+          nsw=10,
+          atoms=CO)
+
+eCO = CO.get_potential_energy()
+
+c2 = Vasp('molecules/wgs/CO2',
+          xc='PBE',
+          encut=350,
+          ismear=0,
+          ibrion=2,
+          nsw=10,
+          atoms=CO2)
+
+eCO2 = CO2.get_potential_energy()
+
+c3 = Vasp('molecules/wgs/H2',
+          xc='PBE',
+          encut=350,
+          ismear=0,
+          ibrion=2,
+          nsw=10,
+          atoms=H2)
+
+eH2 = H2.get_potential_energy()
+
+c4 = Vasp('molecules/wgs/H2O',
+          xc='PBE',
+          encut=350,
+          ismear=0,
+          ibrion=2,
+          nsw=10,
+          atoms=H2O)
+
+eH2O = H2O.get_potential_energy()
+
+if None in (eCO2, eH2, eCO, eH2O):
+    pass
+else:
+    dE = eCO2 + eH2 - eCO - eH2O
+    print('Delta E = {0:1.3f} eV'.format(dE))
+    print('Delta E = {0:1.3f} kcal/mol'.format(dE * 23.06035))
+    print('Delta E = {0:1.3f} kJ/mol'.format(dE * 96.485))
+#+END_SRC
+
+#+RESULTS:
+: Delta E = -0.723 eV
+: Delta E = -16.672 kcal/mol
+: Delta E = -69.758 kJ/mol
+
+We [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-nist-webbook/#7][estimated]] the enthalpy of this reaction at standard conditions to be -41 kJ/mol using data from the NIST webbook, which is a fair bit lower than we calculated here. In the next section we will examine whether additional corrections are needed, such as zero-point and temperature corrections.
+
+It is a good idea to verify your calculations and structures are what you expected. Let us print them here. Inspection of these results shows the geometries were all relaxed, i.e., the forces on each atom are less than 0.05 eV/\AA.
+
+#+BEGIN_SRC python :results output raw
+from vasp import Vasp
+
+print('**** Calculation summaries')
+print('***** CO')
+calc = Vasp('molecules/wgs/H2O')
+print('#+begin_example')
+print(calc)
+print('#+end_example')
+#+END_SRC
+
+#+RESULTS:
+**** Calculation summaries
+***** CO
+#+begin_example
+
+Vasp calculation in /home-research/jkitchin/dft-book-new-vasp/molecules/wgs/H2O
+
+INCAR created by Atomic Simulation Environment
+ ENCUT = 350
+ LCHARG = .FALSE.
+ IBRION = 2
+ ISMEAR = 0
+ LWAVE = .TRUE.
+ SIGMA = 0.1
+ NSW = 10
+
+ O  H
+ 1.0000000000000000
+     8.0000000000000000    0.0000000000000000    0.0000000000000000
+     0.0000000000000000    8.0000000000000000    0.0000000000000000
+     0.0000000000000000    0.0000000000000000    8.0000000000000000
+   1   2
+Cartesian
+  0.0000000000000000  0.0000000000000000  0.1192620000000000
+  0.0000000000000000  0.7632390000000000 -0.4770470000000000
+  0.0000000000000000 -0.7632390000000000 -0.4770470000000000
+
+#+end_example
+
+*** Temperature dependent water gas shift equilibrium constant
+To correct the reaction energy for temperature effects, we must compute the vibrational frequencies of each species, and estimate the temperature dependent contributions to vibrational energy and entropy. We will break these calculations into several pieces. First we do each vibrational calculation. After those are done, we can get the data and construct the thermochemistry objects we need to estimate the reaction energy as a function of temperature (at constant pressure).
+
+**** CO vibrations
+#+BEGIN_SRC python
+from vasp import Vasp
+
+# get relaxed geometry
+calc = Vasp('molecules/wgs/CO')
+CO = calc.get_atoms()
+
+# now do the vibrations
+calc = Vasp('molecules/wgs/CO-vib',
+          xc='PBE',
+            encut=350,
+            ismear=0,
+            ibrion=6,
+            nfree=2,
+            potim=0.02,
+            nsw=1,
+            atoms=CO)
+calc.wait()
+vib_freq = calc.get_vibrational_frequencies()
+for i, f in enumerate(vib_freq):
+    print('{0:02d}: {1} cm^(-1)'.format(i, f))
+#+END_SRC
+
+#+RESULTS:
+: 00: 2064.699153 cm^(-1)
+: 01: 170.409559 cm^(-1)
+: 02: 170.409559 cm^(-1)
+: 03: (1.171397+0j) cm^(-1)
+: 04: (6.354831+0j) cm^(-1)
+: 05: (6.354831+0j) cm^(-1)
+
+CO has only one vibrational mode (3N-5 = 6 - 5 = 1). The other 5 modes are 3 translations and 2 rotations.
+
+**** CO_{2} vibrations
+#+BEGIN_SRC python
+from vasp import Vasp
+
+# get relaxed geometry
+calc = Vasp('molecules/wgs/CO2')
+CO2 = calc.get_atoms()
+
+# now do the vibrations
+calc = Vasp('molecules/wgs/CO2-vib',
+            xc='PBE',
+            encut=350,
+            ismear=0,
+            ibrion=6,
+            nfree=2,
+            potim=0.02,
+            nsw=1,
+            atoms=CO2)
+calc.wait()
+vib_freq = calc.get_vibrational_frequencies()
+for i, f in enumerate(vib_freq):
+    print('{0:02d}: {1} cm^(-1)'.format(i, f))
+#+END_SRC
+
+#+RESULTS:
+: 00: 2339.140984 cm^(-1)
+: 01: 1309.517832 cm^(-1)
+: 02: 639.625419 cm^(-1)
+: 03: 639.625419 cm^(-1)
+: 04: (0.442216+0j) cm^(-1)
+: 05: (1.801034+0j) cm^(-1)
+: 06: (1.801034+0j) cm^(-1)
+: 07: (35.286745+0j) cm^(-1)
+: 08: (35.286745+0j) cm^(-1)
+
+CO$_2$ is a linear molecule with 3N-5 = 4 vibrational modes. They are the first four frequencies in the output above.
+
+**** H_{2} vibrations
+#+BEGIN_SRC python
+from vasp import Vasp
+
+# get relaxed geometry
+H2 = Vasp('molecules/wgs/H2').get_atoms()
+
+# now do the vibrations
+calc = Vasp('molecules/wgs/H2-vib',
+            xc='PBE',
+            encut=350,
+            ismear=0,
+            ibrion=6,
+            nfree=2,
+            potim=0.02,
+            nsw=1,
+            atoms=H2)
+calc.wait()
+vib_freq = calc.get_vibrational_frequencies()
+for i, f in enumerate(vib_freq):
+    print('{0:02d}: {1} cm^(-1)'.format(i, f))
+#+END_SRC
+
+#+RESULTS:
+: 00: 4484.933386 cm^(-1)
+: 01: 0.0 cm^(-1)
+: 02: 0.0 cm^(-1)
+: 03: (1.5e-05+0j) cm^(-1)
+: 04: (586.624928+0j) cm^(-1)
+: 05: (586.624928+0j) cm^(-1)
+
+There is only one frequency of importance (the one at 4281 cm$^{-1}$) for the linear H_{2} molecule.
+
+**** H_{2}O vibrations
+#+BEGIN_SRC python
+from vasp import Vasp
+
+# get relaxed geometry
+H2O = Vasp('molecules/wgs/H2O').get_atoms()
+
+# now do the vibrations
+calc = Vasp('molecules/wgs/H2O-vib',
+          xc='PBE',
+            encut=350,
+            ismear=0,
+            ibrion=6,
+            nfree=2,
+            potim=0.02,
+            nsw=1,
+            atoms=H2O)
+calc.wait()
+vib_freq = calc.get_vibrational_frequencies()
+for i, f in enumerate(vib_freq):
+    print('{0:02d}: {1} cm^(-1)'.format(i, f))
+#+END_SRC
+
+#+RESULTS:
+: 00: 3846.373652 cm^(-1)
+: 01: 3734.935388 cm^(-1)
+: 02: 1573.422217 cm^(-1)
+: 03: 16.562103 cm^(-1)
+: 04: 8.00982 cm^(-1)
+: 05: (0.375952+0j) cm^(-1)
+: 06: (225.466583+0j) cm^(-1)
+: 07: (271.664033+0j) cm^(-1)
+: 08: (286.859818+0j) cm^(-1)
+
+Water has 3N-6 = 3 vibrational modes.
+
+**** Thermochemistry
+Now we are ready. We have the electronic energies and vibrational frequencies of each species in the reaction.
+pydoc:ase.thermochemistry.IdealGasThermo
+#+BEGIN_SRC python :results silent
+from ase.thermochemistry import IdealGasThermo
+from vasp import Vasp
+import numpy as np
+import matplotlib.pyplot as plt
+
+# first we get the electronic energies
+c1 = Vasp('molecules/wgs/CO')
+E_CO = c1.potential_energy
+CO = c1.get_atoms()
+
+c2 = Vasp('molecules/wgs/CO2')
+E_CO2 = c2.potential_energy
+CO2 = c2.get_atoms()
+
+c3 = Vasp('molecules/wgs/H2')
+E_H2 = c3.potential_energy
+H2 = c3.get_atoms()
+
+c4 = Vasp('molecules/wgs/H2O')
+E_H2O = c4.potential_energy
+H2O = c4.get_atoms()
+
+# now we get the vibrational energies
+h = 4.1356675e-15  # eV * s
+c = 3.0e10  # cm / s
+
+calc = Vasp('molecules/wgs/CO-vib')
+vib_freq = calc.get_vibrational_frequencies()
+CO_vib_energies = [h * c * nu for nu in vib_freq]
+
+calc = Vasp('molecules/wgs/CO2-vib')
+vib_freq = calc.get_vibrational_frequencies()
+CO2_vib_energies = [h * c * nu for nu in vib_freq]
+
+calc = Vasp('molecules/wgs/H2-vib')
+vib_freq = calc.get_vibrational_frequencies()
+H2_vib_energies = [h * c * nu for nu in vib_freq]
+
+calc = Vasp('molecules/wgs/H2O-vib')
+vib_freq = calc.get_vibrational_frequencies()
+H2O_vib_energies = [h * c * nu for nu in vib_freq]
+
+# now we make a thermo object for each molecule
+CO_t = IdealGasThermo(vib_energies=CO_vib_energies[0:0],
+                      potentialenergy=E_CO, atoms=CO,
+                      geometry='linear', symmetrynumber=1,
+                      spin=0)
+
+CO2_t = IdealGasThermo(vib_energies=CO2_vib_energies[0:4],
+                      potentialenergy=E_CO2, atoms=CO2,
+                      geometry='linear', symmetrynumber=2,
+                      spin=0)
+
+H2_t = IdealGasThermo(vib_energies=H2_vib_energies[0:0],
+                      potentialenergy=E_H2, atoms=H2,
+                      geometry='linear', symmetrynumber=2,
+                      spin=0)
+
+H2O_t = IdealGasThermo(vib_energies=H2O_vib_energies[0:3],
+                      potentialenergy=E_H2O, atoms=H2O,
+                      geometry='nonlinear', symmetrynumber=2,
+                      spin=0)
+
+# now we can compute G_rxn for a range of temperatures from 298 to 1000 K
+Trange = np.linspace(298, 1000, 20)  # K
+P = 101325. # Pa
+Grxn = np.array([(CO2_t.get_gibbs_energy(temperature=T, pressure=P)
+                  + H2_t.get_gibbs_energy(temperature=T, pressure=P)
+                  - H2O_t.get_gibbs_energy(temperature=T, pressure=P)
+                  - CO_t.get_gibbs_energy(temperature=T, pressure=P)) * 96.485
+                 for T in Trange])
+
+Hrxn = np.array([(CO2_t.get_enthalpy(temperature=T)
+                  + H2_t.get_enthalpy(temperature=T)
+                  - H2O_t.get_enthalpy(temperature=T)
+                  - CO_t.get_enthalpy(temperature=T)) * 96.485
+                 for T in Trange])
+
+plt.plot(Trange, Grxn, 'bo-', label='$\Delta G_{rxn}$')
+plt.plot(Trange, Hrxn, 'ro:', label='$\Delta H_{rxn}$')
+plt.xlabel('Temperature (K)')
+plt.ylabel(r'$\Delta G_{rxn}$ (kJ/mol)')
+plt.legend(loc='best')
+plt.savefig('images/wgs-dG-T.png')
+
+plt.figure()
+R = 8.314e-3  # gas constant in kJ/mol/K
+
+Keq = np.exp(-Grxn/R/Trange)
+plt.plot(Trange, Keq)
+plt.ylim([0, 100])
+plt.xlabel('Temperature (K)')
+plt.ylabel('$K_{eq}$')
+plt.savefig('images/wgs-Keq.png')
+#+END_SRC
+
+
+
+#+caption: Thermodynamic energies of the water gas shift reaction as a function of temperature.
+#+ATTR_LaTeX: :placement [H]
+[[./images/wgs-dG-T.png]]
+You can see a few things here. One is that at near 298K, the Gibbs free energy is about -75 kJ/mol. This is too negative compared to the experimental standard free energy, which we estimated to be about -29 kJ/mol from the [[http://matlab.cheme.cmu.edu/2011/12/12/water-gas-shift-equilibria-via-the-nist-webbook/#7][NIST webbook. ]]There could be several reasons for this disagreement, but the most likely one is errors in the exchange-correlation functional. The error in energy has a significant effect on the calculated equilibrium constant, significantly overestimating it.
+
+#+attr_latex: :placement [H]
+#+caption: Temperature dependence of the equilibrium constant.
+[[./images/wgs-Keq.png]]
+
+** Molecular reaction barriers
+   :PROPERTIES:
+   :ID:       79BC5433-AE0D-4392-B5B0-A11FFF2D3B13
+   :END:
+We will consider a simple example of the barrier for NH_{3} inversion. We have to create an NH_{3} molecule in the initial and inverted state (these have exactly the same energy), and then interpolate a band of images. Then, we use the NEB method cite:sheppard:134106 to compute the barrier to inversion. The NEB class of methods are pretty standard, but other algorithms for finding barriers (saddle-points) exist that may be relevant cite:olsen:9776.
+
+*** Get initial and final states
+#+BEGIN_SRC python :exports code
+# compute initial and final states
+from ase import Atoms
+from ase.structure import molecule
+import numpy as np
+from vasp import Vasp
+from ase.constraints import FixAtoms
+
+atoms = molecule('NH3')
+constraint = FixAtoms(mask=[atom.symbol == 'N' for atom in atoms])
+atoms.set_constraint(constraint)
+
+Npos = atoms.positions[0]
+
+# move N to origin
+atoms.translate(-Npos)
+atoms.set_cell((10, 10, 10), scale_atoms=False)
+
+atoms2 = atoms.copy()
+pos2 = atoms2.positions
+
+for i,atom in enumerate(atoms2):
+    if atom.symbol == 'H':
+        # reflect through z
+        pos2[i] *= np.array([1, 1, -1])
+atoms2.positions = pos2
+
+#now move N to center of box
+atoms.translate([5, 5, 5])
+atoms2.translate([5, 5, 5])
+
+calcs = [Vasp('molecules/nh3-initial',
+              xc='PBE',
+              encut=350,
+              ibrion=1,
+              nsw=10,
+              atoms=atoms),
+         Vasp('molecules/nh3-final',
+             xc='PBE',
+             encut=350,
+             ibrion=1,
+             nsw=10,
+             atoms=atoms2)]
+
+print [c.potential_energy for c in calcs]
+#+END_SRC
+
+#+RESULTS:
+: [-19.44508478, -19.44508477]
+
+*** Run band calculation
+Now we do the band calculation. [[index:nudged elastic band]]
+#+BEGIN_SRC python
+# Run NH3 NEB calculations
+from vasp import Vasp
+from ase.neb import NEB
+from ase.io import read
+
+atoms = Vasp('molecules/nh3-initial').get_atoms()
+atoms2 = Vasp('molecules/nh3-final').get_atoms()
+
+# 5 images including endpoints
+images = [atoms]   # initial state
+images += [atoms.copy() for i in range(3)]
+images += [atoms2]  # final state
+
+neb = NEB(images)
+neb.interpolate()
+
+calc = Vasp('molecules/nh3-neb',
+            xc='PBE',
+            ibrion=1, encut=350,
+            nsw=90,
+            spring=-5.0,
+            atoms=images)
+
+#calc.write_db(atoms, 'molecules/nh3-neb/00/DB.db')
+#calc.write_db(atoms2, 'molecules/nh3-neb/04/DB.db')
+images, energies = calc.get_neb()
+calc.stop_if(None in energies)
+
+print images
+print energies
+p = calc.plot_neb(show=False)
+import matplotlib.pyplot as plt
+plt.savefig('images/nh3-neb.png')
+#+END_SRC
+
+#+RESULTS:
+: [Atoms(symbols='NH3', positions=..., magmoms=..., cell=[10.0, 10.0, 10.0], pbc=[True, True, True], constraint=FixAtoms(indices=[0]), calculator=Vasp(...)), Atoms(symbols='NH3', positions=..., magmoms=..., cell=[10.0, 10.0, 10.0], pbc=[True, True, True], constraint=FixAtoms(indices=[0])), Atoms(symbols='NH3', positions=..., magmoms=..., cell=[10.0, 10.0, 10.0], pbc=[True, True, True], constraint=FixAtoms(indices=[0])), Atoms(symbols='NH3', positions=..., magmoms=..., cell=[10.0, 10.0, 10.0], pbc=[True, True, True], constraint=FixAtoms(indices=[0])), Atoms(symbols='NH3', positions=..., magmoms=..., cell=[10.0, 10.0, 10.0], pbc=[True, True, True], constraint=FixAtoms(indices=[0]), calculator=Vasp(...))]
+: [  0.00000000e+00   1.26688520e-01   2.25038820e-01   1.26688620e-01
+:    9.99999727e-09]
+: Optimization terminated successfully.
+:          Current function value: -0.225039
+:          Iterations: 15
+:          Function evaluations: 30
+
+
+
+The calculator view function shows you the band.
+#+BEGIN_SRC python
+from vasp import Vasp
+
+calc = Vasp('molecules/nh3-neb')
+calc.view()
+#+END_SRC
+
+#+RESULTS:
+
+
+#+attr_latex: :placement [H]
+#+caption: Nudged elastic band results for ammonia flipping.
+[[./images/nh3-neb.png]]
+*** Make a movie of the animation
+
+index:animation
+It is helpful sometimes to animate the Nudged elastic band path. Here is a script to do that. I have not figured out how to embed the movie in this document
+#+BEGIN_SRC python
+# make neb movie
+from ase.io import write
+from ase.visualize import view
+from vasp import Vasp
+import numpy as np
+import os
+
+calc = Vasp('molecules/nh3-neb')
+
+images, energies = calc.get_neb()
+
+# this rotates the atoms 90 degrees about the y-axis
+[atoms.rotate('y', np.pi/2.) for atoms in images]
+
+for i,atoms in enumerate(images):
+    write('images/00{0}-nh3.png'.format(i), atoms, show_unit_cell=2)
+
+# animated gif
+os.system('convert -delay 50 -loop 0 images/00*-nh3.png images/nh3-neb.gif')
+
+# Shockwave flash
+os.system('png2swf -o images/nh3-neb.swf images/00*-nh3.png ')
+#+END_SRC
+
+#+RESULTS:
+
+#+attr_latex: :placement [H] :width 2in
+#+attr_org: :width 300
+#+caption: In principle this is an animated gif
+[[./images/nh3-neb.gif]]
+
+#+attr_latex: :placement [H]
+#+caption: and this is a shockwave flash
+[[./images/nh3-neb.swf]]
+

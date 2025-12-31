@@ -1,0 +1,2661 @@
+* Appendices
+** Recipes
+*** Modifying Atoms by deleting atoms
+Sometimes it is convenient to create an Atoms object by deleting atoms from an existing object. Here is a recipe to delete all the hydrogen atoms in a molecule. The idea is to make a list of indices of which atoms to delete using list comprehension, then use list deletion to delete those indices.
+
+#+BEGIN_SRC python
+import textwrap
+from ase.structure import molecule
+
+atoms = molecule('CH3CH2OH')
+print(atoms)
+
+# delete all the hydrogens
+ind2del = [atom.index for atom in atoms if atom.symbol == 'H']
+print('Indices to delete: ', ind2del)
+
+del atoms[ind2del]
+
+# now print what is left
+print(atoms)
+#+END_SRC
+
+#+RESULTS:
+: Atoms(symbols='C2OH6', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False, False, False])
+: Indices to delete:  [3, 4, 5, 6, 7, 8]
+: Atoms(symbols='C2O', positions=..., cell=[1.0, 1.0, 1.0], pbc=[False, False, False])
+
+*** Advanced tagging
+We can label atoms with integer tags to help identify them later, e.g. which atoms are adsorbates, or surface atoms, or near an adsorbate, etc... We might want to refer to those atoms later for electronic structure, geometry analysis, etc...
+
+The method uses integer tags that are powers of two, and then uses binary operators to check for matches. & is a bitwise AND. The key to understanding this is to look at the tags in binary form. The tags [1 2 4 8] can be represented by a binary string:
+
+#+begin_example
+1 = [1 0 0 0]
+2 = [0 1 0 0]
+4 = [0 0 1 0]
+8 = [0 0 0 1]
+#+end_example
+
+So, an atom tagged with 1 and 2 would have a tag of [1 1 0 0] or equivalently in decimal numbers, a tag of 3.
+
+#+begin_src python
+'''
+adapted from https://listserv.fysik.dtu.dk/pipermail/campos/2004-September/001155.html
+'''
+
+from ase import *
+from ase.io import write
+from ase.lattice.surface import bcc111, add_adsorbate
+from ase.constraints import FixAtoms
+
+# the bcc111 function automatically tags atoms
+slab = bcc111('W',
+              a=3.92,       # W lattice constant
+              size=(2, 2, 6),  # 6-layer slab in 2x2 configuration
+              vacuum=10.0)
+
+# reset tags to be powers of two so we can use binary math
+slab.set_tags([2**a.get_tag() for a in slab])
+
+# we had 6 layers, so we create new tags starting at 7
+# Note you must use powers of two for all the tags!
+LAYER1 = 2
+ADSORBATE = 2**7
+FREE = 2**8
+NEARADSORBATE = 2**9
+
+# let us tag LAYER1 atoms to be FREE too. we can address it by LAYER1 or FREE
+tags = slab.get_tags()
+for i, tag in enumerate(tags):
+    if tag == LAYER1:
+        tags[i] += FREE
+slab.set_tags(tags)
+
+# create a CO molecule
+co=Atoms([Atom('C', [0., 0., 0.], tag=ADSORBATE),
+          # we will relax only O
+          Atom('O', [0., 0., 1.1], tag=ADSORBATE + FREE)])
+
+add_adsorbate(slab, co, height=1.2, position='hollow')
+
+# the adsorbate is centered between atoms 20, 21 and 22 (use
+# view(slab)) and over atom12 let us label those atoms, so it is easy to
+# do electronic structure analysis on them later.
+tags = slab.get_tags()  # len(tags) changed, so we reget them.
+tags[12] += NEARADSORBATE
+tags[20] += NEARADSORBATE
+tags[21] += NEARADSORBATE
+tags[22] += NEARADSORBATE
+slab.set_tags(tags)
+# update the tags
+slab.set_tags(tags)
+
+# extract pieces of the slab based on tags
+# atoms in the adsorbate
+ads = slab[(slab.get_tags() & ADSORBATE) == ADSORBATE]
+
+# atoms in LAYER1
+layer1 = slab[(slab.get_tags() & LAYER1) == LAYER1]
+
+# atoms defined as near the adsorbate
+nearads = slab[(slab.get_tags() & NEARADSORBATE) == NEARADSORBATE]
+
+# atoms that are free
+free = slab[(slab.get_tags() & FREE) == FREE]
+
+# atoms that are FREE and part of the ADSORBATE
+freeads = slab[(slab.get_tags() & FREE+ADSORBATE) == FREE+ADSORBATE]
+
+# atoms that are NOT FREE
+notfree = slab[(slab.get_tags() & FREE) != FREE]
+
+constraint = FixAtoms(mask=(slab.get_tags() & FREE) != FREE)
+slab.set_constraint(constraint)
+write('images/tagged-bcc111.png', slab, rotation='-90x', show_unit_cell=2)
+from ase.visualize import view; view(slab)
+#+end_src
+
+#+RESULTS:
+
+#+ATTR_LATEX: :width 3in :placement [H]
+#+attr_org: :width 300
+#+caption: The tagged bcc(111) structure created above. Unfortunately, the frozen atoms do not show up in the figure.
+[[./images/tagged-bcc111.png]]
+*** Using units in ase
+mod:ase uses a base set of atomic units.These are eV for energy, $\AA$ for distance, seconds for time, and amu for mass. Other units are defined in terms of those units, and you can easily convert to alternative units by dividing your quantity in atomic units by the units you want.
+
+Not too many units are defined:
+['A', 'AUT', 'Ang', 'Angstrom', 'Bohr', 'C', 'Debye', 'GPa', 'Ha', 'Hartree', 'J', 'Pascal', 'Ry', 'Rydberg', 'alpha', 'cm', 'eV', 'erg', 'fs', 'kB', 'kJ', 'kcal', 'kg', 'm', 'meV', 'mol', 'nm', 's', 'second']
+
+It is not that hard to define your own derived units though. Note these  are only conversion factors. No units algebra is enforced (i.e. it will be ok to add a m and a kg)!
+
+#+BEGIN_SRC python
+from ase.units import *
+
+d = 1 * Angstrom
+print(' d = {0} nm'.format(d / nm))
+
+print('1 eV = {0} Hartrees'.format(eV / Hartree))
+print('1 eV = {0} Rydbergs'.format(eV / Rydberg))
+print('1 eV = {0} kJ/mol'.format(eV / (kJ / mol)))
+print('1 eV = {0} kcal/mol'.format(eV / (kcal / mol)))
+
+print('1 Hartree = {0} kcal/mol'.format(1 * Hartree / (kcal / mol)))
+print('1 Rydberg = {0} eV'.format(1 * Rydberg / eV))
+
+# derived units
+minute = 60 * s
+hour = 60 * minute
+
+# convert 10 hours to minutes
+print('10 hours = {0} minutes'.format(10 * hour / minute))
+#+END_SRC
+
+#+RESULTS:
+:  d = 0.1 nm
+: 1 eV = 0.036749309468 Hartrees
+: 1 eV = 0.0734986189359 Rydbergs
+: 1 eV = 96.485308989 kJ/mol
+: 1 eV = 23.0605423014 kcal/mol
+: 1 Hartree = 627.509540594 kcal/mol
+: 1 Rydberg = 13.6056978278 eV
+: 10 hours = 600.0 minutes
+
+*** Extracting parts of an array
+
+See http://www.scipy.org/Cookbook/BuildingArrays for examples of making numpy arrays.
+
+
+When analyzing numerical data you may often want to analyze only a part of the data. For example, suppose you have $x$ and $y$ data, (\(x\)=time, \(y\)=signal) and you want to integrate the date between a particular time interval. You can slice a numpy array to extract parts of it. See http://www.scipy.org/Cookbook/Indexing for several examples of this.
+
+In this example we show how to extract the data in an interval. We have $x$ data in the range of 0 to 6, and $y$ data that is the $\cos(x)$. We want to extract the $x$ and $y$ data for $2 < x < 4$, and the corresponding y-data. To do this, we utilize the numpy capability of slicing with a boolean array. We also show some customization of matplotlib.
+
+#+BEGIN_SRC python :exports both
+import numpy as np
+import matplotlib as mpl
+# http://matplotlib.sourceforge.net/users/customizing.html
+mpl.rcParams['legend.numpoints'] = 1  # default is 2
+import matplotlib.pyplot as plt
+
+x = np.linspace(0, 6, 100)
+y = np.cos(x)
+
+plt.plot(x, y, label='full')
+
+ind = (x > 2) & (x < 4)
+
+subx = x[ind]
+suby = y[ind]
+
+plt.plot(subx, suby, 'bo', label='sliced')
+xlabel('x')
+ylabel('cos(x)')
+plt.legend(loc='lower right')
+plt.savefig('images/np-array-slice.png')
+#+END_SRC
+
+#+RESULTS:
+: None
+
+#+ATTR_LaTeX: :placement [H]
+#+caption: Example of slicing out part of an array. The solid line represents the whole array, and the symbols are the array between $2 < x < 4$.
+[[./images/np-array-slice.png]]
+The expression \(x>2\) returns an array of booleans (True where the element of $x$ is greater than 2, and False where it is not) equal in size to $x$. Similarly \(x<4\) returns a boolean array where $x$ is less than 4. We take the logical =and= of these two boolean arrays to get another boolean array where both conditions are True (i.e. \(x<2\) and \(x>4\)). This final boolean array is =True= for the part of the arrays we are interested in, and we can use it to extract the subarrays we want.
+
+*** Statistics
+**** Confidence intervals
+mod:scipy has a statistical package available for getting statistical distributions. This is useful for computing confidence intervals using the student-t tables. Here is an example of computing a 95% confidence interval on an average.
+#+BEGIN_SRC python
+import numpy as np
+from scipy.stats.distributions import  t
+
+n = 10  # number of measurements
+dof = n - 1  # degrees of freedom
+avg_x = 16.1  # average measurement
+std_x = 0.01  # standard deviation of measurements
+
+# Find 95% prediction interval for next measurement
+
+alpha = 1.0 - 0.95
+
+pred_interval = t.ppf(1 - alpha / 2., dof) * std_x * np.sqrt(1. + 1. / n)
+
+s = ['We are 95% confident the next measurement',
+       ' will be between {0:1.3f} and {1:1.3f}']
+print(''.join(s).format(avg_x - pred_interval, avg_x + pred_interval))
+#+END_SRC
+
+#+RESULTS:
+: We are 95% confident the next measurement will be between 16.076 and 16.124
+
+*** Curve fitting
+**** Linear fitting
+#+BEGIN_SRC python
+# examples of linear curve fitting using least squares
+import numpy as np
+
+xdata = np.array([0., 1., 2., 3., 4., 5., 6.])
+ydata = np.array([0.1, 0.81, 4.03, 9.1, 15.99, 24.2, 37.2])
+
+# fit a third order polynomial
+from pylab import polyfit, plot, xlabel, ylabel, show, legend, savefig
+pars = polyfit(xdata, ydata, 3)
+print('pars from polyfit: {0}'.format(pars))
+
+# numpy method returns more data
+A = np.column_stack([xdata**3,
+                     xdata**2,
+                     xdata,
+                     np.ones(len(xdata), np.float)])
+
+pars_np, resids, rank,s = np.linalg.lstsq(A, ydata)
+print('pars from np.linalg.lstsq: {0}'.format(pars_np))
+
+'''
+we are trying to solve Ax = b for x in the least squares sense. There
+are more rows in A than elements in x so, we can left multiply each
+side by A^T, and then solve for x with an inverse.
+
+A^TAx = A^Tb
+x = (A^TA)^-1 A^T b
+'''
+# not as pretty but equivalent!
+pars_man = np.dot(np.linalg.inv(np.dot(A.T, A)), np.dot(A.T, ydata))
+print('pars from linear algebra: {0}'.format(pars_man))
+
+# but, it is easy to fit an exponential function to it!
+# y = a*exp(x)+b
+Aexp = np.column_stack([np.exp(xdata), np.ones(len(xdata), np.float)])
+pars_exp = np.dot(np.linalg.inv(np.dot(Aexp.T, Aexp)), np.dot(Aexp.T, ydata))
+
+plot(xdata, ydata, 'ro')
+fity = np.dot(A, pars)
+plot(xdata, fity, 'k-', label='poly fit')
+plot(xdata, np.dot(Aexp, pars_exp), 'b-', label='exp fit')
+xlabel('x')
+ylabel('y')
+legend()
+savefig('images/curve-fit-1.png')
+#+END_SRC
+
+#+RESULTS:
+: pars from polyfit: [ 0.04861111  0.63440476  0.61365079 -0.08928571]
+: pars from np.linalg.lstsq: [ 0.04861111  0.63440476  0.61365079 -0.08928571]
+: pars from linear algebra: [ 0.04861111  0.63440476  0.61365079 -0.08928571]
+
+#+attr_latex: :placement [H]
+#+caption: Example of linear least-squares curve fitting.
+[[./images/curve-fit-1.png]]
+
+*** Nonlinear curve fitting
+#+BEGIN_SRC python
+from scipy.optimize import leastsq
+import numpy as np
+
+vols = np.array([13.71, 14.82, 16.0, 17.23, 18.52])
+
+energies = np.array([-56.29, -56.41, -56.46, -56.463, -56.41])
+
+
+def Murnaghan(parameters, vol):
+    'From Phys. Rev. B 28, 5480 (1983)'
+    E0 = parameters[0]
+    B0 = parameters[1]
+    BP = parameters[2]
+    V0 = parameters[3]
+
+    E = (E0 + B0*vol / BP*(((V0 / vol)**BP) / (BP - 1) + 1)
+         - V0 * B0 / (BP - 1.))
+
+    return E
+
+
+def objective(pars, y, x):
+    # we will minimize this function
+    err = y - Murnaghan(pars, x)
+    return err
+
+x0 = [-56., 0.54, 2., 16.5]  # initial guess of parameters
+
+plsq = leastsq(objective, x0, args=(energies, vols))
+
+print('Fitted parameters = {0}'.format(plsq[0]))
+
+import matplotlib.pyplot as plt
+plt.plot(vols, energies, 'ro')
+
+# plot the fitted curve on top
+x = np.linspace(min(vols), max(vols), 50)
+y = Murnaghan(plsq[0], x)
+plt.plot(x, y, 'k-')
+plt.xlabel('Volume')
+plt.ylabel('energy')
+plt.savefig('images/nonlinear-curve-fitting.png')
+#+END_SRC
+
+#+RESULTS:
+: Fitted parameters = (array([-56.46839641,   0.57233217,   2.7407944 ,  16.55905648]), 1)
+
+#+attr_latex: :placement [H]
+#+caption: Example of least-squares non-linear curve fitting.
+[[./images/nonlinear-curve-fitting.png]]
+
+See additional examples at \url{http://docs.scipy.org/doc/scipy/reference/tutorial/optimize.html}.
+
+*** Nonlinear curve fitting by direct least squares minimization
+#+BEGIN_SRC python
+from scipy.optimize import fmin
+import numpy as np
+
+volumes = np.array([13.71, 14.82, 16.0, 17.23, 18.52])
+
+energies = np.array([-56.29, -56.41, -56.46, -56.463, -56.41])
+
+
+def Murnaghan(parameters, vol):
+    'From PRB 28,5480 (1983'
+    E0 = parameters[0]
+    B0 = parameters[1]
+    BP = parameters[2]
+    V0 = parameters[3]
+
+    E = E0 + B0*vol/BP*(((V0/vol)**BP)/(BP-1)+1) - V0*B0/(BP-1.)
+
+    return E
+
+
+def objective(pars, vol):
+    # we will minimize this function
+    err = energies - Murnaghan(pars, vol)
+    return np.sum(err**2)  # we return the summed squared error directly
+
+x0 = [-56., 0.54, 2., 16.5]  # initial guess of parameters
+
+plsq = fmin(objective, x0, args=(volumes,))  # note args is a tuple
+
+print('parameters = {0}'.format(plsq))
+
+import matplotlib.pyplot as plt
+plt.plot(volumes, energies, 'ro')
+
+# plot the fitted curve on top
+x = np.linspace(min(volumes), max(volumes), 50)
+y = Murnaghan(plsq, x)
+plt.plot(x, y, 'k-')
+plt.xlabel(r'Volume ($\AA^3$)')
+plt.ylabel('Total energy (eV)')
+plt.savefig('images/nonlinear-fitting-lsq.png')
+#+END_SRC
+
+#+RESULTS:
+: Optimization terminated successfully.
+:          Current function value: 0.000020
+:          Iterations: 137
+:          Function evaluations: 240
+: parameters = [-56.46932645   0.59141447   1.9044796   16.59341303]
+
+#+attr_latex: :placement [H]
+#+caption: Fitting a nonlinear function.
+[[./images/nonlinear-fitting-lsq.png]]
+
+*** Nonlinear curve fitting with confidence intervals
+#+BEGIN_SRC python
+# Nonlinear curve fit with confidence interval
+import numpy as np
+from scipy.optimize import curve_fit
+from scipy.stats.distributions import  t
+
+'''
+fit this equation to data
+y = c1 exp(-x) + c2*x
+
+this is actually a linear regression problem, but it is convenient to
+use the nonlinear fitting routine because it makes it easy to get
+confidence intervals. The downside is you need an initial guess.
+
+from Matlab
+b =
+
+    4.9671
+    2.1100
+
+
+bint =
+
+    4.6267    5.3075
+    1.7671    2.4528
+'''
+
+x = np.array([ 0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9,  1. ])
+y = np.array([ 4.70192769,  4.46826356,  4.57021389,  4.29240134,  3.88155125,
+            3.78382253,  3.65454727,  3.86379487,  4.16428541,  4.06079909])
+
+# this is the function we want to fit to our data
+def func(x,c0, c1):
+    return c0 * np.exp(-x) + c1*x
+
+pars, pcov = curve_fit(func, x, y, p0=[4.96, 2.11])
+
+alpha = 0.05 # 95% confidence interval
+
+n = len(y)    # number of data points
+p = len(pars) # number of parameters
+
+dof = max(0, n-p) # number of degrees of freedom
+
+tval = t.ppf(1.0-alpha/2., dof) # student-t value for the dof and confidence level
+
+for i, p,var in zip(range(n), pars, np.diag(pcov)):
+    sigma = var**0.5
+    print('c{0}: {1} [{2}  {3}]'.format(i, p,
+                                  p - sigma*tval,
+                                  p + sigma*tval))
+
+import matplotlib.pyplot as plt
+plt.plot(x,y,'bo ')
+xfit = np.linspace(0,1)
+yfit = func(xfit, pars[0], pars[1])
+plt.plot(xfit,yfit,'b-')
+plt.legend(['data','fit'],loc='best')
+plt.savefig('images/nonlin-fit-ci.png')
+#+END_SRC
+
+#+RESULTS:
+: c0: 4.96713966439 [4.62674476321  5.30753456558]
+: c1: 2.10995112628 [1.76711622067  2.45278603188]
+
+#+attr_latex: :placement [H]
+#+caption: Nonlinear fit to data.
+[[./images/nonlin-fit-ci.png]]
+
+*** Interpolation with splines
+When you do not know the functional form of data to fit an equation, you can still fit/interpolate with splines.
+#+BEGIN_SRC python
+# use splines to fit and interpolate data
+from scipy.interpolate import interp1d
+from scipy.optimize import fmin
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.array([ 0,      1,      2,      3,      4    ])
+y = np.array([ 0.,     0.308,  0.55,   0.546,  0.44 ])
+
+# create the interpolating function
+f = interp1d(x, y, kind='cubic', bounds_error=False)
+
+# to find the maximum, we minimize the negative of the function. We
+# cannot just multiply f by -1, so we create a new function here.
+f2 = interp1d(x, -y, kind='cubic')
+xmax = fmin(f2, 2.5)
+
+xfit = np.linspace(0,4)
+
+plt.plot(x,y,'bo')
+plt.plot(xfit, f(xfit),'r-')
+plt.plot(xmax, f(xmax),'g*')
+plt.legend(['data','fit','max'], loc='best', numpoints=1)
+plt.xlabel('x data')
+plt.ylabel('y data')
+plt.title('Max point = ({0:1.2f}, {1:1.2f})'.format(float(xmax),
+                                                    float(f(xmax))))
+plt.savefig('images/splinefit.png')
+#+END_SRC
+
+#+attr_latex: :placement [H]
+#+caption: Illustration of a spline fit to data and finding the maximum point.
+[[./images/splinefit.png]]
+
+There are other good examples at http://docs.scipy.org/doc/scipy/reference/tutorial/interpolate.html
+
+*** Interpolation in 3D
+
+You might ask, why would I need to interpolate in 3D? Suppose you want to plot the charge density along a line through a unit cell that does not correspond to grid points. What are you to do? Interpolate. In contrast to an abundance of methods for 1D and 2D interpolation, I could not find any standard library methods for 3D interpolation.
+
+The principle we will use to develop an interpolation function in 3D is called trilinear interpolation, where we use multiple linear 1D interpolations to compute the value of a point inside a cube. As developed here, this solution only applies to rectangular grids. Later we will generalize the approach. We state the problem as follows:
+
+We know a scalar field inside a unit cell on a regularly spaced grid. In VASP these fields may be the charge density or electrostatic potential for example, and they are known on the fft grids. We want to estimate the value of the scalar field at a point not on the grid, say P=(a,b,c).
+
+Solution: Find the cube that contains the point, and is defined by points
+    P1-P8 as shown in Figure ref:fig:trilinearpinterp.
+
+
+# convert images/trilinear-interpolation.svg images/trilinear-interpolation.png
+# inkscape images/trilinear-interpolation.svg
+#+ATTR+LaTeX: :width 270bp :placement [H]
+#+caption: Trilinear interpolation scheme. \label{fig:trilinearpinterp}
+[[./images/trilinear-interpolation.png]]
+
+We use 1D interpolation formulas to compute the value of the scalar field at points I1 by interpolating between P1 and P2, and the value of the scalar field at I2 by interpolating between P3 and P4. In these points the only variable changing is x, so it is a simple 1D interpolation. We can then compute the value of the scalar field at I5 by interpolating between I1 and I2. We repeat the process on the top of the cube, to obtain points I3, I4 and I5. Finally, we compute the value of the scalar field at point P by interpolating between points I5 and I6. Note that the point I5 has coordinates (a,b,z1) and I6 is at (a,b,z2), so the final interpolation is again a 1D interpolation along z evaluated at z=c to get the final value of the scalar field at P=(a,b,c).
+#+BEGIN_SRC python :exports both
+from vasp import Vasp
+import numpy as np
+
+calc = Vasp('molecules/co-centered')
+atoms = calc.get_atoms()
+x, y, z, cd = calc.get_charge_density()
+
+def interp3d(x,y,z,cd,xi,yi,zi):
+    '''
+    interpolate a cubic 3D grid defined by x,y,z,cd at the point
+    (xi,yi,zi)
+    '''
+
+    def get_index(value,vector):
+        '''
+        assumes vector ordered decreasing to increasing. A bisection
+        search would be faster.
+        '''
+        for i,val in enumerate(vector):
+            if val > value:
+                return i-1
+        return None
+
+    xv = x[:,0,0]
+    yv = y[0,:,0]
+    zv = z[0,0,:]
+
+    a,b,c = xi, yi, zi
+
+    i = get_index(a,xv)
+    j = get_index(b,yv)
+    k = get_index(c,zv)
+
+    x1 = x[i,j,k]
+    x2 = x[i+1,j,k]
+    y1 = y[i,j,k]
+    y2 = y[i,j+1,k]
+    z1 = z[i,j,k]
+    z2 = z[i,j,k+1]
+
+    u1 = cd[i, j, k]
+    u2 = cd[i+1, j, k]
+    u3 = cd[i, j+1, k]
+    u4 = cd[i+1, j+1, k]
+    u5 = cd[i, j, k+1]
+    u6 = cd[i+1, j, k+1]
+    u7 = cd[i, j+1, k+1]
+    u8 = cd[i+1, j+1, k+1]
+
+    w1 = u2 + (u2-u1)/(x2-x1)*(a-x2)
+    w2 = u4 + (u4-u3)/(x2-x1)*(a-x2)
+    w3 = w2 + (w2-w1)/(y2-y1)*(b-y2)
+    w4 = u5 + (u6-u5)/(x2-x1)*(a-x1)
+    w5 = u7 + (u8-u7)/(x2-x1)*(a-x1)
+    w6 = w4 + (w5-w4)/(y2-y1)*(b-y1)
+    w7 = w3 + (w6-w3)/(z2-z1)*(c-z1)
+    u = w7
+
+    return u
+
+pos = atoms.get_positions()
+
+P1 = np.array([0.0, 5.0, 5.0])
+P2 = np.array([9.0, 5.0, 5.0])
+
+npoints = 60
+
+points = [P1 + n*(P2-P1)/npoints for n in range(npoints)]
+
+R = [np.linalg.norm(p-P1) for p in points]
+
+# interpolated line
+icd = [interp3d(x,y,z,cd,p[0],p[1],p[2]) for p in points]
+
+import matplotlib.pyplot as plt
+
+plt.plot(R, icd)
+cR = np.linalg.norm(pos[0] - P1)
+oR = np.linalg.norm(pos[1] - P1)
+plt.plot([cR, cR], [0, 2], 'r-') #markers for where the nuclei are
+plt.plot([oR, oR], [0, 8], 'r-')
+plt.xlabel('|R| ($\AA$)')
+plt.ylabel('Charge density (e/$\AA^3$)')
+plt.savefig('images/CO-charge-density.png')
+plt.show()
+#+END_SRC
+
+#+RESULTS:
+: None
+
+#+attr_latex: :placement [H]
+#+caption: An example of interpolated charge density of a CO molecule along the axis of molecule.
+[[./images/CO-charge-density.png]]
+
+To generalize this to non-cubic cells, we need to do interpolation along arbitrary vectors. The overall strategy is the same:
+
+    Find the cell that contains the point (a,b,c).
+    compute the scaled coordinates (sa,sb,sc) of the point inside the cell.
+    Do the interpolations along the basis vectors. Given u1 at P1(x1,y1,z1) and u2 at P2(x2,y2,z2) where (P2-P1) is a cell basis vector a, u = u1 + sa*(u2-u1). There are still 7 interpolations to do.
+
+Below is an example of this code, using a the python library bisect to find the cell.
+
+#+BEGIN_SRC python
+'''
+3D vector interpolation in non-cubic unit cells with vector
+interpolation.
+
+This function should work for any shape unit cell.
+'''
+from vasp import Vasp
+import bisect
+import numpy as np
+from pylab import plot, xlabel, ylabel, savefig, show
+
+calc = Vasp('molecules/co-centered')
+atoms = calc.get_atoms()
+x,y,z,cd = calc.get_charge_density()
+
+def vinterp3d(x, y, z, u, xi, yi, zi):
+
+    p = np.array([xi, yi, zi])
+
+    #1D arrays of cooridinates
+    xv = x[:, 0, 0]
+    yv = y[0, :, 0]
+    zv = z[0, 0, :]
+
+    # we subtract 1 because bisect tells us where to insert the
+    # element to maintain an ordered list, so we want the index to the
+    # left of that point
+    i = bisect.bisect_right(xv, xi) - 1
+    j = bisect.bisect_right(yv, yi) - 1
+    k = bisect.bisect_right(zv, zi) - 1
+
+    #points at edge of cell. We only need P1, P2, P3, and P5
+    P1 = np.array([x[i, j, k], y[i, j, k], z[i,j,k]])
+    P2 = np.array([x[i + 1, j, k], y[i + 1, j, k], z[i + 1, j, k]])
+    P3 = np.array([x[i, j + 1, k], y[i, j + 1, k], z[i, j + 1, k]])
+    P5 = np.array([x[i, j, k + 1], y[i, j, k + 1], z[i, j, k + 1]])
+
+    #values of u at edge of cell
+    u1 = u[i, j, k]
+    u2 = u[i + 1, j, k]
+    u3 = u[i, j + 1, k]
+    u4 = u[i + 1, j + 1, k]
+    u5 = u[i, j, k + 1]
+    u6 = u[i + 1, j, k + 1]
+    u7 = u[i, j + 1, k + 1]
+    u8 = u[i + 1, j + 1, k + 1]
+
+    #cell basis vectors, not the unit cell, but the voxel cell containing the point
+    cbasis = np.array([P2 - P1,
+                       P3 - P1,
+                       P5 - P1])
+
+    #now get interpolated point in terms of the cell basis
+    s = np.dot(np.linalg.inv(cbasis.T), np.array([xi, yi, zi]) - P1)
+
+    #now s = (sa, sb, sc) which are fractional coordinates in the vector space
+    #next we do the interpolations
+    ui1 = u1 + s[0] * (u2 - u1)
+    ui2 = u3 + s[0] * (u4 - u3)
+
+    ui3 = u5 + s[0] * (u6 - u5)
+    ui4 = u7 + s[0] * (u8 - u7)
+
+    ui5 = ui1 + s[1] * (ui2 - ui1)
+    ui6 = ui3 + s[1] * (ui4 - ui3)
+
+    ui7 = ui5 + s[2] * (ui6 - ui5)
+
+    return ui7
+
+# compute a line with 60 points in it through these two points
+P1 = np.array([0.0, 5.0, 5.0])
+P2 = np.array([10.0, 5.0, 5.0])
+
+npoints = 60
+
+points = [P1 + n * (P2 - P1) / npoints for n in range(npoints)]
+
+# compute the distance along the line
+R = [np.linalg.norm(p - P1) for p in points]
+
+icd = [vinterp3d(x, y, z, cd, p[0], p[1], p[2]) for p in points]
+
+plot(R, icd)
+pos = atoms.get_positions()
+cR = np.linalg.norm(pos[0] - P1)
+oR = np.linalg.norm(pos[1] - P1)
+plot([cR, cR], [0, 2], 'r-') #markers for where the nuclei are
+plot([oR, oR], [0, 8], 'r-')
+xlabel('|R| ($\AA$)')
+ylabel('Charge density (e/$\AA^3$)')
+savefig('images/interpolated-charge-density.png')
+show()
+#+END_SRC
+
+#+RESULTS:
+
+#+ATTR_LaTeX: :placement [H]
+#+caption: Interpolated charge density for a CO molecule.
+[[./images/interpolated-charge-density.png]]
+
+*** Reading and writing data
+
+**** Built-in io modules
+
+=pylab= has two convenient and powerful functions for saving and
+reading data, func:pylab.save and func:pylab.load.
+
+#+BEGIN_SRC python
+pylab.save('pdat.dat',(x,y))
+#+END_SRC
+
+and later you can read these arrays back in with:
+
+#+BEGIN_SRC python
+x,y = pylab.load('pdat.dat')
+#+END_SRC
+
+see also func:pylab.csv2rec and func:pylab.loadtxt and
+func:pylab.savetxt.
+
+See http://www.scipy.org/Cookbook/InputOutput for examples of numpy io.
+
+**** From scratch
+
+You can save data in many ways from scratch. Basically, just open a
+file and write data to it. Likewise, any datafile that has some
+structure to it can probably be read by python.
+
+Let us consider a datafile with these contents:
+
+#+begin_example
+	#header
+	#ignore these lines
+	john, 4
+	robert, 5
+	terry, 5
+#+end_example
+
+A standard approach would be to read in all the lines, skip the first
+two lines, split each line (remember each line is a string) at the
+',', and append the first field to one variable, and append the second
+field to another variable as an integer.  For example:
+
+#+BEGIN_SRC python
+v1 = []
+v2 = []
+lines = open('somefile','r').readlines()
+
+for line in lines[2:]: #skip the first two lines
+    fields = line.split(',')
+	v1.append(fields[0]) #names
+	v2.append(int(fields[1])) #number
+#+END_SRC
+
+Writing datafiles is easy too.
+#+BEGIN_SRC python
+v1 = ['john', 'robert', 'terry']
+v2 = [4,5,6]
+f = open('somefile', 'w') #note 'w' = write mode
+f.write('#header\n')
+f.write('#ignore these lines\n')
+for a,b in zip(v1,v2):
+	f.write('{0}, {1}\n'.format(a,b))
+f.close()
+#+END_SRC
+
+Some notes:
+1. opening a file in 'w' mode clobbers any existing file, so do that
+with care!
+2. when writing to a file you have to add a carriage return to each line.
+3. Manually writing and reading files is pretty tedious. Whenever
+possible you should use the built-in methods of mod:numpy or mod:pylab.
+
+*** Integration
+Numerical integrations is easy with the numpy.trapz() method. Use it like this: func:numpy.trapz(y,x). Note that y comes first. y and x must be the same length.
+
+Integration can be used to calculate average properties of continuous distributions. Suppose for example, we have a density of states, \rho as a function of energy E. We can integrate the density of states to find the total number of states:
+
+$N_{states} = \int \rho dE$
+
+or, in python:
+
+#+BEGIN_SRC python
+Nstates = np.trapz(rho,E)
+#+END_SRC
+
+where rho is a vector that contains the density of states at each energy in the vector E (vector here means a list of numbers).
+
+The average energy of distribution is:
+
+$E_{avg} = \frac{\int \rho E dE}{\int \rho dE}$
+
+or, in python:
+
+#+BEGIN_SRC python
+e_avg = np.trapz(rho*E,E)/np.trapz(rho,E)
+#+END_SRC
+
+These last two examples are the zeroth and first moments of the density of states. The second moment is related to the width squared of the distribution, and the third and fourth moements are related to skewness and kurtosis of the distribution.
+
+The nth moment is defined by:
+
+$m_n = \frac{\int \rho*E^n dE}{\int \rho dE}$
+
+To get the second moment of the density of states in python, we use::
+
+#+BEGIN_SRC python
+n = 2
+mom_2 = np.trapz(rho*E**n,E)/np.trapz(rho,E)
+#+END_SRC
+
+*** Numerical differentiation
+numpy has a function called func:numpy.diff that is similar to the one found in Matlab. It calculates the differences between the elements in your list, and returns a list that is one element shorter, which makes it unsuitable for plotting the derivative of a function.
+
+**** Simple loops to define finite difference derivatives
+
+Loops in python are pretty slow (relatively speaking) but they are usually trivial to understand. In this script we show some simple ways to construct derivative vectors using loops. It is implied in these formulas that the data points are equally spaced.
+
+#+BEGIN_SRC python
+import numpy as np
+import matplotlib.pyplot as plt
+import time
+
+'''
+These are the brainless way to calculate numerical derivatives. They
+work well for very smooth data. they are surprisingly fast even up to
+10000 points in the vector.
+'''
+
+x = np.linspace(0.78, 0.79, 100) # 100 points between 0.78 and 0.79
+y = np.sin(x)
+dy_analytical = np.cos(x)
+'''
+let us use a forward difference method:
+that works up until the last point, where there is not
+a forward difference to use. there, we use a backward difference.
+'''
+
+tf1 = time.time()
+dyf = [0.0]*len(x)
+for i in range(len(y)-1):
+    dyf[i] = (y[i+1] - y[i])/(x[i+1]-x[i])
+# set last element by backwards difference
+dyf[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
+
+print(' Forward difference took {0:1.1f} seconds'.format(time.time() - tf1))
+
+# and now a backwards difference
+tb1 = time.time()
+dyb = [0.0]*len(x)
+# set first element by forward difference
+dyb[0] = (y[0] - y[1])/(x[0] - x[1])
+for i in range(1,len(y)):
+    dyb[i] = (y[i] - y[i-1])/(x[i]-x[i-1])
+
+print(' Backward difference took {0:1.1f} seconds'.format(time.time() - tb1))
+
+# and now, a centered formula
+tc1 = time.time()
+dyc = [0.0]*len(x)
+dyc[0] = (y[0] - y[1])/(x[0] - x[1])
+for i in range(1,len(y)-1):
+    dyc[i] = (y[i+1] - y[i-1])/(x[i+1]-x[i-1])
+dyc[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
+
+print(' Centered difference took {0:1.1f} seconds'.format(time.time() - tc1))
+
+# the centered formula is the most accurate formula here
+
+
+plt.plot(x,dy_analytical, label='analytical derivative')
+plt.plot(x,dyf,'--', label='forward')
+plt.plot(x,dyb,'--', label='backward')
+plt.plot(x,dyc,'--', label='centered')
+
+plt.legend(loc='lower left')
+plt.savefig('images/simple-diffs.png')
+#+END_SRC
+
+#+RESULTS:
+:  Forward difference took 0.0 seconds
+:  Backward difference took 0.0 seconds
+:  Centered difference took 0.0 seconds
+
+Obviously, all of these evaluations are very fast.
+
+#+attr_latex: :placement [H]
+#+caption: Comparison of different numerical derivatives.
+[[./images/simple-diffs.png]]
+
+Loops are usually not great for performance. Numpy offers some vectorized methods that allow us to compute derivatives without loops, although this comes at the mental cost of harder to understand syntax:
+
+#+BEGIN_SRC python
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(0,2*np.pi,100)
+y = np.sin(x)
+dy_analytical = np.cos(x)
+
+# we need to specify the size of dy ahead because diff returns
+#an array of n-1 elements
+dy = np.zeros(y.shape,np.float) #we know it will be this size
+dy[0:-1] = np.diff(y)/np.diff(x)
+dy[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
+
+
+'''
+calculate dy by center differencing using array slices
+'''
+
+dy2 = np.zeros(y.shape,np.float) #we know it will be this size
+dy2[1:-1] = (y[2:] - y[0:-2])/(x[2:] - x[0:-2])
+dy2[0] = (y[1]-y[0])/(x[1]-x[0])
+dy2[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
+
+plt.plot(x,y)
+plt.plot(x,dy_analytical,label='analytical derivative')
+plt.plot(x,dy,label='forward diff')
+plt.plot(x,dy2,'k--',lw=2,label='centered diff')
+plt.legend(loc='lower left')
+plt.savefig('images/vectorized-diffs.png')
+#+END_SRC
+
+#+RESULTS:
+: None
+
+#+ATTR_LaTeX: :placement [H]
+#+caption: Comparison of different numerical derivatives.
+[[./images/vectorized-diffs.png]]
+
+If your data is very noisy, you will have a hard time getting good derivatives; derivatives tend to magnify noise. In these cases, you have to employ smoothing techniques, either implicitly by using a multipoint derivative formula, or explicitly by smoothing the data yourself, or taking the derivative of a function that has been fit to the data in the neighborhood you are interested in.
+
+Here is an example of a 4-point centered difference of some noisy data:
+
+#+BEGIN_SRC python
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(0,2*np.pi,100)
+y = np.sin(x) + 0.1*np.random.random(size=x.shape)
+dy_analytical = np.cos(x)
+
+#2-point formula
+dyf = [0.0]*len(x)
+for i in range(len(y)-1):
+    dyf[i] = (y[i+1] - y[i])/(x[i+1]-x[i])
+#set last element by backwards difference
+dyf[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
+
+'''
+calculate dy by 4-point center differencing using array slices
+
+\frac{y[i-2] - 8y[i-1] + 8[i+1] - y[i+2]}{12h}
+
+y[0] and y[1] must be defined by lower order methods
+and y[-1] and y[-2] must be defined by lower order methods
+'''
+
+dy = np.zeros(y.shape,np.float) #we know it will be this size
+h = x[1]-x[0] #this assumes the points are evenely spaced!
+dy[2:-2] = (y[0:-4] - 8*y[1:-3] + 8*y[3:-1] - y[4:])/(12.*h)
+
+dy[0] = (y[1]-y[0])/(x[1]-x[0])
+dy[1] = (y[2]-y[1])/(x[2]-x[1])
+dy[-2] = (y[-2] - y[-3])/(x[-2] - x[-3])
+dy[-1] = (y[-1] - y[-2])/(x[-1] - x[-2])
+
+plt.plot(x,y)
+plt.plot(x,dy_analytical,label='analytical derivative')
+plt.plot(x,dyf,'r-',label='2pt-forward diff')
+plt.plot(x,dy,'k--',lw=2,label='4pt-centered diff')
+plt.legend(loc='lower left')
+plt.savefig('images/multipt-diff.png')
+#+END_SRC
+
+#+RESULTS:
+: None
+
+#+ATTR_LaTeX: :placement [H]
+#+caption: Comparison of 2 point and 4 point numerical derivatives.
+[[./images/multipt-diff.png]]
+
+The derivative is still noisy, but the four-point derivative is a little better than the two-pt formula.
+
+**** FFT derivatives
+
+It is possible to perform derivatives using fast fourier transforms (FFT):
+#+BEGIN_SRC python
+import numpy as np
+import matplotlib.pyplot as plt
+
+N = 101 #number of points
+L = 2*np.pi #interval of data
+
+x = np.arange(0.0,L,L/float(N)) #this does not include the endpoint
+
+#add some random noise
+y = np.sin(x) + 0.05*np.random.random(size=x.shape)
+dy_analytical = np.cos(x)
+
+'''
+http://sci.tech-archive.net/Archive/sci.math/2008-05/msg00401.html
+
+you can use fft to calculate derivatives!
+'''
+
+if N % 2 == 0:
+    k = np.asarray(range(0,N/2)+[0] + range(-N/2+1,0))
+else:
+    k = np.asarray(range(0,(N-1)/2) +[0] + range(-(N-1)/2,0))
+
+k *= 2*np.pi/L
+
+fd = np.fft.ifft(1.j*k * np.fft.fft(y))
+
+plt.plot(x,y)
+plt.plot(x,dy_analytical,label='analytical der')
+plt.plot(x,fd,label='fft der')
+plt.legend(loc='lower left')
+
+plt.savefig('images/fft-der.png')
+#+end_src
+
+#+RESULTS:
+
+#+ATTR_LaTeX: :placement [H]
+#+caption: Comparison of FFT numerical derivatives.
+[[./images/fft-der.png]]
+
+This example does not show any major advantage in the quality of the derivative, and it is almost certain I would never remember how to do this off the top of my head.
+
+*** NetCDF files
+
+[[http://www.unidata.ucar.edu/software/netcdf][NetCDF]] is a binary,
+but cross-platform structured data format.	The input file and
+output file for Dacapo is the NetCDF format. On creating a NetCDF file
+you must define the dimensions and variables before you can store data
+in them. You can create and read NetCDF files in python using one of
+the following modules:
+
+mod:Scientific.IO.NetCDF
+(http://dirac.cnrs-orleans.fr/plone/software/scientificpython/)
+
+mod:netCDF3 (http://netcdf4-python.googlecode.com/svn/trunk/docs/netCDF3-module.html)
+
+mod:pycdf (http://pysclint.sourceforge.net/pycdf/) this is a very
+low level module modelled after the C-api. I am not sure it is completely
+bug-free (I have problems with character variables)
+
+*** Python modules
+The comma separated values (mod:csv) module in python allows you to
+easily create datafiles:
+
+csv writing:
+#+BEGIN_SRC python
+import numpy as np
+
+x = np.linspace(0.0,6.0,100)
+y = np.cos(x)
+
+import csv
+writer = csv.writer(open("some.csv", "w"))
+writer.writerows(zip(x,y))
+#+END_SRC
+
+It is not so easy to read the data back in though because the module
+only returns strings, so you must turn the strings back into floats (or
+whatever other format they should be).
+
+csv reading:
+#+BEGIN_SRC python
+import csv
+reader = csv.reader(open("some.csv",'r'),delimiter=',')
+
+x,y = [],[]
+for row in reader:
+#csv returns strings that must be cast as floats
+    a,b = [float(z) for z in row]
+    x.append(a)
+    y.append(b)
+#+END_SRC
+
+This is almost as much work as manually reading the data though. The
+module is more powerful than I have shown here, so one day checkout
+=pydoc csv=.
+
+The mod:pickle and mod:shelve modules of python also offer some
+data storage functionality. Check them out some day too.
+
+*** Writing and reading Excel files
+**** Writing Excel files
+It is sometimes convenient to do some analysis in Excel. We can create Excel files in python with mod:xlwt. Google this module if you need to do this a lot.
+#+BEGIN_SRC python
+import numpy as np
+import xlwt
+
+wbk = xlwt.Workbook()
+sheet = wbk.add_sheet('sheet 1')
+
+volumes = np.array([13.72, 14.83, 16.0, 17.23, 18.52])
+energies = np.array([-56.29, -56.41, -56.46, -56.46, -56.42])
+
+for i, pair in enumerate(zip(volumes, energies)):
+    vol = pair[0]
+    energy = pair[1]
+    sheet.write(i,0,vol)
+    sheet.write(i,1,energy)
+wbk.save('images/test-write.xls')
+#+END_SRC
+
+**** Reading Excel files
+We can also read Excel files (even on Linux!) with mod:xlrd. Let us read in the data we just wrote. We wrote 5 volumes to column 0, and 5 energies to column 1.
+
+#+BEGIN_SRC python
+import xlrd
+wbk = xlrd.open_workbook('images/test-write.xls')
+sheet1 = wbk.sheet_by_name('sheet 1')
+print(sheet1.col_values(0))
+print(sheet1.col_values(1))
+#+END_SRC
+
+#+RESULTS:
+: [13.72, 14.83, 16.0, 17.23, 18.52]
+: [-56.29, -56.41, -56.46, -56.46, -56.42]
+
+*** TODO making movies
+1. using animate
+2. using swftools (png2swf, pdf2swf)
+#http://wiki.swftools.org/wiki/Main_Page#SWF_Tools_0.9.2_.28_Current_Stable_Version_.29_Documentation
+
+** Computational geometry
+*** Changing coordinate systems
+Let A, B, C be the unit cell vectors
+
+\begin{eqnarray}
+A = A1 x + A2 y + A3 z \\
+B = B1 x + B2 y + B3 z \\
+C = C1 x + C2 y + C3 z
+\end{eqnarray}
+
+and we want to find the vector $[s1, s2, s3]$ so that
+\(P = s1 A + s2 B + s3 C \)
+
+if we expand this, we get:
+
+\begin{align*}
+&s1 A1 x + s1 A2 y + s1 A3 z   \\
+&+ s2 B1 x + s2 B2 y + s2 B3 z \\
+&+ s3 C1 x + s3 C2 y + s3 C3 z = p1 x + p2 y + p3 z
+\end{align*}
+
+If we now match coefficients on x, y, and z, we can write a set of
+linear equations as:
+
+\begin{equation}
+\left [ \begin{array}{ccc}
+A1 & B1 & C1 \\
+A2 & B2 & C2 \\
+A3 & B3 & C3
+\end{array}\right]
+\left [ \begin{array}{c}
+s1 \\
+s2 \\
+s3 \end{array}\right] =
+\left [\begin{array}{c}
+p1 \\ p2 \\ p3 \end{array}\right]
+\end{equation}
+
+# |A1 B1 C1| |s1|   |p1|
+# |A2 B2 C2| |s2| = |p2|
+# |A3 B3 C3| |s3|   |p3|
+
+or, in standard form:
+
+$A^T s = p$
+
+and we need to solve for s as:
+
+$s = (A^T)^{-1} \cdot p$
+
+p must be a column vector, so we will have to transpose the positions
+provided by the atoms class, and then transpose the final result to
+get the positions back into row-vector form:
+
+$s = ((A^T)^{-1} p^T)^T$
+
+Here we implement that in code:
+
+#+BEGIN_SRC python
+from ase.lattice.surface import fcc111
+import numpy as np
+np.set_printoptions(precision=3,suppress=True)
+
+slab = fcc111('Pd',
+              a=3.92,       # Pd lattice constant
+              size=(2,2,3), #3-layer slab in 1x1 configuration
+              vacuum=10.0)
+
+pos = slab.get_positions() #these positions use x,y,z vectors as a basis
+
+# we want to see the atoms in terms of the unitcell vectors
+newbasis = slab.get_cell()
+
+s = np.dot(np.linalg.inv(newbasis.T),pos.T).T
+print('Coordinates in new basis are: \n',s)
+
+# what we just did is equivalent to the following atoms method
+print('Scaled coordinates from ase are: \n',slab.get_scaled_positions())
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Coordinates in new basis are:
+[[ 0.167  0.167  0.408]
+ [ 0.667  0.167  0.408]
+ [ 0.167  0.667  0.408]
+ [ 0.667  0.667  0.408]
+ [-0.167  0.333  0.5  ]
+ [ 0.333  0.333  0.5  ]
+ [-0.167  0.833  0.5  ]
+ [ 0.333  0.833  0.5  ]
+ [ 0.     0.     0.592]
+ [ 0.5    0.     0.592]
+ [ 0.     0.5    0.592]
+ [ 0.5    0.5    0.592]]
+Scaled coordinates from ase are:
+[[ 0.167  0.167  0.408]
+ [ 0.667  0.167  0.408]
+ [ 0.167  0.667  0.408]
+ [ 0.667  0.667  0.408]
+ [ 0.833  0.333  0.5  ]
+ [ 0.333  0.333  0.5  ]
+ [ 0.833  0.833  0.5  ]
+ [ 0.333  0.833  0.5  ]
+ [ 0.     0.     0.592]
+ [ 0.5    0.     0.592]
+ [ 0.     0.5    0.592]
+ [ 0.5    0.5    0.592]]
+#+end_example
+
+
+The method shown above is general to all basis set transformations. We
+examine another case next. Sometimes it is nice if all the coordinates
+are integers. For this example, we will use the bcc primitive lattice
+vectors and express the positions of each atom in terms of them. By
+definition each atomic position should be an integer combination of
+the primitive lattice vectors (before relaxation, and assuming one
+atom is at the origin, and the unit cell is aligned with the primitive
+basis!)
+
+#+BEGIN_SRC python
+from ase.lattice.cubic import BodyCenteredCubic
+import numpy as np
+bulk = BodyCenteredCubic(directions=[[1,0,0],
+                                     [0,1,0],
+                                     [0,0,1]],
+                         size=(2,2,2),
+                         latticeconstant=2.87,
+                         symbol='Fe')
+
+
+newbasis = 2.87*np.array([[-0.5, 0.5, 0.5],
+                          [0.5, -0.5, 0.5],
+                          [0.5, 0.5, -0.5]])
+
+pos = bulk.get_positions()
+
+s = np.dot(np.linalg.inv(newbasis.T), pos.T).T
+print('atom positions in primitive basis')
+print(s)
+
+# let us see the unit cell in terms of the primitive basis too
+print('unit cell in terms of the primitive basis')
+print(np.dot(np.linalg.inv(newbasis.T), bulk.get_cell().T).T)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+atom positions in primitive basis
+[[ 0.  0.  0.]
+ [ 1.  1.  1.]
+ [ 0.  1.  1.]
+ [ 1.  2.  2.]
+ [ 1.  0.  1.]
+ [ 2.  1.  2.]
+ [ 1.  1.  2.]
+ [ 2.  2.  3.]
+ [ 1.  1.  0.]
+ [ 2.  2.  1.]
+ [ 1.  2.  1.]
+ [ 2.  3.  2.]
+ [ 2.  1.  1.]
+ [ 3.  2.  2.]
+ [ 2.  2.  2.]
+ [ 3.  3.  3.]]
+unit cell in terms of the primitive basis
+[[ 0.  2.  2.]
+ [ 2.  0.  2.]
+ [ 2.  2.  0.]]
+#+end_example
+
+*** Simple distances, angles
+=Scientific.Geometry= contains several useful functions for
+performing vector algebra including computing lengths and angles.
+
+#+BEGIN_SRC python
+import numpy as np
+from Scientific.Geometry import Vector
+
+A = Vector([1, 1, 1])   # Scientfic
+a = np.array([1, 1, 1])  # numpy
+
+B = Vector([0.0, 1.0, 0.0])
+
+print('|A| = ', A.length())        # Scientific Python way
+print('|a| = ', np.sum(a**2)**0.5)  # numpy way
+print('|a| = ', np.linalg.norm(a))  # numpy way 2
+
+print('ScientificPython angle = ', A.angle(B))  # in radians
+print ('numpy angle = {}',
+       np.arccos(np.dot(a / np.linalg.norm(a),
+                        B / np.linalg.norm(B))))
+
+# cross products
+print('Scientific A .cross. B = ', A.cross(B))
+
+# you can use Vectors in numpy
+print('numpy A .cross. B      = ', np.cross(A,B))
+#+END_SRC
+
+#+RESULTS:
+: ('|A| = ', 1.7320508075688772)
+: ('|a| = ', 1.7320508075688772)
+: ('|a| = ', 1.7320508075688772)
+: ('ScientificPython angle = ', 0.9553166181245092)
+: ('numpy angle = {}', 0.95531661812450919)
+: ('Scientific A .cross. B = ', Vector(-1.000000,0.000000,1.000000))
+: ('numpy A .cross. B      = ', array([-1.,  0.,  1.]))
+:
+
+*** Unit cell properties
+The volume of a unit cell can be calculated from $V = (a_1 \times a_2)
+\cdot a_3$ where $a_1$, $a_2$ and $a_3$ are the unit cell vectors. It
+is more convenient, however, to simply evaluate that equation as the
+determinant of the matrix describing the unit cell, where each row of
+the matrix is a unit cell vector.
+
+   $V = |\det(ucell)|$
+
+Why do we need to take the absolute value? The sign of the determinant
+depends on the handedness of the order of the unit cell vectors. If
+they are right-handed the determinant will be positive, and if they
+are left-handed the determinant will be negative. Switching any two
+rows will change the sign of the determinant and the
+handedness. mod:ase implements a convenient function to get the
+volume of an mod:Atoms object: func:ase.Atoms.get_volume.
+
+Here are three equivalent ways to compute the unit cell volume.
+
+#+BEGIN_SRC python
+import numpy as np
+
+a1 = [2, 0, 0]
+a2 = [1, 1, 0]
+a3 = [0, 0, 10]
+
+uc = np.array([a1, a2, a3])
+
+print('V = {0} ang^3 from dot/cross'.format(np.dot(np.cross(a1,a2),a3)))
+print('V = {0} ang^3 from det'.format(np.linalg.det(uc)))
+
+from ase import Atoms
+
+atoms = Atoms([],cell=uc) #empty list of atoms
+print('V = {0} ang^3 from get_volume'.format(atoms.get_volume()))
+#+END_SRC
+
+#+RESULTS:
+: V = 20 ang^3 from dot/cross
+: V = 20.0 ang^3 from det
+: V = 20.0 ang^3 from get_volume
+
+*** d-spacing
+If you like to set up the vacuum in your slab calculations in terms of
+equivalent layers of atoms, you need to calculate the d-spacing (which
+is the spacing between parallel planes of atoms) for the hkl plane you
+are using. The script below shows several ways to accomplish that.
+
+#+BEGIN_SRC python
+import numpy as np
+from ase.lattice.cubic import FaceCenteredCubic
+
+ag = FaceCenteredCubic(directions=[[1, 0, 0],
+                                   [0, 1, 0],
+                                   [0, 0, 1]],
+                       size=(1, 1, 1),
+                       symbol='Ag',
+                       latticeconstant=4.0)
+
+# these are the reciprocal lattice vectors
+b1, b2, b3 = np.linalg.inv(ag.get_cell())
+
+'''
+g(111) = 1*b1 + 1*b2 + 1*b3
+
+and |g(111)| = 1/d_111
+'''
+h,k,l = (1, 1, 1)
+d = 1./np.linalg.norm(h*b1 + k*b2 + l*b3)
+
+print('d_111 spacing (method 1) = {0:1.3f} Angstroms'.format(d))
+
+# method #2
+hkl = np.array([h, k, l])
+G = np.array([b1, b2, b3])  # reciprocal unit cell
+
+'''
+Gstar is usually defined as this matrix of dot products:
+
+Gstar = np.array([[dot(b1,b1), dot(b1,b2), dot(b1,b3)],
+                  [dot(b1,b2), dot(b2,b2), dot(b2,b3)],
+                  [dot(b1,b3), dot(b2,b3), dot(b3,b3)]])
+
+but I prefer the notationally more compact:
+Gstar = G .dot. transpose(G)
+
+then, 1/d_hkl^2 = hkl .dot. Gstar .dot. hkl
+'''
+
+Gstar = np.dot(G, G.T)
+
+id2 = np.dot(hkl, np.dot(Gstar, hkl))
+
+print('d_111 spacing (method 2) =',np.sqrt(1 / id2))
+
+# http://books.google.com/books?id=nJHSqEseuIUC&lpg=PA118&ots=YA9TBldoVH
+# &dq=reciprocal%20metric%20tensor&pg=PA119#v=onepage
+# &q=reciprocal%20metric%20tensor&f=false
+
+'''Finally, many text books on crystallography use long algebraic
+formulas for computing the d-spacing with sin and cos, vector lengths,
+and angles. Below we compute these and use them in the general
+triclinic structure formula which applies to all the structures.
+'''
+from Scientific.Geometry import Vector
+import math
+
+unitcell = ag.get_cell()
+A = Vector(unitcell[0])
+B = Vector(unitcell[1])
+C = Vector(unitcell[2])
+
+# lengths of the vectors
+a = A.length()#*angstroms2bohr
+b = B.length()#*angstroms2bohr
+c = C.length()#*angstroms2bohr
+
+# angles between the vectors in radians
+alpha = B.angle(C)
+beta = A.angle(C)
+gamma = A.angle(B)
+
+print('')
+print('a   b   c   alpha beta gamma')
+print('{0:1.3f} {1:1.3f} {2:1.3f} {3:1.3f} {4:1.3f} {5:1.3f}\n'.format(a,b,c,                                                                alpha,beta,gamma))
+
+h, k, l = (1, 1, 1)
+
+from math import sin, cos
+
+id2 = ((h**2 / a**2 * sin(alpha)**2
+       + k**2 / b**2 * sin(beta)**2
+       + l**2 / c**2 * sin(gamma)**2
+       + 2 * k * l / b / c * (cos(beta) * cos(gamma) - cos(alpha))
+       + 2 * h * l / a / c * (cos(alpha) * cos(gamma) - cos(beta))
+       + 2 * h * k / a / b * (cos(alpha) * cos(beta) - cos(gamma)))
+       / (1 - cos(alpha)**2 - cos(beta)**2 - cos(gamma)**2
+         + 2 * cos(alpha) * cos(beta) * cos(gamma)))
+
+d = 1 / math.sqrt(id2)
+
+print('d_111 spacing (method 3) = {0}'.format(d))
+#+END_SRC
+
+#+RESULTS:
+: d_111 spacing (method 1) = 2.309 Angstroms
+: ('d_111 spacing (method 2) =', 2.3094010767585029)
+:
+: a   b   c   alpha beta gamma
+: 4.000 4.000 4.000 1.571 1.571 1.571
+:
+: d_111 spacing (method 3) = 2.30940107676
+:
+
+** Equations of State
+
+The module mod:ase.utils.eos uses a simple polynomial equation of
+state to find bulk unit cell equilibrium volumes and bulk
+modulus. There are several other choices you could use that are more
+standard in the literature. Here we summarize them and provide
+references to the relevant literature. In each of these cases we show equations for the energy as a function of volume, although sometimes the volume is transformed or normalized.
+
+*** Birch-Murnaghan
+This is probably the most common equation of state used most often,
+and is a modification of the original Murnaghan EOS described below. A
+current description of the equation is in reference
+cite:PhysRevB.70.224107. You can also find the equations for the Vinet and
+Poirier-Tarantola equations of state in that reference.
+
+Birch-Murnaghan EOS:
+
+   $E(\eta) = E_0 + \frac{9B_0 V_0}{16}(\eta^2-1)^2(6+B'_0(\eta^2-1)-4\eta^2)$
+
+where $\eta=(V/V_0)^{1/3}$, $B_0$ and $B'_0$ are the bulk
+modulus and its pressure derivative at the equilibrium volume
+$V_0$. You may find other derivations of this equation in the
+literature too.
+
+Two other equations of state in that reference are the Vinet EOS:
+
+   $E(\eta) = E_0 + \frac{2 B_0 V_0}{(B'_0-1)^2}(2-(5+3B'_0 (\eta-1) e^{-3(B'_0-1)(\eta-1)/2})$
+
+and the Poirier-Tarantola EOS:
+
+   $E(\varrho) = E_0 + \frac{B_0 V_0 \varrho^2}{6}(3 + \varrho (B'_0-2))$
+
+with $\varrho=-3 \ln(\eta)$.
+
+*** Murnaghan
+The equation most often used in the Murnaghan  cite:Murnaghan1944
+equation of state is described in citealp:PhysRevB.28.5480.
+
+
+   $E = E_T+\frac{B_0 V}{B'_0}\left[\frac{(V_0/V)^{B'_0}}{B'_0-1}+1\right]-\frac{V_0 B_0}{B'_0-1}$
+
+where $V$ is the volume, $B_0$ and $B'_0$ are the bulk
+modulus and its pressure derivative at the equilibrium volume
+$V_0$. All of these are parameters that are fitted to energy
+vs. unit cell volume ($V$) data. When fitting data to this equation a
+guess of 2-4 for $B'_0$ is usually a good start.
+
+*** Birch
+
+
+The original Birch equation cite:Birch is:
+
+
+   $E = E_0 + \frac{9}{8} B_0 V_0 \left(\left(\frac{V_0}{V}\right)^{\frac{2}{3}}-1\right)^2+\frac{9}{16} B_0 V_0 (B'_0-4)\left(\left(\frac{V}{V_0}\right)^{2/3}-1\right)^3$
+
+*** The Anton-Schmidt Equation of state cite:Mayer200323
+
+   $E(V) = E_\infty + \frac{B V_0}{n+1}\left(\frac{V}{V_0}\right)^{n+1} \left( \ln{\frac{V}{V_0}} - \frac{1}{n+1}\right)$
+
+where $E_\infty$ corresponds to the energy at infinite separation,
+although the model they use to derive this equation breaks down at
+large separations so this is usually not a good estimate of the
+cohesive energy. $n$ is typically about -2.
+
+*** Fitting data to these equations of state
+To use these equations of state to find the equilibrium cell volume
+and bulk modulus we need a set of calculations that give us the energy
+of the unit cell as a function of the cell volume. We then fit that
+data to one of the above equations to extract the parameters we want.
+All of these equations of state are non-linear in the cell volume,
+which means you have to provide some initial guesses for the
+parameters.
+
+Here we describe a strategy for getting some estimates of the
+parameters using a linear least squares fitting of a parabola to the
+data to estimate $E_0$, $V_0$, $B$ and
+$B'_0$ which are used as initial guess for a non-linear least
+squares fit of the equation of state to the data.
+
+The following example illustrates one approach to this problem for the
+Murnaghan equation of state:
+
+#+BEGIN_SRC python
+'''Example of fitting the Birch-Murnaghan EOS to data'''
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import leastsq
+
+# raw data from 2.2.3-al-analyze-eos.py
+v = np.array([13.72, 14.83, 16.0, 17.23, 18.52])
+e = np.array([-56.29, -56.41, -56.46, -56.46, -56.42])
+
+#make a vector to evaluate fits on with a lot of points so it looks smooth
+vfit = np.linspace(min(v),max(v),100)
+
+### fit a parabola to the data
+# y = ax^2 + bx + c
+a,b,c = np.polyfit(v,e,2) #this is from pylab
+
+'''
+the parabola does not fit the data very well, but we can use it to get
+some analytical guesses for other parameters.
+
+V0 = minimum energy volume, or where dE/dV=0
+E = aV^2 + bV + c
+dE/dV = 2aV + b = 0
+V0 = -b/2a
+
+E0 is the minimum energy, which is:
+E0 = aV0^2 + bV0 + c
+
+B is equal to V0*d^2E/dV^2, which is just 2a*V0
+
+and from experience we know Bprime_0 is usually a small number like 4
+'''
+
+#now here are our initial guesses.
+v0 = -b/(2*a)
+e0 = a*v0**2 + b*v0 + c
+b0 = 2*a*v0
+bP = 4
+
+#now we have to create the equation of state function
+def Murnaghan(parameters,vol):
+    '''
+    given a vector of parameters and volumes, return a vector of energies.
+    equation From PRB 28,5480 (1983)
+    '''
+    E0 = parameters[0]
+    B0 = parameters[1]
+    BP = parameters[2]
+    V0 = parameters[3]
+
+    E = E0 + B0*vol/BP*(((V0/vol)**BP)/(BP-1)+1) - V0*B0/(BP-1.)
+
+    return E
+
+# and we define an objective function that will be minimized
+def objective(pars,y,x):
+    #we will minimize this function
+    err =  y - Murnaghan(pars,x)
+    return err
+
+x0 = [e0, b0, bP, v0] #initial guesses in the same order used in the Murnaghan function
+
+murnpars, ier = leastsq(objective, x0, args=(e,v)) #this is from scipy
+
+#now we make a figure summarizing the results
+plt.plot(v,e,'ro')
+plt.plot(vfit, a*vfit**2 + b*vfit + c,'--',label='parabolic fit')
+plt.plot(vfit, Murnaghan(murnpars,vfit), label='Murnaghan fit')
+plt.xlabel('Volume ($\AA^3$)')
+plt.ylabel('Energy (eV)')
+plt.legend(loc='best')
+
+#add some text to the figure in figure coordinates
+ax = plt.gca()
+plt.text(0.4, 0.5, 'Min volume = {0:1.2f} $\AA^3$'.format(murnpars[3]),
+     transform = ax.transAxes)
+plt.text(0.4, 0.4, 'Bulk modulus = {0:1.2f} eV/$\AA^3$ = {1:1.2f} GPa'.format(murnpars[1],
+                                                                          murnpars[1]*160.21773),
+     transform = ax.transAxes)
+plt.savefig('images/a-eos.png')
+
+np.set_printoptions(precision=3)
+print('initial guesses  : ', np.array(x0))  # array for easy printing
+print('fitted parameters: ', murnpars)
+
+#+END_SRC
+
+#+RESULTS:
+: initial guesses  :  [-56.472   0.631   4.     16.79 ]
+: fitted parameters:  [-56.466   0.49    4.753  16.573]
+
+#+attr_latex: :placement [H]
+#+caption: Fitted equation of state for bulk data. The initial fitted parabola is shown to illustrate how it is useful for making initial guesses of the minimum and bulk modulus.
+[[./images/a-eos.png]]
+
+You can see the Murnaghan equation of state fits the data better than
+the parabola.
+
+Here is a comparison of the initial guesses and final parameters. You
+can see our guesses from the parabola were actually pretty good, and
+are the main reason we converged to a solution. If you try other
+guesses you will probably find the =scipy.optimize.leastsq= function
+does not converge.
+
+** Miscellaneous vasp/VASP tips
+*** Using a special setup
+VASP provides [[http://cms.mpi.univie.ac.at/vasp/vasp/PAW_potentials.html][special setups]] for some elements. The following guidelines tell you what is in a potential:
+
+No extension means the standard potential. The following extensions mean:
+#+ATTR_LaTeX: align= |l|p{10cm}|
+#+caption: Meaning of extensions on POTCAR files for special setups.
+| extension |                                                                                     |
+|-----------+-------------------------------------------------------------------------------------|
+| _h        | means the potential is harder than the standard (i.e. needs a higher cutoff energy) |
+| _s        | means the potential is softer than the standard (i.e. needs a lower cutoff energy)  |
+| _sv       | $s$ and $p$ semi-core states are treated as valence states                          |
+| _pv       | $p$ semi-core states are treated as valence states                                  |
+| _d        | $d$ semi-core states are treated as valence states                                  |
+
+Here are some links to information in the VASP manual for the setups.
+
+- [[http://cms.mpi.univie.ac.at/vasp/vasp/st_row_elements.html][1st row elements]]
+- [[http://cms.mpi.univie.ac.at/vasp/vasp/Alkali_alkali_earth_elements_simple_metals.html][Alkali and alkali-earth metals]]
+- [[http://cms.mpi.univie.ac.at/vasp/vasp/_elements.html][d-elements]]
+- [[http://cms.mpi.univie.ac.at/vasp/vasp/_elements_including_first_row.html][p-elements]]
+- [[http://cms.mpi.univie.ac.at/vasp/vasp/_elements_I.html][f-elements]]
+Here we show how to select the O_sv potential in a calculation.
+
+#+BEGIN_SRC python
+from ase import Atoms, Atom
+from vasp import Vasp
+
+atoms = Atoms([Atom('O',[5, 5, 5], magmom=1)],
+             cell=(6, 6, 6))
+
+calc = Vasp('molecules/O_s',
+          encut=300,
+            xc='PBE',
+            ispin=2,
+            ismear=0,
+            sigma=0.001,
+            setups=[['O', '_s']], # specifies O_s potential
+            atoms=atoms)
+
+print calc.potential_energy
+#+END_SRC
+
+#+RESULTS:
+: -1.50564364
+
+
+How do you know you got the right special setup? We can look at the first line of the POTCAR file in the calculation directory to see.
+#+BEGIN_SRC sh :exports both
+head -n 1 molecules/O_sv/POTCAR
+#+END_SRC
+
+#+RESULTS:
+: PAW_PBE O_sv 05Jul2007
+
+This shows we indeed used the O_sv setup.
+
+*** TODO Running vasp in parallel
+vasp is smart. If you ask for more than one node, it will automatically try to run in parallel. On our cluster you have to use cores, i.e. (processor per node) not nodes due to a limitation in how vasp is compiled.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from vasp.vasprc import VASPRC
+
+VASPRC['queue.ppn']=4
+from ase import Atom, Atoms
+atoms = Atoms([Atom('O',[5, 5, 5], magmom=1)],
+             cell=(6, 6, 6))
+
+calc = Vasp('molecules/O_s-4nodes',
+          encut=300,
+          xc='PBE',
+          ispin=2,
+          ismear=0,
+          sigma=0.001,
+          setups=[['O', '_s']],  # specifies O_s potential
+          atoms=atoms)
+
+print calc.potential_energy
+#+END_SRC
+
+#+RESULTS:
+
+How do you know it ran on four nodes?
+#+BEGIN_SRC sh
+head molecules/O_s-4nodes/OUTCAR
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+ vasp.5.3.5 31Mar14 (build Aug 04 2015 13:07:31) complex
+
+ executed on             LinuxIFC date 2016.05.11  15:58:14
+ running on    4 total cores
+ distrk:  each k-point on    4 cores,    1 groups
+ distr:  one band on NCORES_PER_BAND=   1 cores,    4 groups
+
+
+--------------------------------------------------------------------------------------------------------
+
+#+end_example
+
+*** Running multiple instances of vasp in parallel
+mod:vasp was designed to enable asynchronous, parallel running processes through a queuing system. This is ideal for submitting large numbers of independent calculations in one script. The design uses exceptions to exit the script if the results are not available for subsequent analysis. The design expects that you run the script often, and the results are analyzed only when they are finally available.
+
+Sometimes it is convenient to run a set of calculations and then wait for them to finish so that a second set of calculations that depend on the first results can be run. In this scenario, it is inconvenient to have to rerun your script again after the first set of calculations is done.  The challenge is how to tell the computer to run a set of calculations in parallel, *and* wait for the calculations to finish. This can be achieved using the mod:multiprocessing module in python.
+
+The principle idea is to set up the calculations you want to run, and use mod:multiprocessing to handle running them and waiting for you. To do this, you must instruct mod:vasp to use a "run mode", and construct a script with a function that runs a calculation, and a section that only runs in the "__main__" script.
+
+#+BEGIN_SRC python
+import multiprocessing
+from vasp import Vasp
+from ase import Atom, Atoms
+from ase.utils.eos import EquationOfState
+import numpy as np
+
+# this is the function that runs a calculation
+def do_calculation(calc):
+    """function to run a calculation through multiprocessing."""
+    atoms = calc.get_atoms()
+    e = atoms.get_potential_energy()
+    v = atoms.get_volume()
+    return v, e
+
+# this only runs in the main script, not in processes on other cores
+if __name__ == '__main__':
+    NCORES = 6  # number of cores to run processes on
+
+    # setup an atoms object
+    a = 3.6
+    atoms = Atoms([Atom('Cu',(0, 0, 0))],
+                  cell=0.5 * a * np.array([[1.0, 1.0, 0.0],
+                                           [0.0, 1.0, 1.0],
+                                           [1.0, 0.0, 1.0]]))
+    v0 = atoms.get_volume()
+
+    # Step 1
+    COUNTER = 0
+    calculators = []  # list of calculators to be run
+    factors = [-0.1, 0.05, 0.0, 0.05, 0.1]
+    for f in factors:
+        newatoms = atoms.copy()
+        newatoms.set_volume(v0*(1 + f))
+        label = 'bulk/cu-mp/step1-{0}'.format(COUNTER)
+        COUNTER += 1
+
+        calc = Vasp(label,
+                    xc='PBE',
+                    encut=350,
+                    kpts=[6, 6, 6],
+                    isym=2,
+                    atoms=newatoms)
+
+        calculators.append(calc)
+
+    # now we set up the Pool of processes
+    pool = multiprocessing.Pool(processes=NCORES)
+
+    # get the output from running each calculation
+    out = pool.map(do_calculation, calculators)
+    pool.close()
+    pool.join() # this makes the script wait here until all jobs are done
+
+    # now proceed with analysis
+    V = [x[0] for x in out]
+    E = [x[1] for x in out]
+
+    eos = EquationOfState(V, E)
+    v1, e1, B = eos.fit()
+    print('step1: v1 = {v1}'.format(**locals()))
+
+    ### ################################################################
+    ## STEP 2, eos around the minimum
+    ## #################################################################
+    factors = [-0.06, -0.04, -0.02,
+               0.0,
+               0.02, 0.04, 0.06]
+
+    calculators = [] # reset list
+    for f in factors:
+        newatoms = atoms.copy()
+        newatoms.set_volume(v1*(1 + f))
+        label = 'bulk/cu-mp/step2-{0}'.format(COUNTER)
+        COUNTER += 1
+
+        calc = Vasp(label,
+                    xc='PBE',
+                    encut=350,
+                    kpts=[6, 6, 6],
+                    isym=2,
+                    atoms=newatoms)
+        calculators.append(calc)
+
+    pool = multiprocessing.Pool(processes=NCORES)
+
+    out = pool.map(do_calculation, calculators)
+    pool.close()
+    pool.join() # wait here for calculations to finish
+
+    # proceed with analysis
+    V += [x[0] for x in out]
+    E += [x[1] for x in out]
+
+    V = np.array(V)
+    E = np.array(E)
+
+    f = np.array(V)/v1
+
+    # only take points within +- 10% of the minimum
+    ind = (f >=0.90) & (f <= 1.1)
+
+    eos = EquationOfState(V[ind], E[ind])
+    v2, e2, B = eos.fit()
+    print('step2: v2 = {v2}'.format(**locals()))
+    eos.plot('images/cu-mp-eos.png')
+#+END_SRC
+
+#+RESULTS:
+: step1: v1 = 12.0218897111
+: step2: v2 = 12.0216094217
+
+#+attr_latex: :placement [H]
+#+caption: Equation of state for Cu using the multiprocessing module.
+[[./images/cu-mp-eos.png]]
+
+#+begin_note
+The first time you run this you will get all the VASP output. The second time you get the smaller output above.
+
+Also, I have not figured out how to integrate this method with the queue system. At the moment, the runvasp.py script which ultimately runs VASP will run VASP in parallel, i.e. one process on multiple nodes/cores instead of a single job that runs multiple processes simultaneously on multiple nodes/cores.
+#+end_note
+
+Here is an example of running this through the queue. The main variations are you must set several variables in =VASPRC= that indicate you want to use mod:multiprocessing, and you must save the script and submit manually to the queue with matching parameters. This is not 100% satisfying, but it is the best that I have found for now.
+
+# (org-babel-tangle)
+#+BEGIN_SRC python  :tangle cu-mp.py
+#!/usr/bin/env python
+import multiprocessing
+from vasp import Vasp
+from vasp.vasprc import VASPRC
+from ase import Atom, Atoms
+from ase.utils.eos import EquationOfState
+import numpy as np
+
+VASPRC['queue.nodes'] = 1
+
+# Here we will be able to run three MPI jobs on 2 cores at a time.
+VASPRC['queue.ppn'] = 6
+VASPRC['multiprocessing.cores_per_process'] = 2
+
+# to submit this script, save it as cu-mp.py
+# qsub -l nodes=1:ppn=6,walltime=10:00:00 cu-mp.py
+import os
+if 'PBS_O_WORKDIR' in os.environ:
+    os.chdir(os.environ['PBS_O_WORKDIR'])
+
+# this is the function that runs a calculation
+def do_calculation(calc):
+    'function to run a calculation through multiprocessing'
+    atoms = calc.get_atoms()
+    e = atoms.get_potential_energy()
+    v = atoms.get_volume()
+    return v, e
+
+# this only runs in the main script, not in processes on other cores
+if __name__ == '__main__':
+
+    # setup an atoms object
+    a = 3.6
+    atoms = Atoms([Atom('Cu',(0, 0, 0))],
+                  cell=0.5 * a*np.array([[1.0, 1.0, 0.0],
+                                         [0.0, 1.0, 1.0],
+                                         [1.0, 0.0, 1.0]]))
+    v0 = atoms.get_volume()
+
+    # Step 1
+    COUNTER = 0
+    calculators = []  # list of calculators to be run
+    factors = [-0.1, 0.05, 0.0, 0.05, 0.1]
+    for f in factors:
+        newatoms = atoms.copy()
+        newatoms.set_volume(v0*(1 + f))
+        label = 'bulk/cu-mp2/step1-{0}'.format(COUNTER)
+        COUNTER += 1
+
+        calc = Vasp(label,
+                    xc='PBE',
+                    encut=350,
+                    kpts=[6, 6, 6],
+                    isym=2,
+                    debug=logging.DEBUG,
+                    atoms=newatoms)
+
+        calculators.append(calc)
+
+    # now we set up the Pool of processes
+    pool = multiprocessing.Pool(processes=3) # ask for 6 cores but run MPI on 2 cores
+
+    # get the output from running each calculation
+    out = pool.map(do_calculation, calculators)
+    pool.close()
+    pool.join() # this makes the script wait here until all jobs are done
+
+    # now proceed with analysis
+    V = [x[0] for x in out]
+    E = [x[1] for x in out]
+
+    eos = EquationOfState(V, E)
+    v1, e1, B = eos.fit()
+    print('step1: v1 = {v1}'.format(**locals()))
+
+    ### ################################################################
+    ## STEP 2, eos around the minimum
+    ## #################################################################
+    factors = [-0.06, -0.04, -0.02,
+               0.0,
+               0.02, 0.04, 0.06]
+
+    calculators = [] # reset list
+    for f in factors:
+        newatoms = atoms.copy()
+        newatoms.set_volume(v1*(1 + f))
+        label = 'bulk/cu-mp2/step2-{0}'.format(COUNTER)
+        COUNTER += 1
+
+        calc = Vasp(label,
+                    xc='PBE',
+                    encut=350,
+                    kpts=[6, 6, 6],
+                    isym=2,
+                    debug=logging.DEBUG,
+                    atoms=newatoms)
+        calculators.append(calc)
+
+    pool = multiprocessing.Pool(processes=3)
+
+    out = pool.map(do_calculation, calculators)
+    pool.close()
+    pool.join() # wait here for calculations to finish
+
+    # proceed with analysis
+    V += [x[0] for x in out]
+    E += [x[1] for x in out]
+
+    V = np.array(V)
+    E = np.array(E)
+
+    f = np.array(V)/v1
+
+    # only take points within +- 10% of the minimum
+    ind = (f >=0.90) & (f <= 1.1)
+
+    eos = EquationOfState(V[ind], E[ind])
+    v2, e2, B = eos.fit()
+    print('step2: v2 = {v2}'.format(**locals()))
+    eos.plot('images/cu-mp2-eos.png',show=True)
+#+END_SRC
+
+#+RESULTS:
+: step1: v1 = 12.0218897111
+: step2: v2 = 12.0216189798
+
+#+attr_latex: :placement [H]
+#+caption: Second view of a Cu equation of state computed with multiprocessing.
+[[./images/cu-mp2-eos.png]]
+
+*** Exporting data json, xml, python, sqlite
+Vasp has some capability for representing a calculation result in an archival format.
+
+**** json
+
+#+BEGIN_SRC python
+from vasp import Vasp
+
+calc = Vasp('bulk/alloy/cu')
+print(calc.json)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+{"1": {
+ "calculator": "vasp",
+ "calculator_parameters": {"kpts": [13, 13, 13], "xc": "pbe", "encut": 350, "isif": 4, "ibrion": 2, "nbands": 13, "nsw": 10},
+ "cell": [[1.818, 0.0, 1.818], [1.818, 1.818, 0.0], [0.0, 1.818, 1.818]],
+ "charges": [null],
+ "ctime": 16.38080562948716,
+ "data": {"resort": [0], "ppp_list": [["Cu", "potpaw_PBE/Cu/POTCAR", 1]], "parameters": {"pp": "PBE", "isif": 4, "xc": "pbe", "kpts": [13, 13, 13], "encut": 350, "lcharg": false, "ibrion": 2, "nbands": 13, "ismear": 1, "lwave": false, "sigma": 0.1, "nsw": 10}},
+ "energy": -3.73437124,
+ "forces": [[0.0, 0.0, 0.0]],
+ "key_value_pairs": {"path": "/home-research/jkitchin/dft-book-new-vasp/bulk/alloy/cu"},
+ "magmom": 0,
+ "magmoms": [0.0],
+ "mtime": 16.38080562948716,
+ "numbers": [29],
+ "pbc": [true, true, true],
+ "positions": [[0.0, 0.0, 0.0]],
+ "stress": [0.006175314338977028, 0.006175314338977028, 0.006175314338977028, -0.0, -0.0, -0.0],
+ "unique_id": "18c58fda5603fa5be9d99b5a7a4de74a",
+ "user": "jkitchin"},
+"ids": [1],
+"nextid": 2}
+
+#+end_example
+
+
+
+*** Recommended values for ENCUT and valence electrons for different POTCAR files
+The incar:ENCUT tag and incar:PREC tag affect the accuracy/convergence of your calculations.
+
+#+BEGIN_SRC python :results output raw
+from vasp.POTCAR import get_ENMIN, get_ENMAX, get_ZVAL
+from ase.data import chemical_symbols
+import glob, os
+
+print('#+ATTR_LaTeX: :environment longtable')
+print('#+tblname: POTCAR')
+print('#+caption: Parameters for POTPAW_PBE POTCAR files.')
+print('| POTCAR | ENMIN | ENMAX | prec=high (eV) | # val. elect. |')
+print('|-')
+
+chemical_symbols.sort()
+for symbol in chemical_symbols:
+
+    potcars = glob.glob('{0}/potpaw_PBE/{1}*/POTCAR'.format(os.environ['VASP_PP_PATH'],
+                                                     symbol))
+
+    for potcar in potcars:
+
+        POTCAR = os.path.relpath(potcar,
+                                 os.environ['VASP_PP_PATH']+'/potpaw_PBE')[:-7]
+        ENMIN = get_ENMIN(potcar)
+        ENMAX = get_ENMAX(potcar)
+        HIGH  = 1.3*ENMAX
+        ZVAL  = get_ZVAL(potcar)
+        print('|{POTCAR:30s}|{ENMIN}|{ENMAX}|{HIGH:1.3f}|{ZVAL}|'.format(**locals()))
+#+END_SRC
+
+#+RESULTS:
+#+ATTR_LaTeX: :environment longtable
+#+tblname: POTCAR
+#+caption: Parameters for POTPAW_PBE POTCAR files.
+| POTCAR     |   ENMIN |   ENMAX | prec=high (eV) | # val. elect. |
+|------------+---------+---------+----------------+---------------|
+| Ac         | 129.263 | 172.351 |        224.056 |          11.0 |
+| Ag         | 187.383 | 249.844 |        324.797 |          11.0 |
+| Ag_GW      | 187.383 | 249.844 |        324.797 |          11.0 |
+| Ag_pv      | 223.399 | 297.865 |        387.225 |          17.0 |
+| Al_GW      | 180.225 |   240.3 |        312.390 |           3.0 |
+| Al_sv_GW   | 308.331 | 411.109 |        534.442 |          11.0 |
+| Al         | 180.225 |   240.3 |        312.390 |           3.0 |
+| Am         | 191.906 | 255.875 |        332.637 |          17.0 |
+| Ar         | 199.806 | 266.408 |        346.330 |           8.0 |
+| Ar_GW      | 199.806 | 266.408 |        346.330 |           8.0 |
+| As_GW      | 156.526 | 208.702 |        271.313 |           5.0 |
+| As         | 156.526 | 208.702 |        271.313 |           5.0 |
+| As_d       | 216.488 | 288.651 |        375.246 |          15.0 |
+| At_d       | 199.688 | 266.251 |        346.126 |          17.0 |
+| At         | 121.073 |  161.43 |        209.859 |           7.0 |
+| Au_pv_GW   | 186.258 | 248.344 |        322.847 |          17.0 |
+| Au_GW      | 186.258 | 248.344 |        322.847 |          11.0 |
+| Au         | 172.457 | 229.943 |        298.926 |          11.0 |
+| Bi         |  78.777 | 105.037 |        136.548 |           5.0 |
+| Be_GW      | 185.657 | 247.543 |        321.806 |           2.0 |
+| Bi_d_GW    | 182.129 | 242.839 |        315.691 |          15.0 |
+| Be_sv      | 231.576 | 308.768 |        401.398 |           4.0 |
+| Ba_sv_GW   | 178.136 | 237.515 |        308.769 |          10.0 |
+| B_GW       |  238.96 | 318.614 |        414.198 |           3.0 |
+| B_s        | 201.934 | 269.245 |        350.019 |           3.0 |
+| Br_GW      | 162.214 | 216.285 |        281.171 |           7.0 |
+| Br         | 162.214 | 216.285 |        281.171 |           7.0 |
+| Bi_GW      | 109.897 |  146.53 |        190.489 |           5.0 |
+| Bi_d       | 182.129 | 242.839 |        315.691 |          15.0 |
+| B          |  238.96 | 318.614 |        414.198 |           3.0 |
+| Be_sv_GW   |  403.09 | 537.454 |        698.690 |           4.0 |
+| Be         | 185.658 | 247.543 |        321.806 |           2.0 |
+| B_h        |   500.0 |   700.0 |        910.000 |           3.0 |
+| Ba_sv      | 140.386 | 187.181 |        243.335 |          10.0 |
+| Ba_sv_GW   | 178.136 | 237.515 |        308.769 |          10.0 |
+| Ba_sv      | 140.386 | 187.181 |        243.335 |          10.0 |
+| Be_GW      | 185.657 | 247.543 |        321.806 |           2.0 |
+| Be_sv      | 231.576 | 308.768 |        401.398 |           4.0 |
+| Be_sv_GW   |  403.09 | 537.454 |        698.690 |           4.0 |
+| Be         | 185.658 | 247.543 |        321.806 |           2.0 |
+| Bi         |  78.777 | 105.037 |        136.548 |           5.0 |
+| Bi_d_GW    | 182.129 | 242.839 |        315.691 |          15.0 |
+| Bi_GW      | 109.897 |  146.53 |        190.489 |           5.0 |
+| Bi_d       | 182.129 | 242.839 |        315.691 |          15.0 |
+| Br_GW      | 162.214 | 216.285 |        281.171 |           7.0 |
+| Br         | 162.214 | 216.285 |        281.171 |           7.0 |
+| Cm         | 193.465 | 257.953 |        335.339 |          18.0 |
+| Cd_GW      | 190.534 | 254.045 |        330.258 |          12.0 |
+| Cu_pv_GW   | 350.498 | 467.331 |        607.530 |          17.0 |
+| Ce_h       | 224.925 |   299.9 |        389.870 |          12.0 |
+| C_s        | 205.433 | 273.911 |        356.084 |           4.0 |
+| Cd         | 205.752 | 274.336 |        356.637 |          12.0 |
+| Cr_sv_GW   | 246.211 | 328.282 |        426.767 |          14.0 |
+| Co_pv      | 203.281 | 271.042 |        352.355 |          15.0 |
+| Cs_sv_GW   | 148.575 | 198.101 |        257.531 |           9.0 |
+| Ca_sv      | 199.967 | 266.622 |        346.609 |          10.0 |
+| Cl_h       | 306.852 | 409.136 |        531.877 |           7.0 |
+| Ca_sv_GW   | 211.072 |  281.43 |        365.859 |          10.0 |
+| Cd_sv_GW   | 488.441 | 651.254 |        846.630 |          20.0 |
+| Cu         | 221.585 | 295.446 |        384.080 |          11.0 |
+| Cd_pv_GW   | 297.574 | 396.766 |        515.796 |          18.0 |
+| Cr_sv      | 296.603 | 395.471 |        514.112 |          14.0 |
+| C_GW_new   | 310.494 | 413.992 |        538.190 |           4.0 |
+| Cr         |  170.31 |  227.08 |        295.204 |           6.0 |
+| Co         | 200.976 | 267.968 |        348.358 |           9.0 |
+| Co_GW      |  242.55 |   323.4 |        420.420 |           9.0 |
+| C_h        |   500.0 |   700.0 |        910.000 |           4.0 |
+| Cr_pv      | 199.261 | 265.681 |        345.385 |          12.0 |
+| Ce_GW      | 228.468 | 304.625 |        396.012 |          12.0 |
+| Cl_GW      | 196.854 | 262.472 |        341.214 |           7.0 |
+| C          |   300.0 |   400.0 |        520.000 |           4.0 |
+| Cu_pv      | 276.486 | 368.648 |        479.242 |          17.0 |
+| Ce_3       | 132.379 | 176.506 |        229.458 |          11.0 |
+| Cs_sv      | 165.238 | 220.318 |        286.413 |           9.0 |
+| Cl         | 196.854 | 262.472 |        341.214 |           7.0 |
+| Ca_pv      |   89.67 | 119.559 |        155.427 |           8.0 |
+| Co_sv_GW   | 272.827 |  363.77 |        472.901 |          17.0 |
+| Cu_GW      | 312.779 | 417.039 |        542.151 |          11.0 |
+| Co_sv      | 292.771 | 390.362 |        507.471 |          17.0 |
+| C_GW       | 310.494 | 413.992 |        538.190 |           4.0 |
+| Ce         | 204.781 | 273.042 |        354.955 |          12.0 |
+| Ca_sv      | 199.967 | 266.622 |        346.609 |          10.0 |
+| Ca_sv_GW   | 211.072 |  281.43 |        365.859 |          10.0 |
+| Ca_pv      |   89.67 | 119.559 |        155.427 |           8.0 |
+| Cd_GW      | 190.534 | 254.045 |        330.258 |          12.0 |
+| Cd         | 205.752 | 274.336 |        356.637 |          12.0 |
+| Cd_sv_GW   | 488.441 | 651.254 |        846.630 |          20.0 |
+| Cd_pv_GW   | 297.574 | 396.766 |        515.796 |          18.0 |
+| Ce_h       | 224.925 |   299.9 |        389.870 |          12.0 |
+| Ce_GW      | 228.468 | 304.625 |        396.012 |          12.0 |
+| Ce_3       | 132.379 | 176.506 |        229.458 |          11.0 |
+| Ce         | 204.781 | 273.042 |        354.955 |          12.0 |
+| Cl_h       | 306.852 | 409.136 |        531.877 |           7.0 |
+| Cl_GW      | 196.854 | 262.472 |        341.214 |           7.0 |
+| Cl         | 196.854 | 262.472 |        341.214 |           7.0 |
+| Cm         | 193.465 | 257.953 |        335.339 |          18.0 |
+| Co_pv      | 203.281 | 271.042 |        352.355 |          15.0 |
+| Co         | 200.976 | 267.968 |        348.358 |           9.0 |
+| Co_GW      |  242.55 |   323.4 |        420.420 |           9.0 |
+| Co_sv_GW   | 272.827 |  363.77 |        472.901 |          17.0 |
+| Co_sv      | 292.771 | 390.362 |        507.471 |          17.0 |
+| Cr_sv_GW   | 246.211 | 328.282 |        426.767 |          14.0 |
+| Cr_sv      | 296.603 | 395.471 |        514.112 |          14.0 |
+| Cr         |  170.31 |  227.08 |        295.204 |           6.0 |
+| Cr_pv      | 199.261 | 265.681 |        345.385 |          12.0 |
+| Cs_sv_GW   | 148.575 | 198.101 |        257.531 |           9.0 |
+| Cs_sv      | 165.238 | 220.318 |        286.413 |           9.0 |
+| Cu_pv_GW   | 350.498 | 467.331 |        607.530 |          17.0 |
+| Cu         | 221.585 | 295.446 |        384.080 |          11.0 |
+| Cu_pv      | 276.486 | 368.648 |        479.242 |          17.0 |
+| Cu_GW      | 312.779 | 417.039 |        542.151 |          11.0 |
+| Dy         | 191.601 | 255.467 |        332.107 |          20.0 |
+| Dy_3       | 116.785 | 155.713 |        202.427 |           9.0 |
+| Er_2       |  89.813 |  119.75 |        155.675 |           8.0 |
+| Er         | 223.587 | 298.116 |        387.551 |          22.0 |
+| Er_3       | 116.278 | 155.037 |        201.548 |           9.0 |
+| Eu_3       |  96.793 | 129.057 |        167.774 |           9.0 |
+| Eu         | 187.251 | 249.668 |        324.568 |          17.0 |
+| Eu_2       |  74.496 |  99.328 |        129.126 |           8.0 |
+| F_s        | 217.378 | 289.837 |        376.788 |           7.0 |
+| Fr_sv      | 160.905 |  214.54 |        278.902 |           9.0 |
+| F          |   300.0 |   400.0 |        520.000 |           7.0 |
+| Fe_GW      | 240.755 | 321.007 |        417.309 |           8.0 |
+| Fe_sv      | 292.918 | 390.558 |        507.725 |          16.0 |
+| Fe         | 200.911 | 267.882 |        348.247 |           8.0 |
+| F_GW       | 365.773 | 487.698 |        634.007 |           7.0 |
+| F_h        |   500.0 |   700.0 |        910.000 |           7.0 |
+| F_GW_new   | 365.773 | 487.698 |        634.007 |           7.0 |
+| Fe_pv      | 219.928 | 293.238 |        381.209 |          14.0 |
+| Fe_sv_GW   | 273.539 | 364.719 |        474.135 |          16.0 |
+| Fe_GW      | 240.755 | 321.007 |        417.309 |           8.0 |
+| Fe_sv      | 292.918 | 390.558 |        507.725 |          16.0 |
+| Fe         | 200.911 | 267.882 |        348.247 |           8.0 |
+| Fe_pv      | 219.928 | 293.238 |        381.209 |          14.0 |
+| Fe_sv_GW   | 273.539 | 364.719 |        474.135 |          16.0 |
+| Fr_sv      | 160.905 |  214.54 |        278.902 |           9.0 |
+| Ga_sv_GW   | 377.564 | 503.418 |        654.443 |          21.0 |
+| Ga         | 101.009 | 134.678 |        175.081 |           3.0 |
+| Ga_GW      | 101.009 | 134.678 |        175.081 |           3.0 |
+| Ga_pv_GW   | 317.251 | 423.002 |        549.903 |          19.0 |
+| Ga_d_GW    | 303.451 | 404.602 |        525.983 |          13.0 |
+| Ga_h       | 303.451 | 404.601 |        525.981 |          13.0 |
+| Ga_d       | 212.018 | 282.691 |        367.498 |          13.0 |
+| Gd         | 192.354 | 256.472 |        333.414 |          18.0 |
+| Gd_3       | 115.749 | 154.332 |        200.632 |           9.0 |
+| Ge_GW      | 130.355 | 173.807 |        225.949 |           4.0 |
+| Ge         | 130.355 | 173.807 |        225.949 |           4.0 |
+| Ge_sv_GW   | 340.866 | 454.489 |        590.836 |          22.0 |
+| Ge_d       |  232.72 | 310.294 |        403.382 |          14.0 |
+| Ge_h       | 307.818 | 410.425 |        533.553 |          14.0 |
+| Ge_d_GW    |  232.72 | 310.294 |        403.382 |          14.0 |
+| H          |   200.0 |   250.0 |        325.000 |           1.0 |
+| H_h_GW     |   350.0 |   700.0 |        910.000 |           1.0 |
+| H_AE       |   400.0 |  1000.0 |       1300.000 |           1.0 |
+| Ho         | 192.876 | 257.168 |        334.318 |          21.0 |
+| H1.33      |    None |   250.0 |        325.000 |          1.33 |
+| Ho_3       | 115.603 | 154.137 |        200.378 |           9.0 |
+| He_GW      | 304.335 |  405.78 |        527.514 |           2.0 |
+| H1.25      | 343.141 | 457.521 |        594.777 |          1.25 |
+| Hg         | 174.903 | 233.204 |        303.165 |          12.0 |
+| Hf         |  165.25 | 220.334 |        286.434 |           4.0 |
+| He         | 359.172 | 478.896 |        622.565 |           2.0 |
+| H.58       |    None |   250.0 |        325.000 |          0.58 |
+| H.66       |    None |   250.0 |        325.000 |          0.66 |
+| H.42       |    None |   250.0 |        325.000 |          0.42 |
+| Hf_sv_GW   | 212.223 | 282.964 |        367.853 |          12.0 |
+| H1.5       |   200.0 |   250.0 |        325.000 |           1.5 |
+| H_h        |   350.0 |   700.0 |        910.000 |           1.0 |
+| H_GW       |   250.0 |   300.0 |        390.000 |           1.0 |
+| H_s        |   150.0 |   200.0 |        260.000 |           1.0 |
+| H1.66      |    None |   250.0 |        325.000 |          1.66 |
+| H.5        |   200.0 |   250.0 |        325.000 |           0.5 |
+| H.25       |    None |   250.0 |        325.000 |          0.25 |
+| Hf_pv      |  165.25 | 220.334 |        286.434 |          10.0 |
+| H.75       |   200.0 |   250.0 |        325.000 |          0.75 |
+| H.33       |    None |   250.0 |        325.000 |          0.33 |
+| H1.75      |    None |   250.0 |        325.000 |          1.75 |
+| Hf_sv      | 178.083 | 237.444 |        308.677 |          12.0 |
+| He_GW      | 304.335 |  405.78 |        527.514 |           2.0 |
+| He         | 359.172 | 478.896 |        622.565 |           2.0 |
+| Hf         |  165.25 | 220.334 |        286.434 |           4.0 |
+| Hf_sv_GW   | 212.223 | 282.964 |        367.853 |          12.0 |
+| Hf_pv      |  165.25 | 220.334 |        286.434 |          10.0 |
+| Hf_sv      | 178.083 | 237.444 |        308.677 |          12.0 |
+| Hg         | 174.903 | 233.204 |        303.165 |          12.0 |
+| Ho         | 192.876 | 257.168 |        334.318 |          21.0 |
+| Ho_3       | 115.603 | 154.137 |        200.378 |           9.0 |
+| In_d_GW    | 208.968 | 278.624 |        362.211 |          13.0 |
+| In_d       | 179.409 | 239.211 |        310.974 |          13.0 |
+| I_GW       | 131.735 | 175.647 |        228.341 |           7.0 |
+| I          | 131.735 | 175.647 |        228.341 |           7.0 |
+| Ir_sv_GW   | 239.882 | 319.843 |        415.796 |          17.0 |
+| Ir         | 158.148 | 210.864 |        274.123 |           9.0 |
+| In         |  71.951 |  95.934 |        124.714 |           3.0 |
+| In_d_GW    | 208.968 | 278.624 |        362.211 |          13.0 |
+| In_d       | 179.409 | 239.211 |        310.974 |          13.0 |
+| In         |  71.951 |  95.934 |        124.714 |           3.0 |
+| Ir_sv_GW   | 239.882 | 319.843 |        415.796 |          17.0 |
+| Ir         | 158.148 | 210.864 |        274.123 |           9.0 |
+| Kr         | 138.998 | 185.331 |        240.930 |           8.0 |
+| K_pv       |  87.548 | 116.731 |        151.750 |           7.0 |
+| K_sv       | 194.448 | 259.264 |        337.043 |           9.0 |
+| Kr_GW      | 138.998 | 185.331 |        240.930 |           8.0 |
+| K_sv_GW    | 186.749 | 248.998 |        323.697 |           9.0 |
+| Kr         | 138.998 | 185.331 |        240.930 |           8.0 |
+| Kr_GW      | 138.998 | 185.331 |        240.930 |           8.0 |
+| La         | 164.469 | 219.292 |        285.080 |          11.0 |
+| La_s       | 102.397 |  136.53 |        177.489 |           9.0 |
+| Li_sv_GW   | 325.274 | 433.699 |        563.809 |           3.0 |
+| Li_GW      |  84.078 | 112.104 |        145.735 |           1.0 |
+| Li_AE_GW   | 325.274 | 433.699 |        563.809 |           3.0 |
+| Li         |   100.0 |   140.0 |        182.000 |           1.0 |
+| Li_sv      | 374.276 | 499.034 |        648.744 |           3.0 |
+| Lu         | 191.771 | 255.695 |        332.404 |          25.0 |
+| Lu_3       | 116.244 | 154.992 |        201.490 |           9.0 |
+| Mg_pv_GW   | 302.947 | 403.929 |        525.108 |           8.0 |
+| Mg_GW      |  94.607 | 126.143 |        163.986 |           2.0 |
+| Mg_pv      | 302.947 | 403.929 |        525.108 |           8.0 |
+| Mg         |  94.607 | 126.143 |        163.986 |           2.0 |
+| Mg_sv      | 371.417 | 495.223 |        643.790 |          10.0 |
+| Mg_sv_GW   |  322.42 | 429.893 |        558.861 |          10.0 |
+| Mn_sv_GW   | 268.458 | 357.944 |        465.327 |          15.0 |
+| Mn_pv      | 202.398 | 269.864 |        350.823 |          13.0 |
+| Mn         | 202.398 | 269.864 |        350.823 |           7.0 |
+| Mn_GW      |  208.85 | 278.466 |        362.006 |           7.0 |
+| Mn_sv      |  290.39 | 387.187 |        503.343 |          15.0 |
+| Mo_sv      | 182.007 | 242.676 |        315.479 |          14.0 |
+| Mo_sv_GW   | 233.929 | 311.905 |        405.476 |          14.0 |
+| Mo         | 168.438 | 224.584 |        291.959 |           6.0 |
+| Mo_pv      | 168.438 | 224.584 |        291.959 |          12.0 |
+| Nb_sv      | 219.927 | 293.235 |        381.206 |          13.0 |
+| Nb_pv      | 156.456 | 208.608 |        271.190 |          11.0 |
+| N_s_GW     | 222.371 | 296.495 |        385.444 |           5.0 |
+| Na_pv      | 194.671 | 259.561 |        337.429 |           7.0 |
+| N_GW       | 315.677 | 420.902 |        547.173 |           5.0 |
+| Np         | 190.695 |  254.26 |        330.538 |          15.0 |
+| Ni_sv_GW   | 310.107 | 413.475 |        537.518 |          18.0 |
+| Ne         | 257.704 | 343.606 |        446.688 |           8.0 |
+| N_GW_new   | 315.677 | 420.902 |        547.173 |           5.0 |
+| Na_sv      |  484.23 |  645.64 |        839.332 |           9.0 |
+| Ni         | 202.149 | 269.532 |        350.392 |          10.0 |
+| Ne_GW_soft | 238.695 |  318.26 |        413.738 |           8.0 |
+| N          |   300.0 |   400.0 |        520.000 |           5.0 |
+| N_s        | 209.769 | 279.692 |        363.600 |           5.0 |
+| N_h        |   500.0 |   700.0 |        910.000 |           5.0 |
+| Nb_sv_GW   | 214.344 | 285.792 |        371.530 |          13.0 |
+| Na         |  76.476 | 101.968 |        132.558 |           1.0 |
+| Nd_3       | 136.964 | 182.619 |        237.405 |          11.0 |
+| Ne_GW      | 238.695 |  318.26 |        413.738 |           8.0 |
+| Ni_GW      | 267.992 | 357.323 |        464.520 |          10.0 |
+| Nd         | 189.892 | 253.189 |        329.146 |          14.0 |
+| Np_s       | 155.785 | 207.713 |        270.027 |          15.0 |
+| Na_sv_GW   | 195.049 | 260.065 |        338.084 |           9.0 |
+| Ni_pv      | 275.989 | 367.986 |        478.382 |          16.0 |
+| Na_pv      | 194.671 | 259.561 |        337.429 |           7.0 |
+| Na_sv      |  484.23 |  645.64 |        839.332 |           9.0 |
+| Na         |  76.476 | 101.968 |        132.558 |           1.0 |
+| Na_sv_GW   | 195.049 | 260.065 |        338.084 |           9.0 |
+| Nb_sv      | 219.927 | 293.235 |        381.206 |          13.0 |
+| Nb_pv      | 156.456 | 208.608 |        271.190 |          11.0 |
+| Nb_sv_GW   | 214.344 | 285.792 |        371.530 |          13.0 |
+| Nd_3       | 136.964 | 182.619 |        237.405 |          11.0 |
+| Nd         | 189.892 | 253.189 |        329.146 |          14.0 |
+| Ne         | 257.704 | 343.606 |        446.688 |           8.0 |
+| Ne_GW_soft | 238.695 |  318.26 |        413.738 |           8.0 |
+| Ne_GW      | 238.695 |  318.26 |        413.738 |           8.0 |
+| Ni_sv_GW   | 310.107 | 413.475 |        537.518 |          18.0 |
+| Ni         | 202.149 | 269.532 |        350.392 |          10.0 |
+| Ni_GW      | 267.992 | 357.323 |        464.520 |          10.0 |
+| Ni_pv      | 275.989 | 367.986 |        478.382 |          16.0 |
+| Np         | 190.695 |  254.26 |        330.538 |          15.0 |
+| Np_s       | 155.785 | 207.713 |        270.027 |          15.0 |
+| Os         | 171.017 | 228.022 |        296.429 |           8.0 |
+| O_s        |  212.14 | 282.853 |        367.709 |           6.0 |
+| O          |   300.0 |   400.0 |        520.000 |           6.0 |
+| O_h        |   500.0 |   700.0 |        910.000 |           6.0 |
+| Os_pv      | 171.017 | 228.022 |        296.429 |          14.0 |
+| O_s_GW     | 250.998 | 334.664 |        435.063 |           6.0 |
+| O_GW       | 310.976 | 414.635 |        539.025 |           6.0 |
+| Os_sv_GW   |  239.83 | 319.773 |        415.705 |          16.0 |
+| O_GW_new   | 325.824 | 434.431 |        564.760 |           6.0 |
+| Os         | 171.017 | 228.022 |        296.429 |           8.0 |
+| Os_pv      | 171.017 | 228.022 |        296.429 |          14.0 |
+| Os_sv_GW   |  239.83 | 319.773 |        415.705 |          16.0 |
+| Pt_pv_GW   | 186.537 | 248.716 |        323.331 |          16.0 |
+| Pm         |  193.97 | 258.627 |        336.215 |          15.0 |
+| P_h        | 292.651 | 390.202 |        507.263 |           5.0 |
+| Pb_d       | 178.376 | 237.835 |        309.186 |          14.0 |
+| Pa         | 189.145 | 252.193 |        327.851 |          13.0 |
+| Po_d       | 198.424 | 264.565 |        343.935 |          16.0 |
+| Pb_d_GW    | 178.357 | 237.809 |        309.152 |          14.0 |
+| P          |  191.28 |  255.04 |        331.552 |           5.0 |
+| Pt         | 172.712 | 230.283 |        299.368 |          10.0 |
+| Pd_GW      | 188.194 | 250.925 |        326.203 |          10.0 |
+| Po         |  119.78 | 159.707 |        207.619 |           6.0 |
+| Pd_pv      | 188.194 | 250.925 |        326.203 |          16.0 |
+| Pu         | 190.765 | 254.353 |        330.659 |          16.0 |
+| Pt_GW      | 186.537 | 248.716 |        323.331 |          10.0 |
+| Pb         |   73.48 |  97.973 |        127.365 |           4.0 |
+| Pm_3       | 132.719 | 176.959 |        230.047 |          11.0 |
+| Pr         | 204.706 | 272.941 |        354.823 |          13.0 |
+| Pr_3       | 136.289 | 181.719 |        236.235 |          11.0 |
+| Pt_sv_GW   | 242.752 | 323.669 |        420.770 |          18.0 |
+| P_GW       |  191.28 |  255.04 |        331.552 |           5.0 |
+| Pa_s       |   145.1 | 193.466 |        251.506 |          11.0 |
+| Pd         | 188.194 | 250.925 |        326.203 |          10.0 |
+| Pt_pv      | 220.955 | 294.607 |        382.989 |          16.0 |
+| Pu_s       | 155.873 |  207.83 |        270.179 |          16.0 |
+| Pa         | 189.145 | 252.193 |        327.851 |          13.0 |
+| Pa_s       |   145.1 | 193.466 |        251.506 |          11.0 |
+| Pb_d       | 178.376 | 237.835 |        309.186 |          14.0 |
+| Pb_d_GW    | 178.357 | 237.809 |        309.152 |          14.0 |
+| Pb         |   73.48 |  97.973 |        127.365 |           4.0 |
+| Pd_GW      | 188.194 | 250.925 |        326.203 |          10.0 |
+| Pd_pv      | 188.194 | 250.925 |        326.203 |          16.0 |
+| Pd         | 188.194 | 250.925 |        326.203 |          10.0 |
+| Pm         |  193.97 | 258.627 |        336.215 |          15.0 |
+| Pm_3       | 132.719 | 176.959 |        230.047 |          11.0 |
+| Po_d       | 198.424 | 264.565 |        343.935 |          16.0 |
+| Po         |  119.78 | 159.707 |        207.619 |           6.0 |
+| Pr         | 204.706 | 272.941 |        354.823 |          13.0 |
+| Pr_3       | 136.289 | 181.719 |        236.235 |          11.0 |
+| Pt_pv_GW   | 186.537 | 248.716 |        323.331 |          16.0 |
+| Pt         | 172.712 | 230.283 |        299.368 |          10.0 |
+| Pt_GW      | 186.537 | 248.716 |        323.331 |          10.0 |
+| Pt_sv_GW   | 242.752 | 323.669 |        420.770 |          18.0 |
+| Pt_pv      | 220.955 | 294.607 |        382.989 |          16.0 |
+| Pu         | 190.765 | 254.353 |        330.659 |          16.0 |
+| Pu_s       | 155.873 |  207.83 |        270.179 |          16.0 |
+| Ra_sv      | 178.025 | 237.367 |        308.577 |          10.0 |
+| Rb_sv      | 165.084 | 220.112 |        286.146 |           9.0 |
+| Rb_sv_GW   | 165.898 | 221.197 |        287.556 |           9.0 |
+| Rb_pv      |  91.412 | 121.882 |        158.447 |           7.0 |
+| Re         | 169.662 | 226.216 |        294.081 |           7.0 |
+| Re_pv      | 169.662 | 226.216 |        294.081 |          13.0 |
+| Re_sv_GW   | 237.759 | 317.012 |        412.116 |          15.0 |
+| Rh_sv_GW   | 240.068 | 320.091 |        416.118 |          17.0 |
+| Rh_pv_GW   | 185.556 | 247.408 |        321.630 |          15.0 |
+| Rh_pv      | 185.556 | 247.408 |        321.630 |          15.0 |
+| Rh         | 171.747 | 228.996 |        297.695 |           9.0 |
+| Rh_GW      | 185.556 | 247.408 |        321.630 |           9.0 |
+| Rn         | 114.091 | 152.121 |        197.757 |           8.0 |
+| Ru         | 159.953 | 213.271 |        277.252 |           8.0 |
+| Ru_pv_GW   | 180.037 | 240.049 |        312.064 |          14.0 |
+| Ru_sv_GW   |   240.9 |   321.2 |        417.560 |          16.0 |
+| Ru_pv      | 180.037 | 240.049 |        312.064 |          14.0 |
+| Ru_sv      | 239.141 | 318.855 |        414.512 |          16.0 |
+| Sn_d_GW    | 195.049 | 260.066 |        338.086 |          14.0 |
+| S_h        | 301.827 | 402.436 |        523.167 |           6.0 |
+| Sn         |  77.427 | 103.236 |        134.207 |           4.0 |
+| Sr_sv_GW   | 168.613 | 224.817 |        292.262 |          10.0 |
+| Sc_sv_GW   | 213.799 | 285.066 |        370.586 |          11.0 |
+| Se_GW      | 158.666 | 211.555 |        275.022 |           6.0 |
+| Sm_3       | 132.815 | 177.087 |        230.213 |          11.0 |
+| S_GW       | 194.016 | 258.689 |        336.296 |           6.0 |
+| Si_sv_GW   | 410.683 | 547.578 |        711.851 |          12.0 |
+| Sc_sv      | 166.995 |  222.66 |        289.458 |          11.0 |
+| Se         | 158.666 | 211.555 |        275.022 |           6.0 |
+| S          | 194.016 | 258.689 |        336.296 |           6.0 |
+| Sb_d_GW    | 197.325 |   263.1 |        342.030 |          15.0 |
+| Sn_d       | 180.812 | 241.083 |        313.408 |          14.0 |
+| Sc         | 116.072 | 154.763 |        201.192 |           3.0 |
+| Sr_sv      | 172.014 | 229.353 |        298.159 |          10.0 |
+| Sb         | 129.052 | 172.069 |        223.690 |           5.0 |
+| Si         | 184.009 | 245.345 |        318.949 |           4.0 |
+| Sb_GW      | 129.052 | 172.069 |        223.690 |           5.0 |
+| Sm         | 193.136 | 257.515 |        334.769 |          16.0 |
+| Si_GW      | 184.009 | 245.345 |        318.949 |           4.0 |
+| Sb_d_GW    | 197.325 |   263.1 |        342.030 |          15.0 |
+| Sb         | 129.052 | 172.069 |        223.690 |           5.0 |
+| Sb_GW      | 129.052 | 172.069 |        223.690 |           5.0 |
+| Sc_sv_GW   | 213.799 | 285.066 |        370.586 |          11.0 |
+| Sc_sv      | 166.995 |  222.66 |        289.458 |          11.0 |
+| Sc         | 116.072 | 154.763 |        201.192 |           3.0 |
+| Se_GW      | 158.666 | 211.555 |        275.022 |           6.0 |
+| Se         | 158.666 | 211.555 |        275.022 |           6.0 |
+| Si_sv_GW   | 410.683 | 547.578 |        711.851 |          12.0 |
+| Si         | 184.009 | 245.345 |        318.949 |           4.0 |
+| Si_GW      | 184.009 | 245.345 |        318.949 |           4.0 |
+| Sm_3       | 132.815 | 177.087 |        230.213 |          11.0 |
+| Sm         | 193.136 | 257.515 |        334.769 |          16.0 |
+| Sn_d_GW    | 195.049 | 260.066 |        338.086 |          14.0 |
+| Sn         |  77.427 | 103.236 |        134.207 |           4.0 |
+| Sn_d       | 180.812 | 241.083 |        313.408 |          14.0 |
+| Sr_sv_GW   | 168.613 | 224.817 |        292.262 |          10.0 |
+| Sr_sv      | 172.014 | 229.353 |        298.159 |          10.0 |
+| Ta_pv      |  167.75 | 223.667 |        290.767 |          11.0 |
+| Ta         |  167.75 | 223.667 |        290.767 |           5.0 |
+| Ta_sv_GW   | 214.506 | 286.008 |        371.810 |          13.0 |
+| Tb_3       | 116.709 | 155.613 |        202.297 |           9.0 |
+| Tb         | 198.618 | 264.824 |        344.271 |          19.0 |
+| Tc_pv      | 197.642 | 263.523 |        342.580 |          13.0 |
+| Tc_sv      | 239.028 | 318.703 |        414.314 |          15.0 |
+| Tc_sv_GW   | 238.582 |  318.11 |        413.543 |          15.0 |
+| Tc         | 171.521 | 228.694 |        297.302 |           7.0 |
+| Te         | 131.236 | 174.982 |        227.477 |           6.0 |
+| Te_GW      | 131.236 | 174.982 |        227.477 |           6.0 |
+| Th_s       | 127.022 | 169.363 |        220.172 |          10.0 |
+| Th         |  185.48 | 247.306 |        321.498 |          12.0 |
+| Ti         | 133.747 |  178.33 |        231.829 |           4.0 |
+| Ti_pv      | 166.751 | 222.335 |        289.036 |          10.0 |
+| Ti_sv_GW   | 214.498 | 285.998 |        371.797 |          12.0 |
+| Ti_sv      | 205.957 |  274.61 |        356.993 |          12.0 |
+| Tl_d       | 177.789 | 237.053 |        308.169 |          13.0 |
+| Tl         |  67.605 |   90.14 |        117.182 |           3.0 |
+| Tm         | 193.065 |  257.42 |        334.646 |          23.0 |
+| Tm_3       | 111.916 | 149.221 |        193.987 |           9.0 |
+| U_s        | 156.922 |  209.23 |        271.999 |          14.0 |
+| U          | 189.376 | 252.502 |        328.253 |          14.0 |
+| V_sv       | 197.755 | 263.673 |        342.775 |          13.0 |
+| V          | 144.408 | 192.543 |        250.306 |           5.0 |
+| V_sv_GW    | 242.302 |  323.07 |        419.991 |          13.0 |
+| V_pv       | 197.755 | 263.673 |        342.775 |          11.0 |
+| W          | 167.293 | 223.057 |        289.974 |           6.0 |
+| W_sv_GW    | 237.849 | 317.132 |        412.272 |          14.0 |
+| W_pv       | 167.293 | 223.057 |        289.974 |          12.0 |
+| Xe         | 114.839 | 153.118 |        199.053 |           8.0 |
+| Xe_GW      |  134.66 | 179.547 |        233.411 |           8.0 |
+| Xe         | 114.839 | 153.118 |        199.053 |           8.0 |
+| Xe_GW      |  134.66 | 179.547 |        233.411 |           8.0 |
+| Y_sv       |  151.97 | 202.626 |        263.414 |          11.0 |
+| Y_sv_GW    | 171.957 | 229.276 |        298.059 |          11.0 |
+| Yb         | 189.771 | 253.028 |        328.936 |          24.0 |
+| Yb_2       |  84.433 | 112.578 |        146.351 |           8.0 |
+| Yb         | 189.771 | 253.028 |        328.936 |          24.0 |
+| Yb_2       |  84.433 | 112.578 |        146.351 |           8.0 |
+| Zn_GW      | 246.143 | 328.191 |        426.648 |          12.0 |
+| Zn_pv_GW   | 270.184 | 360.246 |        468.320 |          18.0 |
+| Zn_sv_GW   | 372.453 | 496.604 |        645.585 |          20.0 |
+| Zn         | 207.542 | 276.723 |        359.740 |          12.0 |
+| Zr_sv_GW   | 211.823 | 282.431 |        367.160 |          12.0 |
+| Zr_sv      | 172.424 | 229.898 |        298.867 |          12.0 |
+
+** Hy
+Here is our prototypical python script.
+#+BEGIN_SRC python
+from ase import Atoms, Atom
+from vasp import Vasp
+
+co = Atoms([Atom('C', [0, 0, 0]),
+            Atom('O', [1.2, 0, 0])],
+           cell=(6., 6., 6.))
+
+calc = Vasp('molecules/simple-co',  # output dir
+            xc='pbe',  # the exchange-correlation functional
+            nbands=6,    # number of bands
+            encut=350,    # planewave cutoff
+            ismear=1,    # Methfessel-Paxton smearing
+            sigma=0.01,  # very small smearing factor for a molecule
+            atoms=co)
+
+print('energy = {0} eV'.format(co.get_potential_energy()))
+print(co.get_forces())
+#+END_SRC
+
+#+RESULTS:
+: energy = -14.69111507 eV
+: [[ 5.09138064  0.          0.        ]
+:  [-5.09138064  0.          0.        ]]
+
+We can also use hy-lang for these scripts. Hy is a Lisp that works with Python. You need this in your Emacs setup (mile-hy is part of jmax).
+
+#+BEGIN_SRC emacs-lisp
+(require 'auto-complete)
+(require 'mile-hy)
+#+END_SRC
+
+#+RESULTS:
+: mile-hy
+
+And here is the same script in hy.
+
+#+BEGIN_SRC hy
+(import [ase [Atom Atoms]])
+(import [vasp [Vasp]])
+
+(setv co (Atoms [(Atom "C" [0.0 0.0 0.0])
+                 (Atom "O" [1.2 0.0 0.0])]
+                :cell [6.0 6.0 6.0]))
+
+(setv calc (Vasp "molecules/simple-co-hy"
+                 :xc "pbe"
+                 :nbands 6
+                 :encut 350
+                 :ismear 1
+                 :sigma 0.01
+                 :atoms co))
+
+(print (.format "energy = {0} eV"
+                (.get_potential_energy co)))
+
+(print (. calc potential_energy))
+; (print (.potential_energy calc)) ;; not ok
+(print (.get_forces co))
+#+END_SRC
+
+#+RESULTS:
+: energy = -14.69111507 eV
+: -14.69111507
+: [[ 5.09138064  0.          0.        ]
+:  [-5.09138064  0.          0.        ]]
+

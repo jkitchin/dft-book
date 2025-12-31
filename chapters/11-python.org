@@ -1,0 +1,58 @@
+* Python
+** pip as a user
+pip is pretty easy to install as a user.
+
+#+BEGIN_SRC sh
+pip install --user some-package
+#+END_SRC
+
+For me this installs here:
+
+~/.local/lib/python2.7/site-packages
+
+That may or may not be on your Python path.
+
+** Integer division math gotchas
+It pays to be careful when dividing by integers because you can get unexpected results if you do not know the integer division rules. In python 2.6, if you divide two integers, you get an integer! This is usually not a problem if there is no emainder in the division, e.g. 6/3=2. But, if there is a remainder, and that remainder is important, you will lose it. Here is an example of calculating the mole fraction of a species from integer numbers of atoms in the unit cell. If you are not careful, you get the wrong answer! You can convert (also called casting) a number to a float using the float command.
+
+#+BEGIN_SRC python
+nPd = 4
+nCu = 5
+x_Cu = nCu/(nPd + nCu)
+print('x_cu = {0} (integer division)'.format(x_Cu))
+
+# now cast as floats
+x_Cu = float(nCu)/float(nPd + nCu)
+print('x_cu = {0} (float division)'.format(x_Cu))
+#+END_SRC
+
+#+RESULTS:
+: x_cu = 0 (integer division)
+: x_cu = 0.555555555556 (float division)
+
+Note that if one of the numbers is a float, python will automatically cast the integer as a float, and return a float.
+#+BEGIN_SRC python
+nPd = 4
+nCu = 5
+
+# now cast as floats
+x_Cu = float(nCu)/(nPd + nCu)
+print('x_cu = {0}'.format(x_Cu))
+#+END_SRC
+
+#+RESULTS:
+: x_cu = 0.555555555556
+
+Finally, you can tell python a number is a float by adding a decimal to it. You do not need to put a 0 after the decimal, but you can.
+
+#+BEGIN_SRC python
+nPd = 4.  # this is a float
+nCu = 5
+
+x_Cu = nCu / (nPd + nCu)
+print('x_cu = {0}'.format(x_Cu))
+#+END_SRC
+
+#+RESULTS:
+: x_cu = 0.555555555556
+

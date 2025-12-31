@@ -1,0 +1,971 @@
+* Advanced electronic structure methods
+  :PROPERTIES:
+  :ID:       b003ab44-e1f3-4ccb-9ecc-baa8a67c62d5
+  :END:
+** DFT+U
+   :PROPERTIES:
+   :ID:       d4b89c02-f7a3-4233-bf70-1fd35169d01d
+   :END:
+index:DFT+U
+
+[[http://cms.mpi.univie.ac.at/vasp/vasp/On_site_Coulomb_interaction_L_S_DA_U.html][VASP manual on DFT+U]]
+
+It can be difficult to find the lowest energy solutions with DFT+U. Some strategies for improving this are discussed in cite:PhysRevB.82.195128.
+
+*** Metal oxide oxidation energies with DFT+U
+We will reconsider here the reaction (see [[Metal oxide oxidation energies][Metal oxide oxidation energies]]) 2 Cu_{2}O + O_{2} $\rightleftharpoons$ 4 CuO. We need to compute the energy of each species, now with DFT+U. In cite:PhysRevB.73.195107 they use a U parameter of 4 eV for Cu which gave the best agreement with the experimental value. We will also try that.
+
+**** Cu_{2}O calculation with U=4.0
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+import logging
+
+calc = Vasp('bulk/Cu2O')
+calc.clone('bulk/Cu2O-U=4.0')
+
+calc.set(ldau=True,   # turn DFT+U on
+         ldautype=2,  # select simplified rotationally invariant option
+         ldau_luj={'Cu':{'L':2,  'U':4.0, 'J':0.0},
+                   'O':{'L':-1, 'U':0.0, 'J':0.0}},
+         ldauprint=1,
+         ibrion=-1,  #do not rerelax
+         nsw=0)
+atoms = calc.get_atoms()
+
+print(atoms.get_potential_energy())
+#print calc
+#+END_SRC
+
+#+RESULTS:
+: -22.32504781
+
+
+#+BEGIN_SRC sh
+grep -A 3 "LDA+U is selected, type is set to LDAUTYPE" bulk/Cu2O-U=4.0/OUTCAR
+#+END_SRC
+
+#+RESULTS:
+:  LDA+U is selected, type is set to LDAUTYPE =  2
+:    angular momentum for each species LDAUL =     2   -1
+:    U (eV)           for each species LDAUU =   4.0  0.0
+:    J (eV)           for each species LDAUJ =   0.0  0.0
+
+
+
+**** CuO calculation with U=4.0
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+
+calc = Vasp('bulk/CuO')
+calc.clone('bulk/CuO-U=4.0')
+
+calc.set(ldau=True,   # turn DFT+U on
+         ldautype=2,  # select simplified rotationally invariant option
+         ldau_luj={'Cu':{'L':2,  'U':4.0, 'J':0.0},
+                   'O':{'L':-1, 'U':0.0, 'J':0.0}},
+         ldauprint=1,
+         ibrion=-1,  #do not rerelax
+         nsw=0)
+
+atoms = calc.get_atoms()
+print(atoms.get_potential_energy())
+#+END_SRC
+
+#+RESULTS:
+: -16.91708676
+
+**** TODO Reaction energy calculation with DFT+U
+#+BEGIN_SRC python
+from vasp import Vasp
+
+calc = Vasp('bulk/Cu2O-U=4.0')
+atoms = calc.get_atoms()
+cu2o_energy = atoms.get_potential_energy() / (len(atoms) / 3)
+
+calc = Vasp('bulk/CuO-U=4.0')
+atoms = calc.get_atoms()
+cuo_energy = atoms.get_potential_energy() / (len(atoms) / 2)
+
+# make sure to use the same cutoff energy for the O2 molecule!
+calc = Vasp('molecules/O2-sp-triplet-400')
+o2_energy = calc.results['energy']
+
+calc.stop_if(None in [cu2o_energy, cuo_energy, o2_energy])
+
+# don't forget to normalize your total energy to a formula unit. Cu2O
+# has 3 atoms, so the number of formula units in an atoms is
+# len(atoms)/3.
+
+rxn_energy = 4.0 * cuo_energy - o2_energy - 2.0 * cu2o_energy
+
+print('Reaction energy  = {0} eV'.format(rxn_energy))
+print('Corrected energy = {0} eV'.format(rxn_energy - 1.36))
+#+END_SRC
+
+#+RESULTS:
+: Reaction energy  = 7.36775847 eV
+: Corrected energy = 6.00775847 eV
+
+This is still not in quantitative agreement with the result in cite:PhysRevB.73.195107, which at U=4 eV is about -3.14 eV (estimated from a graph). We have not applied the O$_2$ correction here yet. In that paper, they apply a constant shift of -1.36 eV per O$_2$. After we apply that correction, we agree within 0.12 eV, which is pretty good considering we have not checked for convergence.
+
+**** How much does U affect the reaction energy?
+It is reasonable to consider how sensitive our results are to the U parameter. We do that here.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+for U in [2.0, 4.0, 6.0]:
+    ## Cu2O ########################################
+    calc = Vasp('bulk/Cu2O')
+    calc.clone('bulk/Cu2O-U={0}'.format(U))
+
+
+    calc.set(ldau=True,   # turn DFT+U on
+             ldautype=2,  # select simplified rotationally invariant option
+             ldau_luj={'Cu':{'L':2,  'U':U, 'J':0.0},
+                       'O':{'L':-1, 'U':0.0, 'J':0.0}},
+             ldauprint=1,
+             ibrion=-1,  # do not rerelax
+             nsw=0)
+    atoms1 = calc.get_atoms()
+    cu2o_energy = atoms1.get_potential_energy() / (len(atoms1) / 3)
+
+    ## CuO ########################################
+    calc = Vasp('bulk/CuO')
+    calc.clone('bulk/CuO-U={0}'.format(U))
+
+
+    calc.set(ldau=True,   # turn DFT+U on
+             ldautype=2,  # select simplified rotationally invariant option
+             ldau_luj={'Cu':{'L':2,  'U':U, 'J':0.0},
+                       'O':{'L':-1, 'U':0.0, 'J':0.0}},
+             ldauprint=1,
+             ibrion=-1,  # do not rerelax
+             nsw=0)
+    atoms2 = calc.get_atoms()
+    cuo_energy = atoms2.get_potential_energy() / (len(atoms2) / 2)
+
+    ## O2 ########################################
+    # make sure to use the same cutoff energy for the O2 molecule!
+    calc = Vasp('molecules/O2-sp-triplet-400')
+    atoms = calc.get_atoms()
+    o2_energy = atoms.get_potential_energy()
+
+    if not None in [cu2o_energy, cuo_energy, o2_energy]:
+
+        rxn_energy = (4.0 * cuo_energy
+                      - o2_energy
+                      - 2.0 * cu2o_energy)
+
+        print 'U = {0}  reaction energy = {1}'.format(U, rxn_energy - 1.99)
+#+END_SRC
+
+#+RESULTS:
+: U = 2.0  reaction energy = 3.32752349
+: U = 4.0  reaction energy = 5.37775847
+: U = 6.0  reaction energy = 5.71849513
+
+
+: U = 2.0  reaction energy = -3.876906
+: U = 4.0  reaction energy = -3.653819
+: U = 6.0  reaction energy = -3.397605
+
+In cite:PhysRevB.73.195107, the difference in reaction energy from U=2 eV to U=4 eV was about 0.5 eV (estimated from graph). Here we see a range of 0.48 eV from U=2 eV to U=4 eV. Note that for U=0 eV, we had a (corrected reaction energy of -3.96 eV). Overall, the effect of adding U decreases this reaction energy.
+
+This example highlights the challenge of using an approach like DFT+U. On one hand, U has a clear effect of changing the reaction energy. On the other hand, so does the correction factor for the O$_2$ binding energy. In cite:PhysRevB.73.195107 the authors tried to get the O$_2$ binding energy correction from oxide calculations where U is not important, so that it is decoupled from the non-cancelling errors that U fixes. See cite:PhysRevB.84.045115 for additional discussion of how to mix GGA and GGA+U results.
+
+In any case, you should be careful to use well converged results to avoid compensating for convergence errors with U.
+
+
+** Hybrid functionals
+*** FCC Ni DOS
+This example is adapted from http://cms.mpi.univie.ac.at/wiki/index.php/FccNi_DOS
+[[index:HSE06]]
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.lattice.cubic import FaceCenteredCubic
+from ase.dft import DOS
+
+atoms = FaceCenteredCubic(directions=[[0, 1, 1],
+                                      [1, 0, 1],
+                                      [1, 1, 0]],
+                                      size=(1, 1, 1),
+                                      symbol='Ni')
+atoms[0].magmom = 1
+
+calc = Vasp('bulk/Ni-PBE',
+            ismear=-5,
+            kpts=[5, 5, 5],
+            xc='PBE',
+            ispin=2,
+            lorbit=11,
+            lwave=True, lcharg=True,  # store for reuse
+            atoms=atoms)
+
+e = atoms.get_potential_energy()
+print('PBE energy:   ',e)
+calc.stop_if(e is None)
+
+dos = DOS(calc, width=0.2)
+e_pbe = dos.get_energies()
+d_pbe = dos.get_dos()
+
+
+calc.clone('bulk/Ni-PBE0')
+calc.set(xc='pbe0')
+atoms = calc.get_atoms()
+pbe0_e = atoms.get_potential_energy()
+
+if atoms.get_potential_energy() is not None:
+    dos = DOS(calc, width=0.2)
+    e_pbe0 = dos.get_energies()
+    d_pbe0 = dos.get_dos()
+
+## HSE06
+calc = Vasp('bulk/Ni-PBE')
+calc.clone('bulk/Ni-HSE06')
+
+calc.set(xc='hse06')
+atoms = calc.get_atoms()
+hse06_e = atoms.get_potential_energy()
+if hse06_e is not None:
+    dos = DOS(calc, width=0.2)
+    e_hse06 = dos.get_energies()
+    d_hse06 = dos.get_dos()
+
+calc.stop_if(None in [e, pbe0_e, hse06_e])
+
+import pylab as plt
+plt.plot(e_pbe, d_pbe, label='PBE')
+plt.plot(e_pbe0, d_pbe0, label='PBE0')
+plt.plot(e_hse06, d_hse06, label='HSE06')
+plt.xlabel('energy [eV]')
+plt.ylabel('DOS')
+plt.legend()
+plt.savefig('images/ni-dos-pbe-pbe0-hse06.png')
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: Comparison of DOS from GGA, and two hybrid GGAs (PBE0 and HSE06).
+#+ATTR_LaTeX: :placement [H]
+[[./images/ni-dos-pbe-pbe0-hse06.png]]
+
+** van der Waals forces
+Older versions (5.2.11+) implement DFT+D2 cite:JCC-JCC20495 with the incar:LVDW tag.
+
+The vdW-DF cite:klimes-2011-van-waals is accessed with incar:LUSE_VDW. See http://cms.mpi.univie.ac.at/vasp/vasp/vdW_DF_functional_Langreth_Lundqvist_et_al.html for notes on its usage.
+
+In Vasp 5.3+, the incar:IVDW tag turns van der Waal calculations on.
+
+You should review the links below before using these
+|    IVDW | method                                                                                    |
+|---------+-------------------------------------------------------------------------------------------|
+|       0 | no correction                                                                             |
+| 1 or 10 | [[http://cms.mpi.univie.ac.at/vasp/vasp/DFT_D2_method.html][DFT-D2]] method of Grimme (available as of VASP.5.2.11)                                     |
+|      11 | zero damping DFT-D3 method of Grimme (available as of VASP.5.3.4)                         |
+|      12 | [[http://cms.mpi.univie.ac.at/vasp/vasp/DFT_D3_method.html][DFT-D3]] method with Becke-Jonson damping (available as of VASP.5.3.4)                      |
+| 2 or 20 | [[http://cms.mpi.univie.ac.at/vasp/vasp/Tkatchenko_Scheffler_method.html][Tkatchenko-Scheffler method]] cite:tkatchenko-2009-accur-molec (available as of VASP.5.3.3) |
+|         |                                                                                           |
+
+
+Van der Waal forces can play a considerable role in binding of aromatic molecules to metal surfaces [[http://th.fhi-berlin.mpg.de/site/uploads/Publications/PRL_submitted_2012063-582-586-2012.pdf][(ref)]]. Here we consider the effects of these forces on the adsorption energy of benzene on an Au(111) surface.First, we consider the regular PBE functional.
+
+
+*** PBE
+**** gas-phase benzene
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.structure import molecule
+
+benzene = molecule('C6H6')
+benzene.center(vacuum=5)
+
+print(Vasp('molecules/benzene-pbe',
+           xc='PBE',
+           encut=350,
+           kpts=[1, 1, 1],
+           ibrion=1,
+           nsw=100,
+           atoms=benzene).potential_energy)
+#+END_SRC
+
+#+RESULTS:
+: -76.03718564
+
+**** clean slab
+#+BEGIN_SRC python
+# the clean gold slab
+from vasp import Vasp
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Au', size=(3,3,3), vacuum=10)
+
+# now we constrain the slab
+c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
+atoms.set_constraint(c)
+
+#from ase.visualize import view; view(atoms)
+
+print(Vasp('surfaces/Au-pbe',
+           xc='PBE',
+           encut=350,
+           kpts=[4, 4, 1],
+           ibrion=1,
+           nsw=100,
+           atoms=atoms).potential_energy)
+#+END_SRC
+
+#+RESULTS:
+: -81.22521492
+
+**** benzene on Au(111)
+#+BEGIN_SRC python
+# Benzene on the slab
+from vasp import Vasp
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.structure import molecule
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Au', size=(3,3,3), vacuum=10)
+benzene = molecule('C6H6')
+benzene.translate(-benzene.get_center_of_mass())
+
+# I want the benzene centered on the position in the middle of atoms
+# 20, 22, 23 and 25
+p = (atoms.positions[20] +
+     atoms.positions[22] +
+     atoms.positions[23] +
+     atoms.positions[25])/4.0 + [0.0, 0.0, 3.05]
+
+benzene.translate(p)
+atoms += benzene
+
+# now we constrain the slab
+c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
+atoms.set_constraint(c)
+
+#from ase.visualize import view; view(atoms)
+
+print(Vasp('surfaces/Au-benzene-pbe',
+           xc='PBE',
+           encut=350,
+           kpts=[4, 4, 1],
+           ibrion=1,
+           nsw=100,
+           atoms=atoms).potential_energy)
+#+END_SRC
+
+#+RESULTS:
+: /home-research/jkitchin/dft-book/surfaces/Au-benzene-pbe submitted: 1413525.gilgamesh.cheme.cmu.edu
+: None
+
+resubmitted
+#+RESULTS:
+: /home-research/jkitchin/dft-book/surfaces/Au-benzene-pbe submitted: 1399668.gilgamesh.cheme.cmu.edu
+: None
+
+#+BEGIN_SRC python
+from vasp import Vasp
+
+e1, e2, e3 = [Vasp(wd).potential_energy
+              for wd in ['surfaces/Au-benzene-pbe',
+                         'surfaces/Au-pbe',
+                         'molecules/benzene-pbe']]
+
+
+print('PBE adsorption energy = {} eV'.format(e1 - e2 - e3))
+#+END_SRC
+
+#+RESULTS:
+
+This is a very weak energy. It is similar to the result in the reference (0.15 eV), and considerably weaker than the experiment. Next we consider one form of a VDW correction.
+
+*** DFT-D2
+To turn on the van der Waals corrections cite:JCC-JCC20495 we set incar:LVDW to =True=.
+**** gas-phase benzene
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.structure import molecule
+
+benzene = molecule('C6H6')
+benzene.center(vacuum=5)
+
+print(Vasp('molecules/benzene-pbe-d2',
+          xc='PBE',
+          encut=350,
+          kpts=[1, 1, 1],
+          ibrion=1,
+          nsw=100,
+          lvdw=True,
+          atoms=benzene).potential_energy)
+#+END_SRC
+
+#+RESULTS:
+: -76.17670701
+
+**** clean slab
+#+BEGIN_SRC python
+# the clean gold slab
+from vasp import Vasp
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Au', size=(3, 3, 3), vacuum=10)
+
+# now we constrain the slab
+c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
+atoms.set_constraint(c)
+
+print(Vasp('surfaces/Au-pbe-d2',
+          xc='PBE',
+          encut=350,
+          kpts=[4, 4, 1],
+          ibrion=1,
+          nsw=100,
+          lvdw=True,
+          atoms=atoms).potential_energy)
+#+END_SRC
+
+#+RESULTS:
+: -106.34723065
+
+**** benzene on Au(111)
+#+BEGIN_SRC python
+# Benzene on the slab
+from vasp import Vasp
+from ase.lattice.surface import fcc111, add_adsorbate
+from ase.structure import molecule
+from ase.constraints import FixAtoms
+
+atoms = fcc111('Au', size=(3,3,3), vacuum=10)
+benzene = molecule('C6H6')
+benzene.translate(-benzene.get_center_of_mass())
+
+# I want the benzene centered on the position in the middle of atoms
+# 20, 22, 23 and 25
+p = (atoms.positions[20] +
+     atoms.positions[22] +
+     atoms.positions[23] +
+     atoms.positions[25])/4.0 + [0.0, 0.0, 3.05]
+
+benzene.translate(p)
+atoms += benzene
+
+# now we constrain the slab
+c = FixAtoms(mask=[atom.symbol=='Au' for atom in atoms])
+atoms.set_constraint(c)
+
+#from ase.visualize import view; view(atoms)
+
+print(Vasp('surfaces/Au-benzene-pbe-d2',
+          xc='PBE',
+          encut=350,
+          kpts=[4, 4, 1],
+          ibrion=1,
+          nsw=100,
+          lvdw=True,
+          atoms=atoms).potential_energy)
+#+END_SRC
+
+#+RESULTS:
+: -184.07495285
+
+
+#+BEGIN_SRC python
+from vasp import Vasp
+
+e1, e2, e3 = [Vasp(wd).potential_energy
+              for wd in ['surfaces/Au-benzene-pbe-d2',
+                         'surfaces/Au-pbe-d2',
+                         'molecules/benzene-pbe-d2']]
+
+print('Adsorption energy = {0:1.2f} eV'.format(e1 - e2 - e3))
+#+END_SRC
+
+#+RESULTS:
+: Adsorption energy = -1.54 eV
+
+That is significantly more favorable. This is much higher than this [[http://th.fhi-berlin.mpg.de/site/uploads/Publications/PRL_submitted_2012063-582-586-2012.pdf][reference]] though (0.56 eV), so there could be some issues with convergence or other computational parameters that should be considered.
+
+
+** Electron localization function
+The electron localization function (ELF) can be used to characterize chemical bonds, e.g. their ionicity/covalency cite:silvi1994. Here we reproduce an example from Ref. citenum:silvi1994. We compute and plot the ELF for tetrafluoromethane. The incar:LELF tag turns this on.
+
+#+BEGIN_SRC python
+# compute ELF for CF4
+from vasp import Vasp
+from ase.structure import molecule
+from enthought.mayavi import mlab
+
+atoms = molecule('CF4')
+atoms.center(vacuum=5)
+
+calc = Vasp('molecules/cf4-elf',
+            encut=350,
+            prec='high',
+            ismear=0,
+            sigma=0.01,
+            xc='PBE',
+            lelf=True,
+            atoms=atoms)
+
+x, y, z, elf = calc.get_elf()
+mlab.contour3d(x, y, z, elf, contours=[0.3])
+mlab.savefig('../../images/cf4-elf-3.png')
+
+mlab.figure()
+mlab.contour3d(x, y, z, elf, contours=[0.75])
+mlab.savefig('../../images/cf4-elf-75.png')
+#+END_SRC
+
+#+RESULTS:
+: None
+
+
+#+attr_latex: :placement [H] :width 3in
+#+attr_org: :width 300
+#+caption: ELF for an isosurface of 0.3 for CF$_4$. \label{fig:elf1}
+[[./images/cf4-elf-3.png]]
+
+#+attr_latex: :placement [H] :width 3in
+#+attr_org: :width 300
+#+caption: ELF for an isosurface of 0.75 for CF$_4$. \label{fig:elf2}
+[[./images/cf4-elf-75.png]]
+
+These images (Figure ref:fig:elf1 and ref:fig:elf2) are basically consistent with those in Reference cite:silvi1994.
+
+** TODO Charge partitioning schemes
+** TODO COOP/COHP                                                  :noexport:
+
+cite:doi.10.1021/jp202489s
+
+** TODO Modeling Core level shifts
+
+
+We need to setup four calculations. First, we setup the bulk Cu and bulk alloy calculations and let them relax. We use similar unit cells for each one to maximize cancellation of errors.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
+               Atom('Cu',  [-1.652,     0.000,      2.039])],
+              cell=  [[0.000, -2.039,  2.039],
+                      [0.000,  2.039,  2.039],
+                      [-3.303,  0.000,  0.000]])
+
+atoms = atoms.repeat((2, 2, 2))
+print atoms[0]
+
+calc = Vasp('bulk/Cu-cls-0',
+            xc='PBE',
+            encut=350,
+            kpts=[4, 4, 4],
+            ibrion=2,
+            isif=3,
+            nsw=40,
+            atoms=atoms)
+print(atoms.get_potential_energy())
+#+END_SRC
+
+#+RESULTS:
+: Atom('Cu', [0.0, 0.0, 0.0], index=0)
+: -59.98232341
+
+
+Here, we setup the alloy calculation.
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase import Atom, Atoms
+
+atoms = Atoms([Atom('Cu',  [0.000,      0.000,      0.000]),
+               Atom('Pd',  [-1.652,     0.000,      2.039])],
+              cell=  [[0.000, -2.039,  2.039],
+                      [0.000,  2.039,  2.039],
+                      [-3.303,  0.000,  0.000]])
+
+atoms = atoms.repeat((2, 2, 2))
+
+calc = Vasp('bulk/CuPd-cls-0',
+            xc='PBE',
+            encut=350,
+            kpts=[4, 4, 4],
+            ibrion=2,
+            isif=3,
+            nsw=40,
+            atoms=atoms)
+
+print(atoms.get_potential_energy())
+#+END_SRC
+
+#+RESULTS:
+: -73.55012322
+
+Next, we have to do the excitation in each structure. For these, we do not relax the structure. We clone the previous results and modify them.
+
+#+BEGIN_SRC python
+from vasp import VAsp
+
+calc = Vasp('bulk/Cu-cls-0')
+calc.clone('bulk/Cu-cls-1')
+
+calc.set(ibrion=None,
+         isif=None,
+         nsw=None,
+         setups=[[0, 'Cu']],  # Create separate entry in POTCAR for atom index 0
+         icorelevel=2,        # Perform core level shift calculation
+         clnt=0,              # Excite atom index 0
+         cln=2,               # 2p3/2 electron for Cu core level shift
+         cll=1,
+         clz=1)
+
+calc.update()
+#+END_SRC
+
+#+RESULTS:
+: -345.05440951
+
+
+#+BEGIN_SRC python
+from vasp import Vasp
+
+calc = Vasp('bulk/CuPd-cls-0')
+calc.clone('bulk/CuPd-cls-1')
+
+calc.set(ibrion=None,
+         isif=None,
+         nsw=None,
+         setups=[[0, 'Cu']],  # Create separate entry in POTCAR for atom index 0
+         icorelevel=2,        # Perform core level shift calculation
+         clnt=0,              # Excite atom index 0
+         cln=2,               # 2p3/2 electron for Cu core level shift
+         cll=1,
+         clz=1)
+calc.update()
+#+END_SRC
+
+#+RESULTS:
+: -359.87250408
+
+
+Finally we calculate the CLS:
+
+#+BEGIN_SRC python
+from vasp import Vasp
+
+alloy_0 = Vasp('bulk/CuPd-cls-0').potential_energy
+
+alloy_1 = Vasp('bulk/CuPd-cls-1').potential_energy
+
+ref_0 = Vasp('bulk/Cu-cls-0').potential_energy
+
+ref_1 = Vasp('bulk/Cu-cls-1').potential_energy
+
+CLS = (alloy_1 - alloy_0) - (ref_1 - ref_0)
+
+print('CLS = {} eV'.format(CLS))
+#+END_SRC
+
+#+RESULTS:
+: CLS = -1.2378242 eV
+
+This is a little negative compared to the literature but that could be due to the highly ordered structure we used.
+
+** The BEEF functional in Vasp
+In Vasp 5.3.5 it is possible to use the BEEF functional cite:wellendorff-2012-densit.
+
+some addtional variables to setup van der Waals and to get the BEEF ensemble energies. Let us consider the dissociation energy of H_{2}.
+
+#+Begin_SRC python
+from vasp import Vasp
+from ase.structure import molecule
+import matplotlib.pyplot as plt
+
+H2 = molecule('H2')
+H2.set_cell([8, 8, 8], scale_atoms=False)
+H2.center()
+
+calc = Vasp('molecules/H2-beef',
+          xc='beef-vdw',
+            encut=350,
+            ismear=0,
+            ibrion=2,
+            nsw=10,
+            atoms=H2)
+
+eH2 = H2.get_potential_energy()
+print(eH2)
+#+END_SRC
+
+#+RESULTS:
+: -7.13332059
+
+Next, we get an H atom.
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.structure import molecule
+
+H = molecule('H')
+H.set_cell([8, 8, 8], scale_atoms=False)
+H.center()
+
+calc = Vasp('molecules/H-beef',
+            xc='beef-vdw',
+            encut=350,
+            ismear=0,
+            atoms=H)
+
+print(calc.potential_energy)
+#+END_SRC
+
+#+RESULTS:
+: -0.22476997
+
+Now, the dissociation energy.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+
+print('D = {} eV'.format(2 * Vasp('molecules/H-beef').potential_energy -
+                         Vasp('molecules/H2-beef').potential_energy))
+#+END_SRC
+
+#+RESULTS:
+: D = 6.68378065 eV
+
+
+: -1.15994056 -7.13332059
+: D = 4.81343947 eV
+
+It doesn't look like we have done much so far. How certain are we of the dissociation energy? Let us consider the ensemble of energies. In the calculation, an ensemble of functionals is used, and each one produces a different energy. We can look at the distribution of these energies to estimate the uncertainty in energy differences. We use the func:Vasp.get_beefens to get the ensemble. We calculate the uncertainty in our reaction energy by calculating the standard deviation of the appropriately weighted difference of ensembles.
+
+Note that this ensemble represents the contribution just from the functionals, and not all the other contributions. So, the differences in the ensembles only represents that part of the uncertainty
+
+#+BEGIN_SRC python
+from vasp import Vasp
+
+calc = Vasp('molecules/H-beef')
+ensH = calc.get_beefens()
+
+calc = Vasp('molecules/H2-beef')
+ensH2 = calc.get_beefens()
+
+ensD = 2 * ensH - ensH2
+
+print('mean = {} eV'.format(ensD.mean()))
+print('std = {} eV'.format(ensD.std()))
+
+import matplotlib.pyplot as plt
+plt.hist(ensD, 20)
+plt.xlabel('Deviation')
+plt.ylabel('frequency')
+plt.savefig('images/beef-ens.png')
+#+END_SRC
+
+#+RESULTS:
+: mean = 0.00661973433552 eV
+: std = 0.278495927893 eV
+
+You can see the mean is nearly zero, suggesting the deviations are symmetrically distributed. The std error is 0.184 eV, which represents about a 68% confidence interval.
+
+[[./images/beef-ens.png]]
+
+
+
+
+** TODO Solvation
+See http://vaspsol.mse.ufl.edu/download/, cite:fishman-2013-accur,mathew-2014-implic
+
+You need a specially patched version of Vasp.
+
+First, we run our calculation in vacuum. We need this to get the WAVECAR. The following calculation mimics one of the example calculations in the Vaspsol package. The combination of nsw=0 and ibrion=2 does not make sense, but that is the example. I do not use the npar=4 parameter here.
+#+BEGIN_SRC python
+from vasp import Vasp
+from ase.structure import molecule
+
+atoms = molecule('CO')
+atoms.center(vacuum=5)
+
+calc = Vasp('molecules/CO-vacuum',
+            encut=600,
+            prec='Accurate',
+            ismear=0,
+            sigma=0.05,
+            ibrion=2,
+            nsw=0,
+            ediff=1e-6,
+            atoms=atoms)
+print(atoms.get_potential_energy())
+print(atoms.get_forces())
+print('Calculation time: {} seconds'.format(calc.get_elapsed_time()))
+#+END_SRC
+
+#+RESULTS:
+: -14.81547852
+: [[ 0.     0.    -0.949]
+:  [ 0.     0.     0.949]]
+: Calculation time: 257.546 seconds
+
+The forces are high because nsw was set to 0, so only one iteration was run.
+
+Next, we do the solvation calculation. We use the default solvent dielectric constant of water, which is 80.
+
+#+BEGIN_SRC python
+from vasp import Vasp
+
+calc = Vasp('molecules/CO-vacuum')
+calc.clone('molecules/CO-solvated')
+
+calc.set(istart=1,  #
+         lsol=True)
+print(calc.get_atoms().get_potential_energy())
+print(calc.get_atoms().get_forces())
+print('Calculation time: {} seconds'.format(calc.get_elapsed_time()))
+#+END_SRC
+
+#+RESULTS:
+: -14.82289079
+: [[ 0.     0.    -1.007]
+:  [ 0.     0.     1.007]]
+: Calculation time: 2937.72 seconds
+
+Note these take quite a bit longer to calculate (e.g. 10 times longer)! The energies here are a little different than the vacuum result. To use this energy in an energy difference, you need to make sure the other energies were run with lsol=True also, and the same parameters.
+
+Here is the evidence that we actually ran a calculation with solvation:
+
+#+BEGIN_SRC sh
+grep -A 5 Solvation molecules/CO-solvated/OUTCAR
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+   LSOL =      T    Solvation
+
+ Electronic Relaxation 1
+   ENCUT  =  600.0 eV  44.10 Ry    6.64 a.u.  19.97 19.97 22.27*2*pi/ulx,y,z
+   ENINI  =  600.0     initial cutoff
+   ENAUG  =  644.9 eV  augmentation charge cutoff
+--
+ Solvation parameters
+   EB_K    = 80.000000     relative permittivity of the bulk solvent
+   SIGMA_K =  0.600000     width of the dielectric cavity
+   NC_K    =  0.002500     cutoff charge density
+   TAU     =  0.000525     cavity surface tension
+
+--
+  Solvation contrib.  Ediel  =        -2.06361062
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82417510 eV
+
+  energy without entropy =      -14.82417510  energy(sigma->0) =      -14.82417510
+
+--
+  Solvation contrib.  Ediel  =        -2.08692034
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82331872 eV
+
+  energy without entropy =      -14.82331872  energy(sigma->0) =      -14.82331872
+
+--
+  Solvation contrib.  Ediel  =        -2.11316669
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82319429 eV
+
+  energy without entropy =      -14.82319429  energy(sigma->0) =      -14.82319429
+
+--
+  Solvation contrib.  Ediel  =        -2.16318931
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82278947 eV
+
+  energy without entropy =      -14.82278947  energy(sigma->0) =      -14.82278947
+
+--
+  Solvation contrib.  Ediel  =        -2.17570687
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82272160 eV
+
+  energy without entropy =      -14.82272160  energy(sigma->0) =      -14.82272160
+
+--
+  Solvation contrib.  Ediel  =        -2.19188585
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82267271 eV
+
+  energy without entropy =      -14.82267271  energy(sigma->0) =      -14.82267271
+
+--
+  Solvation contrib.  Ediel  =        -2.19395757
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82272442 eV
+
+  energy without entropy =      -14.82272442  energy(sigma->0) =      -14.82272442
+
+--
+  Solvation contrib.  Ediel  =        -2.19698448
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82288242 eV
+
+  energy without entropy =      -14.82288242  energy(sigma->0) =      -14.82288242
+
+--
+  Solvation contrib.  Ediel  =        -2.19737905
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82288470 eV
+
+  energy without entropy =      -14.82288470  energy(sigma->0) =      -14.82288470
+
+--
+  Solvation contrib.  Ediel  =        -2.19908571
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82287091 eV
+
+  energy without entropy =      -14.82287091  energy(sigma->0) =      -14.82287091
+
+--
+  Solvation contrib.  Ediel  =        -2.19782575
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82288497 eV
+
+  energy without entropy =      -14.82288497  energy(sigma->0) =      -14.82288497
+
+--
+  Solvation contrib.  Ediel  =        -2.19878993
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82288031 eV
+
+  energy without entropy =      -14.82288031  energy(sigma->0) =      -14.82288031
+
+--
+  Solvation contrib.  Ediel  =        -2.19875585
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82288727 eV
+
+  energy without entropy =      -14.82288727  energy(sigma->0) =      -14.82288727
+
+--
+  Solvation contrib.  Ediel  =        -2.19894718
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82288935 eV
+
+  energy without entropy =      -14.82288935  energy(sigma->0) =      -14.82288935
+
+--
+  Solvation contrib.  Ediel  =        -2.19902584
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82289064 eV
+
+  energy without entropy =      -14.82289064  energy(sigma->0) =      -14.82289064
+
+--
+  Solvation contrib.  Ediel  =        -2.19905589
+  ---------------------------------------------------
+  free energy    TOTEN  =       -14.82289079 eV
+
+  energy without entropy =      -14.82289079  energy(sigma->0) =      -14.82289079
+
+#+end_example
+

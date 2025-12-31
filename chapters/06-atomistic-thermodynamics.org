@@ -1,0 +1,407 @@
+* Atomistic thermodynamics
+  :PROPERTIES:
+  :ID:       b0b88efb-138d-4a22-bbc9-4b763b69b264
+  :END:
+[[index:atomistic thermodynamics]]
+Let us consider how much the Gibbs free energy of an O_{2} molecule changes as a function of temperature, at 1 atm. We use the Shomate polynomials to approximate the temperature dependent entropy and enthalpy, and use the parameters from the [[http://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447&Units=SI&Mask=1#Thermo-Gas][NIST Webbook]] for O_{2}.
+
+#+BEGIN_SRC python
+from ase.units import *
+K = 1.0
+
+print J, mol, K
+
+print 0.100 * kJ / mol / K
+
+print 1 * eV / (kJ / mol)
+#+END_SRC
+
+#+RESULTS:
+: 6.24150912588e+18 6.022140857e+23 1.0
+: 0.00103642695747
+: 96.4853328825
+
+
+# <<delta muO2 shomate>>
+#+BEGIN_SRC python
+import numpy as np
+import matplotlib.pyplot as plt
+from ase.units import *
+K = 1.  # Kelvin not defined in ase.units!
+
+# Shomate parameters
+A = 31.32234; B = -20.23531; C = 57.86644
+D = -36.50624; E = -0.007374; F = -8.903471
+G = 246.7945; H = 0.0
+
+
+def entropy(T):
+    '''entropy returned as eV/K
+    T in K
+    '''
+    t = T / 1000.
+    s = (A * np.log(t) + B * t + C * (t**2) / 2.
+         + D * (t**3) / 3. - E / (2. * t**2) + G)
+    return s * J / mol / K
+
+
+def enthalpy(T):
+    ''' H - H(298.15) returned as eV/molecule'''
+    t = T / 1000.
+    h = (A * t + B * (t**2) / 2. + C * (t**3) / 3.
+         + D * (t**4) / 4. - E / t + F - H)
+    return h * kJ / mol
+
+T = np.linspace(10, 700)
+
+G = enthalpy(T) - T * entropy(T)
+
+plt.plot(T, G)
+plt.xlabel('Temperature (K)')
+plt.ylabel(r'$\Delta G^\circ$ (eV)')
+plt.savefig('images/O2-mu.png')
+#+END_SRC
+
+#+RESULTS:
+
+
+#+caption: Effect of temperature on the Gibbs free energy of an O_2 molecule at standard state (1 atm).
+#+ATTR_LaTeX: :placement [H]
+[[./images/O2-mu.png]]
+
+This is clearly a big effect! Between 500-600K, the energy has dropped by nearly 1 eV.
+
+Pressure also affects the free energy. In the ideal gas limit, the pressure changes the free energy by $k T \ln P/P_0$ where $P_0$ is the standard state pressure (1 atm or 1 bar depending on the convention chosen). Let us see how this affects the free energy at different temperatures.
+
+#+BEGIN_SRC python
+import matplotlib.pyplot as plt
+import numpy as np
+from ase.units import *
+
+atm = 101325 * Pascal #atm is not defined in units
+K = 1 # Kelvin
+
+# examine range over 10^-10 to 10^10 atm
+P = np.logspace(-10, 10) * atm
+
+plt.semilogx(P / atm, kB * (300 * K) * np.log(P / (1 * atm)), label='300K')
+plt.semilogx(P / atm, kB * (600 * K) * np.log(P / (1 * atm)), label='600K')
+plt.xlabel('Pressure (atm)')
+plt.ylabel(r'$\Delta G$ (eV)')
+plt.legend(loc='best')
+plt.savefig('images/O2-g-p.png')
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: Effects of pressure on the ideal gas Gibbs free energy of O$_2$.
+#+ATTR_LaTeX: :placement [H]
+[[./images/O2-g-p.png]]
+
+Similarly, you can see that simply changing the pressure has a large effect on the Gibbs free energy of an ideal gas through the term: $kT\ln(P/P_0)$, and that this effect is also temperature dependent. This leads us to the final formula we will use for the chemical potential of oxgyen:
+
+$\mu_{O_2} = E_{O_2}^{DFT} + E_{O_2}^{ZPE} + \Delta \mu (T) + kT \ln(P/P_0)$
+
+We can use $\mu_{O_2}$ in place of $E_{O_2}$ everywhere to include the effects of pressure and temperature on /the gas phase/ energy. If T=0K, and P=1 bar, we are at standard state, and this equation reduces to the DFT energy (+ the ZPE).
+
+** Bulk phase stability of oxides
+
+We will consider the effects of oxygen pressure and temperature on the formation energy of Ag_{2}O and Cu_{2}O. For now, we neglect the effect of pressure and temperature on the solid phases. Neglecting pressure is pretty reasonable, as the solids are not that compressible, and we do not expect the energy to change for small pressures. For neglecting the temperature, we assume that the temperature dependence of the oxide is similar to the temperature dependence of the metal, and that these dependencies practically cancel each other in the calculations. That is an assumption, and it may not be correct.
+
+$2Cu + 1/2 O_2 \rightarrow Cu_2O$
+
+In atomistic thermodynamics, we define the free energy of formation as:
+
+$G_f = G_{Cu_2O} -2G_{Cu} - 0.5 G_{O_2}$
+
+We will at this point assume that the solids are incompressible so that $p\Delta V \approx 0$, and that $S_{Cu_2O} -2S_{Cu} \approx 0$, which leads to $G_{Cu_2O} -2G_{Cu} \approx E_{Cu_2O} -2E_{Cu}$, which we directly compute from DFT. We express $G_{O_2} = \mu_{O_2} = E_{O_2}^{DFT} + E_{O_2}^{ZPE} + \Delta \mu (T) + kT \ln(P/P_0)$. In this example we neglect the zero-point energy of the oxygen molecule, and finally arrive at:
+
+$G_f \approx E_{Cu_2O} -2E_{Cu} - 0.5 (E_{O_2}^{DFT} + \Delta \mu (T) + kT \ln(P/P_0))$
+
+Which, after grouping terms is:
+
+$G_f \approx E_{Cu_2O} -2E_{Cu} - 0.5 (E_{O_2}^{DFT}) - 0.5*\Delta \mu_{O_2}(P,T)$
+
+with $\Delta \mu_{O_2}(P,T) = \Delta \mu (T) + kT \ln(P/P_0)$. We get $\Delta \mu (T)$ from the Janaf Tables, or the NIST Webbook.
+
+- we are explicitly neglecting all entropies of the solid: configurational, vibrational and electronic
+
+- we also neglect enthalpic contributions from temperature dependent electronic and vibrational states
+
+You will recognize in this equation the standard formation energy we calculated in [[Metal oxide oxidation energies][Metal oxide oxidation energies ]]plus a correction for the non standard state pressure and temperature ($\Delta \mu_{O_2}(P,T) = 0$ at standard state).
+
+
+$G_f \approx H_f - 0.5*\Delta \mu_{O_2}(P, T)$
+
+
+The [[http://materialsproject.org/materials/361/][formation energy]] of Cu_{2}O is -1.9521 eV/formula unit. The [[http://materialsproject.org/materials/353/][formation energy]] for Ag_{2}O is -0.99 eV/formula unit. Let us consider what temperature the oxides decompose at a fixed oxygen pressure of 1$\times 10^{-10}$ atm. We need to find the temperature where:
+
+$H_f = 0.5*\Delta \mu_{O_2}(P, T)$
+
+which will make the formation energy be 0.
+
+#+BEGIN_SRC python
+import numpy as np
+import matplotlib.pyplot as plt
+from ase.units import *
+from scipy.optimize import fsolve
+
+K = 1. #not defined in ase.units!
+atm = 101325 * Pascal
+
+# Shomate parameters valid from 100-700K
+A = 31.32234; B = -20.23531; C = 57.86644
+D = -36.50624; E = -0.007374; F = -8.903471
+G = 246.7945; H = 0.0
+
+
+def entropy(T):
+    '''entropy returned as eV/K
+    T in K
+    '''
+    t = T/1000.
+    s = (A * np.log(t) + B * t + C * (t**2) / 2.
+         + D * (t**3) / 3. - E / (2. * t**2) + G)
+    return s * J / mol / K
+
+
+def enthalpy(T):
+    ''' H - H(298.15) returned as eV/molecule'''
+    t = T / 1000.
+    h = (A * t + B * (t**2) / 2. + C * (t**3) / 3.
+         + D * (t**4) / 4. - E / t + F - H)
+    return h * kJ / mol
+
+
+def DeltaMu(T, P):
+    '''
+    returns delta chemical potential of oxygen at T and P
+    T in K
+    P in atm
+    '''
+    return enthalpy(T) - T * entropy(T) + kB * T * np.log(P / atm)
+
+P = 1e-10*atm
+
+
+def func(T):
+    'Cu2O'
+    return -1.95 - 0.5*DeltaMu(T, P)
+
+print 'Cu2O decomposition temperature is {0:1.0f} K'.format(fsolve(func,
+                                                                   900)[0])
+
+def func(T):
+    'Ag2O'
+    return -0.99 - 0.5 * DeltaMu(T, P)
+
+print 'Ag2O decomposition temperature is {0:1.0f} K'.format(fsolve(func,
+                                                                   470)[0])
+
+
+T = np.linspace(100, 1000)
+# Here we plot delta mu as a function of temperature at different pressures
+# you have use \\times to escape the first \ in pyplot
+plt.plot(T, DeltaMu(T, 1e10*atm), label=r'1$\times 10^{10}$ atm')
+plt.plot(T, DeltaMu(T, 1e5*atm), label=r'1$\times 10^5$ atm')
+plt.plot(T, DeltaMu(T, 1*atm), label='1 atm')
+plt.plot(T, DeltaMu(T, 1e-5*atm), label=r'1$\times 10^{-5}$ atm')
+plt.plot(T, DeltaMu(T, 1e-10*atm), label=r'1$\times 10^{-10}$ atm')
+
+plt.xlabel('Temperature (K)')
+plt.ylabel(r'$\Delta \mu_{O_2}(T,p)$ (eV)')
+plt.legend(loc='best')
+plt.savefig('images/O2-mu-diff-p.png')
+#+END_SRC
+
+#+RESULTS:
+: Cu2O decomposition temperature is 917 K
+: Ag2O decomposition temperature is 478 K
+
+#+caption: \Delta \(\mu_{O_2}\)(T,p) at different pressures and temperatures. \label{fig:mu-o2}
+#+ATTR_LaTeX: :placement [H]
+[[./images/O2-mu-diff-p.png]]
+
+
+Now, let us make a phase diagram that shows the boundary between silver oxide, and silver metal in P and T space.
+
+#+BEGIN_SRC python
+import numpy as np
+import matplotlib.pyplot as plt
+from ase.units import *
+from scipy.optimize import fsolve
+
+K = 1. #not defined in ase.units!
+atm = 101325*Pascal
+
+# Shomate parameters valid from 100-700K
+A = 31.32234; B = -20.23531; C = 57.86644
+D = -36.50624; E = -0.007374; F = -8.903471
+G = 246.7945; H = 0.0
+
+
+def entropy(T):
+    '''entropy returned as eV/K
+    T in K
+    '''
+    t = T/1000.
+    s = (A*np.log(t) + B*t + C*(t**2)/2.
+         + D*(t**3)/3. - E/(2.*t**2) + G)
+    return s*J/mol/K
+
+
+def enthalpy(T):
+    ''' H - H(298.15) returned as eV/molecule'''
+    t = T/1000.
+    h = (A*t + B*(t**2)/2. + C*(t**3)/3.
+         + D*(t**4)/4. - E/t + F - H)
+    return h*kJ/mol
+
+
+def DeltaMu(T, P):
+    '''
+    T in K
+    P in atm
+    '''
+    return enthalpy(T) - T * entropy(T) + kB * T * np.log(P / atm)
+
+P = np.logspace(-11, 1, 10) * atm
+T = []
+for p in P:
+
+    def func(T):
+        return -0.99 - 0.5 * DeltaMu(T, p)
+    T.append(fsolve(func, 450)[0])
+
+plt.semilogy(T, P / atm)
+plt.xlabel('Temperature (K)')
+plt.ylabel('Pressure (atm)')
+plt.text(800, 1e-7, 'Ag')
+plt.text(600, 1e-3, 'Ag$_2$O')
+plt.savefig('images/Ag2O-decomposition.png')
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: Temperature dependent decomposition pressure for Ag_{2}O.
+#+ATTR_LaTeX: :placement [H]
+[[./images/Ag2O-decomposition.png]]
+
+This shows that at high temperature and low p_{O_{2}} metallic silver is stable, but if the p_{O_{2}} gets high enough, the oxide becomes thermodynamically favorable. Here is another way to look at it.
+
+#+BEGIN_SRC python
+import numpy as np
+import matplotlib.pyplot as plt
+from ase.units import *
+
+K = 1.  # not defined in ase.units!
+atm = 101325*Pascal
+Hf = -0.99
+
+P = 1 * atm
+
+Dmu = np.linspace(-4, 0)
+
+Hf = -0.99 - 0.5*Dmu
+
+plt.plot(Dmu, Hf, label='Ag$_2$O')
+plt.plot(Dmu, np.zeros(Hf.shape), label='Ag')
+plt.xlabel(r'$\Delta \mu_{O_2}$ (eV)')
+plt.ylabel('$H_f$ (eV)')
+plt.savefig('images/atomistic-thermo-hf-mu.png')
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: Dependence of the formation energy on the oxygen chemical potential.
+#+attr_latex: :placement [H]
+[[./images/atomistic-thermo-hf-mu.png]]
+
+This graph shows graphically the $\Delta \mu_{O_2}$ required to make the metal more stable than the oxide. Anything less than about -2 eV will have the metal more stable. That can be achieved by any one of the following combinations (graphically estimated from Figure ref:fig:mu-o2):
+About 500K at 1$\times 10^{-10}$ atm, 600K at 1$\times 10^{-5}$ atm, 900K at 1atm, etc...
+
+** Effect on adsorption
+   :PROPERTIES:
+   :ID:       6b509064-8e9d-44a0-ad86-f1302988c875
+   :END:
+We now consider the question: Given a pressure and temperature, what coverage would you expect on a surface? We saw earlier that adsorption energies depend on the site and coverage. We lso know the coverage depends on the pressure and temperature. Above some temperature, desorption occurs, and below some pressure adsorption will not be favorable. We seek to develop a quantitative method to determine those conditions.
+
+We redefine the adsorption energy as:
+
+$\Delta G_{ads} \approx E_{slab, ads} - E_{slab} - \mu_{ads}$
+
+where again we neglect all contributions to the free energy of the slabs from vibrational energy and entropy, as well as configurational entropy if that is relevant. That leaves only the pressure and temperature dependence of the adsorbate, which we treat in the ideal gas limit.
+
+We expand $\mu_{ads}$ as $E_{ads}+\Delta \mu(T,p)$, and thus:
+
+$\Delta G_{ads} \approx E_{slab, ads} - E_{slab} - E_{ads} -\Delta \mu(T,p)$
+
+or
+
+$\Delta G_{ads} \approx \Delta H_{ads} -\Delta \mu(T,p)$
+
+where $\Delta H_{ads}$ is the adsorption energy we defined earlier. Now we can examine the effect of $\Delta \mu(T,p)$ on the adsorption energies. We will use the adsorption energies for the oxygen on Pt(111) system we computed earlier:
+
+#+caption: Adsorption site dependence of adsorption energies of oxygen on Pt(111).
+| system           | $\Delta H (eV/O)$ |
+|------------------+-------------------|
+| fcc (0.25 ML)    |             -1.04 |
+| hcp (0.25 ML)    |             -0.60 |
+| bridge (0.25 ML) |             -0.49 |
+| fcc(1ML)         |             -0.10 |
+
+#+BEGIN_SRC python
+import numpy as np
+import matplotlib.pyplot as plt
+
+fcc25 = -1.04
+hcp25 = -0.60
+bridge25 = -0.49
+fcc1 = -0.10
+
+Dmu = np.linspace(-4, 2)
+
+plt.plot(Dmu, np.zeros(Dmu.shape), label='Pt(111)')
+plt.plot(Dmu, 0.25 * (fcc25 - 0.5*Dmu), label='fcc - 0.25 ML')
+plt.plot(Dmu, 0.25 * (hcp25 - 0.5*Dmu), label='hcp - 0.25 ML')
+plt.plot(Dmu, 0.25 * (bridge25 - 0.5*Dmu), label='bridge - 0.25 ML')
+plt.plot(Dmu, 1.0 * (fcc1 - 0.5*Dmu), label='fcc - 1.0 ML')
+
+plt.xlabel(r'$\Delta \mu O_2$ (eV)')
+plt.ylabel(r'$\Delta G_{ads}$ (eV/O)')
+plt.legend(loc='best')
+plt.savefig('images/atomistic-thermo-adsorption.png')
+#+END_SRC
+
+#+RESULTS:
+
+#+caption: Effect of oxygen chemical potential on the adsorption energy.
+#+ATTR_LaTeX: :placement [H]
+[[./images/atomistic-thermo-adsorption.png]]
+
+** Atomistic therodynamics and multiple reactions
+
+In cite:Inoglu2009188 we considered multiple reactions in an atomistic thermodynamic framework. Let us consider these three reactions of dissociative adsorption of hydrogen and hydrogen disulfide, and consider how to compute the reaction energy for the third reaction.
+
+1. $H_2 + 2* \leftrightharpoons 2H*$
+
+2. $H_2S + 2* \leftrightharpoons H* + SH*$
+
+3. $SH* + * \leftrightharpoons S* + H*$
+
+The reaction energy of interest is $E_{rxn} = \mu_{S*} + \mu{H*} - \mu{SH*}$ The question is, what are these chemical potentials? We would like them in terms of pressures and temperature, preferrably of molecules that can be approximated as ideal gases. By equilibrium arguments we can say that $\mu_{H*} = \frac{1}{2} \mu_{H_2}$. It follows that at equilibrium:
+
+$\mu_{H*} + \mu_{SH*} = \mu_{H_2S}$ and $\mu_{H*} + \mu_{S*} = \mu_{SH*}$.
+
+From the first equation we have:
+
+$\mu_{SH*} = \mu_{H_2S} - \frac{1}{2}\mu_{H_2}$
+
+and from the second equation we have:
+
+$\mu_{S*} = \mu_{SH*} - \mu_{H*} = \mu_{H_2S} - \mu_{H_2}$.
+
+Thus, the chemical potentials of all these three adsorbed species depend on the chemical potentials of two gas-phase species. The chemical potentials of each of these gases can be defined as:
+
+$\mu_{gas}(T,p) = E_{gas}(0K) + \delta \mu + kT\ln\left (p/p^0\right )$, as we have defined before, so that only simple DFT calculations are needed to estimate them.
+
