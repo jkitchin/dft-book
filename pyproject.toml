@@ -1,0 +1,33 @@
+[project]
+name = "dft-book"
+version = "0.1.0"
+description = "Modeling Materials Using Density Functional Theory - Jupyter Book"
+authors = [{ name = "John Kitchin", email = "jkitchin@andrew.cmu.edu" }]
+requires-python = ">=3.10"
+license = { text = "CC-BY-NC-ND" }
+
+dependencies = [
+    # Jupyter Book and documentation
+    "jupyter-book<2",
+    "sphinx-book-theme>=1.0.0",
+    "myst-nb>=0.17.0",
+
+    # Scientific computing
+    "numpy",
+    "scipy",
+    "matplotlib",
+
+    # Atomistic Simulation Environment
+    "ase",
+
+    # Jupyter support
+    "jupyterlab",
+    "ipykernel",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "black",
+    "ruff",
+]

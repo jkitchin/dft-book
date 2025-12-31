@@ -1,8 +1,22 @@
+# VASP output files
 POTCAR
 CHG*
+CHGCAR
 WAVECAR
 DOSCAR
 ELFCAR
+OUTCAR
+CONTCAR
+OSZICAR
+PCDAT
+XDATCAR
+IBZKPT
+EIGENVAL
+PROCAR
+LOCPOT
+vasprun.xml
+REPORT
+*.db
 *.o[0-9]*
 *~
 archive
@@ -35,3 +49,10 @@ blog
 devel
 tests
 dft.html
+
+# Python/uv environment
+.venv/
+__pycache__/
+
+# Jupyter Book build output
+_build/

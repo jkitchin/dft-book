@@ -1,47 +1,35 @@
-EMACS=emacs
-BATCH_EMACS=$(EMACS) --batch -l ~/scimax/init.el -l dft.el dft.org
-REQUIREMENTS=python
-PDFLATEX=pdflatex -shell-escape
-LATEX=latex -shell-escape
+# Jupyter Book Makefile for DFT Book
+# See https://jupyterbook.org/
 
-IMAGES = $(wildcard images/*.svg)
+.PHONY: html pdf clean serve help
 
-PNGIMAGES = $(IMAGES:.svg=.png)
-PDFIMAGES = $(IMAGES:.svg=.pdf)
+# Default target
+all: html
 
-%.png: %.svg
-	inkscape -f $< -e $@
+# Build HTML version
+html:
+	jupyter-book build .
 
-%.pdf: %.svg
-	inkscape -f $< -A $@
+# Build PDF via LaTeX
+pdf:
+	jupyter-book build . --builder pdflatex
 
-org:
-	emacs dft.org &
-
-tex: dft.org dft.bib
-	$(BATCH_EMACS) -f org-export-as-latex
-
-pdf: tex $(PDFIMAGES)
-	# note I do not use the org-export-as-pdf function here. I do not
-	# remember why. Maybe to avoid the problem with enabling
-	# -shell-escape globally?
-	pdflatex -shell-escape dft
-	bibtex dft
-	pdflatex -shell-escape dft
-	makeindex dft
-	pdflatex -shell-escape dft
-
-xhtml: $(PNGIMAGES)
-	htlatex dft.tex "xhtml,mathml" " -cunihtf" "-cvalidate"
-
-html: $(PNGIMAGES)
-	cp dftbook.sty /tmp
-	$(BATCH_EMACS) -f org-html-export-to-html
-
-mobi: html
-	/home/jkitchin/kindlegen/kindlegen dft.html
-
-all: pdf html
-
+# Clean build artifacts
 clean:
-	rm -f *.aux *.log *.dvi *.blg *.bbl *.toc *~ *.out *.idx *.ilg *.ind *.lof *.lot *.css *.idv *.lg *.tmp *.xref *.4ct *.4tc
+	jupyter-book clean .
+	rm -rf _build
+
+# Serve the book locally for development
+serve: html
+	python -m http.server --directory _build/html 8000
+
+# Full rebuild (clean + build)
+rebuild: clean html
+
+help:
+	@echo "Jupyter Book build targets:"
+	@echo "  html    - Build HTML version (default)"
+	@echo "  pdf     - Build PDF via LaTeX"
+	@echo "  clean   - Remove build artifacts"
+	@echo "  serve   - Build and serve locally on port 8000"
+	@echo "  rebuild - Clean and rebuild HTML"
