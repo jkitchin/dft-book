@@ -11,8 +11,34 @@ parts:
 
   - caption: Applications
     chapters:
-      - file: notebooks/03-molecules
-      - file: notebooks/04-bulk-systems
+      - file: notebooks/03-molecules/01-introduction
+        sections:
+          - file: notebooks/03-molecules/02-defining-and-visualizing-molecules
+          - file: notebooks/03-molecules/03-simple-properties
+          - file: notebooks/03-molecules/04-simple-properties-that-require-single-computations
+          - file: notebooks/03-molecules/05-geometry-optimization
+          - file: notebooks/03-molecules/06-vibrational-frequenciesproperties
+          - file: notebooks/03-molecules/07-simulated-infrared-spectra
+          - file: notebooks/03-molecules/08-thermochemical-properties-of-molecules
+          - file: notebooks/03-molecules/09-molecular-reaction-energies
+          - file: notebooks/03-molecules/10-molecular-reaction-barriers
+      - file: notebooks/04-bulk-systems/01-introduction
+        sections:
+          - file: notebooks/04-bulk-systems/02-defining-and-visualizing-bulk-systems
+          - file: notebooks/04-bulk-systems/03-computational-parameters-that-are-important-for-bulk-structures
+          - file: notebooks/04-bulk-systems/04-determining-bulk-structures
+          - file: notebooks/04-bulk-systems/05-using-built-in-ase-optimization-with-vasp
+          - file: notebooks/04-bulk-systems/06-cohesive-energy
+          - file: notebooks/04-bulk-systems/07-elastic-properties
+          - file: notebooks/04-bulk-systems/08-bulk-thermodynamics
+          - file: notebooks/04-bulk-systems/09-effect-of-pressure-on-phase-stability
+          - file: notebooks/04-bulk-systems/10-bulk-reaction-energies
+          - file: notebooks/04-bulk-systems/11-bulk-density-of-states
+          - file: notebooks/04-bulk-systems/12-atom-projected-density-of-states
+          - file: notebooks/04-bulk-systems/13-band-structures
+          - file: notebooks/04-bulk-systems/14-magnetism
+          - file: notebooks/04-bulk-systems/15-phonons
+          - file: notebooks/04-bulk-systems/16-solid-state-neb
       - file: notebooks/05-surfaces
       - file: notebooks/06-atomistic-thermodynamics
 
