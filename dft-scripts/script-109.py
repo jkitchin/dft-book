@@ -1,2 +1,0 @@
-grep ENMAX $VASP_PP_PATH/potpaw_PBE/Ti/POTCAR
-grep ENMAX $VASP_PP_PATH/potpaw_PBE/O/POTCAR

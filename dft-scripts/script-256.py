@@ -1,1 +1,0 @@
-x,y = pylab.load('pdat.dat')
