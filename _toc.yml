@@ -37,8 +37,6 @@ parts:
           - file: notebooks/04-bulk-systems/12-atom-projected-density-of-states
           - file: notebooks/04-bulk-systems/13-band-structures
           - file: notebooks/04-bulk-systems/14-magnetism
-          - file: notebooks/04-bulk-systems/15-phonons
-          - file: notebooks/04-bulk-systems/16-solid-state-neb
       - file: notebooks/05-surfaces
       - file: notebooks/06-atomistic-thermodynamics
 
