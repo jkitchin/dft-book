@@ -45,8 +45,3 @@ parts:
       - file: notebooks/07-advanced-electronic-structure
       - file: notebooks/08-databases
 
-  - caption: Appendices
-    chapters:
-      - file: notebooks/09-acknowledgments
-      - file: notebooks/10-appendices
-      - file: notebooks/11-python

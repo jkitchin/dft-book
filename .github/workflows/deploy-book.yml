@@ -32,7 +32,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install jupyter-book
+          pip install "jupyter-book<2"
           pip install sphinx-book-theme
 
       - name: Build the book
