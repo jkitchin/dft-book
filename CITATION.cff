@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "Modeling Materials Using Density Functional Theory"
+type: software
+authors:
+  - family-names: Kitchin
+    given-names: John R.
+    orcid: "https://orcid.org/0000-0003-2625-9232"
+    affiliation: Carnegie Mellon University
+repository-code: "https://github.com/jkitchin/dft-book"
+version: "0.1.0"
+date-released: "2026-10-20"
+license: [CC-BY-4.0, MIT]
+abstract: "An open textbook on modeling materials with density functional theory using VASP, the Atomic Simulation Environment, and Python, with runnable examples."
+keywords: [DFT, VASP, ASE, open educational resources, textbook]

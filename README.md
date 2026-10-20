@@ -52,7 +52,7 @@ The built book will be in `_build/html/`.
 
 ## License
 
-This work is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives (CC-BY-NC-ND) license.
+The book text and figures are licensed under [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/). The code (notebooks, scripts, and code blocks) is licensed under the [MIT License](LICENSE). See [LICENSE](LICENSE) for details.
 
 ## Citation
 
@@ -61,3 +61,5 @@ If you use this book in your research, please cite:
 ```
 Kitchin, J. R. "Modeling Materials Using Density Functional Theory"
 ```
+
+Citation metadata is also provided in [CITATION.cff](CITATION.cff).
