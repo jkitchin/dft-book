@@ -6,6 +6,9 @@ author: "John Kitchin"
 copyright: "2012-2025"
 logo: images/cover-page.png
 
+# Don't let Sphinx pick up files from the local uv virtual environment
+exclude_patterns: [_build, Thumbs.db, .DS_Store, "**.ipynb_checkpoints", .venv]
+
 # Force re-execution of notebooks on each build.
 # See https://jupyterbook.org/content/execute.html
 execute:
