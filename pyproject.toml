@@ -3,7 +3,7 @@ name = "dft-book"
 version = "0.1.0"
 description = "Modeling Materials Using Density Functional Theory - Jupyter Book"
 authors = [{ name = "John Kitchin", email = "jkitchin@andrew.cmu.edu" }]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { text = "CC-BY-4.0 AND MIT" }
 
 dependencies = [
